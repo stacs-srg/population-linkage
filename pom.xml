@@ -23,6 +23,21 @@
 
     </properties>
 
+    <dependencies>
+
+        <dependency>
+            <groupId>uk.ac.standrews.cs</groupId>
+            <artifactId>storr</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.ac.standrews.cs</groupId>
+            <artifactId>ciesvium</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
 
     <build>
         <plugins>
@@ -57,13 +72,6 @@
 
         </plugins>
     </build>
-
-    <dependencies>
-
-
-
-    </dependencies>
-
 
     <repositories>
 
