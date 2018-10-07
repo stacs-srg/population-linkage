@@ -18,13 +18,9 @@ package uk.ac.standrews.cs.population_linkage.importers;
 
 import uk.ac.standrews.cs.population_linkage.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.storr.impl.exceptions.IllegalKeyException;
 import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -40,32 +36,20 @@ public abstract class DeathRecordImporter extends RecordImporter {
 
     public abstract void addAvailableNormalisedFields(DataSet data, List<String> record, Death death);
 
-    /**
-     * @param deaths   the bucket from which to import
-     * @param data the source records in digitising scotland format
-     * @return the number of records read in
-     * @throws IOException
-     * @throws RecordFormatException
-     * @throws BucketException
-     */
     public int importDeathRecords(IBucket<Death> deaths, DataSet data) throws BucketException {
 
         int count = 0;
 
         for (List<String> record : data.getRecords()) {
 
-            Death death_record = importDeathRecord(data, record);
-            deaths.makePersistent(death_record);
+            deaths.makePersistent(importDeathRecord(data, record));
             count++;
         }
 
         return count;
     }
 
-    /**
-     * Fills in a record.
-     */
-    protected Death importDeathRecord(DataSet data, List<String> record) {
+    private Death importDeathRecord(DataSet data, List<String> record) {
 
         Death death = new Death();
 

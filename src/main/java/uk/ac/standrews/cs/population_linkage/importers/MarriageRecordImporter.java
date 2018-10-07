@@ -21,9 +21,6 @@ import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -39,22 +36,13 @@ public abstract class MarriageRecordImporter extends RecordImporter {
 
     public abstract void addAvailableNormalisedFields(DataSet data, List<String> record, Marriage marriage);
 
-    /**
-     * Imports a set of marriage records from file to a bucket.
-     *
-     * @param marriages the bucket into which the new records should be put
-     * @param data source records in digitising scotland format
-     * @return the number of records read in
-     * @throws IOException if the data cannot be read from the file
-     */
-    public int importMarriageRecords(IBucket<Marriage> marriages, DataSet data) throws IOException, BucketException {
+    public int importMarriageRecords(IBucket<Marriage> marriages, DataSet data) throws BucketException {
 
         int count = 0;
 
         for (List<String> record : data.getRecords()) {
 
-            Marriage marriage_record = importMarriageRecord(data, record);
-            marriages.makePersistent(marriage_record);
+            marriages.makePersistent(importMarriageRecord(data, record));
             count++;
         }
 

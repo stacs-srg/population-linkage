@@ -14,7 +14,6 @@ import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -27,13 +26,13 @@ public class Infrastructure {
         Path store_path = Files.createTempDirectory("");
         String repo_name = "kilmarnock_repository";
 
-        DataSetImporter importer = new KilmarnockDataSetImporter(store_path, repo_name, new BirthsDataSet(), new DeathsDataSet(), new MarriagesDataSet());
-
-        int births_loaded = importer.importBirthRecords();
-        int deaths_loaded = importer.importDeathRecords();
-        int marriages_loaded = importer.importMarriageRecords();
-
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+
+        DataSetImporter importer = new KilmarnockDataSetImporter();
+
+        int births_loaded = importer.importBirthRecords(record_repository, new BirthsDataSet());
+        int deaths_loaded = importer.importDeathRecords(record_repository, new DeathsDataSet());
+        int marriages_loaded = importer.importMarriageRecords(record_repository, new MarriagesDataSet());
 
         int births_read = 0;
         for (long object_id : record_repository.births.getOids()) {

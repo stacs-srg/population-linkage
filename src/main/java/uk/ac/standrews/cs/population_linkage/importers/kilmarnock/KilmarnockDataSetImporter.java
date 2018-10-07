@@ -16,44 +16,43 @@
  */
 package uk.ac.standrews.cs.population_linkage.importers.kilmarnock;
 
-import uk.ac.standrews.cs.population_linkage.importers.BirthRecordImporter;
-import uk.ac.standrews.cs.population_linkage.importers.DataSetImporter;
-import uk.ac.standrews.cs.population_linkage.importers.DeathRecordImporter;
-import uk.ac.standrews.cs.population_linkage.importers.MarriageRecordImporter;
+import uk.ac.standrews.cs.population_linkage.importers.*;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
-import java.nio.file.Path;
-
-/**
- * Module to ingest BBM records into a store initialised by class such as StoreInitialiser in this package
- * Created by al on 22/3/2017.
- *
- * @author al@st-andrews.ac.uk
- */
 public class KilmarnockDataSetImporter extends DataSetImporter {
 
-    public KilmarnockDataSetImporter(Path store_path, String repo_name, DataSet birth_records, DataSet death_records, DataSet marriage_records) throws Exception {
+    private final BirthRecordImporter birth_record_importer;
+    private final DeathRecordImporter death_record_importer;
+    private final MarriageRecordImporter marriage_record_importer;
 
-        super(store_path, repo_name, birth_records, death_records, marriage_records);
-    }
+    public KilmarnockDataSetImporter() {
 
-    @Override
-    protected BirthRecordImporter getBirthImporter() {
-        return new KilmarnockBirthRecordImporter();
-    }
-
-    @Override
-    protected DeathRecordImporter getDeathImporter() {
-        return new KilmarnockDeathRecordImporter();
-    }
-
-    @Override
-    protected MarriageRecordImporter getMarriageImporter() {
-        return new KilmarnockMarriageRecordImporter();
+        birth_record_importer = new KilmarnockBirthRecordImporter();
+        death_record_importer = new KilmarnockDeathRecordImporter();
+        marriage_record_importer = new KilmarnockMarriageRecordImporter();
     }
 
     @Override
     public String getDataSetName() {
         return "Kilmarnock";
+    }
+
+    @Override
+    public int importBirthRecords(RecordRepository record_repository, DataSet birth_records) throws BucketException {
+
+        return birth_record_importer.importBirthRecords(record_repository.births, birth_records);
+    }
+
+    @Override
+    public int importDeathRecords(RecordRepository record_repository, DataSet death_records) throws BucketException {
+
+        return death_record_importer.importDeathRecords(record_repository.deaths, death_records);
+    }
+
+    @Override
+    public int importMarriageRecords(RecordRepository record_repository, DataSet marriage_records) throws BucketException {
+
+        return marriage_record_importer.importMarriageRecords(record_repository.marriages, marriage_records);
     }
 }

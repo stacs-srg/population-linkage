@@ -154,8 +154,5 @@ public class KilmarnockMarriageRecordImporter extends MarriageRecordImporter {
 
         marriage.put(Marriage.BRIDE_ADDRESS, combineFields(data, record, "address of bride 1", "address of bride 2", "address of bride 3"));
         marriage.put(Marriage.GROOM_ADDRESS, combineFields(data, record, "address of groom 1", "address of groom 2", "address of groom 3"));
-
-        // Place of marriage 3 is the townname in this dataset - use this.
-        // TODO look at this and decide what to do - create a cannonical field?
     }
 }

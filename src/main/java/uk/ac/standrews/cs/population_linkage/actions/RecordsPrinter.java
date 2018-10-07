@@ -1,7 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.actions;
 
 import uk.ac.standrews.cs.population_linkage.importers.RecordRepository;
-import uk.ac.standrews.cs.population_linkage.importers.kilmarnock.KilmarnockDataSetImporter;
 import uk.ac.standrews.cs.population_linkage.record_types.Birth;
 import uk.ac.standrews.cs.population_linkage.record_types.Death;
 import uk.ac.standrews.cs.population_linkage.record_types.Marriage;
@@ -11,16 +10,18 @@ import java.nio.file.Path;
 public class RecordsPrinter {
 
     private final Path store_path;
+    private final String repo_name;
+    private RecordRepository record_repository;
 
-    public RecordsPrinter(Path store_path) {
+    public RecordsPrinter(Path store_path, String repo_name) {
 
         this.store_path = store_path;
+        this.repo_name = repo_name;
     }
 
     public void run() throws Exception {
 
-        String repo_name = "kilmarnock_repository";
-        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        record_repository = new RecordRepository(store_path, repo_name);
 
         System.out.println("Reading records from repository: " + repo_name);
         System.out.println();

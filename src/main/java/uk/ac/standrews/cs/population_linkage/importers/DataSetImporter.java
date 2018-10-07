@@ -16,45 +16,16 @@
  */
 package uk.ac.standrews.cs.population_linkage.importers;
 
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
-
-import java.nio.file.Path;
 
 public abstract class DataSetImporter {
 
-    private DataSet birth_records;
-    private DataSet death_records;
-    private DataSet marriage_records;
-
-    RecordRepository record_repository;
-
-    protected abstract BirthRecordImporter getBirthImporter();
-    protected abstract DeathRecordImporter getDeathImporter();
-    protected abstract MarriageRecordImporter getMarriageImporter();
-
     public abstract String getDataSetName();
 
-    public DataSetImporter(Path store_path, String repo_name, DataSet birth_records, DataSet death_records, DataSet marriage_records) throws Exception {
+    public abstract int importBirthRecords(RecordRepository record_repository, DataSet birth_records) throws BucketException;
 
-        this.birth_records = birth_records;
-        this.death_records = death_records;
-        this.marriage_records = marriage_records;
+    public abstract int importDeathRecords(RecordRepository record_repository, DataSet death_records) throws BucketException;
 
-        record_repository = new RecordRepository(store_path, repo_name);
-    }
-
-    public int importBirthRecords() throws Exception {
-
-        return getBirthImporter().importBirthRecords(record_repository.births, birth_records);
-    }
-
-    public int importDeathRecords() throws Exception {
-
-        return getDeathImporter().importDeathRecords(record_repository.deaths, death_records);
-    }
-
-    public int importMarriageRecords() throws Exception {
-
-        return getMarriageImporter().importMarriageRecords(record_repository.marriages, marriage_records);
-    }
+    public abstract int importMarriageRecords(RecordRepository record_repository, DataSet marriage_records) throws BucketException;
 }

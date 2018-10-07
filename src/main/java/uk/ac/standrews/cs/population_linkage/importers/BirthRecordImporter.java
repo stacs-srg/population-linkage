@@ -18,15 +18,9 @@ package uk.ac.standrews.cs.population_linkage.importers;
 
 import uk.ac.standrews.cs.population_linkage.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.storr.impl.exceptions.IllegalKeyException;
 import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -42,31 +36,19 @@ public abstract class BirthRecordImporter extends RecordImporter {
 
     public abstract void addAvailableNormalisedFields(DataSet data, List<String> record, Birth birth);
 
-    /**
-     * @param births   the bucket from which to import
-     * @param data the source records in digitising scotland format
-     * @return the number of records read in
-     * @throws IOException
-     * @throws RecordFormatException
-     * @throws BucketException
-     */
-    public int importBirthRecords(IBucket<Birth> births, DataSet data) throws IOException, BucketException {
+    public int importBirthRecords(IBucket<Birth> births, DataSet data) throws BucketException {
 
         int count = 0;
 
         for (List<String> record : data.getRecords()) {
 
-            Birth birth_record = importBirthRecord(data, record);
-            births.makePersistent(birth_record);
+            births.makePersistent(importBirthRecord(data, record));
             count++;
         }
 
         return count;
     }
 
-    /**
-     * Fills in a record.
-     */
     private Birth importBirthRecord(DataSet data, List<String> record) {
 
         Birth birth = new Birth();

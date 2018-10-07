@@ -21,15 +21,12 @@ import uk.ac.standrews.cs.population_linkage.record_types.Death;
 import uk.ac.standrews.cs.population_linkage.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.BucketKind;
 import uk.ac.standrews.cs.storr.impl.Store;
-import uk.ac.standrews.cs.storr.impl.TypeFactory;
 import uk.ac.standrews.cs.storr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.storr.interfaces.IBucket;
-import uk.ac.standrews.cs.storr.interfaces.IReferenceType;
 import uk.ac.standrews.cs.storr.interfaces.IRepository;
 import uk.ac.standrews.cs.storr.interfaces.IStore;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Module to initialise the store ready for ingesting of birth/death/marriage records.
@@ -39,29 +36,19 @@ import java.nio.file.Paths;
  */
 public class RecordRepository {
 
-    public static final String BIRTHS_BUCKET_NAME = "birth_records";              // Name of bucket containing birth records (inputs).
-    public static final String DEATHS_BUCKET_NAME = "death_records";              // Name of bucket containing death records (inputs).
-    public static final String MARRIAGES_BUCKET_NAME = "marriage_records";        // Name of bucket containing marriage records (inputs).
+    private static final String BIRTHS_BUCKET_NAME = "birth_records";              // Name of bucket containing birth records (inputs).
+    private static final String DEATHS_BUCKET_NAME = "death_records";              // Name of bucket containing death records (inputs).
+    private static final String MARRIAGES_BUCKET_NAME = "marriage_records";        // Name of bucket containing marriage records (inputs).
 
-    public static final String BIRTH_TYPE_NAME = "Birth";
-    public static final String DEATH_TYPE_NAME = "Death";
-    public static final String MARRIAGE_TYPE_NAME = "Marriage";
-
-    public IStore store;
-    public TypeFactory type_factory;
+    private IStore store;
 
     public IBucket<Birth> births;
     public IBucket<Marriage> marriages;
     public IBucket<Death> deaths;
 
-    // Bucket declarations
-
-    private static final String[] ARG_NAMES = {"store_path", "repo_name"};
-
     public RecordRepository(Path store_path, String repository_name) throws Exception {
 
-        store = getStore(store_path);
-        type_factory = store.getTypeFactory();
+        store = new Store(store_path);
 
         initialiseBuckets(repository_name);
     }
@@ -85,10 +72,5 @@ public class RecordRepository {
             deaths = input_repository.makeBucket(DEATHS_BUCKET_NAME, BucketKind.DIRECTORYBACKED, Death.class);
             marriages = input_repository.makeBucket(MARRIAGES_BUCKET_NAME, BucketKind.DIRECTORYBACKED, Marriage.class);
         }
-    }
-
-    private static IStore getStore(Path store_path) throws RepositoryException {
-
-        return new Store(store_path);
     }
 }

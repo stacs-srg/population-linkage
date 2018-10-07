@@ -12,8 +12,9 @@ public class Basic {
     public static void main(String[] args) throws Exception, CryptoException {
 
         Path store_path = Files.createTempDirectory("");
+        String repository_name = "kilmarnock_data";
 
-        new RecordsImporter(store_path).run();
-        new RecordsPrinter(store_path).run();
+        new RecordsImporter(store_path, repository_name).run();
+        new RecordsPrinter(store_path, repository_name).run();
     }
 }

@@ -19,10 +19,6 @@ package uk.ac.standrews.cs.population_linkage.importers;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +34,7 @@ public abstract class RecordImporter {
 
     public abstract int[] getUnavailableRecords();
 
-    public static void addAvailableSingleFields(final DataSet data, final List<String> record, final LXP lxp_record, Map<Integer, String> label_map) {
+    static void addAvailableSingleFields(final DataSet data, final List<String> record, final LXP lxp_record, Map<Integer, String> label_map) {
 
         for (int field : label_map.keySet()) {
             lxp_record.put(field, data.getValue(record, label_map.get(field)));
