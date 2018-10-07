@@ -6,11 +6,19 @@ import uk.ac.standrews.cs.population_linkage.record_types.Birth;
 import uk.ac.standrews.cs.population_linkage.record_types.Death;
 import uk.ac.standrews.cs.population_linkage.record_types.Marriage;
 
+import java.nio.file.Path;
+
 public class RecordsPrinter {
+
+    private final Path store_path;
+
+    public RecordsPrinter(Path store_path) {
+
+        this.store_path = store_path;
+    }
 
     public void run() throws Exception {
 
-        String store_path = "/Users/graham/Desktop/store";
         String repo_name = "kilmarnock_repository";
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 

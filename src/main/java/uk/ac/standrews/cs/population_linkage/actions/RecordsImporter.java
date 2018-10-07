@@ -13,9 +13,15 @@ import java.nio.file.Paths;
 
 public class RecordsImporter {
 
+    private final Path store_path;
+
+    public RecordsImporter(Path store_path) {
+
+        this.store_path = store_path;
+    }
+
     public void run() throws Exception, CryptoException {
 
-        Path store_path = Paths.get("/Users/graham/Desktop/store");
         String repo_name = "kilmarnock_repository";
 
         DataSetImporter importer = new KilmarnockDataSetImporter(store_path, repo_name, new BirthsDataSet(), new DeathsDataSet(), new MarriagesDataSet());

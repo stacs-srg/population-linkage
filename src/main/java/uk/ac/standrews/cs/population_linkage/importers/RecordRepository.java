@@ -66,11 +66,6 @@ public class RecordRepository {
         initialiseBuckets(repository_name);
     }
 
-    public RecordRepository(String store_path_string, String repository_name) throws Exception {
-
-        this(Paths.get(store_path_string), repository_name);
-    }
-
     private void initialiseBuckets(String repository_name) throws RepositoryException {
 
         try {
