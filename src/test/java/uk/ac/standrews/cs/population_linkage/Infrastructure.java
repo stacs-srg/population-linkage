@@ -1,12 +1,16 @@
 package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Test;
+import uk.ac.standrews.cs.data.kilmarnock.BirthsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.DeathsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.MarriagesDataSet;
 import uk.ac.standrews.cs.population_linkage.importers.DataSetImporter;
 import uk.ac.standrews.cs.population_linkage.importers.RecordRepository;
 import uk.ac.standrews.cs.population_linkage.importers.kilmarnock.KilmarnockDataSetImporter;
 import uk.ac.standrews.cs.population_linkage.record_types.Birth;
 import uk.ac.standrews.cs.population_linkage.record_types.Death;
 import uk.ac.standrews.cs.population_linkage.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,15 +22,12 @@ import static junit.framework.TestCase.assertNotNull;
 public class Infrastructure {
 
     @Test
-    public void loadAndRead() throws Exception {
+    public void loadAndRead() throws Exception, CryptoException {
 
         Path store_path = Files.createTempDirectory("");
         String repo_name = "kilmarnock_repository";
-        Path birth_records_path = Paths.get("/uk/ac/standrews/cs/population_linkage/data/kilmarnock/kilmarnock_births.csv");
-        Path death_records_path = Paths.get("/uk/ac/standrews/cs/population_linkage/data/kilmarnock/kilmarnock_deaths.csv");
-        Path marriage_records_path = Paths.get("/uk/ac/standrews/cs/population_linkage/data/kilmarnock/kilmarnock_marriages.csv");
 
-        DataSetImporter importer = new KilmarnockDataSetImporter(store_path, repo_name, true, birth_records_path, death_records_path, marriage_records_path);
+        DataSetImporter importer = new KilmarnockDataSetImporter(store_path, repo_name, new BirthsDataSet(), new DeathsDataSet(), new MarriagesDataSet());
 
         int births_loaded = importer.importBirthRecords();
         int deaths_loaded = importer.importDeathRecords();

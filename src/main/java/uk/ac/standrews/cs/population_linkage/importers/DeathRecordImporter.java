@@ -42,17 +42,15 @@ public abstract class DeathRecordImporter extends RecordImporter {
 
     /**
      * @param deaths   the bucket from which to import
-     * @param source_path containing the source records in digitising scotland format
+     * @param data the source records in digitising scotland format
      * @return the number of records read in
      * @throws IOException
      * @throws RecordFormatException
      * @throws BucketException
      */
-    public int importDeathRecords(IBucket<Death> deaths, Path source_path, boolean from_resource) throws RecordFormatException, IOException, BucketException, IllegalKeyException {
+    public int importDeathRecords(IBucket<Death> deaths, DataSet data) throws BucketException {
 
         int count = 0;
-
-        final DataSet data = getDataSet(source_path, from_resource);
 
         for (List<String> record : data.getRecords()) {
 
@@ -67,7 +65,7 @@ public abstract class DeathRecordImporter extends RecordImporter {
     /**
      * Fills in a record.
      */
-    protected Death importDeathRecord(DataSet data, List<String> record) throws IOException, RecordFormatException, IllegalKeyException {
+    protected Death importDeathRecord(DataSet data, List<String> record) {
 
         Death death = new Death();
 

@@ -1,23 +1,24 @@
 package uk.ac.standrews.cs.population_linkage.actions;
 
+import uk.ac.standrews.cs.data.kilmarnock.BirthsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.DeathsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.MarriagesDataSet;
 import uk.ac.standrews.cs.population_linkage.importers.DataSetImporter;
 import uk.ac.standrews.cs.population_linkage.importers.RecordRepository;
 import uk.ac.standrews.cs.population_linkage.importers.kilmarnock.KilmarnockDataSetImporter;
+import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class RecordsImporter {
 
-    public void run() throws Exception {
+    public void run() throws Exception, CryptoException {
 
         Path store_path = Paths.get("/Users/graham/Desktop/store");
         String repo_name = "kilmarnock_repository";
-        Path birth_records_path = Paths.get("/uk/ac/standrews/cs/population_linkage/data/kilmarnock/kilmarnock_births.csv");
-        Path death_records_path = Paths.get("/uk/ac/standrews/cs/population_linkage/data/kilmarnock/kilmarnock_deaths.csv");
-        Path marriage_records_path = Paths.get("/uk/ac/standrews/cs/population_linkage/data/kilmarnock/kilmarnock_marriages.csv");
 
-        DataSetImporter importer = new KilmarnockDataSetImporter(store_path, repo_name, true, birth_records_path, death_records_path, marriage_records_path);
+        DataSetImporter importer = new KilmarnockDataSetImporter(store_path, repo_name, new BirthsDataSet(), new DeathsDataSet(), new MarriagesDataSet());
 
         System.out.println("Importing " + importer.getDataSetName() + " records into repository: " + repo_name);
         System.out.println();

@@ -44,17 +44,15 @@ public abstract class BirthRecordImporter extends RecordImporter {
 
     /**
      * @param births   the bucket from which to import
-     * @param source_path containing the source records in digitising scotland format
+     * @param data the source records in digitising scotland format
      * @return the number of records read in
      * @throws IOException
      * @throws RecordFormatException
      * @throws BucketException
      */
-    public int importBirthRecords(IBucket<Birth> births, Path source_path, boolean from_resource) throws IOException, RecordFormatException, BucketException {
+    public int importBirthRecords(IBucket<Birth> births, DataSet data) throws IOException, BucketException {
 
         int count = 0;
-
-        final DataSet data = getDataSet(source_path, from_resource);
 
         for (List<String> record : data.getRecords()) {
 
@@ -69,7 +67,7 @@ public abstract class BirthRecordImporter extends RecordImporter {
     /**
      * Fills in a record.
      */
-    private Birth importBirthRecord(DataSet data, List<String> record) throws IllegalKeyException {
+    private Birth importBirthRecord(DataSet data, List<String> record) {
 
         Birth birth = new Birth();
 

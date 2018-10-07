@@ -16,15 +16,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.importers;
 
+import uk.ac.standrews.cs.utilities.dataset.DataSet;
+
 import java.nio.file.Path;
 
 public abstract class DataSetImporter {
 
-    private boolean from_resource;
-
-    private Path birth_records_path;
-    private Path death_records_path;
-    private Path marriage_records_path;
+    private DataSet birth_records;
+    private DataSet death_records;
+    private DataSet marriage_records;
 
     RecordRepository record_repository;
 
@@ -34,29 +34,27 @@ public abstract class DataSetImporter {
 
     public abstract String getDataSetName();
 
-    public DataSetImporter(Path store_path, String repo_name, boolean from_resource, Path birth_records_path, Path death_records_path, Path marriage_records_path) throws Exception {
+    public DataSetImporter(Path store_path, String repo_name, DataSet birth_records, DataSet death_records, DataSet marriage_records) throws Exception {
 
-        this.from_resource = from_resource;
-
-        this.birth_records_path = birth_records_path;
-        this.death_records_path = death_records_path;
-        this.marriage_records_path = marriage_records_path;
+        this.birth_records = birth_records;
+        this.death_records = death_records;
+        this.marriage_records = marriage_records;
 
         record_repository = new RecordRepository(store_path, repo_name);
     }
 
     public int importBirthRecords() throws Exception {
 
-        return getBirthImporter().importBirthRecords(record_repository.births, birth_records_path, from_resource);
+        return getBirthImporter().importBirthRecords(record_repository.births, birth_records);
     }
 
     public int importDeathRecords() throws Exception {
 
-        return getDeathImporter().importDeathRecords(record_repository.deaths, death_records_path, from_resource);
+        return getDeathImporter().importDeathRecords(record_repository.deaths, death_records);
     }
 
     public int importMarriageRecords() throws Exception {
 
-        return getMarriageImporter().importMarriageRecords(record_repository.marriages, marriage_records_path, from_resource);
+        return getMarriageImporter().importMarriageRecords(record_repository.marriages, marriage_records);
     }
 }

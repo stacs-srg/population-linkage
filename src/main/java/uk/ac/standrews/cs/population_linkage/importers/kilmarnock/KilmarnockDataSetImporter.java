@@ -20,6 +20,7 @@ import uk.ac.standrews.cs.population_linkage.importers.BirthRecordImporter;
 import uk.ac.standrews.cs.population_linkage.importers.DataSetImporter;
 import uk.ac.standrews.cs.population_linkage.importers.DeathRecordImporter;
 import uk.ac.standrews.cs.population_linkage.importers.MarriageRecordImporter;
+import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.nio.file.Path;
 
@@ -31,9 +32,9 @@ import java.nio.file.Path;
  */
 public class KilmarnockDataSetImporter extends DataSetImporter {
 
-    public KilmarnockDataSetImporter(Path store_path, String repo_name, boolean from_resource, Path birth_records_path, Path death_records_path, Path marriage_records_path) throws Exception {
+    public KilmarnockDataSetImporter(Path store_path, String repo_name, DataSet birth_records, DataSet death_records, DataSet marriage_records) throws Exception {
 
-        super(store_path, repo_name, from_resource, birth_records_path, death_records_path, marriage_records_path);
+        super(store_path, repo_name, birth_records, death_records, marriage_records);
     }
 
     @Override

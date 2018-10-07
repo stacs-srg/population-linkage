@@ -43,15 +43,13 @@ public abstract class MarriageRecordImporter extends RecordImporter {
      * Imports a set of marriage records from file to a bucket.
      *
      * @param marriages the bucket into which the new records should be put
-     * @param source_path string path of file containing the source records in digitising scotland format
+     * @param data source records in digitising scotland format
      * @return the number of records read in
      * @throws IOException if the data cannot be read from the file
      */
-    public int importMarriageRecords(IBucket<Marriage> marriages, Path source_path, boolean from_resource) throws IOException, BucketException {
+    public int importMarriageRecords(IBucket<Marriage> marriages, DataSet data) throws IOException, BucketException {
 
         int count = 0;
-
-        final DataSet data = getDataSet(source_path, from_resource);
 
         for (List<String> record : data.getRecords()) {
 

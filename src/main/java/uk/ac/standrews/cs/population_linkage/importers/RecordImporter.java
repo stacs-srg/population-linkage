@@ -66,17 +66,4 @@ public abstract class RecordImporter {
 
         return builder.toString();
     }
-
-    DataSet getDataSet(Path source_path, boolean from_resource) throws IOException {
-
-        if (from_resource) {
-
-            try (InputStreamReader reader = new InputStreamReader(getClass().getResourceAsStream(source_path.toString()))) {
-                return new DataSet(reader);
-            }
-        } else {
-
-            return new DataSet(source_path);
-        }
-    }
 }
