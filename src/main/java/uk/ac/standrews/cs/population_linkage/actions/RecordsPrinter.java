@@ -1,9 +1,9 @@
 package uk.ac.standrews.cs.population_linkage.actions;
 
-import uk.ac.standrews.cs.population_linkage.importers.RecordRepository;
-import uk.ac.standrews.cs.population_linkage.record_types.Birth;
-import uk.ac.standrews.cs.population_linkage.record_types.Death;
-import uk.ac.standrews.cs.population_linkage.record_types.Marriage;
+import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.nio.file.Path;
 

@@ -1,11 +1,11 @@
 package uk.ac.standrews.cs.population_linkage.actions;
 
-import uk.ac.standrews.cs.data.kilmarnock.BirthsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.DeathsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.MarriagesDataSet;
-import uk.ac.standrews.cs.population_linkage.importers.DataSetImporter;
-import uk.ac.standrews.cs.population_linkage.importers.RecordRepository;
-import uk.ac.standrews.cs.population_linkage.importers.kilmarnock.KilmarnockDataSetImporter;
+import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.data.MarriagesDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
+import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
 import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Path;

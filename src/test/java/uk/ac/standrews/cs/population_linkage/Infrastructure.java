@@ -1,15 +1,15 @@
 package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Test;
-import uk.ac.standrews.cs.data.kilmarnock.BirthsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.DeathsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.MarriagesDataSet;
-import uk.ac.standrews.cs.population_linkage.importers.DataSetImporter;
-import uk.ac.standrews.cs.population_linkage.importers.RecordRepository;
-import uk.ac.standrews.cs.population_linkage.importers.kilmarnock.KilmarnockDataSetImporter;
-import uk.ac.standrews.cs.population_linkage.record_types.Birth;
-import uk.ac.standrews.cs.population_linkage.record_types.Death;
-import uk.ac.standrews.cs.population_linkage.record_types.Marriage;
+import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.data.MarriagesDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
+import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Files;
