@@ -11,7 +11,6 @@ public class RecordsPrinter {
 
     private final Path store_path;
     private final String repo_name;
-    private RecordRepository record_repository;
 
     public RecordsPrinter(Path store_path, String repo_name) {
 
@@ -21,34 +20,27 @@ public class RecordsPrinter {
 
     public void run() throws Exception {
 
-        record_repository = new RecordRepository(store_path, repo_name);
+        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
         System.out.println("Reading records from repository: " + repo_name);
         System.out.println();
 
         int births_count = 0;
-        for (long object_id : record_repository.births.getOids()) {
-
-            Birth birth = record_repository.births.getObjectById(object_id);
+        for (Birth birth : record_repository.getBirths()) {
             System.out.println(birth);
             births_count++;
         }
-
         System.out.println("Read " + births_count + " birth records");
 
         int deaths_count = 0;
-        for (long object_id : record_repository.deaths.getOids()) {
-
-            Death death = record_repository.deaths.getObjectById(object_id);
+        for (Death death : record_repository.getDeaths()) {
             System.out.println(death);
             deaths_count++;
         }
         System.out.println("Read " + deaths_count + " death records");
 
         int marriages_count = 0;
-        for (long object_id : record_repository.marriages.getOids()) {
-
-            Marriage marriage = record_repository.marriages.getObjectById(object_id);
+        for (Marriage marriage : record_repository.getMarriages()) {
             System.out.println(marriage);
             marriages_count++;
         }

@@ -14,7 +14,6 @@ public class RecordsImporter {
 
     private final Path store_path;
     private final String repo_name;
-    private RecordRepository record_repository;
 
     public RecordsImporter(Path store_path, String repo_name) throws Exception {
 
@@ -24,21 +23,24 @@ public class RecordsImporter {
 
     public void run() throws Exception, CryptoException {
 
-        record_repository = new RecordRepository(store_path, repo_name);
+        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
         DataSetImporter importer = new KilmarnockDataSetImporter();
 
         System.out.println("Importing " + importer.getDataSetName() + " records into repository: " + repo_name);
         System.out.println();
 
-        int births_count = importer.importBirthRecords(record_repository, new BirthsDataSet());
-        System.out.println("Imported " + births_count + " birth records");
+        BirthsDataSet birth_records = new BirthsDataSet();
+        importer.importBirthRecords(record_repository, birth_records);
+        System.out.println("Imported " + birth_records.getRecords().size() + " birth records");
 
-        int deaths_count = importer.importDeathRecords(record_repository, new DeathsDataSet());
-        System.out.println("Imported " + deaths_count + " death records");
+        DeathsDataSet death_records = new DeathsDataSet();
+        importer.importDeathRecords(record_repository, death_records);
+        System.out.println("Imported " + death_records.getRecords().size() + " death records");
 
-        int marriages_count = importer.importMarriageRecords(record_repository, new MarriagesDataSet());
-        System.out.println("Imported " + marriages_count + " marriage records");
+        MarriagesDataSet marriage_records = new MarriagesDataSet();
+        importer.importMarriageRecords(record_repository, marriage_records);
+        System.out.println("Imported " + marriage_records.getRecords().size() + " marriage records");
 
         System.out.println();
         System.out.println("Complete");

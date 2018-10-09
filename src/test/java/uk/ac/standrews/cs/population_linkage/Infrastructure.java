@@ -30,36 +30,34 @@ public class Infrastructure {
 
         DataSetImporter importer = new KilmarnockDataSetImporter();
 
-        int births_loaded = importer.importBirthRecords(record_repository, new BirthsDataSet());
-        int deaths_loaded = importer.importDeathRecords(record_repository, new DeathsDataSet());
-        int marriages_loaded = importer.importMarriageRecords(record_repository, new MarriagesDataSet());
+        BirthsDataSet birth_records = new BirthsDataSet();
+        DeathsDataSet death_records = new DeathsDataSet();
+        MarriagesDataSet marriage_records = new MarriagesDataSet();
+
+        importer.importBirthRecords(record_repository, birth_records);
+        importer.importDeathRecords(record_repository, death_records);
+        importer.importMarriageRecords(record_repository, marriage_records);
 
         int births_read = 0;
-        for (long object_id : record_repository.births.getOids()) {
-
-            Birth birth = record_repository.births.getObjectById(object_id);
+        for (Birth birth : record_repository.getBirths()) {
             assertNotNull(birth);
             births_read++;
         }
 
         int deaths_read = 0;
-        for (long object_id : record_repository.deaths.getOids()) {
-
-            Death death = record_repository.deaths.getObjectById(object_id);
+        for (Death death : record_repository.getDeaths()) {
             assertNotNull(death);
             deaths_read++;
         }
 
         int marriages_read = 0;
-        for (long object_id : record_repository.marriages.getOids()) {
-
-            Marriage marriage = record_repository.marriages.getObjectById(object_id);
+        for (Marriage marriage : record_repository.getMarriages()) {
             assertNotNull(marriage);
             marriages_read++;
         }
 
-        assertEquals(births_loaded, births_read);
-        assertEquals(deaths_loaded, deaths_read);
-        assertEquals(marriages_loaded, marriages_read);
+        assertEquals(birth_records.getRecords().size(), births_read);
+        assertEquals(death_records.getRecords().size(), deaths_read);
+        assertEquals(marriage_records.getRecords().size(), marriages_read);
     }
 }
