@@ -6,22 +6,21 @@ import uk.ac.standrews.cs.data.kilmarnock.data.MarriagesDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
-import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Path;
 
-public class RecordsImporter {
+public class ImportKilmarnockRecordsToStore {
 
     private final Path store_path;
     private final String repo_name;
 
-    public RecordsImporter(Path store_path, String repo_name) throws Exception {
+    public ImportKilmarnockRecordsToStore(Path store_path, String repo_name) {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
     }
 
-    public void run() throws Exception, CryptoException {
+    public void run() throws Exception {
 
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 

@@ -7,12 +7,14 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.nio.file.Path;
 
-public class RecordsPrinter {
+public class PrintSampleKilmarnockRecordsFromStore {
 
     private final Path store_path;
     private final String repo_name;
 
-    public RecordsPrinter(Path store_path, String repo_name) {
+    private final static int NUMBER_TO_PRINT = 5;
+
+    public PrintSampleKilmarnockRecordsFromStore(Path store_path, String repo_name) {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
@@ -27,21 +29,27 @@ public class RecordsPrinter {
 
         int births_count = 0;
         for (Birth birth : record_repository.getBirths()) {
-            System.out.println(birth);
+            if (births_count < NUMBER_TO_PRINT) {
+                System.out.println(birth);
+            }
             births_count++;
         }
         System.out.println("Read " + births_count + " birth records");
 
         int deaths_count = 0;
         for (Death death : record_repository.getDeaths()) {
-            System.out.println(death);
+            if (deaths_count < NUMBER_TO_PRINT) {
+                System.out.println(death);
+            }
             deaths_count++;
         }
         System.out.println("Read " + deaths_count + " death records");
 
         int marriages_count = 0;
         for (Marriage marriage : record_repository.getMarriages()) {
-            System.out.println(marriage);
+            if (marriages_count < NUMBER_TO_PRINT) {
+                System.out.println(marriage);
+            }
             marriages_count++;
         }
         System.out.println("Read " + marriages_count + " marriage records");

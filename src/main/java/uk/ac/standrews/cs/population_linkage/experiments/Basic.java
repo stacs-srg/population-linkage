@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments;
 
-import uk.ac.standrews.cs.population_linkage.actions.RecordsImporter;
-import uk.ac.standrews.cs.population_linkage.actions.RecordsPrinter;
+import uk.ac.standrews.cs.population_linkage.actions.ImportKilmarnockRecordsToStore;
+import uk.ac.standrews.cs.population_linkage.actions.PrintSampleKilmarnockRecordsFromStore;
 import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Files;
@@ -14,7 +14,7 @@ public class Basic {
         Path store_path = Files.createTempDirectory("");
         String repository_name = "kilmarnock_data";
 
-        new RecordsImporter(store_path, repository_name).run();
-        new RecordsPrinter(store_path, repository_name).run();
+        new ImportKilmarnockRecordsToStore(store_path, repository_name).run();
+        new PrintSampleKilmarnockRecordsFromStore(store_path, repository_name).run();
     }
 }
