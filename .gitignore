@@ -4,3 +4,6 @@ syntax: glob
 *.iml
 target
 .idea
+application-checked-in.properties
+application-local.properties
+application.properties
