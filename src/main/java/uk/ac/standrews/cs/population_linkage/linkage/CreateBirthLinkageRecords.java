@@ -4,7 +4,6 @@ import uk.ac.standrews.cs.population_linkage.data.ImportKilmarnockRecordsToStore
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,8 +38,8 @@ public class CreateBirthLinkageRecords {
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = Files.createTempDirectory("");
-        String repository_name = "kilmarnock_data";
+        Path store_path = ApplicationProperties.getStorePath();
+        String repository_name = ApplicationProperties.getRepositoryName();
 
         new ImportKilmarnockRecordsToStore(store_path, repository_name).run();
         new CreateBirthLinkageRecords(store_path, repository_name).run();

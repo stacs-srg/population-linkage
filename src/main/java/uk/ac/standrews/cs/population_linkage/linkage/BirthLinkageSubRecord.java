@@ -21,6 +21,7 @@ public class BirthLinkageSubRecord extends StaticLXP {
         }
     }
 
+
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int STANDARDISED_ID;
 
