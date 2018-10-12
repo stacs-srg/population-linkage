@@ -2,7 +2,7 @@ package uk.ac.standrews.cs.population_linkage.actions;
 
 import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
 
-public class PrintSampleKilmarnockBirthRecords {
+public class PrintKilmarnockBirthRecordsSample {
 
     public void run() throws Exception {
 
@@ -11,6 +11,6 @@ public class PrintSampleKilmarnockBirthRecords {
 
     public static void main(String[] args) throws Exception {
 
-        new PrintSampleKilmarnockBirthRecords().run();
+        new PrintKilmarnockBirthRecordsSample().run();
     }
 }

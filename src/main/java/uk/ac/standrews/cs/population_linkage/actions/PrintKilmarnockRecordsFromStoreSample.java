@@ -7,14 +7,14 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.nio.file.Path;
 
-public class PrintSampleKilmarnockRecordsFromStore {
+public class PrintKilmarnockRecordsFromStoreSample {
 
     private final Path store_path;
     private final String repo_name;
 
     private final static int NUMBER_TO_PRINT = 5;
 
-    public PrintSampleKilmarnockRecordsFromStore(Path store_path, String repo_name) {
+    public PrintKilmarnockRecordsFromStoreSample(Path store_path, String repo_name) {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
