@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments;
 
-import uk.ac.standrews.cs.population_linkage.actions.ImportKilmarnockRecordsToStore;
-import uk.ac.standrews.cs.population_linkage.actions.PrintKilmarnockRecordsFromStoreSample;
+import uk.ac.standrews.cs.population_linkage.data.ImportKilmarnockRecordsToStore;
+import uk.ac.standrews.cs.population_linkage.data.PrintKilmarnockRecordsFromStoreSample;
 import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Files;

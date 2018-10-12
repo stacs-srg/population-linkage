@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.actions;
+package uk.ac.standrews.cs.population_linkage.data;
 
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
