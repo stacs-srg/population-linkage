@@ -18,11 +18,12 @@ import java.util.Properties;
  *
  * @author Graham Kirby (graham.kirby@st-andrews.ac.uk)
  */
-class ApplicationProperties extends Properties {
+public class ApplicationProperties extends Properties {
 
     private static final Path DEFAULT_CONFIG_DIRECTORY_PATH = Paths.get("properties");
     private static final String APPLICATION_PROPERTIES_FILE_NAME = "application.properties";
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private static Properties properties;
     private static final String STORE_PATH_KEY = "store_path";
     private static final String REPOSITORY_NAME_KEY = "repository_name";
@@ -38,7 +39,7 @@ class ApplicationProperties extends Properties {
         }
     }
 
-    ApplicationProperties() {
+    private ApplicationProperties() {
 
         try (InputStream input_stream = Files.newInputStream(DEFAULT_CONFIG_DIRECTORY_PATH.resolve(APPLICATION_PROPERTIES_FILE_NAME))) {
 

@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
+import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -48,5 +49,13 @@ public class PrintKilmarnockRecordsFromStore {
 
         System.out.println();
         System.out.println("Complete");
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Path store_path = ApplicationProperties.getStorePath();
+        String repo_name = ApplicationProperties.getRepositoryName();
+
+        new PrintKilmarnockRecordsFromStore(store_path, repo_name).run();
     }
 }

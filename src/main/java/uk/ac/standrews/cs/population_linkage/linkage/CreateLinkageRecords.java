@@ -1,19 +1,18 @@
 package uk.ac.standrews.cs.population_linkage.linkage;
 
 import uk.ac.standrews.cs.population_linkage.data.ImportKilmarnockRecordsToStore;
+import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 
-public class CreateBirthLinkageRecords {
+public class CreateLinkageRecords {
 
     private final Path store_path;
     private final String repo_name;
 
-    public CreateBirthLinkageRecords(Path store_path, String repo_name) {
+    public CreateLinkageRecords(Path store_path, String repo_name) {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
@@ -23,15 +22,19 @@ public class CreateBirthLinkageRecords {
 
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
-        Collection<BirthLinkageSubRecord> sub_records = new ArrayList<>();
+        Collection<BirthLinkageSubRecord> birth_sub_records = Utilities.getBirthLinkageSubRecords(record_repository);
+        Collection<DeathLinkageSubRecord> death_sub_records = Utilities.getDeathLinkageSubRecords(record_repository);
+        Collection<MarriageLinkageSubRecord> marriage_sub_records = Utilities.getMarriageLinkageSubRecords(record_repository);
 
-        for (Birth birth : record_repository.getBirths()) {
-
-            BirthLinkageSubRecord rec = new BirthLinkageSubRecord(birth);
-            sub_records.add(rec);
+        for (BirthLinkageSubRecord sub_record : birth_sub_records) {
+            System.out.println(sub_record);
         }
 
-        for (BirthLinkageSubRecord sub_record : sub_records) {
+        for (DeathLinkageSubRecord sub_record : death_sub_records) {
+            System.out.println(sub_record);
+        }
+
+        for (MarriageLinkageSubRecord sub_record : marriage_sub_records) {
             System.out.println(sub_record);
         }
     }
@@ -42,6 +45,6 @@ public class CreateBirthLinkageRecords {
         String repository_name = ApplicationProperties.getRepositoryName();
 
         new ImportKilmarnockRecordsToStore(store_path, repository_name).run();
-        new CreateBirthLinkageRecords(store_path, repository_name).run();
+        new CreateLinkageRecords(store_path, repository_name).run();
     }
 }

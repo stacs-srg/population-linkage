@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
+import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -35,6 +36,7 @@ public class PrintKilmarnockRecordsFromStoreSample {
             births_count++;
         }
         System.out.println("Read " + births_count + " birth records");
+        System.out.println();
 
         int deaths_count = 0;
         for (Death death : record_repository.getDeaths()) {
@@ -44,6 +46,7 @@ public class PrintKilmarnockRecordsFromStoreSample {
             deaths_count++;
         }
         System.out.println("Read " + deaths_count + " death records");
+        System.out.println();
 
         int marriages_count = 0;
         for (Marriage marriage : record_repository.getMarriages()) {
@@ -56,5 +59,13 @@ public class PrintKilmarnockRecordsFromStoreSample {
 
         System.out.println();
         System.out.println("Complete");
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Path store_path = ApplicationProperties.getStorePath();
+        String repo_name = ApplicationProperties.getRepositoryName();
+
+        new PrintKilmarnockRecordsFromStoreSample(store_path, repo_name).run();
     }
 }
