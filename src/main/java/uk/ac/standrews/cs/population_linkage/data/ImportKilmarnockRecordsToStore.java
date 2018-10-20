@@ -4,6 +4,7 @@ import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.data.MarriagesDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
+import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
 
@@ -43,5 +44,13 @@ public class ImportKilmarnockRecordsToStore {
 
         System.out.println();
         System.out.println("Complete");
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Path store_path = ApplicationProperties.getStorePath();
+        String repo_name = ApplicationProperties.getRepositoryName();
+
+        new ImportKilmarnockRecordsToStore(store_path, repo_name).run();
     }
 }
