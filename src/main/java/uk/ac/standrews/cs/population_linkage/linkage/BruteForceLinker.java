@@ -2,7 +2,6 @@ package uk.ac.standrews.cs.population_linkage.linkage;
 
 import uk.ac.standrews.cs.population_linkage.model.*;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.Pair;
 
 import java.util.Iterator;
 import java.util.List;
@@ -36,12 +35,12 @@ public abstract class BruteForceLinker extends Linker {
 
         progress_indicator.setTotalSteps(total_comparisons);
 
-        for (Pair<LXP, LXP> pair : getRecordPairs(records1, records2)) {
+        for (RecordPair pair : getRecordPairs(records1, records2)) {
 
-            if (matcher.match(pair.X(), pair.Y())) {
+            if (matcher.match(pair.record1, pair.record2)) {
 
-                Role role1 = new Role(getIdentifier1(pair.X()), getRoleType1());
-                Role role2 = new Role(getIdentifier2(pair.Y()), getRoleType2());
+                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
+                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
                 links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
             }
 
@@ -51,9 +50,9 @@ public abstract class BruteForceLinker extends Linker {
         return links;
     }
 
-    private Iterable<Pair<LXP, LXP>> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
+    private Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
 
-        return () -> new Iterator<Pair<LXP, LXP>>() {
+        return () -> new Iterator<RecordPair>() {
 
             boolean compare_inverse_pairs = records1 != records2 || !symmetrical;
 
@@ -66,8 +65,9 @@ public abstract class BruteForceLinker extends Linker {
             }
 
             @Override
-            public Pair<LXP, LXP> next() {
-                Pair<LXP, LXP> next_pair = new Pair<>(records1.get(i), records2.get(j));
+            public RecordPair next() {
+
+                RecordPair next_pair = new RecordPair(records1.get(i), records2.get(j), -1.0);
 
                 j++;
                 if (j == i) j++;
