@@ -25,6 +25,11 @@ public class SimilaritySearchSiblingBundlerOverBirths extends Linker {
     @Override
     public Links link(List<LXP> records) {
 
+        return link(records, records);
+    }
+
+    public Links link2(List<LXP> records) {
+
         for (LXP record : records) {
             search_structure.add(record);
         }
@@ -45,7 +50,7 @@ public class SimilaritySearchSiblingBundlerOverBirths extends Linker {
 
                     Role role1 = new Role(getIdentifier1(record1), getRoleType1());
                     Role role2 = new Role(getIdentifier2(record2), getRoleType2());
-                    links.add(new Link(role1, role2, 1.0f, "threshold match at " + threshold));
+                    links.add(new Link(role1, role2, 1.0f, getProvenance()));
                 }
             }
 
@@ -57,7 +62,41 @@ public class SimilaritySearchSiblingBundlerOverBirths extends Linker {
 
     @Override
     public Links link(List<LXP> records1, List<LXP> records2) {
-        return null;
+
+        List<LXP> smaller_set = records1.size() < records2.size() ? records1 : records2;
+        List<LXP> larger_set = records1.size() < records2.size() ? records2 : records2;
+
+        for (LXP record : larger_set) {
+            search_structure.add(record);
+        }
+
+        progress_indicator.setTotalSteps(smaller_set.size());
+
+        Links links = new Links();
+
+        for (LXP record1 : smaller_set) {
+
+            List<DataDistance<LXP>> nearest_records = search_structure.findNearest(record1, number_of_records_to_consider);
+
+            for (DataDistance<LXP> data_distance : nearest_records) {
+
+                LXP record2 = data_distance.value;
+
+                String id1 = getIdentifier1(record1);
+                String id2 = getIdentifier2(record2);
+
+                if (!id1.equals(id2) && data_distance.distance <= threshold) {
+
+                    Role role1 = new Role(id1, getRoleType1());
+                    Role role2 = new Role(id2, getRoleType2());
+                    links.add(new Link(role1, role2, 1.0f, getProvenance()));
+                }
+            }
+
+            if (number_of_progress_updates > 0) progress_indicator.progressStep();
+        }
+
+        return links;
     }
 
     @Override
