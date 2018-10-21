@@ -1,21 +1,26 @@
 package uk.ac.standrews.cs.population_linkage.experiments;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
-import uk.ac.standrews.cs.population_linkage.linkage.*;
+import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.linkage.BruteForceSiblingBundlerOverBirths;
 import uk.ac.standrews.cs.population_linkage.model.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_linkage.model.Links;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.nio.file.Path;
 import java.util.List;
 
-public class KilmarnockSiblingBundling {
+public class KilmarnockBruteForceThresholdSiblingBundling {
+
+    private static final double MATCH_THRESHOLD = 2.0;
+    private static final int NUMBER_OF_PROGRESS_UPDATES = 100;
 
     private final Path store_path;
     private final String repo_name;
 
-    public KilmarnockSiblingBundling(Path store_path, String repo_name) {
+    public KilmarnockBruteForceThresholdSiblingBundling(Path store_path, String repo_name) {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
@@ -25,14 +30,16 @@ public class KilmarnockSiblingBundling {
 
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
+        System.out.println("Kilmarnock sibling bundling using brute force Levenshtein threshold 2.0");
+
         long t1 = System.currentTimeMillis();
 
-        List<BirthLinkageSubRecord> birth_sub_records = Utilities.getBirthLinkageSubRecords(record_repository);
+        List<LXP> birth_sub_records = Utilities.getBirthLinkageSubRecords(record_repository);
 
         long t2 = System.currentTimeMillis();
         System.out.println((t2 - t1) / 1000 + "s to extract linkage records");
 
-        Linker sibling_bundler = new BruteForceExactMatchSiblingBundler();
+        Linker sibling_bundler = new BruteForceSiblingBundlerOverBirths(MATCH_THRESHOLD, NUMBER_OF_PROGRESS_UPDATES);
 
         Links sibling_links = sibling_bundler.link(birth_sub_records);
 
@@ -57,6 +64,6 @@ public class KilmarnockSiblingBundling {
         Path store_path = ApplicationProperties.getStorePath();
         String repository_name = ApplicationProperties.getRepositoryName();
 
-        new KilmarnockSiblingBundling(store_path, repository_name).run();
+        new KilmarnockBruteForceThresholdSiblingBundling(store_path, repository_name).run();
     }
 }

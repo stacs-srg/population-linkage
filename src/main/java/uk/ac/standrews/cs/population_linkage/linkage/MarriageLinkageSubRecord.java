@@ -5,8 +5,8 @@ import uk.ac.standrews.cs.storr.impl.Metadata;
 import uk.ac.standrews.cs.storr.impl.StaticLXP;
 import uk.ac.standrews.cs.storr.types.LXPBaseType;
 import uk.ac.standrews.cs.storr.types.LXP_SCALAR;
-import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
+@SuppressWarnings("WeakerAccess")
 public class MarriageLinkageSubRecord extends StaticLXP {
 
     private static Metadata static_md;
@@ -17,7 +17,7 @@ public class MarriageLinkageSubRecord extends StaticLXP {
             static_md = new Metadata(MarriageLinkageSubRecord.class, "BirthLinkageSubRecord");
 
         } catch (Exception e) {
-            ErrorHandling.exceptionError(e);
+            throw new RuntimeException(e);
         }
     }
 

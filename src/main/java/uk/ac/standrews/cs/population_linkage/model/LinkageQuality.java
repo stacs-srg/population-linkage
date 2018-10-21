@@ -17,8 +17,8 @@ public class LinkageQuality {
 
     public void print(PrintStream out) {
 
-        out.println("precision: " + precision);
-        out.println("recall: " + recall);
-        out.println("f measure: " + f_measure);
+        out.printf("precision: %.2f%n", precision);
+        out.printf("recall: %.2f%n", recall);
+        out.printf("f measure: %.2f%n", f_measure);
     }
 }

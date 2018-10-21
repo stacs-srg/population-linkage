@@ -3,6 +3,7 @@ package uk.ac.standrews.cs.population_linkage.linkage;
 import uk.ac.standrews.cs.population_linkage.data.ImportKilmarnockRecordsToStore;
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -22,19 +23,19 @@ public class CreateLinkageRecords {
 
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
-        Collection<BirthLinkageSubRecord> birth_sub_records = Utilities.getBirthLinkageSubRecords(record_repository);
-        Collection<DeathLinkageSubRecord> death_sub_records = Utilities.getDeathLinkageSubRecords(record_repository);
-        Collection<MarriageLinkageSubRecord> marriage_sub_records = Utilities.getMarriageLinkageSubRecords(record_repository);
+        Collection<LXP> birth_sub_records = Utilities.getBirthLinkageSubRecords(record_repository);
+        Collection<LXP> death_sub_records = Utilities.getDeathLinkageSubRecords(record_repository);
+        Collection<LXP> marriage_sub_records = Utilities.getMarriageLinkageSubRecords(record_repository);
 
-        for (BirthLinkageSubRecord sub_record : birth_sub_records) {
+        for (LXP sub_record : birth_sub_records) {
             System.out.println(sub_record);
         }
 
-        for (DeathLinkageSubRecord sub_record : death_sub_records) {
+        for (LXP sub_record : death_sub_records) {
             System.out.println(sub_record);
         }
 
-        for (MarriageLinkageSubRecord sub_record : marriage_sub_records) {
+        for (LXP sub_record : marriage_sub_records) {
             System.out.println(sub_record);
         }
     }
