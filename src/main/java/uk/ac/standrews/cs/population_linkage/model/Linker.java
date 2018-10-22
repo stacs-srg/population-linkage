@@ -8,9 +8,35 @@ import java.util.List;
 
 public abstract class Linker {
 
-    public abstract Links link(List<LXP> records);
+    protected final ProgressIndicator progress_indicator;
 
-    public abstract Links link(List<LXP> records1, List<LXP> records2);
+    public Linker(int number_of_progress_updates) {
+
+        progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
+    }
+
+    public Links link(List<LXP> records) {
+
+        return link(records, records);
+    }
+
+    public Links link(List<LXP> records1, List<LXP> records2) {
+
+        Links links = new Links();
+
+        for (RecordPair pair : getRecordPairs(records1, records2)) {
+
+            if (match(pair)) {
+
+                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
+                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
+
+                links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
+            }
+        }
+
+        return links;
+    }
 
     protected abstract String getLinkType();
     protected abstract String getProvenance();
@@ -18,14 +44,6 @@ public abstract class Linker {
     protected abstract String getRoleType2();
     protected abstract String getIdentifier1(LXP record);
     protected abstract String getIdentifier2(LXP record);
-
-    protected final int number_of_progress_updates;
-    protected final ProgressIndicator progress_indicator;
-
-    public Linker(int number_of_progress_updates) {
-
-        this.number_of_progress_updates = number_of_progress_updates;
-
-        progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
-    }
+    protected abstract boolean match(RecordPair pair);
+    protected abstract Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2);
 }

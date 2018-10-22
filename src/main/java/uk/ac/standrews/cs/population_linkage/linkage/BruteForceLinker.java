@@ -9,73 +9,71 @@ import java.util.List;
 public abstract class BruteForceLinker extends Linker {
 
     private final Matcher matcher;
-    private final boolean symmetrical;
+    private final boolean symmetrical_links;
 
-    BruteForceLinker(Matcher matcher, boolean symmetrical, int number_of_progress_updates) {
+    /**
+     * @param matcher the matching rule
+     * @param symmetrical_links true if links are symmetrical_links, so that if A-B has been checked then B-A doesn't need to be
+     * @param number_of_progress_updates the number of updates to be given, zero or negative to suppress updates
+     */
+    BruteForceLinker(Matcher matcher, boolean symmetrical_links, int number_of_progress_updates) {
 
         super(number_of_progress_updates);
+
         this.matcher = matcher;
-        this.symmetrical = symmetrical;
+        this.symmetrical_links = symmetrical_links;
     }
 
     @Override
-    public Links link(List<LXP> records) {
+    protected boolean match(RecordPair pair) {
 
-        return link(records, records);
+        return matcher.match(pair.record1, pair.record2);
     }
 
     @Override
-    public Links link(List<LXP> records1, List<LXP> records2) {
+    protected Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
 
-        Links links = new Links();
+        // If the two datasets are the same, and links are symmetrical, then only need to check half of the possible pairs.
+        final boolean datasets_same = records1 == records2;
+        final boolean ignore_inverse_pairs = datasets_same && symmetrical_links;
 
-        int total_comparisons = records1 == records2 && symmetrical ?
+        int total_comparisons = ignore_inverse_pairs ?
                 records1.size() * (records1.size() - 1) / 2 :
                 records1.size() * records2.size();
 
         progress_indicator.setTotalSteps(total_comparisons);
 
-        for (RecordPair pair : getRecordPairs(records1, records2)) {
-
-            if (matcher.match(pair.record1, pair.record2)) {
-
-                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
-                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
-                links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
-            }
-
-            if (number_of_progress_updates > 0) progress_indicator.progressStep();
-        }
-
-        return links;
-    }
-
-    private Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
-
         return () -> new Iterator<RecordPair>() {
 
-            boolean compare_inverse_pairs = records1 != records2 || !symmetrical;
+            int records1_index = 0;
 
-            int i = 0;
-            int j = compare_inverse_pairs ? 0 : 1;
+            // Don't compare record with itself.
+            int records2_index = datasets_same ? 1 : 0;
 
             @Override
             public boolean hasNext() {
-                return i < records1.size() && j < records2.size();
+                return records1_index < records1.size() && records2_index < records2.size();
             }
 
             @Override
             public RecordPair next() {
 
-                RecordPair next_pair = new RecordPair(records1.get(i), records2.get(j), -1.0);
+                // Don't calculate the distance between the records.
+                // The field in RecordPair is present for compatibility with similarity search, which finds the distance along with the pair.
+                RecordPair next_pair = new RecordPair(records1.get(records1_index), records2.get(records2_index), -1.0);
 
-                j++;
-                if (j == i) j++;
+                records2_index++;
 
-                if (j >= records2.size()) {
-                    i++;
-                    j = compare_inverse_pairs ? 0 : i + 1;
+                // Don't compare record with itself.
+                if (datasets_same && records2_index == records1_index) records2_index++;
+
+                if (records2_index >= records2.size()) {
+
+                    records1_index++;
+                    records2_index = ignore_inverse_pairs ? records1_index + 1 : 0;
                 }
+
+                progress_indicator.progressStep();
                 return next_pair;
             }
         };

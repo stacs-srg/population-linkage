@@ -10,10 +10,10 @@ import java.util.List;
 public abstract class SimilaritySearchLinker extends Linker {
 
     private final SearchStructure<LXP> search_structure;
-    protected final double threshold;
+    final double threshold;
     private final int number_of_records_to_consider;
 
-    public SimilaritySearchLinker(SearchStructure<LXP> search_structure, double threshold, int number_of_records_to_consider, int number_of_progress_updates) {
+    SimilaritySearchLinker(SearchStructure<LXP> search_structure, double threshold, int number_of_records_to_consider, int number_of_progress_updates) {
 
         super(number_of_progress_updates);
 
@@ -23,39 +23,18 @@ public abstract class SimilaritySearchLinker extends Linker {
     }
 
     @Override
-    public Links link(List<LXP> records) {
+    protected boolean match(RecordPair pair) {
 
-        return link(records, records);
+        return pair.distance <= threshold;
     }
 
     @Override
-    public Links link(List<LXP> records1, List<LXP> records2) {
+    protected Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
 
-        Links links = new Links();
-
-        for (RecordPair record_pair : getRecordPairs(records1, records2)) {
-
-            LXP record1 = record_pair.record1;
-            LXP record2 = record_pair.record2;
-
-            String id1 = getIdentifier1(record1);
-            String id2 = getIdentifier2(record2);
-
-            if (record_pair.distance <= threshold) {
-
-                Role role1 = new Role(id1, getRoleType1());
-                Role role2 = new Role(id2, getRoleType2());
-                links.add(new Link(role1, role2, 1.0f, getProvenance()));
-            }
-        }
-
-        return links;
-    }
-
-    private Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
+        final boolean datasets_same = records1 == records2;
 
         List<LXP> smaller_set = records1.size() < records2.size() ? records1 : records2;
-        List<LXP> larger_set = records1.size() < records2.size() ? records2 : records2;
+        List<LXP> larger_set = records1.size() < records2.size() ? records2 : records1;
 
         for (LXP record : larger_set) {
             search_structure.add(record);
@@ -65,28 +44,32 @@ public abstract class SimilaritySearchLinker extends Linker {
 
         return () -> new Iterator<RecordPair>() {
 
-            int i = 0;
-            int j = 1;
-            List<DataDistance<LXP>> nearest_records = search_structure.findNearest(smaller_set.get(i), number_of_records_to_consider);
+            int smaller_set_index = 0;
+
+            // Start at 1 to ignore the query record itself, if the two datasets are the same.
+            int neighbours_index = datasets_same ? 1 : 0;
+
+            List<DataDistance<LXP>> nearest_records = search_structure.findNearest(smaller_set.get(smaller_set_index), number_of_records_to_consider);
 
             @Override
             public boolean hasNext() {
-                return i < smaller_set.size() && j < nearest_records.size();
+                return smaller_set_index < smaller_set.size() && neighbours_index < nearest_records.size();
             }
 
             @Override
             public RecordPair next() {
 
-                RecordPair next_pair = new RecordPair(smaller_set.get(i), nearest_records.get(j).value, nearest_records.get(j).distance);
+                RecordPair next_pair = new RecordPair(smaller_set.get(smaller_set_index), nearest_records.get(neighbours_index).value, nearest_records.get(neighbours_index).distance);
 
-                j++;
+                neighbours_index++;
 
-                if (j >= nearest_records.size()) {
+                if (neighbours_index >= nearest_records.size()) {
 
-                    i++;
-                    j = 1;
-                    nearest_records = search_structure.findNearest(smaller_set.get(i), number_of_records_to_consider);
-                    if (number_of_progress_updates > 0) progress_indicator.progressStep();
+                    smaller_set_index++;
+                    neighbours_index = 1;
+                    nearest_records = search_structure.findNearest(smaller_set.get(smaller_set_index), number_of_records_to_consider);
+
+                    progress_indicator.progressStep();
                 }
                 return next_pair;
             }
