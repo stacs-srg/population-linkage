@@ -16,6 +16,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Utilities {
@@ -89,9 +90,20 @@ public class Utilities {
         return sub_records;
     }
 
-    public static NamedMetric<LXP> weightedAverageLevenshteinOverBirths() throws InvalidWeightsException {
+    public static NamedMetric<LXP> weightedAverageLevenshteinOverBirths() {
 
         return new WeightedAverageLevenshtein<>(MATCH_FIELDS);
+    }
+
+    private static boolean match(List<Integer> match_fields, LXP record1, LXP record2) {
+
+        if (record1 == record2) return false;
+
+        for (int field : match_fields) {
+            if (!record1.getString(field).equals(record2.getString(field))) return false;
+        }
+
+        return true;
     }
 
     public static Links getGroundTruthSiblingLinks(RecordRepository record_repository) {
@@ -105,8 +117,7 @@ public class Utilities {
         }
 
         int number_of_records = records.size();
-
-        ExactMatchMatcher matcher = new ExactMatchMatcher(Arrays.asList(Birth.FAMILY));
+        List<Integer> match_fields = Collections.singletonList(Birth.FAMILY);
 
         for (int i = 0; i < number_of_records; i++) {
             for (int j = i + 1; j < number_of_records; j++) {
@@ -114,11 +125,11 @@ public class Utilities {
                 Birth record1 = records.get(i);
                 Birth record2 = records.get(j);
 
-                if (matcher.match(record1, record2)) {
+                if (match(match_fields, record1, record2)) {
 
                     Role role1 = new Role(record1.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
                     Role role2 = new Role(record2.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
-                    links.add(new Link(role1, role2,1.0f, "ground truth"));
+                    links.add(new Link(role1, role2, 1.0f, "ground truth"));
                 }
             }
         }

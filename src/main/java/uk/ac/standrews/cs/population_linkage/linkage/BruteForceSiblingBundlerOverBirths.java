@@ -1,18 +1,16 @@
 package uk.ac.standrews.cs.population_linkage.linkage;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
-import uk.ac.standrews.cs.population_linkage.model.InvalidWeightsException;
-import uk.ac.standrews.cs.population_linkage.model.ThresholdMatcher;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 public class BruteForceSiblingBundlerOverBirths extends BruteForceLinker {
 
     private double threshold;
 
-    public BruteForceSiblingBundlerOverBirths(double threshold, int number_of_progress_updates) throws InvalidWeightsException {
+    public BruteForceSiblingBundlerOverBirths(NamedMetric<LXP> distance_metric, double threshold, int number_of_progress_updates) {
 
-        super(new ThresholdMatcher(Utilities.weightedAverageLevenshteinOverBirths(), threshold), number_of_progress_updates);
+        super(distance_metric, number_of_progress_updates);
 
         this.threshold = threshold;
     }

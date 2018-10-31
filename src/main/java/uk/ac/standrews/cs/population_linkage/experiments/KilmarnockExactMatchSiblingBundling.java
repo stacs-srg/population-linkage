@@ -3,12 +3,10 @@ package uk.ac.standrews.cs.population_linkage.experiments;
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkage.BruteForceExactMatchSiblingBundlerOverBirths;
-import uk.ac.standrews.cs.population_linkage.model.InvalidWeightsException;
 import uk.ac.standrews.cs.population_linkage.model.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_linkage.model.Links;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.nio.file.Path;
@@ -39,8 +37,8 @@ public class KilmarnockExactMatchSiblingBundling extends Experiment {
         return Utilities.getBirthLinkageSubRecords(record_repository);
     }
 
-    protected Linker getLinker() throws InvalidWeightsException {
-        return new BruteForceExactMatchSiblingBundlerOverBirths(Birth.ROLE_BABY, NUMBER_OF_PROGRESS_UPDATES);
+    protected Linker getLinker() {
+        return new BruteForceExactMatchSiblingBundlerOverBirths(Utilities.weightedAverageLevenshteinOverBirths(), NUMBER_OF_PROGRESS_UPDATES);
     }
 
     protected Links getGroundTruthLinks(RecordRepository record_repository) {

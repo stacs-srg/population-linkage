@@ -2,7 +2,6 @@ package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.standrews.cs.population_linkage.model.InvalidWeightsException;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_linkage.model.RecordPair;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -12,18 +11,16 @@ import uk.ac.standrews.cs.storr.impl.StaticLXP;
 import java.util.Arrays;
 import java.util.List;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.*;
 
 public abstract class Linkage {
 
-    final DummyLXP birth1 = new DummyLXP("john", "smith");
-    final DummyLXP birth2 = new DummyLXP("janet", "smith");
-    final DummyLXP birth3 = new DummyLXP("jane", "smyth");
+    final LXP birth1 = new DummyLXP("john", "smith");
+    final LXP birth2 = new DummyLXP("janet", "smith");
+    final LXP birth3 = new DummyLXP("jane", "smyth");
 
-    final DummyLXP death1 = new DummyLXP("janet", "smythe");
-    final DummyLXP death2 = new DummyLXP("john", "stith");
+    final LXP death1 = new DummyLXP("janet", "smythe");
+    final LXP death2 = new DummyLXP("john", "stith");
 
     final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3);
     final List<LXP> death_records = Arrays.asList(death1, death2);
@@ -31,6 +28,7 @@ public abstract class Linkage {
     Linker linker;
 
     protected abstract Linker getLinker();
+
     protected abstract boolean equal(RecordPair pair1, RecordPair pair2);
 
     @Before
@@ -40,45 +38,84 @@ public abstract class Linkage {
     }
 
     @Test
-    public void numberOfRecordPairsForSingleDataSetIsCorrect() throws InvalidWeightsException {
+    public void checkAllRecordPairsWithSingleDataSet() {
+
+        linker.setThreshold(Double.MAX_VALUE);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records);
 
         // By default, assume links are asymmetric, so we want to consider record pair (a,b) as well as (b,a), but not (a,a).
-        assertEquals((birth_records.size() - 1) * birth_records.size(), getNumberOfPairs(linker, birth_records));
+        assertEquals((birth_records.size() - 1) * birth_records.size(), count(pairs));
+
+        assertTrue(containsPair(pairs, birth1, birth2));
+        assertTrue(containsPair(pairs, birth1, birth3));
+        assertTrue(containsPair(pairs, birth2, birth3));
+        assertTrue(containsPair(pairs, birth2, birth1));
+        assertTrue(containsPair(pairs, birth3, birth1));
+        assertTrue(containsPair(pairs, birth3, birth2));
+
+        assertFalse(containsPair(pairs, birth1, birth1));
     }
 
     @Test
-    public void recordPairsForSingleDataSetContainExpectedValues() throws InvalidWeightsException {
+    public void checkAllRecordPairsWithTwoDataSets() {
 
-        // By default, assume links are asymmetric, so we want to consider record pair (a,b) as well as (b,a), but not (a,a).
-        assertTrue(containsPair(linker, birth1, birth2));
-        assertTrue(containsPair(linker, birth2, birth3));
-        assertTrue(containsPair(linker, birth2, birth1));
-        assertTrue(containsPair(linker, birth3, birth1));
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
 
-        assertFalse(containsPair(linker, birth2, birth2));
+        assertEquals(birth_records.size() * death_records.size(), count(pairs));
+
+        for (LXP birth_record : birth_records) {
+            for (LXP death_record : death_records) {
+
+                assertTrue(containsPair(pairs, birth_record, death_record));
+            }
+        }
+
+        assertFalse(containsPair(pairs, birth1, birth1));
+        assertFalse(containsPair(pairs, death1, death1));
     }
 
     @Test
-    public void numberOfRecordPairsForTwoDataSetsIsCorrect() throws InvalidWeightsException {
+    public void checkRecordPairsWithinDistanceZero() {
 
-        assertEquals(birth_records.size() * death_records.size(), getNumberOfPairs(linker, birth_records, death_records));
+        linker.setThreshold(0.0);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
+
+        assertEquals(0, count(pairs));
     }
 
     @Test
-    public void recordPairsForTwoDataSetsContainExpectedValues() throws InvalidWeightsException {
+    public void checkRecordPairsWithinDistanceNoughtPointFive() {
 
-        Iterable<RecordPair> pairs = linker.getRecordPairs(birth_records, death_records);
+        // "john smith" distance 0.5 from "john stith"
 
+        linker.setThreshold(0.5);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
+
+        assertEquals(1, count(pairs));
         assertTrue(containsPair(pairs, birth1, death2));
+    }
+
+    @Test
+    public void checkRecordPairsWithinDistanceOne() {
+
+        // "john smith" distance 0.5 from "john stith"
+        // "janet smith" distance 1 from "janet smythe"
+        // "jane smyth" distance 1 from "janet smythe"
+
+        linker.setThreshold(1.0);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
+
+        assertEquals(3, count(pairs));
+        assertTrue(containsPair(pairs, birth1, death2));
+        assertTrue(containsPair(pairs, birth2, death1));
         assertTrue(containsPair(pairs, birth3, death1));
     }
 
-    int getNumberOfPairs(Linker linker, List<LXP> records) throws InvalidWeightsException {
-
-        return getNumberOfPairs(linker, records, records);
-    }
-
-    boolean containsPair(Iterable<RecordPair> record_pairs, DummyLXP record1, DummyLXP record2) {
+    boolean containsPair(Iterable<RecordPair> record_pairs, LXP record1, LXP record2) {
 
         RecordPair record_pair = new RecordPair(record1, record2, -1);
 
@@ -89,15 +126,10 @@ public abstract class Linkage {
         return false;
     }
 
-    boolean containsPair(Linker linker, DummyLXP record1, DummyLXP record2) throws InvalidWeightsException {
-
-        return containsPair(linker.getRecordPairs(birth_records), record1, record2);
-    }
-
-    private int getNumberOfPairs(Linker linker, List<LXP> records1, List<LXP> records2) throws InvalidWeightsException {
+    int count(Iterable<RecordPair> record_pairs) {
 
         int count = 0;
-        for (RecordPair ignored : linker.getRecordPairs(records1, records2)) count++;
+        for (RecordPair ignored : record_pairs) count++;
         return count;
     }
 

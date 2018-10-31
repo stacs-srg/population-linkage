@@ -11,24 +11,29 @@ import java.util.List;
 
 public class WeightedAverageLevenshtein<T extends LXP> implements NamedMetric<T> {
 
-    private final List<Integer> match_fields;
-    private final List<Double> field_weights;
-    private final StringMetric distance_measure;
+    private List<Integer> match_fields;
+    private List<Double> field_weights;
+    private StringMetric distance_measure;
 
     private static final double EPSILON = 0.0000001;
 
-    public WeightedAverageLevenshtein(List<Integer> match_fields) throws InvalidWeightsException {
+    public WeightedAverageLevenshtein(List<Integer> match_fields) {
 
-        this(match_fields, generateEqualWeights(match_fields.size()));
+        init(match_fields, generateEqualWeights(match_fields.size()));
     }
 
     public WeightedAverageLevenshtein(List<Integer> match_fields, List<Double> field_weights) throws InvalidWeightsException {
 
+        init(match_fields, field_weights);
+
+        checkWeightsSumToOne(field_weights);
+    }
+
+    private void init(List<Integer> match_fields, List<Double> field_weights) {
+
         this.match_fields = match_fields;
         this.field_weights = field_weights;
         distance_measure = new Levenshtein();
-
-        checkWeightsSumToOne(field_weights);
     }
 
     @Override

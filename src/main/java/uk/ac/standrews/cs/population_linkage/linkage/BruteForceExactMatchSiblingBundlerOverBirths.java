@@ -1,15 +1,14 @@
 package uk.ac.standrews.cs.population_linkage.linkage;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
-import uk.ac.standrews.cs.population_linkage.model.ExactMatchMatcher;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLinker {
 
-    public BruteForceExactMatchSiblingBundlerOverBirths(String role_type, int number_of_progress_updates) {
+    public BruteForceExactMatchSiblingBundlerOverBirths(NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
-        super(new ExactMatchMatcher(Utilities.MATCH_FIELDS), number_of_progress_updates);
+        super(distance_metric, number_of_progress_updates);
         setSymmetricalLinks(true);
     }
 

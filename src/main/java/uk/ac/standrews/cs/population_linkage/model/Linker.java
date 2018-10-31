@@ -8,10 +8,13 @@ import java.util.List;
 
 public abstract class Linker {
 
+    protected double threshold;
+
     protected final ProgressIndicator progress_indicator;
 
     public Linker(int number_of_progress_updates) {
 
+        threshold = Double.MAX_VALUE;
         progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
     }
 
@@ -24,7 +27,7 @@ public abstract class Linker {
 
         Links links = new Links();
 
-        for (RecordPair pair : getRecordPairs(records1, records2)) {
+        for (RecordPair pair : getMatchingRecordPairs(records1, records2)) {
 
             if (match(pair)) {
 
@@ -38,8 +41,19 @@ public abstract class Linker {
         return links;
     }
 
-    public Iterable<RecordPair> getRecordPairs(final List<LXP> records) throws InvalidWeightsException {
-        return getRecordPairs(records, records);
+    public boolean match(RecordPair pair) {
+
+        return pair.distance <= threshold;
+    }
+
+    public void setThreshold(double threshold) {
+
+        this.threshold = threshold;
+    }
+
+    public Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records) {
+
+        return getMatchingRecordPairs(records, records);
     }
 
     protected abstract String getLinkType();
@@ -48,6 +62,6 @@ public abstract class Linker {
     protected abstract String getRoleType2();
     protected abstract String getIdentifier1(LXP record);
     protected abstract String getIdentifier2(LXP record);
-    public abstract boolean match(RecordPair pair);
-    public abstract Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) throws InvalidWeightsException;
+
+    public abstract Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2);
 }

@@ -11,7 +11,6 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.Arrays;
 
-import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 public class SimilaritySearchLinkage extends Linkage {
@@ -33,77 +32,18 @@ public class SimilaritySearchLinkage extends Linkage {
     }
 
     @Test
-    public void numbersOfRecordPairsAreWithinUpperBounds() throws InvalidWeightsException {
+    public void checkNotTooManyRecordPairsConsidered() throws InvalidWeightsException {
 
-        checkNumberOfPairsWithinUpperBound(1);
-        checkNumberOfPairsWithinUpperBound(2);
-        checkNumberOfPairsWithinUpperBound(3);
-    }
+        linker.setThreshold(Double.MAX_VALUE);
 
-    @Test
-    public void noRecordPairsFoundWithinDistanceZero() throws InvalidWeightsException {
+        for (int number_of_records_to_consider = 1; number_of_records_to_consider <= 3; number_of_records_to_consider++) {
 
-        setThreshold(0.0);
+            ((SimilaritySearchLinker) linker).setNumberOfRecordsToConsider(number_of_records_to_consider);
 
-        Iterable<RecordPair> pairs = linker.getRecordPairs(birth_records, death_records);
+            Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, birth_records);
 
-        assertEquals(0, numberOfMatchingPairs(pairs));
-    }
-
-    @Test
-    public void foundExpectedRecordsWithinDistanceNoughtPointFive() throws InvalidWeightsException {
-
-        // "john smith" distance 0.5 from "john stith"
-
-        setThreshold(0.5);
-
-        Iterable<RecordPair> pairs = linker.getRecordPairs(birth_records, death_records);
-
-        assertEquals(1, numberOfMatchingPairs(pairs));
-        assertTrue(containsPair(pairs, death2, birth1));
-    }
-
-    @Test
-    public void foundExpectedRecordsWithinDistanceOne() throws InvalidWeightsException {
-
-        // "john smith" distance 0.5 from "john stith"
-        // "janet smith" distance 1 from "janet smythe"
-        // "jane smyth" distance 1 from "janet smythe"
-
-        setThreshold(1.0);
-
-        Iterable<RecordPair> pairs = linker.getRecordPairs(birth_records, death_records);
-
-        assertEquals(3, numberOfMatchingPairs(pairs));
-        assertTrue(containsPair(pairs, death2, birth1));
-        assertTrue(containsPair(pairs, death1, birth2));
-        assertTrue(containsPair(pairs, death1, birth3));
-    }
-
-    private void checkNumberOfPairsWithinUpperBound(int number_of_records_to_consider) throws InvalidWeightsException {
-
-        setNumberOfRecordsToConsider(number_of_records_to_consider);
-
-        assertTrue(getNumberOfPairs(linker, birth_records) <= number_of_records_to_consider * birth_records.size());
-    }
-
-    private int numberOfMatchingPairs(Iterable<RecordPair> pairs) throws InvalidWeightsException {
-
-        int count = 0;
-        for (RecordPair pair : pairs) {
-            if (linker.match(pair)) count++;
+            assertTrue(count(pairs) <= number_of_records_to_consider * birth_records.size());
         }
-        return count;
-    }
-
-    private void setThreshold(double threshold) {
-
-        ((SimilaritySearchLinker) linker).setThreshold(threshold);
-    }
-
-    private void setNumberOfRecordsToConsider(int number_of_records_to_consider) {
-
-        ((SimilaritySearchLinker) linker).setNumberOfRecordsToConsider(number_of_records_to_consider);
     }
 
     class DummySimilaritySearchLinker extends SimilaritySearchLinker {

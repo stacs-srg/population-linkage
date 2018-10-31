@@ -40,7 +40,7 @@ public class KilmarnockBruteForceThresholdSiblingBundling extends Experiment {
     }
 
     protected Linker getLinker() throws InvalidWeightsException {
-        return new BruteForceSiblingBundlerOverBirths(MATCH_THRESHOLD, NUMBER_OF_PROGRESS_UPDATES);
+        return new BruteForceSiblingBundlerOverBirths(Utilities.weightedAverageLevenshteinOverBirths(), MATCH_THRESHOLD, NUMBER_OF_PROGRESS_UPDATES);
     }
 
     protected Links getGroundTruthLinks(RecordRepository record_repository) {

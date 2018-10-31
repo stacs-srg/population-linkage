@@ -2,10 +2,12 @@ package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.linkage.BruteForceLinker;
-import uk.ac.standrews.cs.population_linkage.model.InvalidWeightsException;
+import uk.ac.standrews.cs.population_linkage.linkage.WeightedAverageLevenshtein;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_linkage.model.RecordPair;
 import uk.ac.standrews.cs.storr.impl.LXP;
+
+import java.util.Arrays;
 
 import static junit.framework.TestCase.*;
 
@@ -28,39 +30,30 @@ public class BruteForceLinkage extends Linkage {
     }
 
     @Test
-    public void numberOfRecordPairsForSymmetricalLinksIsCorrect() throws InvalidWeightsException {
+    public void checkAllRecordPairsWithSymmetricalLinks() {
 
         // If links are symmetric then we don't want to consider record pair (a,b) as well as (b,a).
-
-        setSymmetricalLinks();
-
-        assertEquals(((birth_records.size() - 1) * birth_records.size()) / 2, getNumberOfPairs(linker, birth_records));
-    }
-
-    @Test
-    public void recordPairsForSymmetricalLinksContainsExpectedValues() throws InvalidWeightsException {
-
-        // If links are symmetric then we don't want to consider record pair (a,b) as well as (b,a).
-
-        setSymmetricalLinks();
-
-        assertTrue(containsPair(linker, birth1, birth2));
-        assertTrue(containsPair(linker, birth2, birth3));
-
-        assertFalse(containsPair(linker, birth2, birth1));
-        assertFalse(containsPair(linker, birth3, birth1));
-        assertFalse(containsPair(linker, birth2, birth2));
-    }
-
-    private void setSymmetricalLinks() {
 
         ((BruteForceLinker) linker).setSymmetricalLinks(true);
+        linker.setThreshold(Double.MAX_VALUE);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records);
+
+        assertEquals(((birth_records.size() - 1) * birth_records.size()) / 2, count(pairs));
+
+        assertTrue(containsPair(pairs, birth1, birth2));
+        assertTrue(containsPair(pairs, birth1, birth3));
+        assertTrue(containsPair(pairs, birth2, birth3));
+
+        assertFalse(containsPair(pairs, birth2, birth1));
+        assertFalse(containsPair(pairs, birth3, birth1));
+        assertFalse(containsPair(pairs, birth2, birth2));
     }
 
     class DummyBruteForceLinker extends BruteForceLinker {
 
         DummyBruteForceLinker() {
-            super(null, 0);
+            super(new WeightedAverageLevenshtein<>(Arrays.asList(0, 1)), 0);
         }
 
         @Override
