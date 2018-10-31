@@ -1,12 +1,12 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
-import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.KilmarnockDeathsDataSet;
 
 public class PrintKilmarnockDeathRecords {
 
     public void run() throws Exception {
 
-        DeathsDataSet death_records = new DeathsDataSet();
+        KilmarnockDeathsDataSet death_records = new KilmarnockDeathsDataSet();
         death_records.print(System.out);
         System.out.println("Printed " + death_records.getRecords().size() + " death records");
     }

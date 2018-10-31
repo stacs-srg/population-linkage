@@ -1,8 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
-import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.data.MarriagesDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.KilmarnockBirthsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.KilmarnockDeathsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.KilmarnockMarriagesDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -30,15 +30,15 @@ public class ImportKilmarnockRecordsToStore {
         System.out.println("Importing " + importer.getDataSetName() + " records into repository: " + repo_name);
         System.out.println();
 
-        BirthsDataSet birth_records = new BirthsDataSet();
+        KilmarnockBirthsDataSet birth_records = new KilmarnockBirthsDataSet();
         importer.importBirthRecords(record_repository, birth_records);
         System.out.println("Imported " + birth_records.getRecords().size() + " birth records");
 
-        DeathsDataSet death_records = new DeathsDataSet();
+        KilmarnockDeathsDataSet death_records = new KilmarnockDeathsDataSet();
         importer.importDeathRecords(record_repository, death_records);
         System.out.println("Imported " + death_records.getRecords().size() + " death records");
 
-        MarriagesDataSet marriage_records = new MarriagesDataSet();
+        KilmarnockMarriagesDataSet marriage_records = new KilmarnockMarriagesDataSet();
         importer.importMarriageRecords(record_repository, marriage_records);
         System.out.println("Imported " + marriage_records.getRecords().size() + " marriage records");
 

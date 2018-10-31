@@ -2,9 +2,9 @@ package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.data.MarriagesDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.KilmarnockBirthsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.KilmarnockDeathsDataSet;
+import uk.ac.standrews.cs.data.kilmarnock.KilmarnockMarriagesDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
@@ -31,9 +31,9 @@ public class Infrastructure {
 
         DataSetImporter importer = new KilmarnockDataSetImporter();
 
-        BirthsDataSet birth_records = new BirthsDataSet();
-        DeathsDataSet death_records = new DeathsDataSet();
-        MarriagesDataSet marriage_records = new MarriagesDataSet();
+        KilmarnockBirthsDataSet birth_records = new KilmarnockBirthsDataSet();
+        KilmarnockDeathsDataSet death_records = new KilmarnockDeathsDataSet();
+        KilmarnockMarriagesDataSet marriage_records = new KilmarnockMarriagesDataSet();
 
         importer.importBirthRecords(record_repository, birth_records);
         importer.importDeathRecords(record_repository, death_records);
