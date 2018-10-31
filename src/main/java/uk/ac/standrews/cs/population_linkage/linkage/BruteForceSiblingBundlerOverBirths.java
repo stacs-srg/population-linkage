@@ -12,7 +12,7 @@ public class BruteForceSiblingBundlerOverBirths extends BruteForceLinker {
 
     public BruteForceSiblingBundlerOverBirths(double threshold, int number_of_progress_updates) throws InvalidWeightsException {
 
-        super(new ThresholdMatcher(Utilities.weightedAverageLevenshteinOverBirths(), threshold), true, number_of_progress_updates);
+        super(new ThresholdMatcher(Utilities.weightedAverageLevenshteinOverBirths(), threshold), number_of_progress_updates);
 
         this.threshold = threshold;
     }

@@ -9,32 +9,34 @@ import java.util.List;
 
 public abstract class SimilaritySearchLinker extends Linker {
 
-    private final SearchStructure<LXP> search_structure;
-    final double threshold;
-    private final int number_of_records_to_consider;
+    double threshold;
+    private int number_of_records_to_consider;
+    private SearchStructureFactory search_structure_factory;
 
-    SimilaritySearchLinker(SearchStructure<LXP> search_structure, double threshold, int number_of_records_to_consider, int number_of_progress_updates) {
+    protected SimilaritySearchLinker(SearchStructureFactory search_structure_factory, int number_of_progress_updates) {
 
         super(number_of_progress_updates);
 
-        this.search_structure = search_structure;
-        this.threshold = threshold;
-        this.number_of_records_to_consider = number_of_records_to_consider;
+        this.search_structure_factory = search_structure_factory;
+        this.threshold = Double.MAX_VALUE;
+        this.number_of_records_to_consider = Integer.MAX_VALUE;
     }
 
     @Override
-    protected boolean match(RecordPair pair) {
+    public boolean match(RecordPair pair) {
 
         return pair.distance <= threshold;
     }
 
     @Override
-    protected Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
+    public Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) throws InvalidWeightsException {
 
         final boolean datasets_same = records1 == records2;
 
         List<LXP> smaller_set = records1.size() < records2.size() ? records1 : records2;
         List<LXP> larger_set = records1.size() < records2.size() ? records2 : records1;
+
+        SearchStructure<LXP> search_structure = search_structure_factory.newSearchStructure();
 
         for (LXP record : larger_set) {
             search_structure.add(record);
@@ -59,20 +61,36 @@ public abstract class SimilaritySearchLinker extends Linker {
             @Override
             public RecordPair next() {
 
-                RecordPair next_pair = new RecordPair(smaller_set.get(smaller_set_index), nearest_records.get(neighbours_index).value, nearest_records.get(neighbours_index).distance);
+                DataDistance<LXP> data_distance = nearest_records.get(neighbours_index);
+                RecordPair next_pair = new RecordPair(smaller_set.get(smaller_set_index), data_distance.value, data_distance.distance);
 
                 neighbours_index++;
 
                 if (neighbours_index >= nearest_records.size()) {
 
                     smaller_set_index++;
-                    neighbours_index = 1;
-                    nearest_records = search_structure.findNearest(smaller_set.get(smaller_set_index), number_of_records_to_consider);
+
+                    // Start at 1 to ignore the query record itself, if the two datasets are the same.
+                    neighbours_index = datasets_same ? 1 : 0;
+
+                    if (smaller_set_index < smaller_set.size()) {
+                        nearest_records = search_structure.findNearest(smaller_set.get(smaller_set_index), number_of_records_to_consider);
+                    }
 
                     progress_indicator.progressStep();
                 }
                 return next_pair;
             }
         };
+    }
+
+    public void setThreshold(double threshold) {
+
+        this.threshold = threshold;
+    }
+
+    public void setNumberOfRecordsToConsider(int number_of_records_to_consider) {
+
+        this.number_of_records_to_consider = number_of_records_to_consider;
     }
 }

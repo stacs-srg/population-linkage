@@ -14,4 +14,9 @@ public class RecordPair {
         this.record2 = record2;
         this.distance = distance;
     }
+
+    public String toString() {
+
+        return "{" + record1 + ", " + record2 + "}";
+    }
 }

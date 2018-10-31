@@ -17,7 +17,8 @@ public class DeathLinkageSubRecord extends StaticLXP {
             static_md = new Metadata(DeathLinkageSubRecord.class, "BirthLinkageSubRecord");
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            // Exception may occur if there's a problem accessing the store, but suppressed
+            // here since we may want to create instances without storing.
         }
     }
 

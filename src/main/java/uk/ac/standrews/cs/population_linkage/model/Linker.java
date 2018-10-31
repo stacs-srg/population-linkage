@@ -15,12 +15,12 @@ public abstract class Linker {
         progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
     }
 
-    public Links link(List<LXP> records) {
+    public Links link(List<LXP> records) throws InvalidWeightsException {
 
         return link(records, records);
     }
 
-    public Links link(List<LXP> records1, List<LXP> records2) {
+    public Links link(List<LXP> records1, List<LXP> records2) throws InvalidWeightsException {
 
         Links links = new Links();
 
@@ -38,12 +38,16 @@ public abstract class Linker {
         return links;
     }
 
+    public Iterable<RecordPair> getRecordPairs(final List<LXP> records) throws InvalidWeightsException {
+        return getRecordPairs(records, records);
+    }
+
     protected abstract String getLinkType();
     protected abstract String getProvenance();
     protected abstract String getRoleType1();
     protected abstract String getRoleType2();
     protected abstract String getIdentifier1(LXP record);
     protected abstract String getIdentifier2(LXP record);
-    protected abstract boolean match(RecordPair pair);
-    protected abstract Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2);
+    public abstract boolean match(RecordPair pair);
+    public abstract Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) throws InvalidWeightsException;
 }

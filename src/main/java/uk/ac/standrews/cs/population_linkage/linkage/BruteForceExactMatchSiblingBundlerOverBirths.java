@@ -9,7 +9,8 @@ public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLink
 
     public BruteForceExactMatchSiblingBundlerOverBirths(String role_type, int number_of_progress_updates) {
 
-        super(new ExactMatchMatcher(Utilities.MATCH_FIELDS), true, number_of_progress_updates);
+        super(new ExactMatchMatcher(Utilities.MATCH_FIELDS), number_of_progress_updates);
+        setSymmetricalLinks(true);
     }
 
     @Override

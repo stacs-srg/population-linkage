@@ -9,29 +9,28 @@ import java.util.List;
 public abstract class BruteForceLinker extends Linker {
 
     private final Matcher matcher;
-    private final boolean symmetrical_links;
+    private boolean symmetrical_links;
 
     /**
-     * @param matcher the matching rule
-     * @param symmetrical_links true if links are symmetrical_links, so that if A-B has been checked then B-A doesn't need to be
+     * @param matcher                    the matching rule
      * @param number_of_progress_updates the number of updates to be given, zero or negative to suppress updates
      */
-    BruteForceLinker(Matcher matcher, boolean symmetrical_links, int number_of_progress_updates) {
+    protected BruteForceLinker(Matcher matcher, int number_of_progress_updates) {
 
         super(number_of_progress_updates);
 
         this.matcher = matcher;
-        this.symmetrical_links = symmetrical_links;
+        symmetrical_links = false;
     }
 
     @Override
-    protected boolean match(RecordPair pair) {
+    public boolean match(RecordPair pair) {
 
         return matcher.match(pair.record1, pair.record2);
     }
 
     @Override
-    protected Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
+    public Iterable<RecordPair> getRecordPairs(final List<LXP> records1, final List<LXP> records2) {
 
         // If the two datasets are the same, and links are symmetrical, then only need to check half of the possible pairs.
         final boolean datasets_same = records1 == records2;
@@ -77,5 +76,13 @@ public abstract class BruteForceLinker extends Linker {
                 return next_pair;
             }
         };
+    }
+
+    /**
+     * @param symmetrical_links true if links are symmetrical_links, so that if A-B has been checked then B-A doesn't need to be
+     */
+    public void setSymmetricalLinks(boolean symmetrical_links) {
+
+        this.symmetrical_links = symmetrical_links;
     }
 }

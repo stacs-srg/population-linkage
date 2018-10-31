@@ -3,6 +3,7 @@ package uk.ac.standrews.cs.population_linkage.experiments;
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkage.MTreeSearchStructure;
+import uk.ac.standrews.cs.population_linkage.linkage.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.linkage.SimilaritySearchSiblingBundlerOverBirths;
 import uk.ac.standrews.cs.population_linkage.model.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -26,10 +27,6 @@ public class KilmarnockSimilaritySearchThresholdSiblingBundling extends Experime
         this.repo_name = repo_name;
     }
 
-    private SearchStructure<LXP> makeSearchStructure() throws InvalidWeightsException {
-        return new MTreeSearchStructure<>(Utilities.weightedAverageLevenshteinOverBirths());
-    }
-
     protected RecordRepository getRecordRepository() throws Exception {
         return new RecordRepository(store_path, repo_name);
     }
@@ -42,8 +39,10 @@ public class KilmarnockSimilaritySearchThresholdSiblingBundling extends Experime
         return Utilities.getBirthLinkageSubRecords(record_repository);
     }
 
-    protected Linker getLinker() throws InvalidWeightsException {
-        return new SimilaritySearchSiblingBundlerOverBirths(makeSearchStructure(), MATCH_THRESHOLD, NUMBER_OF_RECORDS_TO_CONSIDER, NUMBER_OF_PROGRESS_UPDATES);
+    protected Linker getLinker() {
+
+        SearchStructureFactory factory = () -> new MTreeSearchStructure<>(Utilities.weightedAverageLevenshteinOverBirths());
+        return new SimilaritySearchSiblingBundlerOverBirths(factory, MATCH_THRESHOLD, NUMBER_OF_RECORDS_TO_CONSIDER, NUMBER_OF_PROGRESS_UPDATES);
     }
 
     protected Links getGroundTruthLinks(RecordRepository record_repository) {
