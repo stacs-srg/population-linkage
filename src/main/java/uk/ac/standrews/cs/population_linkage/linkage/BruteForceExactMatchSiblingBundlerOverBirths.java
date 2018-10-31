@@ -9,6 +9,7 @@ public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLink
     public BruteForceExactMatchSiblingBundlerOverBirths(NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
+
         setSymmetricalLinks(true);
     }
 

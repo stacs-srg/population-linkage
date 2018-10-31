@@ -13,17 +13,22 @@ import java.util.List;
 
 import static junit.framework.TestCase.*;
 
+@SuppressWarnings("WeakerAccess")
 public abstract class Linkage {
 
     final LXP birth1 = new DummyLXP("john", "smith");
     final LXP birth2 = new DummyLXP("janet", "smith");
     final LXP birth3 = new DummyLXP("jane", "smyth");
+    final LXP birth4 = new DummyLXP("janet", "smith");
 
     final LXP death1 = new DummyLXP("janet", "smythe");
     final LXP death2 = new DummyLXP("john", "stith");
+    final LXP death3 = new DummyLXP("jane", "smyth");
+    final LXP death4 = new DummyLXP("anthony", "aardvark");
+    final LXP death5 = new DummyLXP("tony", "armdadillo");
 
-    final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3);
-    final List<LXP> death_records = Arrays.asList(death1, death2);
+    final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3, birth4);
+    final List<LXP> death_records = Arrays.asList(death1, death2, death3, death4, death5);
 
     Linker linker;
 
@@ -49,10 +54,16 @@ public abstract class Linkage {
 
         assertTrue(containsPair(pairs, birth1, birth2));
         assertTrue(containsPair(pairs, birth1, birth3));
-        assertTrue(containsPair(pairs, birth2, birth3));
+        assertTrue(containsPair(pairs, birth1, birth4));
         assertTrue(containsPair(pairs, birth2, birth1));
+        assertTrue(containsPair(pairs, birth2, birth3));
+        assertTrue(containsPair(pairs, birth2, birth4));
         assertTrue(containsPair(pairs, birth3, birth1));
         assertTrue(containsPair(pairs, birth3, birth2));
+        assertTrue(containsPair(pairs, birth3, birth4));
+        assertTrue(containsPair(pairs, birth4, birth1));
+        assertTrue(containsPair(pairs, birth4, birth2));
+        assertTrue(containsPair(pairs, birth4, birth3));
 
         assertFalse(containsPair(pairs, birth1, birth1));
     }
@@ -76,43 +87,104 @@ public abstract class Linkage {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceZero() {
+    public void checkRecordPairsWithinDistanceZeroWithSingleDataSet() {
+
+        // "janet smith" distance 0 from "janet smith"
+
+        linker.setThreshold(0.0);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records);
+
+        assertEquals(2, count(pairs));
+        assertTrue(containsPair(pairs, birth2, birth4));
+        assertTrue(containsPair(pairs, birth4, birth2));
+    }
+
+    @Test
+    public void checkRecordPairsWithinDistanceZeroWithTwoDataSets() {
+
+        // "jane smyth" distance 0 from "jane smyth"
 
         linker.setThreshold(0.0);
 
         Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
 
-        assertEquals(0, count(pairs));
+        assertEquals(1, count(pairs));
+        assertTrue(containsPair(pairs, birth3, death3));
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceNoughtPointFive() {
+    public void checkRecordPairsWithinDistanceNoughtPointFiveWithSingleDataSet() {
+
+        // "janet smith" distance 0 from "janet smith"
+
+        linker.setThreshold(0.5);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records);
+
+        assertEquals(2, count(pairs));
+        assertTrue(containsPair(pairs, birth2, birth4));
+        assertTrue(containsPair(pairs, birth4, birth2));
+    }
+
+    @Test
+    public void checkRecordPairsWithinDistanceNoughtPointFiveWithTwoDataSets() {
 
         // "john smith" distance 0.5 from "john stith"
+        // "jane smyth" distance 0 from "jane smyth"
 
         linker.setThreshold(0.5);
 
         Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
 
-        assertEquals(1, count(pairs));
+        assertEquals(2, count(pairs));
         assertTrue(containsPair(pairs, birth1, death2));
+        assertTrue(containsPair(pairs, birth3, death3));
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceOne() {
+    public void checkRecordPairsWithinDistanceOneWithSingleDataSet() {
+
+        // "janet smith" distance 0 from "janet smith"
+        // "jane smyth" distance 1.0 from "janet smith"
+        // "jane smyth" distance 1.0 from "janet smith"
+
+        linker.setThreshold(1.0);
+
+        Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records);
+
+        assertEquals(6, count(pairs));
+        assertTrue(containsPair(pairs, birth2, birth3));
+        assertTrue(containsPair(pairs, birth3, birth2));
+        assertTrue(containsPair(pairs, birth2, birth4));
+        assertTrue(containsPair(pairs, birth4, birth2));
+        assertTrue(containsPair(pairs, birth3, birth4));
+        assertTrue(containsPair(pairs, birth4, birth3));
+    }
+
+    @Test
+    public void checkRecordPairsWithinDistanceOneWithTwoDataSets() {
 
         // "john smith" distance 0.5 from "john stith"
         // "janet smith" distance 1 from "janet smythe"
+        // "janet smith" distance 1 from "jane smyth"
         // "jane smyth" distance 1 from "janet smythe"
+        // "jane smyth" distance 0 from "jane smyth"
+        // "janet smith" distance 1 from "janet smythe"
+        // "janet smith" distance 1 from "jane smyth"
 
         linker.setThreshold(1.0);
 
         Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
 
-        assertEquals(3, count(pairs));
+        assertEquals(7, count(pairs));
         assertTrue(containsPair(pairs, birth1, death2));
         assertTrue(containsPair(pairs, birth2, death1));
+        assertTrue(containsPair(pairs, birth2, death3));
         assertTrue(containsPair(pairs, birth3, death1));
+        assertTrue(containsPair(pairs, birth3, death3));
+        assertTrue(containsPair(pairs, birth4, death1));
+        assertTrue(containsPair(pairs, birth4, death3));
     }
 
     boolean containsPair(Iterable<RecordPair> record_pairs, LXP record1, LXP record2) {

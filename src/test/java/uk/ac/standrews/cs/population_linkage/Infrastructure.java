@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
@@ -20,6 +21,7 @@ import static junit.framework.TestCase.assertNotNull;
 public class Infrastructure {
 
     @Test
+    @Ignore
     public void loadAndRead() throws Exception {
 
         Path store_path = Files.createTempDirectory("");
