@@ -1,6 +1,5 @@
 package uk.ac.standrews.cs.population_linkage;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.standrews.cs.data.kilmarnock.data.BirthsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.data.DeathsDataSet;
@@ -11,7 +10,6 @@ import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.crypto.CryptoException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,8 +20,7 @@ import static junit.framework.TestCase.assertNotNull;
 public class Infrastructure {
 
     @Test
-    @Ignore
-    public void loadAndRead() throws Exception, CryptoException {
+    public void loadAndRead() throws Exception {
 
         Path store_path = Files.createTempDirectory("");
         String repo_name = "kilmarnock_repository";
