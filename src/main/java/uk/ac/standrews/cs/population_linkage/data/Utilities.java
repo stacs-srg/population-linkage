@@ -31,11 +31,11 @@ public class Utilities {
 
     public static void printSampleRecords(DataSet data_set, String record_type) {
 
-        Utilities.printRow(data_set.getColumnLabels());
+        printRow(data_set.getColumnLabels());
         List<List<String>> records = data_set.getRecords();
 
         for (int i = 0; i < NUMBER_TO_PRINT; i++) {
-            Utilities.printRow(records.get(i));
+            printRow(records.get(i));
         }
 
         System.out.println("Printed " + NUMBER_TO_PRINT + " of " + records.size() + " " + record_type + " records");
@@ -148,6 +148,43 @@ public class Utilities {
         double f_measure = ClassificationMetrics.F1(true_positives, false_positives, false_negatives);
 
         return new LinkageQuality(precision, recall, f_measure);
+    }
+
+    public static <T extends LXP> DataSet toDataSet(Iterable<T> records) {
+
+        DataSet data_set = null;
+        List<String> headings = null;
+
+        for (LXP record : records) {
+            if (data_set == null) {
+                headings = getHeadings(record);
+                data_set = new DataSet(headings);
+            }
+
+            data_set.addRow(getRecordValues(record, headings));
+        }
+        return data_set;
+    }
+
+    private static List<String> getHeadings(LXP record) {
+
+        List<String> result = new ArrayList<>();
+
+        int count = record.getMetaData().getFieldCount();
+        for (int i = 0; i < count; i++) {
+            result.add(record.getMetaData().getFieldName(i));
+        }
+
+        return result;
+    }
+
+    private static List<String> getRecordValues(LXP record, List<String> headings) {
+
+        List<String> values = new ArrayList<>();
+        for (String heading : headings) {
+            values.add((String) record.get(heading));
+        }
+        return values;
     }
 
     private static int countTruePositives(Links calculated_links, Links ground_truth_links) {
