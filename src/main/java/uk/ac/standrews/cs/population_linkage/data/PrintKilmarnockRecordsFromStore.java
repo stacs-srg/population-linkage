@@ -5,6 +5,7 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.nio.file.Path;
 
@@ -26,26 +27,17 @@ public class PrintKilmarnockRecordsFromStore {
         System.out.println("Reading records from repository: " + repo_name);
         System.out.println();
 
-        int births_count = 0;
-        for (Birth birth : record_repository.getBirths()) {
-            System.out.println(birth);
-            births_count++;
-        }
-        System.out.println("Read " + births_count + " birth records");
+        DataSet births_data_set = Birth.convertToDataSet(record_repository.getBirths());
+        births_data_set.print(System.out);
+        System.out.println("Read " + births_data_set.getRecords().size() + " birth records");
 
-        int deaths_count = 0;
-        for (Death death : record_repository.getDeaths()) {
-            System.out.println(death);
-            deaths_count++;
-        }
-        System.out.println("Read " + deaths_count + " death records");
+        DataSet deaths_data_set = Death.convertToDataSet(record_repository.getDeaths());
+        deaths_data_set.print(System.out);
+        System.out.println("Read " + deaths_data_set.getRecords().size() + " death records");
 
-        int marriages_count = 0;
-        for (Marriage marriage : record_repository.getMarriages()) {
-            System.out.println(marriage);
-            marriages_count++;
-        }
-        System.out.println("Read " + marriages_count + " marriage records");
+        DataSet marriages_data_set = Marriage.convertToDataSet(record_repository.getMarriages());
+        marriages_data_set.print(System.out);
+        System.out.println("Read " + marriages_data_set.getRecords().size() + " marriage records");
 
         System.out.println();
         System.out.println("Complete");

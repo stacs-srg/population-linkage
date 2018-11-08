@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 import static junit.framework.TestCase.assertTrue;
 
-public class SimilaritySearchLinkage extends Linkage {
+public class SimilaritySearchLinkageTest extends Linkage {
 
     @Override
     public Linker getLinker() {

@@ -4,7 +4,10 @@ import uk.ac.standrews.cs.population_linkage.linkage.BirthLinkageSubRecord;
 import uk.ac.standrews.cs.population_linkage.linkage.DeathLinkageSubRecord;
 import uk.ac.standrews.cs.population_linkage.linkage.MarriageLinkageSubRecord;
 import uk.ac.standrews.cs.population_linkage.linkage.WeightedAverageLevenshtein;
-import uk.ac.standrews.cs.population_linkage.model.*;
+import uk.ac.standrews.cs.population_linkage.model.Link;
+import uk.ac.standrews.cs.population_linkage.model.LinkageQuality;
+import uk.ac.standrews.cs.population_linkage.model.Links;
+import uk.ac.standrews.cs.population_linkage.model.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -21,38 +24,11 @@ import java.util.List;
 
 public class Utilities {
 
-    private final static int NUMBER_TO_PRINT = 5;
-
     public static final List<Integer> MATCH_FIELDS = Arrays.asList(
             BirthLinkageSubRecord.FATHERS_FORENAME, BirthLinkageSubRecord.FATHERS_SURNAME,
             BirthLinkageSubRecord.MOTHERS_FORENAME, BirthLinkageSubRecord.MOTHERS_MAIDEN_SURNAME,
             BirthLinkageSubRecord.PARENTS_PLACE_OF_MARRIAGE,
             BirthLinkageSubRecord.PARENTS_DAY_OF_MARRIAGE, BirthLinkageSubRecord.PARENTS_MONTH_OF_MARRIAGE, BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE);
-
-    public static void printSampleRecords(DataSet data_set, String record_type) {
-
-        printRow(data_set.getColumnLabels());
-        List<List<String>> records = data_set.getRecords();
-
-        for (int i = 0; i < NUMBER_TO_PRINT; i++) {
-            printRow(records.get(i));
-        }
-
-        System.out.println("Printed " + NUMBER_TO_PRINT + " of " + records.size() + " " + record_type + " records");
-    }
-
-    private static void printRow(List<String> row) {
-
-        boolean first = true;
-        for (String element : row) {
-            if (!first) {
-                System.out.print(",");
-            }
-            first = false;
-            System.out.print(element);
-        }
-        System.out.println();
-    }
 
     public static List<LXP> getBirthLinkageSubRecords(RecordRepository record_repository) {
 
@@ -93,17 +69,6 @@ public class Utilities {
     public static NamedMetric<LXP> weightedAverageLevenshteinOverBirths() {
 
         return new WeightedAverageLevenshtein<>(MATCH_FIELDS);
-    }
-
-    private static boolean match(List<Integer> match_fields, LXP record1, LXP record2) {
-
-        if (record1 == record2) return false;
-
-        for (int field : match_fields) {
-            if (!record1.getString(field).equals(record2.getString(field))) return false;
-        }
-
-        return true;
     }
 
     public static Links getGroundTruthSiblingLinks(RecordRepository record_repository) {
@@ -150,41 +115,15 @@ public class Utilities {
         return new LinkageQuality(precision, recall, f_measure);
     }
 
-    public static <T extends LXP> DataSet toDataSet(Iterable<T> records) {
+    private static boolean match(List<Integer> match_fields, LXP record1, LXP record2) {
 
-        DataSet data_set = null;
-        List<String> headings = null;
+        if (record1 == record2) return false;
 
-        for (LXP record : records) {
-            if (data_set == null) {
-                headings = getHeadings(record);
-                data_set = new DataSet(headings);
-            }
-
-            data_set.addRow(getRecordValues(record, headings));
-        }
-        return data_set;
-    }
-
-    private static List<String> getHeadings(LXP record) {
-
-        List<String> result = new ArrayList<>();
-
-        int count = record.getMetaData().getFieldCount();
-        for (int i = 0; i < count; i++) {
-            result.add(record.getMetaData().getFieldName(i));
+        for (int field : match_fields) {
+            if (!record1.getString(field).equals(record2.getString(field))) return false;
         }
 
-        return result;
-    }
-
-    private static List<String> getRecordValues(LXP record, List<String> headings) {
-
-        List<String> values = new ArrayList<>();
-        for (String heading : headings) {
-            values.add((String) record.get(heading));
-        }
-        return values;
+        return true;
     }
 
     private static int countTruePositives(Links calculated_links, Links ground_truth_links) {
@@ -232,5 +171,9 @@ public class Utilities {
         System.out.println("FN: " + count);
 
         return count;
+    }
+
+    public static void printSampleRecords(DataSet data_set, String record_type, int number_to_print) {
+        uk.ac.standrews.cs.population_records.record_types.Utilities.printSampleRecords(data_set, record_type, number_to_print);
     }
 }

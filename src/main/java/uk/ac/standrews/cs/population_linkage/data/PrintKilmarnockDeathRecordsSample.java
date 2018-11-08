@@ -6,7 +6,7 @@ public class PrintKilmarnockDeathRecordsSample {
 
     public void run() throws Exception {
 
-        Utilities.printSampleRecords(new KilmarnockDeathsDataSet(), "death");
+        Utilities.printSampleRecords(new KilmarnockDeathsDataSet(), "death", PrintKilmarnockRecordsFromStoreSample.NUMBER_TO_PRINT);
     }
 
     public static void main(String[] args) throws Exception {

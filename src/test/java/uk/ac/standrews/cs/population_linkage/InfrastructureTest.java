@@ -1,16 +1,14 @@
 package uk.ac.standrews.cs.population_linkage;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockBirthsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockDeathsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockMarriagesDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,10 +16,9 @@ import java.nio.file.Path;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 
-public class Infrastructure {
+public class InfrastructureTest {
 
     @Test
-    @Ignore
     public void loadAndRead() throws Exception {
 
         Path store_path = Files.createTempDirectory("");
@@ -29,15 +26,13 @@ public class Infrastructure {
 
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
-        DataSetImporter importer = new KilmarnockDataSetImporter();
+        DataSet birth_records = new KilmarnockBirthsDataSet();
+        DataSet death_records = new KilmarnockDeathsDataSet();
+        DataSet marriage_records = new KilmarnockMarriagesDataSet();
 
-        KilmarnockBirthsDataSet birth_records = new KilmarnockBirthsDataSet();
-        KilmarnockDeathsDataSet death_records = new KilmarnockDeathsDataSet();
-        KilmarnockMarriagesDataSet marriage_records = new KilmarnockMarriagesDataSet();
-
-        importer.importBirthRecords(record_repository, birth_records);
-        importer.importDeathRecords(record_repository, death_records);
-        importer.importMarriageRecords(record_repository, marriage_records);
+        record_repository.importBirthRecords( birth_records);
+        record_repository.importDeathRecords( death_records);
+        record_repository.importMarriageRecords( marriage_records);
 
         int births_read = 0;
         for (Birth birth : record_repository.getBirths()) {

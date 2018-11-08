@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockBirthsDataSet;
+import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -18,7 +19,7 @@ public class PrintKilmarnockBirthRecordsToFile {
 
     public void run() throws Exception {
 
-        KilmarnockBirthsDataSet birth_records = new KilmarnockBirthsDataSet();
+        DataSet birth_records = new KilmarnockBirthsDataSet();
         birth_records.print(new PrintStream(Files.newOutputStream(output_path)));
         System.out.println("Output " + birth_records.getRecords().size() + " birth records");
     }

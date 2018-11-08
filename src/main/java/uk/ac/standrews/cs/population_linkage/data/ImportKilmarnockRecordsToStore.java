@@ -3,10 +3,9 @@ package uk.ac.standrews.cs.population_linkage.data;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockBirthsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockDeathsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockMarriagesDataSet;
-import uk.ac.standrews.cs.data.kilmarnock.importer.KilmarnockDataSetImporter;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.importer.DataSetImporter;
+import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.nio.file.Path;
 
@@ -25,21 +24,19 @@ public class ImportKilmarnockRecordsToStore {
 
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
-        DataSetImporter importer = new KilmarnockDataSetImporter();
-
-        System.out.println("Importing " + importer.getDataSetName() + " records into repository: " + repo_name);
+        System.out.println("Importing Kilmarnock records into repository: " + repo_name);
         System.out.println();
 
-        KilmarnockBirthsDataSet birth_records = new KilmarnockBirthsDataSet();
-        importer.importBirthRecords(record_repository, birth_records);
+        DataSet birth_records = new KilmarnockBirthsDataSet();
+        record_repository.importBirthRecords(birth_records);
         System.out.println("Imported " + birth_records.getRecords().size() + " birth records");
 
-        KilmarnockDeathsDataSet death_records = new KilmarnockDeathsDataSet();
-        importer.importDeathRecords(record_repository, death_records);
+        DataSet death_records = new KilmarnockDeathsDataSet();
+        record_repository.importDeathRecords(death_records);
         System.out.println("Imported " + death_records.getRecords().size() + " death records");
 
-        KilmarnockMarriagesDataSet marriage_records = new KilmarnockMarriagesDataSet();
-        importer.importMarriageRecords(record_repository, marriage_records);
+        DataSet marriage_records = new KilmarnockMarriagesDataSet();
+        record_repository.importMarriageRecords(marriage_records);
         System.out.println("Imported " + marriage_records.getRecords().size() + " marriage records");
 
         System.out.println();

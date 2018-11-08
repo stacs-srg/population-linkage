@@ -14,6 +14,8 @@ public class PrintKilmarnockRecordsFromStoreSample {
     private final Path store_path;
     private final String repo_name;
 
+    static final int NUMBER_TO_PRINT = 5;
+
     public PrintKilmarnockRecordsFromStoreSample(Path store_path, String repo_name) {
 
         this.store_path = store_path;
@@ -27,21 +29,18 @@ public class PrintKilmarnockRecordsFromStoreSample {
         System.out.println("Reading records from repository: " + repo_name);
         System.out.println();
 
-        Iterable<Birth> births = record_repository.getBirths();
-        DataSet births_data_set = Utilities.toDataSet(births);
-        Utilities.printSampleRecords(births_data_set, "birth");
+        DataSet births_data_set = Birth.convertToDataSet(record_repository.getBirths());
+        Utilities.printSampleRecords(births_data_set, "birth", NUMBER_TO_PRINT);
 
         System.out.println();
 
-        Iterable<Death> deaths = record_repository.getDeaths();
-        DataSet deaths_data_set = Utilities.toDataSet(deaths);
-        Utilities.printSampleRecords(deaths_data_set, "death");
+        DataSet deaths_data_set = Death.convertToDataSet(record_repository.getDeaths());
+        Utilities.printSampleRecords(deaths_data_set, "death", NUMBER_TO_PRINT);
 
         System.out.println();
 
-        Iterable<Marriage> marriages = record_repository.getMarriages();
-        DataSet marriages_data_set = Utilities.toDataSet(marriages);
-        Utilities.printSampleRecords(marriages_data_set, "marriage");
+        DataSet marriages_data_set = Marriage.convertToDataSet(record_repository.getMarriages());
+        Utilities.printSampleRecords(marriages_data_set, "marriage", NUMBER_TO_PRINT);
     }
 
     public static void main(String[] args) throws Exception {
