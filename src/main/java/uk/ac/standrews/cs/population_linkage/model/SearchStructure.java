@@ -7,7 +7,5 @@ import java.util.List;
 
 public interface SearchStructure<T extends LXP> {
 
-    void add(T record);
-
     List<DataDistance<T>> findNearest(T record, int number_of_records);
 }

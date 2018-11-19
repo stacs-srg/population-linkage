@@ -49,7 +49,7 @@ public class SimilaritySearchLinkageTest extends Linkage {
     class DummySimilaritySearchLinker extends SimilaritySearchLinker {
 
         DummySimilaritySearchLinker() {
-            super(() -> new MTreeSearchStructure<>(new WeightedAverageLevenshtein(Arrays.asList(0, 1))), 0);
+            super(data -> new MTreeSearchStructure<>(new WeightedAverageLevenshtein(Arrays.asList(0, 1)), data), 0);
         }
 
         @Override

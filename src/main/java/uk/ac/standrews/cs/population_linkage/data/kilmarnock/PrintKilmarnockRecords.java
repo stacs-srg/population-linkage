@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.data;
+package uk.ac.standrews.cs.population_linkage.data.kilmarnock;
 
 public class PrintKilmarnockRecords {
 

@@ -12,15 +12,12 @@ public class MTreeSearchStructure<T extends LXP> implements SearchStructure<T> {
 
     MTree<T> m_tree;
 
-    public MTreeSearchStructure(NamedMetric<T> distance_metric) {
+    public MTreeSearchStructure(NamedMetric<T> distance_metric, List<T> records) {
 
         m_tree = new MTree<>(distance_metric);
-    }
-
-    @Override
-    public void add(T record) {
-
-        m_tree.add(record);
+        for (T record : records) {
+            m_tree.add(record);
+        }
     }
 
     @Override

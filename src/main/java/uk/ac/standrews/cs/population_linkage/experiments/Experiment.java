@@ -46,7 +46,7 @@ public abstract class Experiment {
     protected abstract RecordRepository getRecordRepository() throws Exception;
     protected abstract void printHeader();
     protected abstract List<LXP> getRecords(RecordRepository record_repository);
-    protected abstract Linker getLinker() throws Exception;
+    protected abstract Linker getLinker();
     protected abstract Links getGroundTruthLinks(RecordRepository record_repository);
     protected abstract LinkageQuality evaluateLinkage(Links calculated_links, Links ground_truth_links);
 }

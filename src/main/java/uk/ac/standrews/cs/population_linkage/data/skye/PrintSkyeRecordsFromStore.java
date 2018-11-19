@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.data;
+package uk.ac.standrews.cs.population_linkage.data.skye;
 
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -9,12 +9,12 @@ import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.nio.file.Path;
 
-public class PrintKilmarnockRecordsFromStore {
+public class PrintSkyeRecordsFromStore {
 
     private final Path store_path;
     private final String repo_name;
 
-    public PrintKilmarnockRecordsFromStore(Path store_path, String repo_name) {
+    public PrintSkyeRecordsFromStore(Path store_path, String repo_name) {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
@@ -48,6 +48,6 @@ public class PrintKilmarnockRecordsFromStore {
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = ApplicationProperties.getRepositoryName();
 
-        new PrintKilmarnockRecordsFromStore(store_path, repo_name).run();
+        new PrintSkyeRecordsFromStore(store_path, repo_name).run();
     }
 }

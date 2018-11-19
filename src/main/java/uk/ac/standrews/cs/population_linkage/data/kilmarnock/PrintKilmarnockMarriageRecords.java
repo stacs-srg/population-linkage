@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.data;
+package uk.ac.standrews.cs.population_linkage.data.kilmarnock;
 
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockMarriagesDataSet;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;

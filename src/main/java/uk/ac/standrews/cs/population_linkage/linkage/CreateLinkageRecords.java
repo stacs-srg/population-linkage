@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkage;
 
-import uk.ac.standrews.cs.population_linkage.data.ImportKilmarnockRecordsToStore;
+import uk.ac.standrews.cs.population_linkage.data.kilmarnock.ImportKilmarnockRecordsToStore;
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;

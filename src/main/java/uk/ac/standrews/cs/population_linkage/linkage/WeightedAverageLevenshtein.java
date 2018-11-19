@@ -22,7 +22,7 @@ public class WeightedAverageLevenshtein<T extends LXP> implements NamedMetric<T>
         init(match_fields, generateEqualWeights(match_fields.size()));
     }
 
-    public WeightedAverageLevenshtein(List<Integer> match_fields, List<Double> field_weights) throws InvalidWeightsException {
+    public WeightedAverageLevenshtein(List<Integer> match_fields, List<Double> field_weights) {
 
         init(match_fields, field_weights);
 
@@ -59,7 +59,7 @@ public class WeightedAverageLevenshtein<T extends LXP> implements NamedMetric<T>
         return total_distance;
     }
 
-    private void checkWeightsSumToOne(List<Double> field_weights) throws InvalidWeightsException {
+    private void checkWeightsSumToOne(List<Double> field_weights) {
 
         double total = 0;
         for (Double weight : field_weights) total += weight;

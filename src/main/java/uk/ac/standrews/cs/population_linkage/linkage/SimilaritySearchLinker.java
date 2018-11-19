@@ -27,11 +27,7 @@ public abstract class SimilaritySearchLinker extends Linker {
         final List<LXP> smaller_set = records1.size() < records2.size() ? records1 : records2;
         final List<LXP> larger_set = records1.size() < records2.size() ? records2 : records1;
 
-        SearchStructure<LXP> search_structure = search_structure_factory.newSearchStructure();
-
-        for (LXP record : larger_set) {
-            search_structure.add(record);
-        }
+        SearchStructure<LXP> search_structure = search_structure_factory.newSearchStructure(larger_set);
 
         return new Iterable<RecordPair>() {
 

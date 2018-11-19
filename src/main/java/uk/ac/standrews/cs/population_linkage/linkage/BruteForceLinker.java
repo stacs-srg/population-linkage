@@ -36,6 +36,8 @@ public abstract class BruteForceLinker extends Linker {
                 int records2_index;
 
                 final boolean ignore_inverse_pairs;
+                final int records1_size = records1.size();
+                final int records2_size = records2.size();
 
                 RecordPairIterator(final List<LXP> records1, final List<LXP> records2, boolean symmetrical_links, ProgressIndicator progress_indicator, Double threshold) {
 
@@ -54,6 +56,7 @@ public abstract class BruteForceLinker extends Linker {
                             records1.size() * (records1.size() - 1) / 2 :
                             records1.size() * records2.size();
 
+                    System.out.println("total_comparisons: " + total_comparisons);
                     progress_indicator.setTotalSteps(total_comparisons);
 
                     getNextMatchingPair();
@@ -61,7 +64,7 @@ public abstract class BruteForceLinker extends Linker {
 
                 boolean finished() {
 
-                    return records1_index >= records1.size() || records2_index >= records2.size();
+                    return records1_index >= records1_size || records2_index >= records2_size;
                 }
 
                 void advanceIndices() {

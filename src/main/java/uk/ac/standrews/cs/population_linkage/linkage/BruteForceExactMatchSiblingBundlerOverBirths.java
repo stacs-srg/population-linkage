@@ -11,6 +11,7 @@ public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLink
         super(distance_metric, number_of_progress_updates);
 
         setSymmetricalLinks(true);
+        setThreshold(0);
     }
 
     @Override
