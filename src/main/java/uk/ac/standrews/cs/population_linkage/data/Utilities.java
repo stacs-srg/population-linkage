@@ -25,8 +25,8 @@ import java.util.List;
 public class Utilities {
 
     public static final List<Integer> MATCH_FIELDS = Arrays.asList(
-            BirthLinkageSubRecord.FATHERS_FORENAME, BirthLinkageSubRecord.FATHERS_SURNAME,
-            BirthLinkageSubRecord.MOTHERS_FORENAME, BirthLinkageSubRecord.MOTHERS_MAIDEN_SURNAME,
+            BirthLinkageSubRecord.FATHER_FORENAME, BirthLinkageSubRecord.FATHER_SURNAME,
+            BirthLinkageSubRecord.MOTHER_FORENAME, BirthLinkageSubRecord.MOTHER_MAIDEN_SURNAME,
             BirthLinkageSubRecord.PARENTS_PLACE_OF_MARRIAGE,
             BirthLinkageSubRecord.PARENTS_DAY_OF_MARRIAGE, BirthLinkageSubRecord.PARENTS_MONTH_OF_MARRIAGE, BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE);
 
@@ -90,7 +90,7 @@ public class Utilities {
                 Birth record1 = records.get(i);
                 Birth record2 = records.get(j);
 
-                if (match(match_fields, record1, record2)) {
+                if (areSiblings(match_fields, record1, record2)) {
 
                     Role role1 = new Role(record1.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
                     Role role2 = new Role(record2.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
@@ -115,7 +115,7 @@ public class Utilities {
         return new LinkageQuality(precision, recall, f_measure);
     }
 
-    private static boolean match(List<Integer> match_fields, LXP record1, LXP record2) {
+    private static boolean areSiblings(List<Integer> match_fields, LXP record1, LXP record2) {
 
         if (record1 == record2) return false;
 
@@ -137,7 +137,6 @@ public class Utilities {
             }
         }
 
-        System.out.println("TP: " + count);
         return count;
     }
 
@@ -152,8 +151,6 @@ public class Utilities {
             }
         }
 
-        System.out.println("FP: " + count);
-
         return count;
     }
 
@@ -167,8 +164,6 @@ public class Utilities {
                 count++;
             }
         }
-
-        System.out.println("FN: " + count);
 
         return count;
     }

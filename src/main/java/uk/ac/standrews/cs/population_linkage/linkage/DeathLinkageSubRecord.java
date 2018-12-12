@@ -35,16 +35,16 @@ public class DeathLinkageSubRecord extends StaticLXP {
     public static int SEX ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int FATHERS_FORENAME ;
+    public static int FATHER_FORENAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int FATHERS_SURNAME ;
+    public static int FATHER_SURNAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int MOTHERS_FORENAME ;
+    public static int MOTHER_FORENAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int MOTHERS_MAIDEN_SURNAME ;
+    public static int MOTHER_MAIDEN_SURNAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int DATE_OF_BIRTH ;
@@ -65,7 +65,7 @@ public class DeathLinkageSubRecord extends StaticLXP {
     public static int MARITAL_STATUS ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int SPOUSES_NAMES ;
+    public static int SPOUSE_NAMES ;
 
     @Override
     public Metadata getMetaData() {
@@ -78,16 +78,16 @@ public class DeathLinkageSubRecord extends StaticLXP {
         put(FORENAME, death.get(Death.FORENAME));
         put(SURNAME, death.get(Death.SURNAME));
         put(SEX, death.get(Death.SEX));
-        put(FATHERS_FORENAME, death.get(Death.FATHERS_FORENAME));
-        put(FATHERS_SURNAME, death.get(Death.FATHERS_SURNAME));
-        put(MOTHERS_FORENAME, death.get(Death.MOTHERS_FORENAME));
-        put(MOTHERS_MAIDEN_SURNAME, death.get(Death.MOTHERS_MAIDEN_SURNAME));
+        put(FATHER_FORENAME, death.get(Death.FATHER_FORENAME));
+        put(FATHER_SURNAME, death.get(Death.FATHER_SURNAME));
+        put(MOTHER_FORENAME, death.get(Death.MOTHER_FORENAME));
+        put(MOTHER_MAIDEN_SURNAME, death.get(Death.MOTHER_MAIDEN_SURNAME));
         put(DATE_OF_BIRTH, death.get(Death.DATE_OF_BIRTH));
         put(DEATH_DAY, death.get(Death.DEATH_DAY));
         put(DEATH_MONTH, death.get(Death.DEATH_MONTH));
         put(DEATH_YEAR, death.get(Death.DEATH_YEAR));
         put(AGE_AT_DEATH, death.get(Death.AGE_AT_DEATH));
         put(MARITAL_STATUS, death.get(Death.MARITAL_STATUS));
-        put(SPOUSES_NAMES, death.get(Death.SPOUSES_NAMES));
+        put(SPOUSE_NAMES, death.get(Death.SPOUSE_NAMES));
     }
 }

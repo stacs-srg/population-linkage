@@ -37,16 +37,16 @@ public class BirthLinkageSubRecord extends StaticLXP {
     public static int BIRTH_YEAR;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int FATHERS_FORENAME;
+    public static int FATHER_FORENAME;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int FATHERS_SURNAME;
+    public static int FATHER_SURNAME;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int MOTHERS_FORENAME;
+    public static int MOTHER_FORENAME;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int MOTHERS_MAIDEN_SURNAME;
+    public static int MOTHER_MAIDEN_SURNAME;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int PARENTS_DAY_OF_MARRIAGE;
@@ -72,10 +72,10 @@ public class BirthLinkageSubRecord extends StaticLXP {
         put(BIRTH_DAY, birth.get(Birth.BIRTH_DAY));
         put(BIRTH_MONTH, birth.get(Birth.BIRTH_MONTH));
         put(BIRTH_YEAR, birth.get(Birth.BIRTH_YEAR));
-        put(FATHERS_FORENAME, birth.get(Birth.FATHERS_FORENAME));
-        put(FATHERS_SURNAME, birth.get(Birth.FATHERS_SURNAME));
-        put(MOTHERS_FORENAME, birth.get(Birth.MOTHERS_FORENAME));
-        put(MOTHERS_MAIDEN_SURNAME, birth.get(Birth.MOTHERS_MAIDEN_SURNAME));
+        put(FATHER_FORENAME, birth.get(Birth.FATHER_FORENAME));
+        put(FATHER_SURNAME, birth.get(Birth.FATHER_SURNAME));
+        put(MOTHER_FORENAME, birth.get(Birth.MOTHER_FORENAME));
+        put(MOTHER_MAIDEN_SURNAME, birth.get(Birth.MOTHER_MAIDEN_SURNAME));
         put(PARENTS_DAY_OF_MARRIAGE, birth.get(Birth.PARENTS_DAY_OF_MARRIAGE));
         put(PARENTS_MONTH_OF_MARRIAGE, birth.get(Birth.PARENTS_MONTH_OF_MARRIAGE));
         put(PARENTS_YEAR_OF_MARRIAGE, birth.get(Birth.PARENTS_YEAR_OF_MARRIAGE));

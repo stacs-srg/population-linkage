@@ -62,37 +62,37 @@ public class MarriageLinkageSubRecord extends StaticLXP {
     public static int PLACE_OF_MARRIAGE ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int BRIDE_MOTHERS_FORENAME ;
+    public static int BRIDE_MOTHER_FORENAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int BRIDE_MOTHERS_MAIDEN_SURNAME ;
+    public static int BRIDE_MOTHER_MAIDEN_SURNAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int BRIDE_MOTHER_DECEASED ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int BRIDE_FATHERS_FORENAME ;
+    public static int BRIDE_FATHER_FORENAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int BRIDE_FATHERS_SURNAME ;
+    public static int BRIDE_FATHER_SURNAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int BRIDE_FATHER_DECEASED ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int GROOM_MOTHERS_FORENAME ;
+    public static int GROOM_MOTHER_FORENAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int GROOM_MOTHERS_MAIDEN_SURNAME ;
+    public static int GROOM_MOTHER_MAIDEN_SURNAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int GROOM_MOTHER_DECEASED ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int GROOM_FATHERS_FORENAME ;
+    public static int GROOM_FATHER_FORENAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
-    public static int GROOM_FATHERS_SURNAME ;
+    public static int GROOM_FATHER_SURNAME ;
 
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int GROOM_FATHER_DECEASED ;
@@ -117,17 +117,17 @@ public class MarriageLinkageSubRecord extends StaticLXP {
         put(MARRIAGE_MONTH, marriage.get(Marriage.MARRIAGE_MONTH));
         put(MARRIAGE_YEAR, marriage.get(Marriage.MARRIAGE_YEAR));
         put(PLACE_OF_MARRIAGE, marriage.get(Marriage.PLACE_OF_MARRIAGE));
-        put(BRIDE_MOTHERS_FORENAME, marriage.get(Marriage.BRIDE_MOTHERS_FORENAME));
-        put(BRIDE_MOTHERS_MAIDEN_SURNAME, marriage.get(Marriage.BRIDE_MOTHERS_MAIDEN_SURNAME));
+        put(BRIDE_MOTHER_FORENAME, marriage.get(Marriage.BRIDE_MOTHER_FORENAME));
+        put(BRIDE_MOTHER_MAIDEN_SURNAME, marriage.get(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME));
         put(BRIDE_MOTHER_DECEASED, marriage.get(Marriage.BRIDE_MOTHER_DECEASED));
-        put(BRIDE_FATHERS_FORENAME, marriage.get(Marriage.BRIDE_FATHERS_FORENAME));
-        put(BRIDE_FATHERS_SURNAME, marriage.get(Marriage.BRIDE_FATHERS_SURNAME));
+        put(BRIDE_FATHER_FORENAME, marriage.get(Marriage.BRIDE_FATHER_FORENAME));
+        put(BRIDE_FATHER_SURNAME, marriage.get(Marriage.BRIDE_FATHER_SURNAME));
         put(BRIDE_FATHER_DECEASED, marriage.get(Marriage.BRIDE_FATHER_DECEASED));
-        put(GROOM_MOTHERS_FORENAME, marriage.get(Marriage.GROOM_MOTHERS_FORENAME));
-        put(GROOM_MOTHERS_MAIDEN_SURNAME, marriage.get(Marriage.GROOM_MOTHERS_MAIDEN_SURNAME));
+        put(GROOM_MOTHER_FORENAME, marriage.get(Marriage.GROOM_MOTHER_FORENAME));
+        put(GROOM_MOTHER_MAIDEN_SURNAME, marriage.get(Marriage.GROOM_MOTHER_MAIDEN_SURNAME));
         put(GROOM_MOTHER_DECEASED, marriage.get(Marriage.GROOM_MOTHER_DECEASED));
-        put(GROOM_FATHERS_FORENAME, marriage.get(Marriage.GROOM_FATHERS_FORENAME));
-        put(GROOM_FATHERS_SURNAME, marriage.get(Marriage.GROOM_FATHERS_SURNAME));
+        put(GROOM_FATHER_FORENAME, marriage.get(Marriage.GROOM_FATHER_FORENAME));
+        put(GROOM_FATHER_SURNAME, marriage.get(Marriage.GROOM_FATHER_SURNAME));
         put(GROOM_FATHER_DECEASED, marriage.get(Marriage.GROOM_FATHER_DECEASED));
     }
 }

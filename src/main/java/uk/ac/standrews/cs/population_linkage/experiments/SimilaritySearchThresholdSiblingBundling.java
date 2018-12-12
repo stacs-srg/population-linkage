@@ -16,7 +16,7 @@ public class SimilaritySearchThresholdSiblingBundling extends Experiment {
 
     private static final double MATCH_THRESHOLD = 2.0;
     private static final int NUMBER_OF_RECORDS_TO_CONSIDER = 2;
-    private static final int NUMBER_OF_PROGRESS_UPDATES = 1000;
+    private static final int NUMBER_OF_PROGRESS_UPDATES = 100;
 
     private final Path store_path;
     private final String repo_name;

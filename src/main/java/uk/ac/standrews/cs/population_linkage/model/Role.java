@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Role {
 
-    private String record_id;
+    private String record_id;  // TODO change to IStoreReference
     private String role;
 
     public Role(String record_id, String role) {
