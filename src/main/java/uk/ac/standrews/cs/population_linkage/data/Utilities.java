@@ -24,23 +24,13 @@ import java.util.List;
 
 public class Utilities {
 
-    public static final List<Integer> BIRTH_MATCH_FIELDS = Arrays.asList(
+    private static final List<Integer> BIRTH_MATCH_FIELDS = Arrays.asList(
             BirthLinkageSubRecord.FATHER_FORENAME, BirthLinkageSubRecord.FATHER_SURNAME,
             BirthLinkageSubRecord.MOTHER_FORENAME, BirthLinkageSubRecord.MOTHER_MAIDEN_SURNAME,
             BirthLinkageSubRecord.PARENTS_PLACE_OF_MARRIAGE,
             BirthLinkageSubRecord.PARENTS_DAY_OF_MARRIAGE,
             BirthLinkageSubRecord.PARENTS_MONTH_OF_MARRIAGE,
-            BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE,
-            BirthLinkageSubRecord.CHILD_IDENTITY,
-            BirthLinkageSubRecord.MOTHER_IDENTITY,
-            BirthLinkageSubRecord.FATHER_IDENTITY,
-            BirthLinkageSubRecord.PARENT_MARRIAGE_RECORD_IDENTITY,
-            BirthLinkageSubRecord.FATHER_BIRTH_RECORD_IDENTITY,
-            BirthLinkageSubRecord.MOTHER_BIRTH_RECORD_IDENTITY,
-            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY1,
-            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY2,
-            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY4,
-            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY5
+            BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE
     );
 
     public static List<LXP> getBirthLinkageSubRecords(RecordRepository record_repository) {
@@ -95,6 +85,8 @@ public class Utilities {
         }
 
         int number_of_records = records.size();
+
+        // TODO this needs to be tailored to the particular linkage.
         List<Integer> match_fields = Collections.singletonList(Birth.FAMILY);
 
         for (int i = 0; i < number_of_records; i++) {
