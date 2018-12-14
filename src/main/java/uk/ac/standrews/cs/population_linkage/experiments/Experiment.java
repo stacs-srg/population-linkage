@@ -26,11 +26,13 @@ public abstract class Experiment {
         Linker sibling_bundler = getLinker();
 
         Links sibling_links = sibling_bundler.link(birth_sub_records);
+        System.out.println("links: " + sibling_links.size());
 
         long t3 = System.currentTimeMillis();
         System.out.println((t3 - t2) / 1000 + "s to link records");
 
         Links ground_truth_links = getGroundTruthLinks(record_repository);
+        System.out.println("ground truth links: " + ground_truth_links.size());
 
         long t4 = System.currentTimeMillis();
         System.out.println((t4 - t3) / 1000 + "s to get ground truth links");

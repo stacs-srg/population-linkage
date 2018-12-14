@@ -3,17 +3,21 @@ package uk.ac.standrews.cs.population_linkage.model;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.PercentageProgressIndicator;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.List;
 
 public abstract class Linker {
 
     protected double threshold;
+    protected final NamedMetric<LXP> distance_metric;
 
     protected final ProgressIndicator progress_indicator;
 
-    public Linker(int number_of_progress_updates) {
+    public Linker(NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
+        this.distance_metric = distance_metric;
         threshold = Double.MAX_VALUE;
         progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
     }
@@ -56,6 +60,10 @@ public abstract class Linker {
         return getMatchingRecordPairs(records, records);
     }
 
+    public Metric<LXP> getMetric() {
+        return distance_metric;
+    }
+
     protected abstract String getLinkType();
     protected abstract String getProvenance();
     protected abstract String getRoleType1();
@@ -64,4 +72,5 @@ public abstract class Linker {
     protected abstract String getIdentifier2(LXP record);
 
     public abstract Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2);
+
 }

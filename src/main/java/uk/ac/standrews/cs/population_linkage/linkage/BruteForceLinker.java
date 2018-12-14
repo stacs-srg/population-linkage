@@ -11,7 +11,6 @@ import java.util.List;
 
 public abstract class BruteForceLinker extends Linker {
 
-    private final NamedMetric<LXP> distance_metric;
     private boolean symmetrical_links;
 
     /**
@@ -19,9 +18,7 @@ public abstract class BruteForceLinker extends Linker {
      */
     protected BruteForceLinker(NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
-        super(number_of_progress_updates);
-
-        this.distance_metric = distance_metric;
+        super(distance_metric, number_of_progress_updates);
         symmetrical_links = false;
     }
 
@@ -39,9 +36,9 @@ public abstract class BruteForceLinker extends Linker {
                 final int records1_size = records1.size();
                 final int records2_size = records2.size();
 
-                RecordPairIterator(final List<LXP> records1, final List<LXP> records2, boolean symmetrical_links, ProgressIndicator progress_indicator, Double threshold) {
+                RecordPairIterator(final List<LXP> records1, final List<LXP> records2, boolean symmetrical_links, ProgressIndicator progress_indicator) {
 
-                    super(records1, records2, progress_indicator, threshold);
+                    super(records1, records2, progress_indicator);
 
                     records1_index = 0;
 
@@ -56,7 +53,6 @@ public abstract class BruteForceLinker extends Linker {
                             records1.size() * (records1.size() - 1) / 2 :
                             records1.size() * records2.size();
 
-                    System.out.println("total_comparisons: " + total_comparisons);
                     progress_indicator.setTotalSteps(total_comparisons);
 
                     getNextMatchingPair();
@@ -65,6 +61,11 @@ public abstract class BruteForceLinker extends Linker {
                 boolean finished() {
 
                     return records1_index >= records1_size || records2_index >= records2_size;
+                }
+
+                boolean match(RecordPair pair) {
+
+                    return pair.distance <= threshold;
                 }
 
                 void advanceIndices() {
@@ -94,7 +95,7 @@ public abstract class BruteForceLinker extends Linker {
             @Override
             public Iterator<RecordPair> iterator() {
 
-                return new RecordPairIterator(records1, records2, symmetrical_links, progress_indicator, threshold);
+                return new RecordPairIterator(records1, records2, symmetrical_links, progress_indicator);
             }
         };
     }

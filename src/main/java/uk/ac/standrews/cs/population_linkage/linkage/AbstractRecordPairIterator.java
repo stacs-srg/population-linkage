@@ -13,21 +13,24 @@ abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
     final List<LXP> records2;
     final boolean datasets_same;
     final ProgressIndicator progress_indicator;
-    private Double threshold;
     RecordPair next_pair;
 
-    AbstractRecordPairIterator(final List<LXP> records1, final List<LXP> records2, ProgressIndicator progress_indicator, Double threshold) {
+    AbstractRecordPairIterator(final List<LXP> records1, final List<LXP> records2, ProgressIndicator progress_indicator) {
 
         this.records1 = records1;
         this.records2 = records2;
         datasets_same = records1 == records2;
         this.progress_indicator = progress_indicator;
-        this.threshold = threshold;
     }
 
     abstract boolean finished();
-    abstract void advanceIndices();
-    abstract void loadNextPair();
+    abstract boolean match(RecordPair pair);
+
+    void advanceIndices() {
+    }
+
+    void loadNextPair() {
+    }
 
     @Override
     public boolean hasNext() {
@@ -55,16 +58,10 @@ abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
         if (!finished()) {
 
             loadNextPair();
-
             advanceIndices();
 
         } else {
             next_pair = null;
         }
-    }
-
-    private boolean match(RecordPair pair) {
-
-        return pair.distance <= threshold;
     }
 }

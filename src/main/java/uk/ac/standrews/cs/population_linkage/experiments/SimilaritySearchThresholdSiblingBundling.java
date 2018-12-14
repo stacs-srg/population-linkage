@@ -1,25 +1,22 @@
 package uk.ac.standrews.cs.population_linkage.experiments;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.linkage.MTreeSearchStructure;
-import uk.ac.standrews.cs.population_linkage.linkage.SearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.linkage.SimilaritySearchSiblingBundlerOverBirths;
-import uk.ac.standrews.cs.population_linkage.model.*;
+import uk.ac.standrews.cs.population_linkage.model.LinkageQuality;
+import uk.ac.standrews.cs.population_linkage.model.Linker;
+import uk.ac.standrews.cs.population_linkage.model.Links;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.nio.file.Path;
 import java.util.List;
 
-public class SimilaritySearchThresholdSiblingBundling extends Experiment {
+public abstract class SimilaritySearchThresholdSiblingBundling extends Experiment {
 
-    private static final double MATCH_THRESHOLD = 2.0;
-    private static final int NUMBER_OF_RECORDS_TO_CONSIDER = 2;
-    private static final int NUMBER_OF_PROGRESS_UPDATES = 100;
+    protected static final double MATCH_THRESHOLD = 2.0;
+    protected static final int NUMBER_OF_PROGRESS_UPDATES = 100;
 
     private final Path store_path;
-    private final String repo_name;
+    protected final String repo_name;
 
     public SimilaritySearchThresholdSiblingBundling(Path store_path, String repo_name) {
 
@@ -31,20 +28,11 @@ public class SimilaritySearchThresholdSiblingBundling extends Experiment {
         return new RecordRepository(store_path, repo_name);
     }
 
-    protected void printHeader() {
-        System.out.println("Sibling bundling using M-tree Levenshtein threshold " + MATCH_THRESHOLD + " from repository: " + repo_name);
-    }
-
     protected List<LXP> getRecords(RecordRepository record_repository) {
         return Utilities.getBirthLinkageSubRecords(record_repository);
     }
 
-    protected Linker getLinker() {
-
-        SearchStructureFactory factory = records -> new MTreeSearchStructure<>(Utilities.weightedAverageLevenshteinOverBirths(), records);
-
-        return new SimilaritySearchSiblingBundlerOverBirths(factory, MATCH_THRESHOLD, NUMBER_OF_RECORDS_TO_CONSIDER, NUMBER_OF_PROGRESS_UPDATES);
-    }
+    protected abstract Linker getLinker();
 
     protected Links getGroundTruthLinks(RecordRepository record_repository) {
         return Utilities.getGroundTruthSiblingLinks(record_repository);
@@ -52,13 +40,5 @@ public class SimilaritySearchThresholdSiblingBundling extends Experiment {
 
     protected LinkageQuality evaluateLinkage(Links calculated_links, Links ground_truth_links) {
         return Utilities.evaluateLinkage(calculated_links, ground_truth_links);
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        Path store_path = ApplicationProperties.getStorePath();
-        String repository_name = ApplicationProperties.getRepositoryName();
-
-        new SimilaritySearchThresholdSiblingBundling(store_path, repository_name).run();
     }
 }

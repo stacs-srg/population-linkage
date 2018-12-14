@@ -1,24 +1,25 @@
 package uk.ac.standrews.cs.population_linkage.linkage;
 
-import uk.ac.standrews.cs.population_linkage.model.*;
+import uk.ac.standrews.cs.population_linkage.model.Linker;
+import uk.ac.standrews.cs.population_linkage.model.RecordPair;
+import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.Iterator;
 import java.util.List;
 
 public abstract class SimilaritySearchLinker extends Linker {
 
-    private int number_of_records_to_consider;
     private SearchStructureFactory search_structure_factory;
 
-    protected SimilaritySearchLinker(SearchStructureFactory search_structure_factory, int number_of_progress_updates) {
+    protected SimilaritySearchLinker(SearchStructureFactory search_structure_factory, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
-        super(number_of_progress_updates);
+        super(distance_metric, number_of_progress_updates);
 
         this.search_structure_factory = search_structure_factory;
-        this.number_of_records_to_consider = Integer.MAX_VALUE;
     }
 
     @Override
@@ -37,9 +38,9 @@ public abstract class SimilaritySearchLinker extends Linker {
                 int neighbours_index;
                 List<DataDistance<LXP>> nearest_records;
 
-                RecordPairIterator(final List<LXP> records1, final List<LXP> records2, ProgressIndicator progress_indicator, Double threshold) {
+                RecordPairIterator(final List<LXP> records1, final List<LXP> records2, ProgressIndicator progress_indicator) {
 
-                    super(records1, records2, progress_indicator, threshold);
+                    super(records1, records2, progress_indicator);
 
                     smaller_set_index = 0;
 
@@ -49,25 +50,37 @@ public abstract class SimilaritySearchLinker extends Linker {
                     progress_indicator.setTotalSteps(smaller_set.size());
 
                     getNextRecordBatch();
-                    getNextMatchingPair();
+                    getNextPair();
+                }
+
+                 void getNextPair() {
+
+                    while (neighbours_index >= nearest_records.size() && smaller_set_index < smaller_set.size()) {
+                        getNextRecordFromSmallerSet();
+                    }
+
+                    if (!finished()) {
+
+                        LXP target = smaller_set.get(smaller_set_index);
+                        DataDistance<LXP> data_distance = nearest_records.get(neighbours_index);
+                        next_pair = new RecordPair(target, data_distance.value, data_distance.distance);
+
+                        neighbours_index++;
+                        if (neighbours_index >= nearest_records.size()) getNextRecordFromSmallerSet();
+
+                    } else {
+                        next_pair = null;
+                    }
                 }
 
                 boolean finished() {
 
-                    return smaller_set_index >= smaller_set.size() || neighbours_index >= nearest_records.size();
+                    return smaller_set_index >= smaller_set.size() || (smaller_set_index == smaller_set.size() - 1 && neighbours_index >= nearest_records.size());
                 }
 
-                void advanceIndices() {
-
-                    neighbours_index++;
-                    if (neighbours_index >= nearest_records.size()) getNextRecordFromSmallerSet();
-                }
-
-                void loadNextPair() {
-
-                    LXP target = smaller_set.get(smaller_set_index);
-                    DataDistance<LXP> data_distance = nearest_records.get(neighbours_index);
-                    next_pair = new RecordPair(target, data_distance.value, data_distance.distance);
+                @Override
+                boolean match(final RecordPair pair) {
+                    return true;
                 }
 
                 private void getNextRecordFromSmallerSet() {
@@ -83,23 +96,14 @@ public abstract class SimilaritySearchLinker extends Linker {
 
                 private void getNextRecordBatch() {
 
-                    final LXP target = smaller_set.get(smaller_set_index);
-                    nearest_records = search_structure.findNearest(target, number_of_records_to_consider);
+                    nearest_records = search_structure.findWithinThreshold(smaller_set.get(smaller_set_index), threshold);
                 }
             }
 
             @Override
             public Iterator<RecordPair> iterator() {
-                return new RecordPairIterator(records1, records2, progress_indicator, threshold);
+                return new RecordPairIterator(records1, records2, progress_indicator);
             }
         };
-    }
-
-    /**
-     * @param number_of_records_to_consider the maximum number of records that will be considered as a potential match for each record in the smaller set
-     */
-    public void setNumberOfRecordsToConsider(int number_of_records_to_consider) {
-
-        this.number_of_records_to_consider = number_of_records_to_consider;
     }
 }

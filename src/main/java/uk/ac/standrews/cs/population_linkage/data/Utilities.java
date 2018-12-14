@@ -24,7 +24,7 @@ import java.util.List;
 
 public class Utilities {
 
-    public static final List<Integer> MATCH_FIELDS = Arrays.asList(
+    public static final List<Integer> BIRTH_MATCH_FIELDS = Arrays.asList(
             BirthLinkageSubRecord.FATHER_FORENAME, BirthLinkageSubRecord.FATHER_SURNAME,
             BirthLinkageSubRecord.MOTHER_FORENAME, BirthLinkageSubRecord.MOTHER_MAIDEN_SURNAME,
             BirthLinkageSubRecord.PARENTS_PLACE_OF_MARRIAGE,
@@ -81,7 +81,7 @@ public class Utilities {
 
     public static NamedMetric<LXP> weightedAverageLevenshteinOverBirths() {
 
-        return new WeightedAverageLevenshtein<>(MATCH_FIELDS);
+        return new WeightedAverageLevenshtein<>(BIRTH_MATCH_FIELDS);
     }
 
     public static Links getGroundTruthSiblingLinks(RecordRepository record_repository) {

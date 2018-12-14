@@ -20,9 +20,14 @@ public class MTreeSearchStructure<T extends LXP> implements SearchStructure<T> {
         }
     }
 
-    @Override
     public List<DataDistance<T>> findNearest(T record, int number_of_records) {
 
         return m_tree.nearestN(record, number_of_records);
+    }
+
+    @Override
+    public List<DataDistance<T>> findWithinThreshold(final T record, final double threshold) {
+
+        return m_tree.rangeSearch(record, threshold);
     }
 }

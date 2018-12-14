@@ -4,9 +4,9 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
-public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLinker {
+public class MTreeSiblingBundlerOverBirths extends SimilaritySearchLinker {
 
-    public SimilaritySearchSiblingBundlerOverBirths(SearchStructureFactory search_structure_factory, double threshold, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    public MTreeSiblingBundlerOverBirths(SearchStructureFactory search_structure_factory, double threshold, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(search_structure_factory, distance_metric, number_of_progress_updates);
         setThreshold(threshold);

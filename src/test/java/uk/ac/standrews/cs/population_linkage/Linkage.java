@@ -2,6 +2,7 @@ package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
 import org.junit.Test;
+import uk.ac.standrews.cs.population_linkage.linkage.BirthLinkageSubRecord;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_linkage.model.RecordPair;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -15,6 +16,8 @@ import static junit.framework.TestCase.*;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class Linkage {
+
+    private static final double DELTA = 0.0000001;
 
     final LXP birth1 = new DummyLXP("john", "smith");
     final LXP birth2 = new DummyLXP("janet", "smith");
@@ -40,6 +43,17 @@ public abstract class Linkage {
     public void init() {
 
         linker = getLinker();
+    }
+
+    @Test
+    public void distancesCorrect() {
+
+        assertEquals(0.0, linker.getMetric().distance(birth1, birth1), DELTA);
+        assertEquals(2.0, linker.getMetric().distance(birth1, birth2), DELTA);
+        assertEquals(2.0, linker.getMetric().distance(birth1, birth3), DELTA);
+        assertEquals(0.0, linker.getMetric().distance(birth2, birth2), DELTA);
+        assertEquals(1.0, linker.getMetric().distance(birth2, birth3), DELTA);
+        assertEquals(0.0, linker.getMetric().distance(birth3, birth3), DELTA);
     }
 
     @Test
@@ -70,6 +84,8 @@ public abstract class Linkage {
 
     @Test
     public void checkAllRecordPairsWithTwoDataSets() {
+
+        linker.setThreshold(Double.MAX_VALUE);
 
         Iterable<RecordPair> pairs = linker.getMatchingRecordPairs(birth_records, death_records);
 
@@ -201,7 +217,9 @@ public abstract class Linkage {
     int count(Iterable<RecordPair> record_pairs) {
 
         int count = 0;
-        for (RecordPair ignored : record_pairs) count++;
+        for (RecordPair ignored : record_pairs) {
+            count++;
+        }
         return count;
     }
 
@@ -216,8 +234,11 @@ public abstract class Linkage {
     class DummyLXP extends StaticLXP {
 
         String rep = "";
+        int number_of_fields;
 
         DummyLXP(String... values) {
+
+            number_of_fields = values.length;
 
             int i = 0;
             for (String value : values) {
@@ -232,8 +253,47 @@ public abstract class Linkage {
         }
 
         @Override
+        public int getFieldCount() {
+            return number_of_fields;
+        }
+
+        @Override
         public boolean equals(Object o) {
             return o instanceof DummyLXP && ((DummyLXP) o).id == id;
+        }
+
+        public String toString() {
+            return rep;
+        }
+    }
+
+    class BirthLXP extends StaticLXP {
+
+        String rep = "";
+
+        BirthLXP(String father_forename, String father_surname, String mother_forename, String mother_maiden_surname,
+                 String parents_place_of_marriage, String parents_day_of_marriage, String parents_month_of_marriage, String parents_year_of_marriage) {
+
+            put(BirthLinkageSubRecord.FATHER_FORENAME, father_forename);
+            put(BirthLinkageSubRecord.FATHER_SURNAME, father_surname);
+            put(BirthLinkageSubRecord.MOTHER_FORENAME, mother_forename);
+            put(BirthLinkageSubRecord.MOTHER_MAIDEN_SURNAME, mother_maiden_surname);
+            put(BirthLinkageSubRecord.PARENTS_PLACE_OF_MARRIAGE, parents_place_of_marriage);
+            put(BirthLinkageSubRecord.PARENTS_DAY_OF_MARRIAGE, parents_day_of_marriage);
+            put(BirthLinkageSubRecord.PARENTS_MONTH_OF_MARRIAGE, parents_month_of_marriage);
+            put(BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE, parents_year_of_marriage);
+
+            rep = mother_forename + " " + mother_maiden_surname + " " + father_forename + " " + father_surname;
+        }
+
+        @Override
+        public Metadata getMetaData() {
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof BirthLXP && ((BirthLXP) o).id == id;
         }
 
         public String toString() {
