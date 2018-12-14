@@ -13,8 +13,8 @@ import uk.ac.standrews.cs.utilities.dataset.DataSet;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 public class InfrastructureTest {
 

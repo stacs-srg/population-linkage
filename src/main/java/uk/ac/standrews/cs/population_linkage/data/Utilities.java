@@ -28,7 +28,20 @@ public class Utilities {
             BirthLinkageSubRecord.FATHER_FORENAME, BirthLinkageSubRecord.FATHER_SURNAME,
             BirthLinkageSubRecord.MOTHER_FORENAME, BirthLinkageSubRecord.MOTHER_MAIDEN_SURNAME,
             BirthLinkageSubRecord.PARENTS_PLACE_OF_MARRIAGE,
-            BirthLinkageSubRecord.PARENTS_DAY_OF_MARRIAGE, BirthLinkageSubRecord.PARENTS_MONTH_OF_MARRIAGE, BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE);
+            BirthLinkageSubRecord.PARENTS_DAY_OF_MARRIAGE,
+            BirthLinkageSubRecord.PARENTS_MONTH_OF_MARRIAGE,
+            BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE,
+            BirthLinkageSubRecord.CHILD_IDENTITY,
+            BirthLinkageSubRecord.MOTHER_IDENTITY,
+            BirthLinkageSubRecord.FATHER_IDENTITY,
+            BirthLinkageSubRecord.PARENT_MARRIAGE_RECORD_IDENTITY,
+            BirthLinkageSubRecord.FATHER_BIRTH_RECORD_IDENTITY,
+            BirthLinkageSubRecord.MOTHER_BIRTH_RECORD_IDENTITY,
+            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY1,
+            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY2,
+            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY4,
+            BirthLinkageSubRecord.MARRIAGE_RECORD_IDENTITY5
+    );
 
     public static List<LXP> getBirthLinkageSubRecords(RecordRepository record_repository) {
 
