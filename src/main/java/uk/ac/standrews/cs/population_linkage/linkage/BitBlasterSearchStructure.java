@@ -1,7 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkage;
 
 import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 import uk.al_richard.metricbitblaster.MetricBitBlaster;
@@ -10,14 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class BitBlasterSearchStructure<T extends LXP> implements SearchStructure<T> {
+public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
-    private static final int NUMBER_OF_REFERENCE_POINTS = 20;
+    private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 20;
+    private static final long SEED = 34258723425L;
     private MetricBitBlaster<T> bit_blaster;
 
     public BitBlasterSearchStructure(NamedMetric<T> distance_metric, List<T> data) {
 
-        init(distance_metric, chooseRandomReferencePoints(data), data);
+        init(distance_metric, chooseRandomReferencePoints(data, DEFAULT_NUMBER_OF_REFERENCE_POINTS), data);
     }
 
     public BitBlasterSearchStructure(NamedMetric<T> distance_metric, List<T> reference_points, List<T> data) {
@@ -36,13 +36,20 @@ public class BitBlasterSearchStructure<T extends LXP> implements SearchStructure
         return bit_blaster.rangeSearch(record, threshold);
     }
 
-    private List<T> chooseRandomReferencePoints(final List<T> data) {
+    public static <X> List<X> chooseRandomReferencePoints(final List<X> data, int number_of_reference_points) {
 
-        List<T> reference_points = new ArrayList<>();
-        Random random = new Random();
+        if (number_of_reference_points >= data.size()) {
+            return data;
+        }
 
-        while (reference_points.size() < NUMBER_OF_REFERENCE_POINTS) {
-            reference_points.add(data.get(random.nextInt(data.size())));
+        List<X> reference_points = new ArrayList<>();
+        Random random = new Random(SEED);
+
+        while (reference_points.size() < number_of_reference_points) {
+            X item = data.get(random.nextInt(data.size()));
+            if (!reference_points.contains(item)) {
+                reference_points.add(item);
+            }
         }
 
         return reference_points;

@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 import static junit.framework.TestCase.*;
 
-public class BruteForceLinkageTest extends Linkage {
+public class BruteForceLinkageTest extends LinkageTest {
 
     @Override
     public Linker getLinker() {

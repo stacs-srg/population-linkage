@@ -15,7 +15,7 @@ import java.util.List;
 import static junit.framework.TestCase.*;
 
 @SuppressWarnings("WeakerAccess")
-public abstract class Linkage {
+public abstract class LinkageTest {
 
     private static final double DELTA = 0.0000001;
 

@@ -9,7 +9,7 @@ import uk.ac.standrews.cs.population_linkage.model.RecordPair;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
-public class BitBlasterLinkageTest extends Linkage {
+public class BitBlasterLinkageTest extends LinkageTest {
 
     @Override
     public Linker getLinker() {
