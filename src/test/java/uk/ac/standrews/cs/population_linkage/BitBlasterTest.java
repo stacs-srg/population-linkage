@@ -9,7 +9,7 @@ import java.util.List;
 
 public class BitBlasterTest extends SimilaritySearchTest {
 
-    private int MAX_NUMBER_OF_REFERENCE_POINTS = 30;
+    private static final int MAX_NUMBER_OF_REFERENCE_POINTS = 30;
 
     @Override
     SearchStructure<Point> getSearchStructure(NamedMetric<Point> metric, List<Point> data_points, final List<Point> reference_points) {
@@ -20,17 +20,7 @@ public class BitBlasterTest extends SimilaritySearchTest {
     @Override
     List<Point> getReferencePoints(final List<Point> data_points, int number_of_reference_points) {
 
-        List<Point> results = BitBlasterSearchStructure.chooseRandomReferencePoints(data_points, (number_of_reference_points + 1) / 2);
-        List<Point> extras = new ArrayList<>();
-
-        for (Point point : results) {
-            if (results.size() + extras.size() < number_of_reference_points) {
-                extras.add(new Point(point.x + 0.1, point.y));
-            }
-        }
-
-        results.addAll(extras);
-        return results;
+        return BitBlasterSearchStructure.chooseRandomReferencePoints(data_points, number_of_reference_points );
     }
 
     @Override
