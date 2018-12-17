@@ -9,6 +9,8 @@ import java.util.List;
 
 public class BitBlasterTest extends SimilaritySearchTest {
 
+    // BitBlaster implementation assumes at least two reference points.
+    private static final int MIN_NUMBER_OF_REFERENCE_POINTS = 2;
     private static final int MAX_NUMBER_OF_REFERENCE_POINTS = 30;
 
     @Override
@@ -28,7 +30,7 @@ public class BitBlasterTest extends SimilaritySearchTest {
 
         List<Integer> result = new ArrayList<>();
 
-        for (int i = 1; i <= Math.min(MAX_NUMBER_OF_REFERENCE_POINTS, number_of_data_points); i++) {
+        for (int i = MIN_NUMBER_OF_REFERENCE_POINTS; i <= Math.min(MAX_NUMBER_OF_REFERENCE_POINTS, number_of_data_points); i++) {
             result.add(i);
         }
 
