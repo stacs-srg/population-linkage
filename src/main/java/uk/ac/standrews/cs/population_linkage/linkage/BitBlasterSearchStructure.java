@@ -3,7 +3,7 @@ package uk.ac.standrews.cs.population_linkage.linkage;
 import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
-import uk.al_richard.metricbitblaster.MetricBitBlaster;
+import uk.al_richard.metricbitblaster.production.ParallelBitBlaster;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 20;
     private static final long SEED = 34258723425L;
-    private MetricBitBlaster<T> bit_blaster;
+    private ParallelBitBlaster<T> bit_blaster;
 
     public BitBlasterSearchStructure(NamedMetric<T> distance_metric, List<T> data) {
 
@@ -27,13 +27,21 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     private void init(final NamedMetric<T> distance_metric, final List<T> reference_points, final List<T> data) {
 
-        bit_blaster = new MetricBitBlaster<>(distance_metric::distance, reference_points, data, false, false);
+        try {
+            bit_blaster = new ParallelBitBlaster<>(distance_metric::distance, reference_points, data, false, false, false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public List<DataDistance<T>> findWithinThreshold(final T record, final double threshold) {
 
-        return bit_blaster.rangeSearch(record, threshold);
+        try {
+            return bit_blaster.rangeSearch(record, threshold);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static <X> List<X> chooseRandomReferencePoints(final List<X> data, int number_of_reference_points) {
