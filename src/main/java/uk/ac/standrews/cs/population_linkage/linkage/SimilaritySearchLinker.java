@@ -13,9 +13,9 @@ import java.util.List;
 
 public abstract class SimilaritySearchLinker extends Linker {
 
-    private SearchStructureFactory search_structure_factory;
+    private SearchStructureFactory<LXP> search_structure_factory;
 
-    protected SimilaritySearchLinker(SearchStructureFactory search_structure_factory, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
 

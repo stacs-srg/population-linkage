@@ -7,6 +7,7 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public class BitBlasterThresholdSiblingBundling extends SimilaritySearchThresholdSiblingBundling {
 
@@ -23,7 +24,7 @@ public class BitBlasterThresholdSiblingBundling extends SimilaritySearchThreshol
 
         NamedMetric<LXP> metric = Utilities.weightedAverageLevenshteinOverBirths();
 
-        SearchStructureFactory factory = records -> new BitBlasterSearchStructure<>(metric, records);
+        SearchStructureFactory<LXP> factory = (List<LXP> records) -> new BitBlasterSearchStructure<>(metric, records);
 
         return new SimilaritySearchSiblingBundlerOverBirths(factory, MATCH_THRESHOLD, metric, NUMBER_OF_PROGRESS_UPDATES);
     }

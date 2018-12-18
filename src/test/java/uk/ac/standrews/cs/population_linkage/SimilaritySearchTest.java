@@ -9,13 +9,14 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 import java.util.ArrayList;
 import java.util.List;
 
+import static junit.framework.TestCase.fail;
+
 public abstract class SimilaritySearchTest {
 
     private static final double MAX_SIDE_OF_SQUARE = 10.0;
     private static final double MAX_THRESHOLD = 12.0;
 
     private NamedMetric<Point> metric;
-    private int check_count = 0;
 
     @Before
     public void setup() {
@@ -47,7 +48,7 @@ public abstract class SimilaritySearchTest {
     @Test
     public void similaritySearchGivesCorrectResults() {
 
-        for (double side_of_square = 0.0; side_of_square <= MAX_SIDE_OF_SQUARE; side_of_square++) {
+        for (double side_of_square = 1.0; side_of_square <= MAX_SIDE_OF_SQUARE; side_of_square++) {
             for (double threshold = 0.0; threshold <= MAX_THRESHOLD; threshold += 0.5) {
 
                 for (Point query : getQueryPoints()) {
@@ -62,14 +63,11 @@ public abstract class SimilaritySearchTest {
                 }
             }
         }
-
-        System.out.println("checks: " + check_count);
     }
 
     private List<Point> getQueryPoints() {
 
         List<Point> results = generatePointGrid(MAX_SIDE_OF_SQUARE);
-
         List<Point> extras = new ArrayList<>();
 
         for (Point point : results) {
@@ -92,29 +90,17 @@ public abstract class SimilaritySearchTest {
 
         if (!checkSamePoints(ground_truth, query_results)) {
 
-            System.out.println("mismatch for:");
-            System.out.println("data points: " + print(data_points));
-            if (reference_points != null) System.out.println("reference points: " + print(reference_points));
-            System.out.println("query: " + query);
-            System.out.println("threshold: " + threshold);
-            System.out.println("expected: " + print(ground_truth));
-            System.out.println("actual: " + print(query_results));
-            System.out.println();
+            StringBuilder builder = new StringBuilder();
+            builder.append("mismatch for:\n");
+            builder.append("data points: ").append(print(data_points)).append("\n");
+            if (reference_points != null) System.out.println("reference points: " + print(reference_points) + "\n");
+            builder.append("query: ").append(query).append("\n");
+            builder.append("threshold: ").append(threshold).append("\n");
+            builder.append("expected: ").append(print(ground_truth)).append("\n");
+            builder.append("actual: ").append(print(query_results)).append("\n");
+
+            fail(builder.toString());
         }
-
-//        if (!checkEquivalentPoints(ground_truth, query_results)) {
-//
-//            System.out.println("mismatch for:");
-//            System.out.println("data points: " + print(data_points));
-//            if (reference_points != null) System.out.println("reference points: " + print(reference_points));
-//            System.out.println("query: " + query);
-//            System.out.println("threshold: " + threshold);
-//            System.out.println("expected: " + print(ground_truth));
-//            System.out.println("actual: " + print(query_results));
-//            System.out.println();
-//        }
-
-        check_count++;
     }
 
     private List<Point> getPoints(final List<DataDistance<Point>> data_distances) {
@@ -158,19 +144,10 @@ public abstract class SimilaritySearchTest {
         for (Point point : results) {
             if (!ground_truth.contains(point)) return false;
         }
-        return true;
-    }
-
-    private boolean checkEquivalentPoints(final List<Point> ground_truth, final List<Point> results) {
-
-        for (Point point : results) {
-            if (!ground_truth.contains(point)) return false;
-        }
 
         for (Point point : ground_truth) {
             if (!results.contains(point)) return false;
         }
-
         return true;
     }
 

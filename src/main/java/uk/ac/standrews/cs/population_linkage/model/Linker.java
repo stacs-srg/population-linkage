@@ -27,7 +27,7 @@ public abstract class Linker {
         return link(records, records);
     }
 
-    public Links link(List<LXP> records1, List<LXP> records2) throws InvalidWeightsException {
+    private Links link(List<LXP> records1, List<LXP> records2) throws InvalidWeightsException {
 
         Links links = new Links();
 
@@ -45,7 +45,7 @@ public abstract class Linker {
         return links;
     }
 
-    public boolean match(RecordPair pair) {
+    private boolean match(RecordPair pair) {
 
         return pair.distance <= threshold;
     }
@@ -60,6 +60,8 @@ public abstract class Linker {
         return getMatchingRecordPairs(records, records);
     }
 
+    public abstract Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2);
+
     public Metric<LXP> getMetric() {
         return distance_metric;
     }
@@ -70,7 +72,4 @@ public abstract class Linker {
     protected abstract String getRoleType2();
     protected abstract String getIdentifier1(LXP record);
     protected abstract String getIdentifier2(LXP record);
-
-    public abstract Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2);
-
 }
