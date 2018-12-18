@@ -25,6 +25,10 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         init(distance_metric, reference_points, data);
     }
 
+    public void terminate() {
+        bit_blaster.terminate();
+    }
+
     private void init(final NamedMetric<T> distance_metric, final List<T> reference_points, final List<T> data) {
 
         try {

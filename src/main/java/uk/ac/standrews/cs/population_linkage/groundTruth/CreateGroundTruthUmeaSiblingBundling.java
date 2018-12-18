@@ -9,28 +9,36 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class GroundTruthUmea {
+public class CreateGroundTruthUmeaSiblingBundling {
 
     private static final int CHARVAL = 255;
     private final Path store_path;
     private final String repo_name;
 
-    private final String DELIMIT = " ";
+    private final String DELIMIT = ",";
     private final String DASH = "-";
+    private final PrintStream outstream;
 
     NamedMetric<String>[] base_metrics = new NamedMetric[] { new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(), new JensenShannon2(CHARVAL) };
     NamedMetric<LXP>[] combined_metrics;
     private int[] sibling_bundling_fields = new int[] { Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME,
                                                         Birth.PARENTS_PLACE_OF_MARRIAGE, Birth.PARENTS_DAY_OF_MARRIAGE, Birth.PARENTS_MONTH_OF_MARRIAGE, Birth.PARENTS_YEAR_OF_MARRIAGE };
 
-    public GroundTruthUmea(Path store_path, String repo_name) {
+    public CreateGroundTruthUmeaSiblingBundling(Path store_path, String repo_name, String filename) throws Exception {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
+
+        if( filename.equals("stdout") ) {
+            outstream = System.out;
+        } else {
+            outstream = new PrintStream( filename );
+        }
 
         List<Integer> sibling_field_list = Arrays.stream(sibling_bundling_fields).boxed().collect(Collectors.toList());
 
@@ -56,12 +64,11 @@ public class GroundTruthUmea {
         TreeMap<String, RecordDistances> true_link_distances = populateTrueLinkRecordDistances( real_sibling_bundles ); // Map from concatenated record id to RecordDistances
         TreeMap<String, RecordDistances> non_link_distances = populateFalseLinkRecordDistances( all_records, true_link_distances );
 
-        //System.out.println( "Num links = " + true_link_distances.size() + " " + "Num non links = " + non_link_distances.size() );
 
-        printDistances( non_link_distances );
+        printColumnHeaders( outstream );
+        printDistances( true_link_distances, true, outstream );
+        printDistances( non_link_distances, false, outstream );
 
-        System.out.println();
-        System.out.println("Complete");
     }
 
     private ArrayList<Birth> createList(Iterable<Birth> births) {
@@ -216,26 +223,27 @@ public class GroundTruthUmea {
         }
     }
 
-    private void printDistances(Map<String,RecordDistances> distances) {
+    private void printDistances(Map<String, RecordDistances> distances, boolean is_true_link, PrintStream out) {
 
-        printColumnHeaders();
+
         for( RecordDistances r : distances.values() ) {
 
-            System.out.print(r.record1.getId() + DELIMIT + r.record2.getId() );
-
+            out.print( r.record1.getId() + DELIMIT + r.record2.getId() + DELIMIT + is_true_link + DELIMIT );
             for( int cm_index = 0; cm_index < r.distances.length; cm_index++ ) {
-                System.out.print( DELIMIT + r.distances[cm_index]);
+                out.print( DELIMIT + r.distances[cm_index]);
             }
-            System.out.println();
+            out.println();
+            out.flush();
         }
     }
 
-    private void printColumnHeaders() {
-        System.out.print( "id1:" + DELIMIT + "id2:" + DELIMIT );
+    private void printColumnHeaders( PrintStream out ) {
+        out.print( "id1" + DELIMIT + "id2" + DELIMIT + "is_true_link" + DELIMIT );
         for( int cm_index = 0; cm_index < combined_metrics.length; cm_index++ ) {
-            System.out.print( combined_metrics[cm_index].getMetricName() + DELIMIT );
+            out.print( combined_metrics[cm_index].getMetricName() + DELIMIT );
         }
-        System.out.println();
+        out.println();
+        out.flush();
     }
 
 
@@ -244,7 +252,7 @@ public class GroundTruthUmea {
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = ApplicationProperties.getRepositoryName();
 
-        new GroundTruthUmea( store_path, repo_name ).run();
+        new CreateGroundTruthUmeaSiblingBundling( store_path, repo_name, "/Users/al/Desktop/distances.csv" ).run();
     }
 
     private class RecordDistances {

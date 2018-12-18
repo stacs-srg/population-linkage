@@ -7,4 +7,5 @@ import java.util.List;
 public interface SearchStructure<T> {
 
     List<DataDistance<T>> findWithinThreshold(T record, double threshold);
+    void terminate();
 }

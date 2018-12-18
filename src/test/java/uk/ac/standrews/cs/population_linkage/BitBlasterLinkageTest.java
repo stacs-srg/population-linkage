@@ -18,7 +18,7 @@ public class BitBlasterLinkageTest extends LinkageTest {
 
         SearchStructureFactory factory = records -> new BitBlasterSearchStructure<>(metric, records);
 
-        return new SimilaritySearchSiblingBundlerOverBirths(factory, 2.0, metric,0);
+        return new SimilaritySearchSiblingBundlerOverBirths(factory, 2.0, metric, 0);
     }
 
     @Override

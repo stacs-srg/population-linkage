@@ -29,4 +29,6 @@ public class MTreeSearchStructure<T> implements SearchStructure<T> {
 
         return m_tree.rangeSearch(record, threshold);
     }
+
+    public void terminate() {}
 }

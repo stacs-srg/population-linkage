@@ -88,19 +88,9 @@ public abstract class SimilaritySearchTest {
         final List<Point> ground_truth = bruteForceQuery(data_points, query, threshold);
         final List<Point> query_results = getPoints(search_structure.findWithinThreshold(query, threshold));
 
-//        if (!checkSamePoints(ground_truth, query_results)) {
-//
-//            System.out.println("mismatch for:");
-//            System.out.println("data points: " + print(data_points));
-//            if (reference_points != null) System.out.println("reference points: " + print(reference_points));
-//            System.out.println("query: " + query);
-//            System.out.println("threshold: " + threshold);
-//            System.out.println("expected: " + print(ground_truth));
-//            System.out.println("actual: " + print(query_results));
-//            System.out.println();
-//        }
+        search_structure.terminate();
 
-        if (!checkEquivalentPoints(ground_truth, query_results)) {
+        if (!checkSamePoints(ground_truth, query_results)) {
 
             System.out.println("mismatch for:");
             System.out.println("data points: " + print(data_points));
@@ -111,6 +101,18 @@ public abstract class SimilaritySearchTest {
             System.out.println("actual: " + print(query_results));
             System.out.println();
         }
+
+//        if (!checkEquivalentPoints(ground_truth, query_results)) {
+//
+//            System.out.println("mismatch for:");
+//            System.out.println("data points: " + print(data_points));
+//            if (reference_points != null) System.out.println("reference points: " + print(reference_points));
+//            System.out.println("query: " + query);
+//            System.out.println("threshold: " + threshold);
+//            System.out.println("expected: " + print(ground_truth));
+//            System.out.println("actual: " + print(query_results));
+//            System.out.println();
+//        }
 
         check_count++;
     }

@@ -6,3 +6,4 @@ target
 application-checked-in.properties
 application-local.properties
 application.properties
+!/src/main/java/uk/ac/standrews/cs/population_linkage/groundTruth/GroundTruthUmea.java
