@@ -7,7 +7,7 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import java.nio.file.Path;
 import java.util.List;
 
-public abstract class SimilaritySearchThresholdSiblingBundling extends SiblingBundling {
+public abstract class SimilaritySearchSiblingBundling extends SiblingBundling {
 
     static final double MATCH_THRESHOLD = 2.0;
     static final int NUMBER_OF_PROGRESS_UPDATES = 100;
@@ -15,7 +15,7 @@ public abstract class SimilaritySearchThresholdSiblingBundling extends SiblingBu
     private final Path store_path;
     protected final String repo_name;
 
-    SimilaritySearchThresholdSiblingBundling(Path store_path, String repo_name) {
+    SimilaritySearchSiblingBundling(Path store_path, String repo_name) {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
