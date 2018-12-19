@@ -21,6 +21,14 @@ public class Link {
         this.provenance = Arrays.asList(provenance);
     }
 
+    public Role getRole1() {
+        return role1;
+    }
+
+    public Role getRole2() {
+        return role2;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

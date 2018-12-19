@@ -9,7 +9,7 @@ import java.util.List;
 
 public class MTreeSearchStructure<T> implements SearchStructure<T> {
 
-    MTree<T> m_tree;
+    private MTree<T> m_tree;
 
     public MTreeSearchStructure(NamedMetric<T> distance_metric, List<T> records) {
 
@@ -17,11 +17,6 @@ public class MTreeSearchStructure<T> implements SearchStructure<T> {
         for (T record : records) {
             m_tree.add(record);
         }
-    }
-
-    public List<DataDistance<T>> findNearest(T record, int number_of_records) {
-
-        return m_tree.nearestN(record, number_of_records);
     }
 
     @Override

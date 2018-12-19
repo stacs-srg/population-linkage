@@ -37,10 +37,6 @@ public class WeightedAverageLevenshtein<T extends LXP> implements NamedMetric<T>
         checkWeightsSumToOne(field_weights);
     }
 
-    private void init(List<Integer> match_fields, List<Double> field_weights) {
-
-    }
-
     @Override
     public String getMetricName() {
         return "Weighted Average Levenshtein";

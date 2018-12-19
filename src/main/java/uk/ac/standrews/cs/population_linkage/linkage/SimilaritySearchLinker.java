@@ -14,21 +14,28 @@ import java.util.List;
 public abstract class SimilaritySearchLinker extends Linker {
 
     private SearchStructureFactory<LXP> search_structure_factory;
+    private SearchStructure<LXP> search_structure;
+    private List<LXP> smaller_set;
 
-    SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
 
         this.search_structure_factory = search_structure_factory;
     }
 
-    @Override
-    public Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2) {
+    public void addRecords(List<LXP> records1, List<LXP> records2) {
 
-        final List<LXP> smaller_set = records1.size() < records2.size() ? records1 : records2;
+        super.addRecords(records1, records2);
+
+        smaller_set = records1.size() < records2.size() ? records1 : records2;
         final List<LXP> larger_set = records1.size() < records2.size() ? records2 : records1;
 
-        SearchStructure<LXP> search_structure = search_structure_factory.newSearchStructure(larger_set);
+        search_structure = search_structure_factory.newSearchStructure(larger_set);
+    }
+
+    @Override
+    public Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2) {
 
         return new Iterable<RecordPair>() {
 
@@ -102,7 +109,7 @@ public abstract class SimilaritySearchLinker extends Linker {
 
             @Override
             public Iterator<RecordPair> iterator() {
-                return new RecordPairIterator(records1, records2, progress_indicator);
+                return new RecordPairIterator(records1, records2, linkage_progress_indicator);
             }
         };
     }

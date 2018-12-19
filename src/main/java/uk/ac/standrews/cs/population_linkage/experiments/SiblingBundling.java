@@ -12,17 +12,17 @@ import java.util.List;
 
 public abstract class SiblingBundling extends Experiment {
 
-    protected Links getGroundTruthLinks(RecordRepository record_repository) {
+    protected Links getGroundTruthLinks(final RecordRepository record_repository) {
 
-        Links links = new Links();
+        final Links links = new Links();
 
-        List<Birth> records = new ArrayList<>();
+        final List<Birth> records = new ArrayList<>();
 
         for (Birth birth : record_repository.getBirths()) {
             records.add(birth);
         }
 
-        int number_of_records = records.size();
+        final int number_of_records = records.size();
 
         for (int i = 0; i < number_of_records; i++) {
             for (int j = i + 1; j < number_of_records; j++) {
@@ -57,6 +57,4 @@ public abstract class SiblingBundling extends Experiment {
     }
 
     protected abstract List<Integer> getSiblingGroundTruthFields();
-
-//    List<Integer> match_fields = Collections.singletonList(Birth.FAMILY);
 }

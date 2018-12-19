@@ -95,7 +95,7 @@ public abstract class BruteForceLinker extends Linker {
             @Override
             public Iterator<RecordPair> iterator() {
 
-                return new RecordPairIterator(records1, records2, symmetrical_links, progress_indicator);
+                return new RecordPairIterator(records1, records2, symmetrical_links, linkage_progress_indicator);
             }
         };
     }

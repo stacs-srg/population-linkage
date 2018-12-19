@@ -8,50 +8,62 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Experiment {
 
     public void run() throws Exception {
 
-        RecordRepository record_repository = getRecordRepository();
+        final RecordRepository record_repository = getRecordRepository();
 
         printHeader();
 
-        long t1 = System.currentTimeMillis();
+        LocalDateTime time_stamp = LocalDateTime.now();
 
-        List<LXP> birth_sub_records = getRecords(record_repository);
+        final List<LXP> birth_sub_records = getRecords(record_repository);
+        time_stamp = nextTimeStamp(time_stamp, "extract linkage records");
 
-        long t2 = System.currentTimeMillis();
-        System.out.println((t2 - t1) / 1000 + "s to extract linkage records");
+        final Linker sibling_bundler = getLinker();
 
-        Linker sibling_bundler = getLinker();
+        sibling_bundler.addRecords(birth_sub_records);
 
-        Links sibling_links = sibling_bundler.link(birth_sub_records);
+        time_stamp = nextTimeStamp(time_stamp, "index records");
+
+        Links sibling_links = sibling_bundler.link();
         System.out.println("links: " + sibling_links.size());
 
-        long t3 = System.currentTimeMillis();
-        System.out.println((t3 - t2) / 1000 + "s to link records");
+        time_stamp = nextTimeStamp(time_stamp, "link records");
 
         Links ground_truth_links = getGroundTruthLinks(record_repository);
         System.out.println("ground truth links: " + ground_truth_links.size());
 
-        long t4 = System.currentTimeMillis();
-        System.out.println((t4 - t3) / 1000 + "s to get ground truth links");
+        time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
         LinkageQuality linkage_quality = evaluateLinkage(sibling_links, ground_truth_links);
-
-        long t5 = System.currentTimeMillis();
-        System.out.println((t5 - t4) / 1000 + "s to evaluate linkage");
+        nextTimeStamp(time_stamp, "evaluate linkage");
 
         linkage_quality.print(System.out);
     }
 
     protected abstract RecordRepository getRecordRepository() throws Exception;
+
     protected abstract void printHeader();
+
     protected abstract List<LXP> getRecords(RecordRepository record_repository);
+
     protected abstract Linker getLinker();
+
     protected abstract Links getGroundTruthLinks(RecordRepository record_repository);
+
+    private LocalDateTime nextTimeStamp(final LocalDateTime previous_time_stamp, final String step_description) {
+
+        LocalDateTime next = LocalDateTime.now();
+        System.out.println(prettyPrint(Duration.between(previous_time_stamp, next)) + " to " + step_description);
+        return next;
+    }
 
     private LinkageQuality evaluateLinkage(Links calculated_links, Links ground_truth_links) {
 
@@ -102,5 +114,13 @@ public abstract class Experiment {
         }
 
         return count;
+    }
+
+    private static String prettyPrint(Duration duration) {
+
+        return String.format("%sh %sm %ss",
+                duration.toHours(),
+                duration.toMinutes() - TimeUnit.HOURS.toMinutes(duration.toHours()),
+                duration.getSeconds() - TimeUnit.MINUTES.toSeconds(duration.toMinutes()));
     }
 }

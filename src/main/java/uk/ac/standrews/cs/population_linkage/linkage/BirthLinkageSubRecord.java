@@ -60,37 +60,37 @@ public class BirthLinkageSubRecord extends StaticLXP {
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int PARENTS_PLACE_OF_MARRIAGE;
 
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int CHILD_IDENTITY;
 
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int MOTHER_IDENTITY;
 
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int FATHER_IDENTITY;
 
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int PARENT_MARRIAGE_RECORD_IDENTITY;
-    
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int FATHER_BIRTH_RECORD_IDENTITY;
-    
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int MOTHER_BIRTH_RECORD_IDENTITY;
-    
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int MARRIAGE_RECORD_IDENTITY1;
-    
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int MARRIAGE_RECORD_IDENTITY2;
 
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int MARRIAGE_RECORD_IDENTITY3;
 
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int MARRIAGE_RECORD_IDENTITY4;
 
-    @LXP_SCALAR( type = LXPBaseType.STRING )
+    @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int MARRIAGE_RECORD_IDENTITY5;
 
     @Override
@@ -113,18 +113,16 @@ public class BirthLinkageSubRecord extends StaticLXP {
         put(PARENTS_MONTH_OF_MARRIAGE, birth.get(Birth.PARENTS_MONTH_OF_MARRIAGE));
         put(PARENTS_YEAR_OF_MARRIAGE, birth.get(Birth.PARENTS_YEAR_OF_MARRIAGE));
         put(PARENTS_PLACE_OF_MARRIAGE, birth.get(Birth.PARENTS_PLACE_OF_MARRIAGE));
-        put( CHILD_IDENTITY, birth.get( CHILD_IDENTITY));
-        put( MOTHER_IDENTITY, birth.get( MOTHER_IDENTITY));
-        put( FATHER_IDENTITY, birth.get( FATHER_IDENTITY));
-        put( PARENT_MARRIAGE_RECORD_IDENTITY, birth.get(PARENT_MARRIAGE_RECORD_IDENTITY));
-        put( FATHER_BIRTH_RECORD_IDENTITY, birth.get( FATHER_BIRTH_RECORD_IDENTITY));
-        put( MOTHER_BIRTH_RECORD_IDENTITY, birth.get( MOTHER_BIRTH_RECORD_IDENTITY));
-        put( MARRIAGE_RECORD_IDENTITY1, birth.get( MARRIAGE_RECORD_IDENTITY1));
-        put( MARRIAGE_RECORD_IDENTITY2, birth.get( MARRIAGE_RECORD_IDENTITY2));
-        put( MARRIAGE_RECORD_IDENTITY3, birth.get( MARRIAGE_RECORD_IDENTITY3));
-        put( MARRIAGE_RECORD_IDENTITY4, birth.get( MARRIAGE_RECORD_IDENTITY4));
-        put( MARRIAGE_RECORD_IDENTITY5, birth.get( MARRIAGE_RECORD_IDENTITY5));
-
-
+        put(CHILD_IDENTITY, birth.get(CHILD_IDENTITY));
+        put(MOTHER_IDENTITY, birth.get(MOTHER_IDENTITY));
+        put(FATHER_IDENTITY, birth.get(FATHER_IDENTITY));
+        put(PARENT_MARRIAGE_RECORD_IDENTITY, birth.get(PARENT_MARRIAGE_RECORD_IDENTITY));
+        put(FATHER_BIRTH_RECORD_IDENTITY, birth.get(FATHER_BIRTH_RECORD_IDENTITY));
+        put(MOTHER_BIRTH_RECORD_IDENTITY, birth.get(MOTHER_BIRTH_RECORD_IDENTITY));
+        put(MARRIAGE_RECORD_IDENTITY1, birth.get(MARRIAGE_RECORD_IDENTITY1));
+        put(MARRIAGE_RECORD_IDENTITY2, birth.get(MARRIAGE_RECORD_IDENTITY2));
+        put(MARRIAGE_RECORD_IDENTITY3, birth.get(MARRIAGE_RECORD_IDENTITY3));
+        put(MARRIAGE_RECORD_IDENTITY4, birth.get(MARRIAGE_RECORD_IDENTITY4));
+        put(MARRIAGE_RECORD_IDENTITY5, birth.get(MARRIAGE_RECORD_IDENTITY5));
     }
 }
