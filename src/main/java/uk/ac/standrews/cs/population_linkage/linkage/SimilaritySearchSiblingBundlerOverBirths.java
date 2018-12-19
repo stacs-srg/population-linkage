@@ -6,7 +6,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLinker {
 
-    public SimilaritySearchSiblingBundlerOverBirths(SearchStructureFactory search_structure_factory, double threshold, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    public SimilaritySearchSiblingBundlerOverBirths(SearchStructureFactory<LXP> search_structure_factory, double threshold, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(search_structure_factory, distance_metric, number_of_progress_updates);
         setThreshold(threshold);

@@ -32,7 +32,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
     private void init(final NamedMetric<T> distance_metric, final List<T> reference_points, final List<T> data) {
 
         try {
-            bit_blaster = new ParallelBitBlaster<>(distance_metric::distance, reference_points, data, 2, false);
+            bit_blaster = new ParallelBitBlaster<>(distance_metric::distance, reference_points, data, 2, true);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

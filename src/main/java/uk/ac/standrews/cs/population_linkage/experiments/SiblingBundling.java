@@ -8,7 +8,6 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public abstract class SiblingBundling extends Experiment {
@@ -25,20 +24,15 @@ public abstract class SiblingBundling extends Experiment {
 
         int number_of_records = records.size();
 
-        // TODO this needs to be tailored to the particular linkage.
-        List<Integer> match_fields = Collections.singletonList(Birth.FAMILY);
-
         for (int i = 0; i < number_of_records; i++) {
             for (int j = i + 1; j < number_of_records; j++) {
 
                 Birth record1 = records.get(i);
                 Birth record2 = records.get(j);
 
-                if (areSiblings(match_fields, record1, record2)) {
+                if (areGroundTruthSiblings(record1, record2)) {
 
-                    Role role1 = new Role(record1.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
-                    Role role2 = new Role(record2.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
-                    links.add(new Link(role1, role2, 1.0f, "ground truth"));
+                    links.add(new Link(makeRole(record1), makeRole(record2), 1.0f, "ground truth"));
                 }
             }
         }
@@ -46,14 +40,23 @@ public abstract class SiblingBundling extends Experiment {
         return links;
     }
 
-    private static boolean areSiblings(List<Integer> match_fields, LXP record1, LXP record2) {
+    private Role makeRole(final Birth record) {
+
+        return new Role(record.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
+    }
+
+    private boolean areGroundTruthSiblings(LXP record1, LXP record2) {
 
         if (record1 == record2) return false;
 
-        for (int field : match_fields) {
+        for (int field : getSiblingGroundTruthFields()) {
             if (!record1.getString(field).equals(record2.getString(field))) return false;
         }
 
         return true;
     }
+
+    protected abstract List<Integer> getSiblingGroundTruthFields();
+
+//    List<Integer> match_fields = Collections.singletonList(Birth.FAMILY);
 }

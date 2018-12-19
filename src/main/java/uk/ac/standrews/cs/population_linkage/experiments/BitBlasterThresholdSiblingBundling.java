@@ -9,9 +9,9 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 import java.nio.file.Path;
 import java.util.List;
 
-public class BitBlasterThresholdSiblingBundling extends SimilaritySearchThresholdSiblingBundling {
+public abstract class BitBlasterThresholdSiblingBundling extends SimilaritySearchThresholdSiblingBundling {
 
-    private BitBlasterThresholdSiblingBundling(Path store_path, String repo_name) {
+     BitBlasterThresholdSiblingBundling(Path store_path, String repo_name) {
 
         super(store_path, repo_name);
     }
@@ -27,13 +27,5 @@ public class BitBlasterThresholdSiblingBundling extends SimilaritySearchThreshol
         SearchStructureFactory<LXP> factory = (List<LXP> records) -> new BitBlasterSearchStructure<>(metric, records);
 
         return new SimilaritySearchSiblingBundlerOverBirths(factory, MATCH_THRESHOLD, metric, NUMBER_OF_PROGRESS_UPDATES);
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        Path store_path = ApplicationProperties.getStorePath();
-        String repository_name = ApplicationProperties.getRepositoryName();
-
-        new BitBlasterThresholdSiblingBundling(store_path, repository_name).run();
     }
 }
