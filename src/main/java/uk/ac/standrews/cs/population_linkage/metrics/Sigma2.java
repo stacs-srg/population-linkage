@@ -23,18 +23,23 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 import java.util.List;
 
 /**
- * Sigma function for combining metrics - compares a single set of fields
+ * Sigma function for combining metrics  - compares different field lists over data
  * Created by al on 13/12/18
  */
-public class Sigma implements NamedMetric<LXP> {
+public class Sigma2 implements NamedMetric<LXP> {
 
     protected final NamedMetric<String> baseDistance;
-    protected List<Integer> fields;
+    protected List<Integer> fieldList1;
+    protected List<Integer> fieldList2;
 
-    public Sigma(NamedMetric<String> baseDistance, List<Integer> fields) {
+    public Sigma2(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2 ) throws Exception {
 
+        if( fields1.size() != fields2.size() ) {
+            throw new Exception( "Fields must be the same length");
+        }
         this.baseDistance = baseDistance;
-        this.fields = fields;
+        this.fieldList1 = fields1;
+        this.fieldList2 = fields2;
     }
 
 
@@ -42,8 +47,12 @@ public class Sigma implements NamedMetric<LXP> {
     public double distance(LXP a, LXP b) {
 
         double total_distance = 0.0d;
-        for (int f : fields) {
-            double f_distance = baseDistance.distance(a.getString(f), b.getString(f));
+
+        for( int i = 0; i < fieldList1.size(); i++ ) {
+            int field1_index = fieldList1.get(i);
+            int field2_index = fieldList2.get(i);
+
+            double f_distance = baseDistance.distance(a.getString(field1_index), b.getString(field2_index));
             total_distance += f_distance;
         }
 

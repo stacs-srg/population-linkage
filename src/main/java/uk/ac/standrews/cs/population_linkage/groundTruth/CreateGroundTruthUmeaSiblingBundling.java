@@ -1,7 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.metrics.Average;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class CreateGroundTruthUmeaSiblingBundling {
 
-    private static final int CHARVAL = 255;
+    private static final int CHARVAL = 512;
     private final Path store_path;
     private final String repo_name;
 
@@ -26,7 +25,7 @@ public class CreateGroundTruthUmeaSiblingBundling {
 
     NamedMetric<String>[] base_metrics = new NamedMetric[] { new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(), new JensenShannon2(CHARVAL) };
     NamedMetric<LXP>[] combined_metrics;
-    private int[] sibling_bundling_fields = new int[] { Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME,
+    private int[] sibling_bundling_fields = new int[] { Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_SURNAME,
                                                         Birth.PARENTS_PLACE_OF_MARRIAGE, Birth.PARENTS_DAY_OF_MARRIAGE, Birth.PARENTS_MONTH_OF_MARRIAGE, Birth.PARENTS_YEAR_OF_MARRIAGE };
 
     public CreateGroundTruthUmeaSiblingBundling(Path store_path, String repo_name, String filename) throws Exception {
@@ -42,11 +41,9 @@ public class CreateGroundTruthUmeaSiblingBundling {
 
         List<Integer> sibling_field_list = Arrays.stream(sibling_bundling_fields).boxed().collect(Collectors.toList());
 
-        combined_metrics = new NamedMetric[ base_metrics.length * 2]; // average and sigma for each
+        combined_metrics = new NamedMetric[ base_metrics.length]; // sigma for each
         for( int i = 0; i < base_metrics.length; i++ ) {
-            int index = i * 2;
-            combined_metrics[index] = new Sigma( base_metrics[i],sibling_field_list );
-            combined_metrics[index+1] = new Average( base_metrics[i],sibling_field_list );
+            combined_metrics[i] = new Sigma( base_metrics[i],sibling_field_list );
         }
     }
 
@@ -56,13 +53,15 @@ public class CreateGroundTruthUmeaSiblingBundling {
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
         System.out.println("Reading records from repository: " + repo_name);
+        System.out.println("Creating Sibling Bundling ground truth" );
         System.out.println();
 
         ArrayList<Birth> all_records = createList( record_repository.getBirths() );
 
-        TreeMap<String, List<Birth>> real_sibling_bundles = matchSiblingsUsingMarriageGroundTruth(all_records);
-        TreeMap<String, RecordDistances> true_link_distances = populateTrueLinkRecordDistances( real_sibling_bundles ); // Map from concatenated record id to RecordDistances
-        TreeMap<String, RecordDistances> non_link_distances = populateFalseLinkRecordDistances( all_records, true_link_distances );
+        TreeMap<String, List<Birth>> real_sibling_bundles = matchSiblingsUsingMarriageGroundTruth(all_records);                     // a map keyed on PARENT_MARRIAGE_RECORD_IDENTITY mapping to lists of births of siblings
+        TreeMap<String, RecordDistances> true_link_distances = populateTrueLinkRecordDistances( real_sibling_bundles );             // a map from concatenated record id to RecordDistances for all true links
+
+        TreeMap<String, RecordDistances> non_link_distances = populateFalseLinkRecordDistances( all_records, true_link_distances ); // a map from concatenated record id to RecordDistances for chosen non links
 
 
         printColumnHeaders( outstream );
@@ -111,32 +110,34 @@ public class CreateGroundTruthUmeaSiblingBundling {
 
     /**
      * @param births - the birth set to process
-     * @return a tree map keyed on PARENT_MARRIAGE_RECORD_IDENTITY mapping to lists of births of siblings
+     * @return a tree map keyed on PARENT_MARRIAGE_RECORD_IDENTITY field contents - mapping to lists of births of siblings
      */
     private TreeMap<String, List<Birth>> matchSiblingsUsingMarriageGroundTruth(Iterable<Birth> births) {
 
-        TreeMap<String, List<Birth>> birth_map = new TreeMap<>();
+        TreeMap<String, List<Birth>> map = new TreeMap<>();
 
-        for( Birth b : births ) {
-            String key = b.getString( Birth.PARENT_MARRIAGE_RECORD_IDENTITY );
+        for( Birth birth_record : births ) {
+            String key = birth_record.getString( Birth.PARENT_MARRIAGE_RECORD_IDENTITY );
 
             if( ! key.equals( "" ) ) {
 
                 // groups all the full siblings together based on PARENT_MARRIAGE_RECORD_IDENTITY
-                List already = birth_map.get(b.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY));
+                List already = map.get(key);
                 if (already == null) {
                     already = new ArrayList<>();
                 }
-                already.add(b);
-                birth_map.put(key, already);
+                already.add(birth_record);
+                map.put(key, already);
             }
         }
 
 
-        return birth_map;
+        return map;
     }
 
     private TreeMap<String,RecordDistances> populateTrueLinkRecordDistances(TreeMap<String, List<Birth>> birth_map) {
+
+        int count = 0;
 
         TreeMap<String,RecordDistances> distances = new TreeMap<>();
 
@@ -147,14 +148,16 @@ public class CreateGroundTruthUmeaSiblingBundling {
                 for (Birth b : birth_list) {
 
                     addDistances( distances, birth_list );
+                    count = count + birth_list.size();
                 }
             }
         }
+        System.out.println( "Number of links = " + count );
         return distances;
     }
 
     /**
-     * computes out the distances between all the births in a list of siblings
+     * computes the distances between all the births in a list of siblings
      * @param distances
      * @param births
      */
@@ -228,13 +231,22 @@ public class CreateGroundTruthUmeaSiblingBundling {
 
         for( RecordDistances r : distances.values() ) {
 
-            out.print( r.record1.getId() + DELIMIT + r.record2.getId() + DELIMIT + is_true_link + DELIMIT );
+            out.print( r.record1.getId() + DELIMIT + r.record2.getId() + DELIMIT + is_true_link );
             for( int cm_index = 0; cm_index < r.distances.length; cm_index++ ) {
-                out.print( DELIMIT + r.distances[cm_index]);
+                out.print( DELIMIT + normalise( r.distances[cm_index]));
             }
             out.println();
             out.flush();
         }
+    }
+
+    /**
+     *
+     * @param distance - the distance to be normalised
+     * @return the distance in the range 0-1:  1 - ( 1 / d + 1 )
+     */
+    private double normalise(double distance) {
+        return 1d - ( 1d / ( distance + 1d ));
     }
 
     private void printColumnHeaders( PrintStream out ) {
@@ -252,7 +264,7 @@ public class CreateGroundTruthUmeaSiblingBundling {
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = ApplicationProperties.getRepositoryName();
 
-        new CreateGroundTruthUmeaSiblingBundling( store_path, repo_name, "/Users/al/Desktop/distances.csv" ).run();
+        new CreateGroundTruthUmeaSiblingBundling( store_path, repo_name, "/Users/al/Desktop/UmeaDistances.csv" ).run();
     }
 
     private class RecordDistances {
