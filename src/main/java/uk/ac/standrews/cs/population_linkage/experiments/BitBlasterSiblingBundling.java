@@ -17,6 +17,7 @@ public abstract class BitBlasterSiblingBundling extends SimilaritySearchSiblingB
     }
 
     protected void printHeader() {
+
         System.out.println("Sibling bundling using BitBlaster Levenshtein threshold " + MATCH_THRESHOLD + " from repository: " + repo_name);
     }
 
