@@ -66,46 +66,43 @@ public abstract class LinkageTest {
         linker.setThreshold(Double.MAX_VALUE);
 
         linker.addRecords(birth_records);
-        Links links = linker.link();
 
         // By default, assume links are asymmetric, so we want to consider record pair (a,b) as well as (b,a), but not (a,a).
-        assertEquals((birth_records.size() - 1) * birth_records.size(), count(links));
+        assertEquals((birth_records.size() - 1) * birth_records.size(), count(linker.getLinks()));
 
-        assertTrue(containsPair(links, birth1, birth2));
-        assertTrue(containsPair(links, birth1, birth3));
-        assertTrue(containsPair(links, birth1, birth4));
-        assertTrue(containsPair(links, birth2, birth1));
-        assertTrue(containsPair(links, birth2, birth3));
-        assertTrue(containsPair(links, birth2, birth4));
-        assertTrue(containsPair(links, birth3, birth1));
-        assertTrue(containsPair(links, birth3, birth2));
-        assertTrue(containsPair(links, birth3, birth4));
-        assertTrue(containsPair(links, birth4, birth1));
-        assertTrue(containsPair(links, birth4, birth2));
-        assertTrue(containsPair(links, birth4, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth3));
 
-        assertFalse(containsPair(links, birth1, birth1));
+        assertFalse(containsPair(linker.getLinks(), birth1, birth1));
     }
 
     @Test
     public void checkAllRecordPairsWithTwoDataSets2() {
 
         linker.setThreshold(Double.MAX_VALUE);
-
         linker.addRecords(birth_records, death_records);
-        Links links = linker.link();
 
-        assertEquals(birth_records.size() * death_records.size(), count(links));
+        assertEquals(birth_records.size() * death_records.size(), count(linker.getLinks()));
 
         for (LXP birth_record : birth_records) {
             for (LXP death_record : death_records) {
 
-                assertTrue(containsPair(links, birth_record, death_record));
+                assertTrue(containsPair(linker.getLinks(), birth_record, death_record));
             }
         }
 
-        assertFalse(containsPair(links, birth1, birth1));
-        assertFalse(containsPair(links, death1, death1));
+        assertFalse(containsPair(linker.getLinks(), birth1, birth1));
+        assertFalse(containsPair(linker.getLinks(), death1, death1));
     }
 
     @Test
@@ -114,13 +111,11 @@ public abstract class LinkageTest {
         // "janet smith" distance 0 from "janet smith"
 
         linker.setThreshold(0.0);
-
         linker.addRecords(birth_records);
-        Links links = linker.link();
 
-        assertEquals(2, count(links));
-        assertTrue(containsPair(links, birth2, birth4));
-        assertTrue(containsPair(links, birth4, birth2));
+        assertEquals(2, count(linker.getLinks()));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
     }
 
     @Test
@@ -129,12 +124,10 @@ public abstract class LinkageTest {
         // "jane smyth" distance 0 from "jane smyth"
 
         linker.setThreshold(0.0);
-
         linker.addRecords(birth_records, death_records);
-        Links links = linker.link();
 
-        assertEquals(1, count(links));
-        assertTrue(containsPair(links, birth3, death3));
+        assertEquals(1, count(linker.getLinks()));
+        assertTrue(containsPair(linker.getLinks(), birth3, death3));
     }
 
     @Test
@@ -143,13 +136,11 @@ public abstract class LinkageTest {
         // "janet smith" distance 0 from "janet smith"
 
         linker.setThreshold(0.5);
-
         linker.addRecords(birth_records);
-        Links links = linker.link();
 
-        assertEquals(2, count(links));
-        assertTrue(containsPair(links, birth2, birth4));
-        assertTrue(containsPair(links, birth4, birth2));
+        assertEquals(2, count(linker.getLinks()));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
     }
 
     @Test
@@ -159,13 +150,11 @@ public abstract class LinkageTest {
         // "jane smyth" distance 0 from "jane smyth"
 
         linker.setThreshold(0.5);
-
         linker.addRecords(birth_records, death_records);
-        Links links = linker.link();
 
-        assertEquals(2, count(links));
-        assertTrue(containsPair(links, birth1, death2));
-        assertTrue(containsPair(links, birth3, death3));
+        assertEquals(2, count(linker.getLinks()));
+        assertTrue(containsPair(linker.getLinks(), birth1, death2));
+        assertTrue(containsPair(linker.getLinks(), birth3, death3));
     }
 
     @Test
@@ -176,17 +165,15 @@ public abstract class LinkageTest {
         // "jane smyth" distance 1.0 from "janet smith"
 
         linker.setThreshold(1.0);
-
         linker.addRecords(birth_records);
-        Links links = linker.link();
 
-        assertEquals(6, count(links));
-        assertTrue(containsPair(links, birth2, birth3));
-        assertTrue(containsPair(links, birth3, birth2));
-        assertTrue(containsPair(links, birth2, birth4));
-        assertTrue(containsPair(links, birth4, birth2));
-        assertTrue(containsPair(links, birth3, birth4));
-        assertTrue(containsPair(links, birth4, birth3));
+        assertEquals(6, count(linker.getLinks()));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth3));
     }
 
     @Test
@@ -201,26 +188,22 @@ public abstract class LinkageTest {
         // "janet smith" distance 1 from "jane smyth"
 
         linker.setThreshold(1.0);
-
         linker.addRecords(birth_records, death_records);
-        Links links = linker.link();
 
-        assertEquals(7, count(links));
-        assertTrue(containsPair(links, birth1, death2));
-        assertTrue(containsPair(links, birth2, death1));
-        assertTrue(containsPair(links, birth2, death3));
-        assertTrue(containsPair(links, birth3, death1));
-        assertTrue(containsPair(links, birth3, death3));
-        assertTrue(containsPair(links, birth4, death1));
-        assertTrue(containsPair(links, birth4, death3));
+        assertEquals(7, count(linker.getLinks()));
+        assertTrue(containsPair(linker.getLinks(), birth1, death2));
+        assertTrue(containsPair(linker.getLinks(), birth2, death1));
+        assertTrue(containsPair(linker.getLinks(), birth2, death3));
+        assertTrue(containsPair(linker.getLinks(), birth3, death1));
+        assertTrue(containsPair(linker.getLinks(), birth3, death3));
+        assertTrue(containsPair(linker.getLinks(), birth4, death1));
+        assertTrue(containsPair(linker.getLinks(), birth4, death3));
     }
 
-    boolean containsPair(Iterable<RecordPair> record_pairs, LXP record1, LXP record2) {
+    boolean containsPair(Iterable<Link> record_pairs, LXP record1, LXP record2) {
 
-        RecordPair record_pair = new RecordPair(record1, record2, -1);
-
-        for (RecordPair p : record_pairs) {
-            if (equal(p, record_pair))
+        for (Link p : record_pairs) {
+            if (equal(p, linker.getIdentifier1(record1), linker.getIdentifier2(record2)))
                 return true;
         }
         return false;
@@ -236,10 +219,10 @@ public abstract class LinkageTest {
         return false;
     }
 
-    int count(Iterable<RecordPair> record_pairs) {
+    <T> int count(Iterable<T> elements) {
 
         int count = 0;
-        for (RecordPair ignored : record_pairs) {
+        for (T ignored : elements) {
             count++;
         }
         return count;

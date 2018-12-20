@@ -10,7 +10,9 @@ import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Experiment {
@@ -32,13 +34,11 @@ public abstract class Experiment {
 
         time_stamp = nextTimeStamp(time_stamp, "index records");
 
-        Links sibling_links = sibling_bundler.link();
-        System.out.println("links: " + sibling_links.size());
+        Iterable<Link> sibling_links = sibling_bundler.getLinks();
 
         time_stamp = nextTimeStamp(time_stamp, "link records");
 
-        Links ground_truth_links = getGroundTruthLinks(record_repository);
-        System.out.println("ground truth links: " + ground_truth_links.size());
+        Iterable<Link>  ground_truth_links = getGroundTruthLinks(record_repository);
 
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
@@ -65,7 +65,7 @@ public abstract class Experiment {
         return next;
     }
 
-    private LinkageQuality evaluateLinkage(Links calculated_links, Links ground_truth_links) {
+    private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
 
         int true_positives = countTruePositives(calculated_links, ground_truth_links);
         int false_positives = countFalsePositives(calculated_links, ground_truth_links);
@@ -78,13 +78,30 @@ public abstract class Experiment {
         return new LinkageQuality(precision, recall, f_measure);
     }
 
-    private static int countTruePositives(Links calculated_links, Links ground_truth_links) {
+    private static int countTruePositives(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
+
+        return countInFormerAndInLatter(calculated_links, ground_truth_links);
+    }
+
+    private static int countFalsePositives(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
+
+        return countInFormerNotInLatter(calculated_links, ground_truth_links);
+    }
+
+    private static int countFalseNegatives(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
+
+        return countInFormerNotInLatter(ground_truth_links, calculated_links);
+    }
+
+    private static int countInFormerAndInLatter(final Iterable<Link> set1, final Iterable<Link> set2) {
 
         int count = 0;
 
-        for (Link calculated_link : calculated_links) {
+        Set<Link> set2Set = iteratorToSet(set2);
 
-            if (ground_truth_links.contains(calculated_link)) {
+        for (Link calculated_link : set1) {
+
+            if (!set2Set.contains(calculated_link)) {
                 count++;
             }
         }
@@ -92,23 +109,24 @@ public abstract class Experiment {
         return count;
     }
 
-    private static int countFalsePositives(Links calculated_links, Links ground_truth_links) {
+    private static Set<Link> iteratorToSet(final Iterable<Link> set2) {
 
-        return countInFormerNotInLatter(calculated_links, ground_truth_links);
+        Set<Link> set2Set = new HashSet<>();
+        for (Link link : set2) {
+            set2Set.add(link);
+        }
+        return set2Set;
     }
 
-    private static int countFalseNegatives(Links calculated_links, Links ground_truth_links) {
-
-        return countInFormerNotInLatter(ground_truth_links, calculated_links);
-    }
-
-    private static int countInFormerNotInLatter(final Links set1, final Links set2) {
+    private static int countInFormerNotInLatter(final Iterable<Link> set1, final Iterable<Link> set2) {
 
         int count = 0;
 
+        Set<Link> set2Set = iteratorToSet(set2);
+
         for (Link calculated_link : set1) {
 
-            if (!set2.contains(calculated_link)) {
+            if (!set2Set.contains(calculated_link)) {
                 count++;
             }
         }

@@ -6,14 +6,16 @@ import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public abstract class Linker {
 
     protected double threshold;
     protected final NamedMetric<LXP> distance_metric;
-    protected  List<LXP> records1;
-    protected  List<LXP> records2;
+    private List<LXP> records1;
+    private List<LXP> records2;
 
     protected final ProgressIndicator linkage_progress_indicator;
 
@@ -35,22 +37,74 @@ public abstract class Linker {
         this.records2 = records2;
     }
 
-    public Links link() {
+//    public Links link() {
+//
+//        Links links = new Links();
+//
+//        for (RecordPair pair : getMatchingRecordPairs(records1, records2)) {
+//
+//            if (pair.distance <= threshold) {
+//
+//                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
+//                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
+//
+//                links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
+//            }
+//        }
+//
+//        return links;
+//    }
 
-        Links links = new Links();
+    public Iterable<Link> getLinks() {
 
-        for (RecordPair pair : getMatchingRecordPairs(records1, records2)) {
+        final Iterator<RecordPair> matching_pairs = getMatchingRecordPairs(records1, records2).iterator();
 
-            if (pair.distance <= threshold) {
+        return new Iterable<Link>() {
 
-                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
-                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
+            private Link next = null;
 
-                links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
+            @Override
+            public Iterator<Link> iterator() {
+
+                return new Iterator<Link>() {
+
+                    @Override
+                    public boolean hasNext() {
+
+                        return matching_pairs.hasNext();
+                    }
+
+                    @Override
+                    public Link next() {
+
+                        getNextLink();
+                        return next;
+                    }
+                };
             }
-        }
 
-        return links;
+            private void getNextLink() {
+
+                if (matching_pairs.hasNext()) {
+
+                    RecordPair pair;
+                    do {
+                        pair = matching_pairs.next();
+                    }
+                    while (pair.distance > threshold && matching_pairs.hasNext());
+
+                    if (pair.distance <= threshold) {
+
+                        Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
+                        Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
+
+                        next = new Link(role1, role2, 1.0f, getLinkType(), getProvenance());
+                    }
+                    else throw new NoSuchElementException();
+                }
+                else throw new NoSuchElementException();
+            }
+        };
     }
 
     public void setThreshold(double threshold) {

@@ -49,19 +49,17 @@ public class BruteForceLinkageTest extends LinkageTest {
 
         ((BruteForceLinker) linker).setSymmetricalLinks(true);
         linker.setThreshold(Double.MAX_VALUE);
-
         linker.addRecords(birth_records);
-        Links links = linker.link();
 
-        assertEquals(((birth_records.size() - 1) * birth_records.size()) / 2, links.size());
+        assertEquals(((birth_records.size() - 1) * birth_records.size()) / 2, count(linker.getLinks()));
 
-        assertTrue(containsPair(links, birth1, birth2));
-        assertTrue(containsPair(links, birth1, birth3));
-        assertTrue(containsPair(links, birth2, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth3));
 
-        assertFalse(containsPair(links, birth2, birth1));
-        assertFalse(containsPair(links, birth3, birth1));
-        assertFalse(containsPair(links, birth2, birth2));
+        assertFalse(containsPair(linker.getLinks(), birth2, birth1));
+        assertFalse(containsPair(linker.getLinks(), birth3, birth1));
+        assertFalse(containsPair(linker.getLinks(), birth2, birth2));
     }
 
     class TestLinker extends BruteForceLinker {
