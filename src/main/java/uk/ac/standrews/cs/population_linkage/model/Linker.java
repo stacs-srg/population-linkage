@@ -43,10 +43,10 @@ public abstract class Linker {
 
             if (pair.distance <= threshold) {
 
-//                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
-//                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
-//
-//                links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
+                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
+                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
+
+                links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
             }
         }
 
