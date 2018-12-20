@@ -37,24 +37,26 @@ public class Sigma implements NamedMetric<LXP> {
         this.fields = fields;
     }
 
-
     @Override
     public double distance(LXP a, LXP b) {
 
         double total_distance = 0.0d;
         for (int f : fields) {
-            double f_distance = baseDistance.distance(a.getString(f), b.getString(f));
-            total_distance += f_distance;
+            try {
+                double f_distance = baseDistance.distance(a.getString(f), b.getString(f));
+                total_distance += f_distance;
+            }
+            catch (Exception e) {
+                throw new RuntimeException("exception comparing fields " + a.getString(f) + " and " + b.getString(f) + " from field " + f + " in records \n" + a + "\n and \n" + b, e);
+            }
         }
 
         return total_distance;
-
     }
 
     @Override
     public String getMetricName() {
-        return "Sigma" + "Over" + baseDistance.getMetricName();
+        return "Sigma Over" + baseDistance.getMetricName();
     }
-
 }
 

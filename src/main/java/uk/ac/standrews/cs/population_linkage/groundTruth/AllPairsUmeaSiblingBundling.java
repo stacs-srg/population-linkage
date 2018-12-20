@@ -29,7 +29,7 @@ public class AllPairsUmeaSiblingBundling {
     private static final Duration OUTPUT_INTERVAL = Duration.ofSeconds(1);
 
     private static final NamedMetric<String>[] BASE_METRICS = new NamedMetric[]{new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(), new JensenShannon2(CHARVAL)};
-    private static final int[] SIBLING_BUNDLING_FIELDS = new int[]{Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_SURNAME,
+    private static final int[] SIBLING_BUNDLING_FIELDS = new int[]{Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME,
             Birth.PARENTS_PLACE_OF_MARRIAGE, Birth.PARENTS_DAY_OF_MARRIAGE, Birth.PARENTS_MONTH_OF_MARRIAGE, Birth.PARENTS_YEAR_OF_MARRIAGE};
 
     private final ArrayList<Double> thresholds;
@@ -96,7 +96,7 @@ public class AllPairsUmeaSiblingBundling {
         outstream.println("Time" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn");
 
         for (int i = 0; i < birth_records.size() - 1; i++) {
-            for (int j = i; j < birth_records.size(); j++) {
+            for (int j = i+1; j < birth_records.size(); j++) {
 
                 for (NamedMetric<LXP> metric : combined_metrics) {
 
