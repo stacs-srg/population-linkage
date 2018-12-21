@@ -43,7 +43,24 @@ public class Sigma implements NamedMetric<LXP> {
         double total_distance = 0.0d;
         for (int f : fields) {
             try {
-                double f_distance = baseDistance.distance(a.getString(f), b.getString(f));
+                String x = a.getString(f);
+                String y = b.getString(f);
+
+                if (x == null || x.equals("")) {
+                    if (y == null || y.equals("")) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                }
+                if (y == null || y.equals("")) {
+                    return 1;
+                }
+                if (x.equals(y)) {
+                    return 0;
+                }
+
+                double f_distance = baseDistance.distance(x, y);
                 total_distance += f_distance;
             }
             catch (Exception e) {
