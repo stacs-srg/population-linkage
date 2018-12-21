@@ -26,8 +26,7 @@ public class AllPairsUmeaSiblingBundling {
     private final String DELIMIT = ",";
     private final PrintStream outstream;
 
-    //    private static final Duration OUTPUT_INTERVAL = Duration.ofHours(1);
-    private static final Duration OUTPUT_INTERVAL = Duration.ofSeconds(1);
+    private static final Duration OUTPUT_INTERVAL = Duration.ofHours(1);
 
     private static final NamedMetric<String>[] BASE_METRICS = new NamedMetric[]{new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(), new JensenShannon2(CHARVAL)};
     private static final int[] SIBLING_BUNDLING_FIELDS = new int[]{Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME,
