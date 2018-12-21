@@ -19,13 +19,15 @@ public class AllPairsUmeaSiblingBundling {
 
     private static final int CHARVAL = 512;
     private static final int DUMP_COUNT_INTERVAL = 10000;
+    public static final long SEED = 34553543456223L;
     private final Path store_path;
     private final String repo_name;
 
     private final String DELIMIT = ",";
     private final PrintStream outstream;
 
-    private static final Duration OUTPUT_INTERVAL = Duration.ofHours(1);
+    //    private static final Duration OUTPUT_INTERVAL = Duration.ofHours(1);
+    private static final Duration OUTPUT_INTERVAL = Duration.ofSeconds(1);
 
     private static final NamedMetric<String>[] BASE_METRICS = new NamedMetric[]{new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(), new JensenShannon2(CHARVAL)};
     private static final int[] SIBLING_BUNDLING_FIELDS = new int[]{Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME,
@@ -82,12 +84,23 @@ public class AllPairsUmeaSiblingBundling {
 
     private void doAllPairs(Iterable<Birth> births) {
 
+        Random random = new Random(SEED);
+
         LocalDateTime start_time = LocalDateTime.now();
 
         // Get them all in memory so we can iterate through them
-        ArrayList<Birth> birth_records = new ArrayList<>();
+        List<Birth> birth_records = new ArrayList<>();
         for (Birth b : births) {
             birth_records.add(b);
+        }
+
+        int number_of_records = birth_records.size();
+
+        for (int i = 0; i < number_of_records; i++) {
+            int swap_index = random.nextInt(number_of_records);
+            Birth temp = birth_records.get(i);
+            birth_records.set(i, birth_records.get(swap_index));
+            birth_records.set(swap_index, temp);
         }
 
         long counter = 0;
@@ -95,23 +108,23 @@ public class AllPairsUmeaSiblingBundling {
         outstream.println("Time" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn");
 
         for (int i = 0; i < birth_records.size() - 1; i++) {
-            for (int j = i+1; j < birth_records.size(); j++) {
+            for (int j = i + 1; j < birth_records.size(); j++) {
+
+                Birth b1 = birth_records.get(i);
+                Birth b2 = birth_records.get(j);
+                counter++;
 
                 for (NamedMetric<LXP> metric : combined_metrics) {
-
-                    Birth b1 = birth_records.get(i);
-                    Birth b2 = birth_records.get(j);
-                    counter++;
-
                     for (double thresh : thresholds) {
                         updateTruthCounts(metric, thresh, b1, b2);
                     }
-                    if (counter % DUMP_COUNT_INTERVAL == 0) {
-                        final LocalDateTime now = LocalDateTime.now();
-                        if (OUTPUT_INTERVAL.minus(Duration.between(start_time, now)).isNegative()) {
-                            start_time = now;
-                            dumpState(counter, start_time);
-                        }
+                }
+
+                if (counter % DUMP_COUNT_INTERVAL == 0) {
+                    final LocalDateTime now = LocalDateTime.now();
+                    if (OUTPUT_INTERVAL.minus(Duration.between(start_time, now)).isNegative()) {
+                        start_time = now;
+                        dumpState(counter, start_time);
                     }
                 }
             }
