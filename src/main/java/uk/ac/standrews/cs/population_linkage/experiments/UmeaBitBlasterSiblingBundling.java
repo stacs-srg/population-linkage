@@ -31,7 +31,7 @@ public class UmeaBitBlasterSiblingBundling extends BitBlasterSiblingBundling {
 
         NamedMetric<LXP> metric = Utilities.weightedAverageLevenshteinOverBirths();
 
-        SearchStructureFactory<LXP> factory = (List<LXP> records) -> new BitBlasterSearchStructure<>(metric, records);
+        SearchStructureFactory<LXP> factory = (Iterable<LXP> records) -> new BitBlasterSearchStructure<>(metric, records);
 
         return new SimilaritySearchSiblingBundlerOverBirths(factory, MATCH_THRESHOLD, metric, NUMBER_OF_PROGRESS_UPDATES);
     }

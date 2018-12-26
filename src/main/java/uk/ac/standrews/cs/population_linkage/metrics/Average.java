@@ -34,7 +34,6 @@ public class Average extends Sigma implements NamedMetric<LXP>  {
         field_size = fields.size();
     }
 
-
     @Override
     public double distance(LXP a, LXP b) {
 
@@ -45,6 +44,5 @@ public class Average extends Sigma implements NamedMetric<LXP>  {
     public String getMetricName() {
         return "Average"+ "Over" + baseDistance.getMetricName();
     }
-
 }
 

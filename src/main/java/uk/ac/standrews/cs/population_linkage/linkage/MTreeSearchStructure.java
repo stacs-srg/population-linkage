@@ -11,9 +11,9 @@ public class MTreeSearchStructure<T> implements SearchStructure<T> {
 
     private MTree<T> m_tree;
 
-    public MTreeSearchStructure(NamedMetric<T> distance_metric, List<T> records) {
+    public MTreeSearchStructure(NamedMetric<T> distance_metric, Iterable<T> records) {
 
-        m_tree = new MTree<T>(distance_metric);
+        m_tree = new MTree<>(distance_metric);
         for (T record : records) {
             m_tree.add(record);
         }

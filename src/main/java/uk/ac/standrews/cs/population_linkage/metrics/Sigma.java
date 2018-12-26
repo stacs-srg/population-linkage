@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class Sigma implements NamedMetric<LXP> {
 
-    protected final NamedMetric<String> baseDistance;
-    protected List<Integer> fields;
+    final NamedMetric<String> baseDistance;
+    private List<Integer> fields;
 
     public Sigma(NamedMetric<String> baseDistance, List<Integer> fields) {
 
@@ -41,30 +41,18 @@ public class Sigma implements NamedMetric<LXP> {
     public double distance(LXP a, LXP b) {
 
         double total_distance = 0.0d;
-        for (int f : fields) {
+
+        for (int field : fields) {
             try {
-                String x = a.getString(f);
-                String y = b.getString(f);
+                String x = a.getString(field);
+                String y = b.getString(field);
 
-                if (x == null || x.equals("")) {
-                    if (y == null || y.equals("")) {
-                        return 0;
-                    } else {
-                        return 1;
-                    }
-                }
-                if (y == null || y.equals("")) {
-                    return 1;
-                }
-                if (x.equals(y)) {
-                    return 0;
-                }
+                total_distance += baseDistance.distance(x, y);
 
-                double f_distance = baseDistance.distance(x, y);
-                total_distance += f_distance;
-            }
-            catch (Exception e) {
-                throw new RuntimeException("exception comparing fields " + a.getString(f) + " and " + b.getString(f) + " from field " + f + " in records \n" + a + "\n and \n" + b, e);
+            } catch (NullPointerException e) {
+                throw new RuntimeException("exception comparing records \n" + a + "\n and \n" + b, e);
+            } catch (Exception e) {
+                throw new RuntimeException("exception comparing fields " + a.getString(field) + " and " + b.getString(field) + " from field " + field + " in records \n" + a + "\n and \n" + b, e);
             }
         }
 
@@ -73,7 +61,6 @@ public class Sigma implements NamedMetric<LXP> {
 
     @Override
     public String getMetricName() {
-        return "Sigma Over" + baseDistance.getMetricName();
+        return "Sigma Over " + baseDistance.getMetricName();
     }
 }
-

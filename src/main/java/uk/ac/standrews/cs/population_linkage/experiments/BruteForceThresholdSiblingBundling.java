@@ -10,6 +10,7 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public class BruteForceThresholdSiblingBundling extends SiblingBundling {
@@ -35,8 +36,22 @@ public class BruteForceThresholdSiblingBundling extends SiblingBundling {
         System.out.println("Sibling bundling using brute force Levenshtein threshold " + MATCH_THRESHOLD + " from repository: " + repo_name);
     }
 
-    protected List<LXP> getRecords(RecordRepository record_repository) {
-        return Utilities.getBirthLinkageSubRecords(record_repository);
+    protected Iterable<LXP> getRecords(RecordRepository record_repository) {
+
+        Iterator<Birth> birth_records = record_repository.getBirths().iterator();
+
+        return () -> new Iterator<LXP>(){
+
+            @Override
+            public boolean hasNext() {
+                return birth_records.hasNext();
+            }
+
+            @Override
+            public LXP next() {
+                return birth_records.next();
+            }
+        };
     }
 
     protected Linker getLinker() {

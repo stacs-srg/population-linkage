@@ -7,15 +7,14 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 public abstract class Linker {
 
     protected double threshold;
     protected final NamedMetric<LXP> distance_metric;
-    private List<LXP> records1;
-    private List<LXP> records2;
+    private Iterable<LXP> records1;
+    private Iterable<LXP> records2;
 
     protected final ProgressIndicator linkage_progress_indicator;
 
@@ -26,34 +25,11 @@ public abstract class Linker {
         linkage_progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
     }
 
-    public void addRecords(List<LXP> records) {
-
-        addRecords(records, records);
-    }
-
-    public void addRecords(List<LXP> records1, List<LXP> records2) {
+    public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
 
         this.records1 = records1;
         this.records2 = records2;
     }
-
-//    public Links link() {
-//
-//        Links links = new Links();
-//
-//        for (RecordPair pair : getMatchingRecordPairs(records1, records2)) {
-//
-//            if (pair.distance <= threshold) {
-//
-//                Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
-//                Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
-//
-//                links.add(new Link(role1, role2, 1.0f, getLinkType(), getProvenance()));
-//            }
-//        }
-//
-//        return links;
-//    }
 
     public Iterable<Link> getLinks() {
 
@@ -116,7 +92,7 @@ public abstract class Linker {
         return distance_metric;
     }
 
-    protected abstract Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2);
+    protected abstract Iterable<RecordPair> getMatchingRecordPairs(final Iterable<LXP> records1, final Iterable<LXP> records2);
 
     protected abstract String getLinkType();
 
@@ -129,4 +105,13 @@ public abstract class Linker {
     protected abstract String getIdentifier1(LXP record);
 
     protected abstract String getIdentifier2(LXP record);
+
+    protected int count(final Iterable<LXP> records) {
+
+        int i = 0;
+        for (LXP ignored : records) {
+            i++;
+        }
+        return i;
+    }
 }

@@ -1,20 +1,21 @@
 package uk.ac.standrews.cs.population_linkage.experiments;
 
 import uk.ac.standrews.cs.population_linkage.model.Link;
-import uk.ac.standrews.cs.population_linkage.model.Links;
 import uk.ac.standrews.cs.population_linkage.model.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public abstract class SiblingBundling extends Experiment {
 
-    protected Links getGroundTruthLinks(final RecordRepository record_repository) {
+    protected Set<Link> getGroundTruthLinks(final RecordRepository record_repository) {
 
-        final Links links = new Links();
+        final Set<Link> links = new HashSet<>();
 
         final List<Birth> records = new ArrayList<>();
 

@@ -1,15 +1,13 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
-import uk.ac.standrews.cs.population_linkage.linkage.BirthLinkageSubRecord;
-import uk.ac.standrews.cs.population_linkage.linkage.DeathLinkageSubRecord;
-import uk.ac.standrews.cs.population_linkage.linkage.MarriageLinkageSubRecord;
-import uk.ac.standrews.cs.population_linkage.linkage.WeightedAverageLevenshtein;
+import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
+import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.ArrayList;
@@ -19,12 +17,12 @@ import java.util.List;
 public class Utilities {
 
     private static final List<Integer> BIRTH_MATCH_FIELDS = Arrays.asList(
-            BirthLinkageSubRecord.FATHER_FORENAME, BirthLinkageSubRecord.FATHER_SURNAME,
-            BirthLinkageSubRecord.MOTHER_FORENAME, BirthLinkageSubRecord.MOTHER_MAIDEN_SURNAME,
-            BirthLinkageSubRecord.PARENTS_PLACE_OF_MARRIAGE,
-            BirthLinkageSubRecord.PARENTS_DAY_OF_MARRIAGE,
-            BirthLinkageSubRecord.PARENTS_MONTH_OF_MARRIAGE,
-            BirthLinkageSubRecord.PARENTS_YEAR_OF_MARRIAGE
+            Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE
     );
 
     public static List<LXP> getBirthLinkageSubRecords(RecordRepository record_repository) {
@@ -32,7 +30,7 @@ public class Utilities {
         List<LXP> sub_records = new ArrayList<>();
 
         for (Birth birth : record_repository.getBirths()) {
-            sub_records.add(new BirthLinkageSubRecord(birth));
+            sub_records.add(birth);
         }
 
         if (sub_records.size() == 0) throw new RuntimeException("No records found in repository");
@@ -44,7 +42,7 @@ public class Utilities {
         List<LXP> sub_records = new ArrayList<>();
 
         for (Death death : record_repository.getDeaths()) {
-            sub_records.add(new DeathLinkageSubRecord(death));
+            sub_records.add(death);
         }
 
         if (sub_records.size() == 0) throw new RuntimeException("No records found in repository");
@@ -56,7 +54,7 @@ public class Utilities {
         List<LXP> sub_records = new ArrayList<>();
 
         for (Marriage marriage : record_repository.getMarriages()) {
-            sub_records.add(new MarriageLinkageSubRecord(marriage));
+            sub_records.add(marriage);
         }
 
         if (sub_records.size() == 0) throw new RuntimeException("No records found in repository");
@@ -65,7 +63,7 @@ public class Utilities {
 
     public static NamedMetric<LXP> weightedAverageLevenshteinOverBirths() {
 
-        return new WeightedAverageLevenshtein<>(BIRTH_MATCH_FIELDS);
+        return new Sigma(new Levenshtein(), BIRTH_MATCH_FIELDS);
     }
 
     public static void printSampleRecords(DataSet data_set, String record_type, int number_to_print) {

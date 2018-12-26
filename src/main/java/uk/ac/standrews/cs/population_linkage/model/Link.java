@@ -42,4 +42,9 @@ public class Link {
     public int hashCode() {
         return Objects.hash(role1, role2);
     }
+
+    @Override
+    public String toString() {
+        return role1 + " - " + role2;
+    }
 }

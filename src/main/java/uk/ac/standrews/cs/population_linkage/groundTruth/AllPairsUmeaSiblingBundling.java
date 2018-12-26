@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class AllPairsUmeaSiblingBundling {
 
@@ -28,14 +27,28 @@ public class AllPairsUmeaSiblingBundling {
 
     private static final Duration OUTPUT_INTERVAL = Duration.ofHours(1);
 
-    private static final NamedMetric<String>[] BASE_METRICS = new NamedMetric[]{new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(), new JensenShannon2(CHARVAL)};
-    private static final int[] SIBLING_BUNDLING_FIELDS = new int[]{Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.PARENTS_PLACE_OF_MARRIAGE, Birth.PARENTS_DAY_OF_MARRIAGE, Birth.PARENTS_MONTH_OF_MARRIAGE, Birth.PARENTS_YEAR_OF_MARRIAGE};
+    private static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
+            new Levenshtein(),
+            new Jaccard(),
+            new Cosine(),
+            new SED(CHARVAL),
+            new JensenShannon(),
+            new JensenShannon2(CHARVAL));
 
-    private final ArrayList<Double> thresholds;
-    private NamedMetric<LXP>[] combined_metrics;
+    private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE);
 
-    private final Map<String, Map<Double, TruthCounts>> state = new HashMap<String, Map<Double, TruthCounts>>(); // Maps from metric name to Map from threshold to counts of TPFP etc.
+    private final List<Double> thresholds;
+    private List<NamedMetric<LXP>> combined_metrics;
+
+    private final Map<String, Map<Double, TruthCounts>> state; // Maps from metric name to Map from threshold to counts of TPFP etc.
 
     private AllPairsUmeaSiblingBundling(Path store_path, String repo_name, String filename) throws Exception {
 
@@ -48,26 +61,43 @@ public class AllPairsUmeaSiblingBundling {
             outstream = new PrintStream(filename);
         }
 
-        List<Integer> sibling_field_list = Arrays.stream(SIBLING_BUNDLING_FIELDS).boxed().collect(Collectors.toList());
+        combined_metrics = getCombinedMetrics();
+        thresholds = getThresholds();
+        state = initialiseState();
+    }
 
-        combined_metrics = new NamedMetric[BASE_METRICS.length]; // sigma for each
-        for (int i = 0; i < BASE_METRICS.length; i++) {
-            combined_metrics[i] = new Sigma(BASE_METRICS[i], sibling_field_list);
-        }
+    private Map<String, Map<Double, TruthCounts>> initialiseState() {
 
-        thresholds = new ArrayList<>();
-        for (double thresh = 0.01; thresh < 1; thresh += 0.01) {
-            thresholds.add(thresh);
-        }
+        Map<String, Map<Double, TruthCounts>> result = new HashMap<>();
 
-        // Initialise state
         for (NamedMetric<LXP> metric : combined_metrics) {
-            HashMap<Double, TruthCounts> thresh_map = new HashMap<>();
-            for (Double thresh : thresholds) {
-                thresh_map.put(thresh, new TruthCounts());
+            Map<Double, TruthCounts> threshold_map = new HashMap<>();
+            for (Double threshold : thresholds) {
+                threshold_map.put(threshold, new TruthCounts());
             }
-            state.put(metric.getMetricName(), thresh_map);
+            String metricName = metric.getMetricName();
+            result.put(metricName, threshold_map);
         }
+        return result;
+    }
+
+    private List<NamedMetric<LXP>> getCombinedMetrics() {
+
+        List<NamedMetric<LXP>> result = new ArrayList<>();
+
+        for (NamedMetric<String> base_metric : BASE_METRICS) {
+            result.add(new Sigma(base_metric, SIBLING_BUNDLING_FIELDS));
+        }
+        return result;
+    }
+
+    private List<Double> getThresholds() {
+
+        List<Double> result = new ArrayList<>();
+        for (double threshold = 0.01; threshold < 1; threshold += 0.01) {
+            result.add(threshold);
+        }
+        return result;
     }
 
     public void run() throws Exception {
@@ -83,24 +113,9 @@ public class AllPairsUmeaSiblingBundling {
 
     private void doAllPairs(Iterable<Birth> births) {
 
-        Random random = new Random(SEED);
-
         LocalDateTime start_time = LocalDateTime.now();
 
-        // Get them all in memory so we can iterate through them
-        List<Birth> birth_records = new ArrayList<>();
-        for (Birth b : births) {
-            birth_records.add(b);
-        }
-
-        int number_of_records = birth_records.size();
-
-        for (int i = 0; i < number_of_records; i++) {
-            int swap_index = random.nextInt(number_of_records);
-            Birth temp = birth_records.get(i);
-            birth_records.set(i, birth_records.get(swap_index));
-            birth_records.set(swap_index, temp);
-        }
+        List<Birth> birth_records = getBirthsInRandomOrder(births);
 
         long counter = 0;
 
@@ -111,6 +126,7 @@ public class AllPairsUmeaSiblingBundling {
 
                 Birth b1 = birth_records.get(i);
                 Birth b2 = birth_records.get(j);
+
                 counter++;
 
                 for (NamedMetric<LXP> metric : combined_metrics) {
@@ -128,6 +144,26 @@ public class AllPairsUmeaSiblingBundling {
                 }
             }
         }
+    }
+
+    private List<Birth> getBirthsInRandomOrder(final Iterable<Birth> births) {
+
+        Random random = new Random(SEED);
+
+        List<Birth> birth_records = new ArrayList<>();
+        for (Birth b : births) {
+            birth_records.add(b);
+        }
+
+        int number_of_records = birth_records.size();
+
+        for (int i = 0; i < number_of_records; i++) {
+            int swap_index = random.nextInt(number_of_records);
+            Birth temp = birth_records.get(i);
+            birth_records.set(i, birth_records.get(swap_index));
+            birth_records.set(swap_index, temp);
+        }
+        return birth_records;
     }
 
     private void dumpState(long counter, LocalDateTime time) {
@@ -185,7 +221,7 @@ public class AllPairsUmeaSiblingBundling {
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = ApplicationProperties.getRepositoryName();
 
-        new AllPairsUmeaSiblingBundling(store_path, repo_name, "UmeaDistances.csv").run(); // "UmeaDistances.csv" ).run();
+        new AllPairsUmeaSiblingBundling(store_path, repo_name, "UmeaDistances.csv").run();
     }
 
     private class TruthCounts {

@@ -31,7 +31,7 @@ public abstract class SimilaritySearchLinkageTest extends LinkageTest {
 
      class TestLinker extends SimilaritySearchLinker {
 
-        public TestLinker(SearchStructureFactory<LXP> search_structure_factory, double threshold, NamedMetric<LXP> metric, int number_of_progress_updates) {
+        TestLinker(SearchStructureFactory<LXP> search_structure_factory, double threshold, NamedMetric<LXP> metric, int number_of_progress_updates) {
 
             super(search_structure_factory, metric, number_of_progress_updates);
             setThreshold(threshold);

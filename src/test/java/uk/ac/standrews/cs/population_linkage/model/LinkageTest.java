@@ -2,10 +2,11 @@ package uk.ac.standrews.cs.population_linkage.model;
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.standrews.cs.population_linkage.linkage.WeightedAverageLevenshtein;
+import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.Metadata;
 import uk.ac.standrews.cs.storr.impl.StaticLXP;
+import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.Arrays;
@@ -30,7 +31,7 @@ public abstract class LinkageTest {
     final LXP death4 = new DummyLXP("anthony", "aardvark", "8");
     final LXP death5 = new DummyLXP("tony", "armdadillo", "9");
 
-    final NamedMetric<LXP> metric = new WeightedAverageLevenshtein<>(Arrays.asList(0, 1));
+    final NamedMetric<LXP> metric = new Sigma(new Levenshtein(), Arrays.asList(0, 1));
 
     final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3, birth4);
     final List<LXP> death_records = Arrays.asList(death1, death2, death3, death4, death5);
@@ -53,10 +54,10 @@ public abstract class LinkageTest {
     public void distancesCorrect() {
 
         assertEquals(0.0, linker.getMetric().distance(birth1, birth1), DELTA);
-        assertEquals(2.0, linker.getMetric().distance(birth1, birth2), DELTA);
-        assertEquals(2.0, linker.getMetric().distance(birth1, birth3), DELTA);
+        assertEquals(4.0, linker.getMetric().distance(birth1, birth2), DELTA);
+        assertEquals(4.0, linker.getMetric().distance(birth1, birth3), DELTA);
         assertEquals(0.0, linker.getMetric().distance(birth2, birth2), DELTA);
-        assertEquals(1.0, linker.getMetric().distance(birth2, birth3), DELTA);
+        assertEquals(2.0, linker.getMetric().distance(birth2, birth3), DELTA);
         assertEquals(0.0, linker.getMetric().distance(birth3, birth3), DELTA);
     }
 
@@ -65,7 +66,7 @@ public abstract class LinkageTest {
 
         linker.setThreshold(Double.MAX_VALUE);
 
-        linker.addRecords(birth_records);
+        linker.addRecords(birth_records, birth_records);
 
         // By default, assume links are asymmetric, so we want to consider record pair (a,b) as well as (b,a), but not (a,a).
         assertEquals((birth_records.size() - 1) * birth_records.size(), count(linker.getLinks()));
@@ -84,10 +85,13 @@ public abstract class LinkageTest {
         assertTrue(containsPair(linker.getLinks(), birth4, birth3));
 
         assertFalse(containsPair(linker.getLinks(), birth1, birth1));
+        assertFalse(containsPair(linker.getLinks(), birth2, birth2));
+        assertFalse(containsPair(linker.getLinks(), birth3, birth3));
+        assertFalse(containsPair(linker.getLinks(), birth4, birth4));
     }
 
     @Test
-    public void checkAllRecordPairsWithTwoDataSets2() {
+    public void checkAllRecordPairsWithTwoDataSets() {
 
         linker.setThreshold(Double.MAX_VALUE);
         linker.addRecords(birth_records, death_records);
@@ -97,7 +101,9 @@ public abstract class LinkageTest {
         for (LXP birth_record : birth_records) {
             for (LXP death_record : death_records) {
 
-                assertTrue(containsPair(linker.getLinks(), birth_record, death_record));
+                Iterable<Link> links = linker.getLinks();
+                boolean condition = containsPair(links, birth_record, death_record);
+                assertTrue(condition);
             }
         }
 
@@ -111,7 +117,7 @@ public abstract class LinkageTest {
         // "janet smith" distance 0 from "janet smith"
 
         linker.setThreshold(0.0);
-        linker.addRecords(birth_records);
+        linker.addRecords(birth_records, birth_records);
 
         assertEquals(2, count(linker.getLinks()));
         assertTrue(containsPair(linker.getLinks(), birth2, birth4));
@@ -131,12 +137,12 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceNoughtPointFiveWithSingleDataSet() {
+    public void checkRecordPairsWithinDistanceOneWithSingleDataSet() {
 
         // "janet smith" distance 0 from "janet smith"
 
-        linker.setThreshold(0.5);
-        linker.addRecords(birth_records);
+        linker.setThreshold(1.0);
+        linker.addRecords(birth_records, birth_records);
 
         assertEquals(2, count(linker.getLinks()));
         assertTrue(containsPair(linker.getLinks(), birth2, birth4));
@@ -144,12 +150,12 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceNoughtPointFiveWithTwoDataSets() {
+    public void checkRecordPairsWithinDistanceOneWithTwoDataSets() {
 
-        // "john smith" distance 0.5 from "john stith"
+        // "john smith" distance 1.0 from "john stith"
         // "jane smyth" distance 0 from "jane smyth"
 
-        linker.setThreshold(0.5);
+        linker.setThreshold(1.0);
         linker.addRecords(birth_records, death_records);
 
         assertEquals(2, count(linker.getLinks()));
@@ -158,14 +164,14 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceOneWithSingleDataSet() {
+    public void checkRecordPairsWithinDistanceTwoWithSingleDataSet() {
 
         // "janet smith" distance 0 from "janet smith"
-        // "jane smyth" distance 1.0 from "janet smith"
-        // "jane smyth" distance 1.0 from "janet smith"
+        // "jane smyth" distance 2.0 from "janet smith"
+        // "jane smyth" distance 2.0 from "janet smith"
 
-        linker.setThreshold(1.0);
-        linker.addRecords(birth_records);
+        linker.setThreshold(2.0);
+        linker.addRecords(birth_records, birth_records);
 
         assertEquals(6, count(linker.getLinks()));
         assertTrue(containsPair(linker.getLinks(), birth2, birth3));
@@ -177,17 +183,17 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceOneWithTwoDataSets() {
+    public void checkRecordPairsWithinDistanceTwoWithTwoDataSets() {
 
-        // "john smith" distance 0.5 from "john stith"
-        // "janet smith" distance 1 from "janet smythe"
-        // "janet smith" distance 1 from "jane smyth"
-        // "jane smyth" distance 1 from "janet smythe"
+        // "john smith" distance 1.0 from "john stith"
+        // "janet smith" distance 2.0 from "janet smythe"
+        // "janet smith" distance 2.0 from "jane smyth"
+        // "jane smyth" distance 2.0 from "janet smythe"
         // "jane smyth" distance 0 from "jane smyth"
-        // "janet smith" distance 1 from "janet smythe"
-        // "janet smith" distance 1 from "jane smyth"
+        // "janet smith" distance 2.0 from "janet smythe"
+        // "janet smith" distance 2.0 from "jane smyth"
 
-        linker.setThreshold(1.0);
+        linker.setThreshold(2.0);
         linker.addRecords(birth_records, death_records);
 
         assertEquals(7, count(linker.getLinks()));
@@ -209,16 +215,6 @@ public abstract class LinkageTest {
         return false;
     }
 
-    boolean containsPair(Links record_pairs, LXP record1, LXP record2) {
-
-        for (Link p : record_pairs) {
-
-            if (equal(p, linker.getIdentifier1(record1), linker.getIdentifier2(record2)))
-                return true;
-        }
-        return false;
-    }
-
     <T> int count(Iterable<T> elements) {
 
         int count = 0;
@@ -226,11 +222,6 @@ public abstract class LinkageTest {
             count++;
         }
         return count;
-    }
-
-    private int count(final Links links) {
-
-        return links.size();
     }
 
     void printPairs(Iterable<RecordPair> recordPairs) {

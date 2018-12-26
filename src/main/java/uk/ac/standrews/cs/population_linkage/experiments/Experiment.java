@@ -3,7 +3,6 @@ package uk.ac.standrews.cs.population_linkage.experiments;
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.population_linkage.model.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
-import uk.ac.standrews.cs.population_linkage.model.Links;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
@@ -11,7 +10,6 @@ import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -25,25 +23,21 @@ public abstract class Experiment {
 
         LocalDateTime time_stamp = LocalDateTime.now();
 
-        final List<LXP> birth_sub_records = getRecords(record_repository);
-        time_stamp = nextTimeStamp(time_stamp, "extract linkage records");
+        final Iterable<LXP> birth_records = getRecords(record_repository);
+//        time_stamp = nextTimeStamp(time_stamp, "extract linkage records");
 
         final Linker sibling_bundler = getLinker();
 
-        sibling_bundler.addRecords(birth_sub_records);
-
-        time_stamp = nextTimeStamp(time_stamp, "index records");
+        sibling_bundler.addRecords(birth_records, birth_records);
 
         Iterable<Link> sibling_links = sibling_bundler.getLinks();
+         time_stamp = LocalDateTime.now();
 
-        time_stamp = nextTimeStamp(time_stamp, "link records");
-
-        Iterable<Link>  ground_truth_links = getGroundTruthLinks(record_repository);
-
+        Set<Link> ground_truth_links = getGroundTruthLinks(record_repository);
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
         LinkageQuality linkage_quality = evaluateLinkage(sibling_links, ground_truth_links);
-        nextTimeStamp(time_stamp, "evaluate linkage");
+        nextTimeStamp(time_stamp, "perform and evaluate linkage");
 
         linkage_quality.print(System.out);
     }
@@ -52,11 +46,11 @@ public abstract class Experiment {
 
     protected abstract void printHeader();
 
-    protected abstract List<LXP> getRecords(RecordRepository record_repository);
+    protected abstract Iterable<LXP> getRecords(RecordRepository record_repository);
 
     protected abstract Linker getLinker();
 
-    protected abstract Links getGroundTruthLinks(RecordRepository record_repository);
+    protected abstract Set<Link> getGroundTruthLinks(RecordRepository record_repository);
 
     private LocalDateTime nextTimeStamp(final LocalDateTime previous_time_stamp, final String step_description) {
 
@@ -65,73 +59,36 @@ public abstract class Experiment {
         return next;
     }
 
-    private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
+    private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Set<Link> ground_truth_links) {
 
-        int true_positives = countTruePositives(calculated_links, ground_truth_links);
-        int false_positives = countFalsePositives(calculated_links, ground_truth_links);
-        int false_negatives = countFalseNegatives(calculated_links, ground_truth_links);
+        int true_positives = 0;
+        int false_positives = 0;
+
+        Set<Link> copy_of_ground_truth_links = new HashSet<>(ground_truth_links);
+
+        for (Link calculated_link : calculated_links) {
+
+            if (ground_truth_links.contains(calculated_link)) {
+                true_positives++;
+            }
+            else {
+                false_positives++;
+            }
+
+            copy_of_ground_truth_links.remove(calculated_link);
+        }
+
+        int false_negatives = copy_of_ground_truth_links.size();
+
+        System.out.println("TP: " + true_positives);
+        System.out.println("FP: " + false_positives);
+        System.out.println("FN: " + false_negatives);
 
         double precision = ClassificationMetrics.precision(true_positives, false_positives);
         double recall = ClassificationMetrics.recall(true_positives, false_negatives);
         double f_measure = ClassificationMetrics.F1(true_positives, false_positives, false_negatives);
 
         return new LinkageQuality(precision, recall, f_measure);
-    }
-
-    private static int countTruePositives(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
-
-        return countInFormerAndInLatter(calculated_links, ground_truth_links);
-    }
-
-    private static int countFalsePositives(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
-
-        return countInFormerNotInLatter(calculated_links, ground_truth_links);
-    }
-
-    private static int countFalseNegatives(Iterable<Link> calculated_links, Iterable<Link> ground_truth_links) {
-
-        return countInFormerNotInLatter(ground_truth_links, calculated_links);
-    }
-
-    private static int countInFormerAndInLatter(final Iterable<Link> set1, final Iterable<Link> set2) {
-
-        int count = 0;
-
-        Set<Link> set2Set = iteratorToSet(set2);
-
-        for (Link calculated_link : set1) {
-
-            if (!set2Set.contains(calculated_link)) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private static Set<Link> iteratorToSet(final Iterable<Link> set2) {
-
-        Set<Link> set2Set = new HashSet<>();
-        for (Link link : set2) {
-            set2Set.add(link);
-        }
-        return set2Set;
-    }
-
-    private static int countInFormerNotInLatter(final Iterable<Link> set1, final Iterable<Link> set2) {
-
-        int count = 0;
-
-        Set<Link> set2Set = iteratorToSet(set2);
-
-        for (Link calculated_link : set1) {
-
-            if (!set2Set.contains(calculated_link)) {
-                count++;
-            }
-        }
-
-        return count;
     }
 
     private static String prettyPrint(Duration duration) {

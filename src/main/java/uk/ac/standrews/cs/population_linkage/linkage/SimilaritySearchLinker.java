@@ -15,7 +15,8 @@ public abstract class SimilaritySearchLinker extends Linker {
 
     private SearchStructureFactory<LXP> search_structure_factory;
     private SearchStructure<LXP> search_structure;
-    private List<LXP> smaller_set;
+    private Iterable<LXP> smaller_set;
+    private int smaller_set_size;
 
     protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
 
@@ -24,65 +25,53 @@ public abstract class SimilaritySearchLinker extends Linker {
         this.search_structure_factory = search_structure_factory;
     }
 
-    public void addRecords(List<LXP> records1, List<LXP> records2) {
+    public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
 
         super.addRecords(records1, records2);
 
-        smaller_set = records1.size() < records2.size() ? records1 : records2;
-        final List<LXP> larger_set = records1.size() < records2.size() ? records2 : records1;
+        int records1_size = count(records1);
+        int records2_size = count(records2);
+
+        Iterable<LXP> larger_set;
+
+        if (records1_size < records2_size) {
+            smaller_set = records1;
+            smaller_set_size = records1_size;
+            larger_set = records2;
+        } else {
+            smaller_set = records2;
+            smaller_set_size = records2_size;
+            larger_set = records1;
+        }
 
         search_structure = search_structure_factory.newSearchStructure(larger_set);
     }
 
     @Override
-    public Iterable<RecordPair> getMatchingRecordPairs(final List<LXP> records1, final List<LXP> records2) {
+    public Iterable<RecordPair> getMatchingRecordPairs(final Iterable<LXP> records1, final Iterable<LXP> records2) {
 
         return new Iterable<RecordPair>() {
 
             class RecordPairIterator extends AbstractRecordPairIterator {
 
-                int smaller_set_index;
-                int neighbours_index;
-                List<DataDistance<LXP>> nearest_records;
+                private int neighbours_index;
+                private List<DataDistance<LXP>> nearest_records;
+                private LXP next_record_from_smaller_set;
+                private Iterator<LXP> smaller_set_iterator;
 
-                RecordPairIterator(final List<LXP> records1, final List<LXP> records2, ProgressIndicator progress_indicator) {
+                RecordPairIterator(final Iterable<LXP> records1, final Iterable<LXP> records2, ProgressIndicator progress_indicator) {
 
                     super(records1, records2, progress_indicator);
 
-                    smaller_set_index = 0;
+                    smaller_set_iterator = smaller_set.iterator();
+                    next_record_from_smaller_set = smaller_set_iterator.next();
 
-                    // Start at 1 to ignore the query record itself, if the two datasets are the same.
-                    neighbours_index = datasets_same ? 1 : 0;
+                    neighbours_index = 0;
 
-                    progress_indicator.setTotalSteps(smaller_set.size());
+                    progress_indicator.setTotalSteps(smaller_set_size);
 
                     getNextRecordBatch();
                     getNextPair();
-                }
-
-                 void getNextPair() {
-
-                    while (neighbours_index >= nearest_records.size() && smaller_set_index < smaller_set.size()) {
-                        getNextRecordFromSmallerSet();
-                    }
-
-                    if (!finished()) {
-
-                        LXP target = smaller_set.get(smaller_set_index);
-                        DataDistance<LXP> data_distance = nearest_records.get(neighbours_index);
-                        next_pair = new RecordPair(target, data_distance.value, data_distance.distance);
-
-                        neighbours_index++;
-                        if (neighbours_index >= nearest_records.size()) getNextRecordFromSmallerSet();
-
-                    } else {
-                        next_pair = null;
-                    }
-                }
-
-                boolean finished() {
-
-                    return smaller_set_index >= smaller_set.size() || (smaller_set_index == smaller_set.size() - 1 && neighbours_index >= nearest_records.size());
                 }
 
                 @Override
@@ -90,20 +79,66 @@ public abstract class SimilaritySearchLinker extends Linker {
                     return true;
                 }
 
+                void getNextPair() {
+
+                    while (smaller_set_iterator.hasNext() && !moreLinksAvailableFromCurrentRecordFromSmallerSet()) {
+                        getNextRecordFromSmallerSet();
+                    }
+
+                    loadPair();
+
+                    if (pairShouldBeSkipped()) {
+                        next_pair = null;
+                    }
+                }
+
+                private void loadPair() {
+
+                    do {
+                        if (moreLinksAvailable()) {
+
+                            DataDistance<LXP> data_distance = nearest_records.get(neighbours_index++);
+                            next_pair = new RecordPair(next_record_from_smaller_set, data_distance.value, data_distance.distance);
+
+                            if (!moreLinksAvailableFromCurrentRecordFromSmallerSet()) getNextRecordFromSmallerSet();
+
+                        } else {
+                            next_pair = null;
+                        }
+                    }
+                    while (moreLinksAvailable() && pairShouldBeSkipped());
+                }
+
+                private boolean moreLinksAvailable() {
+
+                    return smaller_set_iterator.hasNext() || moreLinksAvailableFromCurrentRecordFromSmallerSet();
+                }
+
+                private boolean moreLinksAvailableFromCurrentRecordFromSmallerSet() {
+
+                    return neighbours_index < nearest_records.size();
+                }
+
+                private boolean pairShouldBeSkipped() {
+
+                    return datasets_same && next_pair.record1.getId() == next_pair.record2.getId();
+                }
+
                 private void getNextRecordFromSmallerSet() {
 
-                    smaller_set_index++;
-                    progress_indicator.progressStep();
+                    if (smaller_set_iterator.hasNext()) {
 
-                    // Start at 1 to ignore the query record itself, if the two datasets are the same.
-                    neighbours_index = datasets_same ? 1 : 0;
+                        progress_indicator.progressStep();
+                        next_record_from_smaller_set = smaller_set_iterator.next();
+                        neighbours_index = 0;
 
-                    if (smaller_set_index < smaller_set.size()) getNextRecordBatch();
+                        getNextRecordBatch();
+                    }
                 }
 
                 private void getNextRecordBatch() {
 
-                    nearest_records = search_structure.findWithinThreshold(smaller_set.get(smaller_set_index), threshold);
+                    nearest_records = search_structure.findWithinThreshold(next_record_from_smaller_set, threshold);
                 }
             }
 

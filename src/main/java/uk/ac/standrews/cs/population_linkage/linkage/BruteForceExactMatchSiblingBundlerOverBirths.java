@@ -10,7 +10,6 @@ public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLink
 
         super(distance_metric, number_of_progress_updates);
 
-        setSymmetricalLinks(true);
         setThreshold(0);
     }
 
@@ -36,11 +35,11 @@ public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLink
 
     @Override
     protected String getIdentifier1(LXP record) {
-        return record.getString(BirthLinkageSubRecord.STANDARDISED_ID);
+        return record.getString(Birth.STANDARDISED_ID);
     }
 
     @Override
     protected String getIdentifier2(LXP record) {
-        return record.getString(BirthLinkageSubRecord.STANDARDISED_ID);
+        return record.getString(Birth.STANDARDISED_ID);
     }
 }

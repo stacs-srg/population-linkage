@@ -34,11 +34,11 @@ public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLi
 
     @Override
     protected String getIdentifier1(LXP record) {
-        return record.getString(BirthLinkageSubRecord.STANDARDISED_ID);
+        return record.getString(Birth.STANDARDISED_ID);
     }
 
     @Override
     protected String getIdentifier2(LXP record) {
-        return record.getString(BirthLinkageSubRecord.STANDARDISED_ID);
+        return record.getString(Birth.STANDARDISED_ID);
     }
 }

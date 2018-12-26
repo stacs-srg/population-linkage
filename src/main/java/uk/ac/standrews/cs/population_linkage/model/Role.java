@@ -36,4 +36,9 @@ public class Role {
     public int hashCode() {
         return Objects.hash(record_id, role_type);
     }
+
+    @Override
+    public String toString() {
+        return record_id;
+    }
 }

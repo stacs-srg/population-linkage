@@ -5,17 +5,16 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 
 import java.util.Iterator;
-import java.util.List;
 
 abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
 
-    final List<LXP> records1;
-    final List<LXP> records2;
+    final Iterable<LXP> records1;
+    final Iterable<LXP> records2;
     final boolean datasets_same;
     final ProgressIndicator progress_indicator;
     RecordPair next_pair;
 
-    AbstractRecordPairIterator(final List<LXP> records1, final List<LXP> records2, ProgressIndicator progress_indicator) {
+    AbstractRecordPairIterator(final Iterable<LXP> records1, final Iterable<LXP> records2, ProgressIndicator progress_indicator) {
 
         this.records1 = records1;
         this.records2 = records2;
@@ -23,7 +22,6 @@ abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
         this.progress_indicator = progress_indicator;
     }
 
-    abstract boolean finished();
     abstract boolean match(RecordPair pair);
 
     void advanceIndices() {
@@ -42,6 +40,7 @@ abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
 
         RecordPair result = next_pair;
         getNextMatchingPair();
+
         return result;
     }
 
@@ -55,13 +54,7 @@ abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
 
     void getNextPair() {
 
-        if (!finished()) {
-
-            loadNextPair();
-            advanceIndices();
-
-        } else {
-            next_pair = null;
-        }
+        loadNextPair();
+        advanceIndices();
     }
 }
