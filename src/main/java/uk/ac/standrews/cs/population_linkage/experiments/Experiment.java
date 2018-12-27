@@ -21,22 +21,19 @@ public abstract class Experiment {
 
         printHeader();
 
-        LocalDateTime time_stamp = LocalDateTime.now();
-
         final Iterable<LXP> birth_records = getRecords(record_repository);
-//        time_stamp = nextTimeStamp(time_stamp, "extract linkage records");
 
         final Linker sibling_bundler = getLinker();
 
         sibling_bundler.addRecords(birth_records, birth_records);
 
-        Iterable<Link> sibling_links = sibling_bundler.getLinks();
-         time_stamp = LocalDateTime.now();
+        final Iterable<Link> sibling_links = sibling_bundler.getLinks();
+        LocalDateTime time_stamp = LocalDateTime.now();
 
-        Set<Link> ground_truth_links = getGroundTruthLinks(record_repository);
+        final Set<Link> ground_truth_links = getGroundTruthLinks(record_repository);
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
-        LinkageQuality linkage_quality = evaluateLinkage(sibling_links, ground_truth_links);
+        final LinkageQuality linkage_quality = evaluateLinkage(sibling_links, ground_truth_links);
         nextTimeStamp(time_stamp, "perform and evaluate linkage");
 
         linkage_quality.print(System.out);
@@ -70,8 +67,7 @@ public abstract class Experiment {
 
             if (ground_truth_links.contains(calculated_link)) {
                 true_positives++;
-            }
-            else {
+            } else {
                 false_positives++;
             }
 

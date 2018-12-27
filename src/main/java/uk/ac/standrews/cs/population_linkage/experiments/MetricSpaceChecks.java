@@ -29,7 +29,6 @@ public class MetricSpaceChecks {
     private static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
             new Levenshtein(),
             new Jaccard(),
-            new Cosine(),
             new SED(CHARVAL),
             new JensenShannon(),
             new JensenShannon2(CHARVAL));
