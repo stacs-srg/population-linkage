@@ -8,22 +8,30 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
-import java.io.PrintStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class AllPairsUmeaSiblingBundling {
 
     private static final int CHARVAL = 512;
     private static final int DUMP_COUNT_INTERVAL = 10000;
-    public static final long SEED = 34553543456223L;
+    private static final long SEED = 34553543456223L;
+
     private final Path store_path;
     private final String repo_name;
 
     private final String DELIMIT = ",";
-    private final PrintStream outstream;
+    private final PrintWriter outstream;
+    private int starting_counter = 0;
 
     private static final Duration OUTPUT_INTERVAL = Duration.ofHours(1);
 
@@ -50,20 +58,61 @@ public class AllPairsUmeaSiblingBundling {
 
     private final Map<String, Map<Double, TruthCounts>> state; // Maps from metric name to Map from threshold to counts of TPFP etc.
 
-    private AllPairsUmeaSiblingBundling(Path store_path, String repo_name, String filename) throws Exception {
+    private AllPairsUmeaSiblingBundling(Path store_path, String repo_name, String filename) throws IOException {
 
         this.store_path = store_path;
         this.repo_name = repo_name;
 
-        if (filename.equals("stdout")) {
-            outstream = System.out;
-        } else {
-            outstream = new PrintStream(filename);
-        }
-
         combined_metrics = getCombinedMetrics();
         thresholds = getThresholds();
         state = initialiseState();
+
+        if (filename.equals("stdout")) {
+            outstream = new PrintWriter(System.out);
+
+        } else {
+            importPreviousState(filename);
+            outstream = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+        }
+    }
+
+    private void importPreviousState(final String filename) throws IOException {
+
+        if (Files.exists(Paths.get(filename))) {
+
+            System.out.println("Importing previous data");
+
+            try (final Stream<String> lines = Files.lines(Paths.get(filename))) {
+
+                lines.skip(1).forEachOrdered(this::importStateLine);
+            }
+        }
+    }
+
+    private void importStateLine(final String line) {
+
+        String[] fields = line.split(",");
+
+        String metric_name = fields[2];
+        double threshold = Double.parseDouble(fields[3]);
+        int tp = Integer.parseInt(fields[4]);
+        int fp = Integer.parseInt(fields[5]);
+        int fn = Integer.parseInt(fields[6]);
+        int tn = Integer.parseInt(fields[7]);
+
+        setStateValue(metric_name, threshold, tp, fp, fn, tn);
+    }
+
+    private void setStateValue(final String metric_name, final double threshold, final int tp, final int fp, final int fn, final int tn) {
+
+        TruthCounts truths = state.get(metric_name).get(threshold);
+
+        truths.tp = tp;
+        truths.fp = fp;
+        truths.fn = fn;
+        truths.tn = tn;
+
+        starting_counter = tp + fp + fn + tn;
     }
 
     private Map<String, Map<Double, TruthCounts>> initialiseState() {
@@ -94,8 +143,8 @@ public class AllPairsUmeaSiblingBundling {
     private List<Double> getThresholds() {
 
         List<Double> result = new ArrayList<>();
-        for (double threshold = 0.01; threshold < 1; threshold += 0.01) {
-            result.add(threshold);
+        for (int i = 1; i < 100; i++) {
+            result.add(((double) i) / 100);
         }
         return result;
     }
@@ -105,43 +154,60 @@ public class AllPairsUmeaSiblingBundling {
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
         System.out.println("Reading records from repository: " + repo_name);
-        System.out.println("Creating Sibling Bundling ground truth");
-        System.out.println();
 
         doAllPairs(record_repository.getBirths());
     }
 
     private void doAllPairs(Iterable<Birth> births) {
 
-        LocalDateTime start_time = LocalDateTime.now();
+        System.out.println("Randomising record order");
 
         List<Birth> birth_records = getBirthsInRandomOrder(births);
 
         long counter = 0;
 
-        outstream.println("Time" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn");
+        if (starting_counter == 0) {
+            outstream.println("Time" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn");
+        }
+
+        System.out.println("Skipping previous output");
+
+        boolean first_iteration = true;
+        LocalDateTime start_time = LocalDateTime.now();
 
         for (int i = 0; i < birth_records.size() - 1; i++) {
             for (int j = i + 1; j < birth_records.size(); j++) {
 
-                Birth b1 = birth_records.get(i);
-                Birth b2 = birth_records.get(j);
+                if (counter >= starting_counter) {
+
+                    if (first_iteration) {
+                        System.out.println("Starting new calculations");
+
+                    } else {
+                        if (counter % DUMP_COUNT_INTERVAL == 0) {
+
+                            final LocalDateTime now = LocalDateTime.now();
+
+                            if (OUTPUT_INTERVAL.minus(Duration.between(start_time, now)).isNegative()) {
+                                start_time = now;
+                                dumpState(counter, start_time);
+                            }
+                        }
+                    }
+
+                    Birth b1 = birth_records.get(i);
+                    Birth b2 = birth_records.get(j);
+
+                    for (NamedMetric<LXP> metric : combined_metrics) {
+                        for (double thresh : thresholds) {
+                            updateTruthCounts(metric, thresh, b1, b2);
+                        }
+                    }
+
+                    first_iteration = false;
+                }
 
                 counter++;
-
-                for (NamedMetric<LXP> metric : combined_metrics) {
-                    for (double thresh : thresholds) {
-                        updateTruthCounts(metric, thresh, b1, b2);
-                    }
-                }
-
-                if (counter % DUMP_COUNT_INTERVAL == 0) {
-                    final LocalDateTime now = LocalDateTime.now();
-                    if (OUTPUT_INTERVAL.minus(Duration.between(start_time, now)).isNegative()) {
-                        start_time = now;
-                        dumpState(counter, start_time);
-                    }
-                }
             }
         }
     }
@@ -167,9 +233,12 @@ public class AllPairsUmeaSiblingBundling {
     }
 
     private void dumpState(long counter, LocalDateTime time) {
+
         for (NamedMetric<LXP> metric : combined_metrics) {
+
             String metric_name = metric.getMetricName();
             Map<Double, TruthCounts> thresh_map = state.get(metric_name);
+
             for (Map.Entry<Double, TruthCounts> entry : thresh_map.entrySet()) {
                 printTruthCount(time, counter, metric_name, entry.getKey(), entry.getValue());
             }
@@ -204,7 +273,7 @@ public class AllPairsUmeaSiblingBundling {
 
     private void printTruthCount(LocalDateTime time, long counter, String metric_name, Double thresh, TruthCounts truth_count) {
 
-        outstream.println(time.toString() + DELIMIT + counter + DELIMIT + metric_name + DELIMIT + String.format("%.2f", thresh) + DELIMIT + truth_count.tp + DELIMIT + truth_count.fp + DELIMIT + truth_count.fn + DELIMIT + truth_count.tn);
+        outstream.println(time + DELIMIT + counter + DELIMIT + metric_name + DELIMIT + String.format("%.2f", thresh) + DELIMIT + truth_count.tp + DELIMIT + truth_count.fp + DELIMIT + truth_count.fn + DELIMIT + truth_count.tn);
         outstream.flush();
     }
 
