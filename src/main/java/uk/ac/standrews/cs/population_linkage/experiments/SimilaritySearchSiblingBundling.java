@@ -9,8 +9,8 @@ import java.util.List;
 
 public abstract class SimilaritySearchSiblingBundling extends SiblingBundling {
 
-    static final double MATCH_THRESHOLD = 5.0;
-    static final int NUMBER_OF_PROGRESS_UPDATES = 100;
+    static final double MATCH_THRESHOLD = 4.0;
+    static final int NUMBER_OF_PROGRESS_UPDATES = 10000;
 
     private final Path store_path;
     protected final String repo_name;

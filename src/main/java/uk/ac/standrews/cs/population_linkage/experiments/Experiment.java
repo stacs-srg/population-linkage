@@ -17,25 +17,34 @@ public abstract class Experiment {
 
     public void run() throws Exception {
 
+        System.out.println("r1");
+
         final RecordRepository record_repository = getRecordRepository();
 
+        System.out.println("r2");
         printHeader();
 
         final Iterable<LXP> birth_records = getRecords(record_repository);
 
+        System.out.println("r3");
         final Linker sibling_bundler = getLinker();
 
+        System.out.println("r4");
         sibling_bundler.addRecords(birth_records, birth_records);
 
+        System.out.println("r5");
         final Iterable<Link> sibling_links = sibling_bundler.getLinks();
         LocalDateTime time_stamp = LocalDateTime.now();
 
+        System.out.println("r6");
         final Set<Link> ground_truth_links = getGroundTruthLinks(record_repository);
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
+        System.out.println("r7");
         final LinkageQuality linkage_quality = evaluateLinkage(sibling_links, ground_truth_links);
         nextTimeStamp(time_stamp, "perform and evaluate linkage");
 
+        System.out.println("r8");
         linkage_quality.print(System.out);
     }
 
