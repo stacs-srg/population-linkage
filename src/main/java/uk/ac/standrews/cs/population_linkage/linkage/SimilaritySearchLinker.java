@@ -29,8 +29,11 @@ public abstract class SimilaritySearchLinker extends Linker {
 
         super.addRecords(records1, records2);
 
+        System.out.println("ar1");
+
         int records1_size = count(records1);
-        int records2_size = count(records2);
+        int records2_size = records1 == records2 ? records1_size : count(records2);
+        System.out.println("ar2");
 
         Iterable<LXP> larger_set;
 
@@ -43,8 +46,11 @@ public abstract class SimilaritySearchLinker extends Linker {
             smaller_set_size = records2_size;
             larger_set = records1;
         }
+        System.out.println("ar3");
 
         search_structure = search_structure_factory.newSearchStructure(larger_set);
+        System.out.println("ar4");
+
     }
 
     @Override

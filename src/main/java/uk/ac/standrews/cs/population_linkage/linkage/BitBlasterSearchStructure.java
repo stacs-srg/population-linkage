@@ -15,8 +15,12 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     public BitBlasterSearchStructure(NamedMetric<T> distance_metric, Iterable<T> data) {
 
+        System.out.println("bbss1");
+
         List<T> copy_of_data = copyData(data);
+        System.out.println("bbss2");
         init(distance_metric, chooseRandomReferencePoints(copy_of_data, DEFAULT_NUMBER_OF_REFERENCE_POINTS), copy_of_data);
+        System.out.println("bbss3");
     }
 
     public BitBlasterSearchStructure(NamedMetric<T> distance_metric, List<T> reference_points, Iterable<T> data) {
