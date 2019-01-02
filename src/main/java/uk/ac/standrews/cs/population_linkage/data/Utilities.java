@@ -1,6 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
-import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -10,13 +9,12 @@ import uk.ac.standrews.cs.utilities.dataset.DataSet;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Utilities {
 
     private static final int CHARVAL = 512;
+    private static final long SEED = 34553543456223L;
 
     public static final Levenshtein LEVENSHTEIN = new Levenshtein();
     public static final Jaccard JACCARD = new Jaccard();
@@ -25,9 +23,9 @@ public class Utilities {
     public static final JensenShannon JENSEN_SHANNON = new JensenShannon();
     public static final JensenShannon2 JENSEN_SHANNON2 = new JensenShannon2(CHARVAL);
 
-    public static final NamedMetric<String>[] BASE_METRICS = new NamedMetric[] {LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, JENSEN_SHANNON2};
+    public static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, JENSEN_SHANNON2);
 
-    public static final List<Integer> BIRTH_MATCH_FIELDS = Arrays.asList(
+    public static final List<Integer> SIBLING_BUNDLING_BIRTH_MATCH_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
             Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME,
             Birth.PARENTS_PLACE_OF_MARRIAGE,
@@ -36,48 +34,81 @@ public class Utilities {
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
 
-    public static List<LXP> getBirthLinkageSubRecords(RecordRepository record_repository) {
+    public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
 
-        List<LXP> sub_records = new ArrayList<>();
+        return () -> new Iterator<LXP>(){
 
-        for (Birth birth : record_repository.getBirths()) {
-            sub_records.add(birth);
-        }
+            Iterator<Birth> birth_records = record_repository.getBirths().iterator();
 
-        if (sub_records.size() == 0) throw new RuntimeException("No records found in repository");
-        return sub_records;
+            @Override
+            public boolean hasNext() {
+                return birth_records.hasNext();
+            }
+
+            @Override
+            public LXP next() {
+                return birth_records.next();
+            }
+        };
     }
 
-    public static List<LXP> getDeathLinkageSubRecords(RecordRepository record_repository) {
+    public static Iterable<LXP> getDeathRecords(RecordRepository record_repository) {
 
-        List<LXP> sub_records = new ArrayList<>();
+        return () -> new Iterator<LXP>(){
 
-        for (Death death : record_repository.getDeaths()) {
-            sub_records.add(death);
-        }
+            Iterator<Death> death_records = record_repository.getDeaths().iterator();
 
-        if (sub_records.size() == 0) throw new RuntimeException("No records found in repository");
-        return sub_records;
+            @Override
+            public boolean hasNext() {
+                return death_records.hasNext();
+            }
+
+            @Override
+            public LXP next() {
+                return death_records.next();
+            }
+        };
     }
 
-    public static List<LXP> getMarriageLinkageSubRecords(RecordRepository record_repository) {
+    public static Iterable<LXP> getMarriageRecords(RecordRepository record_repository) {
 
-        List<LXP> sub_records = new ArrayList<>();
+        return () -> new Iterator<LXP>(){
 
-        for (Marriage marriage : record_repository.getMarriages()) {
-            sub_records.add(marriage);
-        }
+            Iterator<Marriage> marriage_records = record_repository.getMarriages().iterator();
 
-        if (sub_records.size() == 0) throw new RuntimeException("No records found in repository");
-        return sub_records;
-    }
+            @Override
+            public boolean hasNext() {
+                return marriage_records.hasNext();
+            }
 
-    public static NamedMetric<LXP> weightedAverageLevenshteinOverBirths() {
-
-        return new Sigma(new Levenshtein(), BIRTH_MATCH_FIELDS);
+            @Override
+            public LXP next() {
+                return marriage_records.next();
+            }
+        };
     }
 
     public static void printSampleRecords(DataSet data_set, String record_type, int number_to_print) {
         uk.ac.standrews.cs.population_records.record_types.Utilities.printSampleRecords(data_set, record_type, number_to_print);
+    }
+
+    public static <T> List<T> randomise(final Iterable<T> records) {
+
+        Random random = new Random(SEED);
+
+        List<T> record_list = new ArrayList<>();
+        for (T record : records) {
+            record_list.add(record);
+        }
+
+        int number_of_records = record_list.size();
+
+        for (int i = 0; i < number_of_records; i++) {
+            int swap_index = random.nextInt(number_of_records);
+            T temp = record_list.get(i);
+            record_list.set(i, record_list.get(swap_index));
+            record_list.set(swap_index, temp);
+        }
+        return record_list;
     }
 }

@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -24,7 +25,6 @@ public class AllPairsUmeaSiblingBundling {
 
     private static final int CHARVAL = 512;
     private static final int DUMP_COUNT_INTERVAL = 10000;
-    private static final long SEED = 34553543456223L;
 
     private final Path store_path;
     private final String repo_name;
@@ -162,7 +162,7 @@ public class AllPairsUmeaSiblingBundling {
 
         System.out.println("Randomising record order");
 
-        List<Birth> birth_records = getBirthsInRandomOrder(births);
+        List<Birth> birth_records = Utilities.randomise(births);
 
         long counter = 0;
 
@@ -210,26 +210,6 @@ public class AllPairsUmeaSiblingBundling {
                 counter++;
             }
         }
-    }
-
-    private List<Birth> getBirthsInRandomOrder(final Iterable<Birth> births) {
-
-        Random random = new Random(SEED);
-
-        List<Birth> birth_records = new ArrayList<>();
-        for (Birth b : births) {
-            birth_records.add(b);
-        }
-
-        int number_of_records = birth_records.size();
-
-        for (int i = 0; i < number_of_records; i++) {
-            int swap_index = random.nextInt(number_of_records);
-            Birth temp = birth_records.get(i);
-            birth_records.set(i, birth_records.get(swap_index));
-            birth_records.set(swap_index, temp);
-        }
-        return birth_records;
     }
 
     private void dumpState(long counter, LocalDateTime time) {

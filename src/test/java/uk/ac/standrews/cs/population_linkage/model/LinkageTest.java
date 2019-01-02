@@ -40,8 +40,6 @@ public abstract class LinkageTest {
 
     protected abstract Linker getLinker();
 
-    protected abstract boolean equal(RecordPair pair1, RecordPair pair2);
-
     protected abstract boolean equal(final Link link, final String id1, final String id2);
 
     @Before

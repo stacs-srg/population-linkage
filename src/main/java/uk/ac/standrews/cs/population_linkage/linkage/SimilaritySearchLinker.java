@@ -127,7 +127,7 @@ public abstract class SimilaritySearchLinker extends Linker {
 
                 private boolean pairShouldBeSkipped() {
 
-                    return datasets_same && next_pair.record1.getId() == next_pair.record2.getId();
+                    return next_pair == null || (datasets_same && next_pair.record1.getId() == next_pair.record2.getId());
                 }
 
                 private void getNextRecordFromSmallerSet() {

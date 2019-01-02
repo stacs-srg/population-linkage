@@ -57,7 +57,9 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
         List<X> copy_of_data = new ArrayList<>();
 
-        for (X x : data) copy_of_data.add(x);
+        for (X x : data) {
+            copy_of_data.add(x);
+        }
         return copy_of_data;
     }
 

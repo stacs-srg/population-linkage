@@ -6,14 +6,26 @@ import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Experiment {
+
+    protected final Path store_path;
+    protected final String repo_name;
+
+    Experiment(Path store_path, String repo_name) {
+
+        this.store_path = store_path;
+        this.repo_name = repo_name;
+    }
 
     public void run() throws Exception {
 
@@ -48,13 +60,23 @@ public abstract class Experiment {
         linkage_quality.print(System.out);
     }
 
-    protected abstract RecordRepository getRecordRepository() throws Exception;
+    protected abstract RecordRepository getRecordRepository();
 
     protected abstract void printHeader();
 
     protected abstract Iterable<LXP> getRecords(RecordRepository record_repository);
 
     protected abstract Linker getLinker();
+
+    protected abstract NamedMetric<String> getBaseMetric();
+
+    protected abstract NamedMetric<LXP> getCompositeMetric();
+
+    protected abstract List<Integer> getMatchFields();
+
+    protected abstract double getMatchThreshold();
+
+    protected abstract int getNumberOfProgressUpdates();
 
     protected abstract Set<Link> getGroundTruthLinks(RecordRepository record_repository);
 

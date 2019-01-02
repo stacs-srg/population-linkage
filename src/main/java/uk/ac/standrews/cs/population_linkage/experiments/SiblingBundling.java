@@ -1,17 +1,30 @@
 package uk.ac.standrews.cs.population_linkage.experiments;
 
+import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.population_linkage.model.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public abstract class SiblingBundling extends Experiment {
+
+    SiblingBundling(Path store_path, String repo_name) {
+
+        super(store_path, repo_name);
+    }
+
+    @Override
+    protected List<Integer> getMatchFields() {
+
+        return Utilities.SIBLING_BUNDLING_BIRTH_MATCH_FIELDS;
+    }
 
     protected Set<Link> getGroundTruthLinks(final RecordRepository record_repository) {
 

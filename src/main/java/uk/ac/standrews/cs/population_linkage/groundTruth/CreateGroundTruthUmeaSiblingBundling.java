@@ -16,12 +16,12 @@ public class CreateGroundTruthUmeaSiblingBundling {
 
     private final Path store_path;
     private final String repo_name;
-
-    private final String DELIMIT = ",";
-    private final String DASH = "-";
     private final PrintStream outstream;
 
-    private NamedMetric<LXP>[] combined_metrics;
+    private static final String DELIMIT = ",";
+    private static final String DASH = "-";
+
+    private List<NamedMetric<LXP>> combined_metrics;
 
     public CreateGroundTruthUmeaSiblingBundling(Path store_path, String repo_name, String filename) throws Exception {
 
@@ -34,9 +34,9 @@ public class CreateGroundTruthUmeaSiblingBundling {
             outstream = new PrintStream(filename);
         }
 
-        combined_metrics = new NamedMetric[Utilities.BASE_METRICS.length];
-        for (int i = 0; i < Utilities.BASE_METRICS.length; i++) {
-            combined_metrics[i] = new Sigma(Utilities.BASE_METRICS[i], Utilities.BIRTH_MATCH_FIELDS);
+        combined_metrics = new ArrayList<>();
+        for (NamedMetric<String> metric : Utilities.BASE_METRICS) {
+            combined_metrics.add(new Sigma(metric, Utilities.SIBLING_BUNDLING_BIRTH_MATCH_FIELDS));
         }
     }
 
@@ -71,7 +71,6 @@ public class CreateGroundTruthUmeaSiblingBundling {
     /**
      * @param all_records         - the birth records we are processing
      * @param true_link_distances - the true links in the dataset
-     * @param all_records         - the records being processed
      * @return a tree map of record distances containing false links (with no record pairs exisiting in true_link_distances).
      */
     private Map<String, RecordDistances> populateFalseLinkRecordDistances(List<Birth> all_records, Map<String, RecordDistances> true_link_distances) {
@@ -89,7 +88,7 @@ public class CreateGroundTruthUmeaSiblingBundling {
             String key = makeKey(b1, b2);
             if (!true_link_distances.containsKey(key) && !false_link_distances.containsKey(key)) {
                 // not used for false link already and not a true link
-                false_link_distances.put(key, new RecordDistances(b1, b2, computeCombinedMetricDistances(b1, b2, combined_metrics)));
+                false_link_distances.put(key, new RecordDistances(b1, b2, computeCombinedMetricDistances(b1, b2)));
             }
         }
         return false_link_distances;
@@ -157,7 +156,7 @@ public class CreateGroundTruthUmeaSiblingBundling {
             for (int j = i + 1; j < births_array.length; j++) {
                 Birth b2 = births_array[j];
                 String key = makeKey(b1, b2);
-                distances.put(key, new RecordDistances(b1, b2, computeCombinedMetricDistances(b1, b2, combined_metrics)));
+                distances.put(key, new RecordDistances(b1, b2, computeCombinedMetricDistances(b1, b2)));
             }
         }
     }
@@ -166,13 +165,13 @@ public class CreateGroundTruthUmeaSiblingBundling {
         return b1.getId() + Long.toString(b2.getId());
     }
 
-    private double[] computeCombinedMetricDistances(Birth b1, Birth b2, NamedMetric<LXP>[] combined_metrics) {
+    private List<Double> computeCombinedMetricDistances(Birth b1, Birth b2) {
 
-        double[] distances = new double[combined_metrics.length];
+        List<Double> distances = new ArrayList<>();
 
-        for (int cm_index = 0; cm_index < combined_metrics.length; cm_index++) {
+        for (NamedMetric<LXP> metric : combined_metrics) {
 
-            distances[cm_index] = combined_metrics[cm_index].distance(b1, b2);
+            distances.add(metric.distance(b1, b2));
         }
         return distances;
     }
@@ -217,8 +216,8 @@ public class CreateGroundTruthUmeaSiblingBundling {
         for (RecordDistances r : distances.values()) {
 
             out.print(r.record1.getId() + DELIMIT + r.record2.getId() + DELIMIT + is_true_link);
-            for (int cm_index = 0; cm_index < r.distances.length; cm_index++) {
-                out.print(DELIMIT + normalise(r.distances[cm_index]));
+            for (double distance : r.distances) {
+                out.print(DELIMIT + normalise(distance));
             }
             out.println();
             out.flush();
@@ -252,11 +251,12 @@ public class CreateGroundTruthUmeaSiblingBundling {
     }
 
     private class RecordDistances {
+
         public final LXP record1;
         public final LXP record2;
-        public final double[] distances;
+        final List<Double> distances;
 
-        public RecordDistances(LXP record1, LXP record2, double[] distances) {
+        public RecordDistances(LXP record1, LXP record2, List<Double> distances) {
             this.record1 = record1;
             this.record2 = record2;
             this.distances = distances;

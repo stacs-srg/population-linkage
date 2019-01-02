@@ -8,16 +8,6 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 public abstract class SimilaritySearchLinkageTest extends LinkageTest {
 
     @Override
-    protected boolean equal(RecordPair pair1, RecordPair pair2) {
-
-        // Don't care which way round the records are in the pair.
-        // The order will depend on which of the record sets was the largest and hence got put into the search structure.
-
-        return pair1.record1.equals(pair2.record1) && pair1.record2.equals(pair2.record2) ||
-                pair1.record1.equals(pair2.record2) && pair1.record2.equals(pair2.record1);
-    }
-
-    @Override
     protected boolean equal(final Link link, final String id1, final String id2) {
 
         // Don't care which way round the records are in the pair.

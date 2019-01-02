@@ -9,19 +9,7 @@ public class BruteForceLinkageTest extends LinkageTest {
     @Override
     public Linker getLinker() {
 
-//        NamedMetric<LXP> metric = new WeightedAverageLevenshtein<>(Arrays.asList(0, 1));
-
         return new TestLinker(Double.MAX_VALUE, metric);
-    }
-
-    @Override
-    protected boolean equal(RecordPair pair1, RecordPair pair2) {
-
-        // Since the linker may be configured for symmetric links, in which case record pair (a,b) should
-        // not be considered if (b,a) is considered, the order of the records within a pair is significant.
-        // So record pairs are only considered equal if they contain equal records in the same order.
-
-        return pair1.record1.equals(pair2.record1) && pair1.record2.equals(pair2.record2);
     }
 
     @Override
@@ -35,26 +23,6 @@ public class BruteForceLinkageTest extends LinkageTest {
 
         return (link_id1.equals(id1) && link_id2.equals(id2));
     }
-
-//    @Test
-//    public void checkAllRecordPairsWithSymmetricalLinks() {
-//
-//        // If links are symmetric then we don't want to consider record pair (a,b) as well as (b,a).
-//
-//        ((BruteForceLinker) linker).setSymmetricalLinks(true);
-//        linker.setThreshold(Double.MAX_VALUE);
-//        linker.addRecords(birth_records);
-//
-//        assertEquals(((birth_records.size() - 1) * birth_records.size()) / 2, count(linker.getLinks()));
-//
-//        assertTrue(containsPair(linker.getLinks(), birth1, birth2));
-//        assertTrue(containsPair(linker.getLinks(), birth1, birth3));
-//        assertTrue(containsPair(linker.getLinks(), birth2, birth3));
-//
-//        assertFalse(containsPair(linker.getLinks(), birth2, birth1));
-//        assertFalse(containsPair(linker.getLinks(), birth3, birth1));
-//        assertFalse(containsPair(linker.getLinks(), birth2, birth2));
-//    }
 
     class TestLinker extends BruteForceLinker {
 
