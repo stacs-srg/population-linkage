@@ -65,26 +65,30 @@ public class AnalyseUmeaSiblingBundlingThresholds {
 
     private void importPreviousState() throws IOException {
 
-
         try (final Stream<String> lines = Files.lines(Paths.get(filename))) {
 
             lines.skip(1).forEachOrdered(this::importStateLine);
         }
-
     }
 
     private void importStateLine(final String line) {
 
-        String[] fields = line.split(",");
+        try {
+            String[] fields = line.split(",");
 
-        String metric_name = fields[2];
-        double threshold = Double.parseDouble(fields[3]);
-        int tp = Integer.parseInt(fields[4]);
-        int fp = Integer.parseInt(fields[5]);
-        int fn = Integer.parseInt(fields[6]);
-        int tn = Integer.parseInt(fields[7]);
+            String metric_name = fields[2];
+            double threshold = Double.parseDouble(fields[3]);
+            int tp = Integer.parseInt(fields[4]);
+            int fp = Integer.parseInt(fields[5]);
+            int fn = Integer.parseInt(fields[6]);
+            int tn = Integer.parseInt(fields[7]);
 
-        setStateValue(metric_name, threshold, tp, fp, fn, tn);
+            setStateValue(metric_name, threshold, tp, fp, fn, tn);
+        }
+        catch (Exception e) {
+            System.out.println("error parsing line: " + line);
+            throw e;
+        }
     }
 
     private void setStateValue(final String metric_name, final double threshold, final int tp, final int fp, final int fn, final int tn) {

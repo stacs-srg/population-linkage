@@ -15,9 +15,12 @@ import java.util.Set;
 
 public abstract class SiblingBundling extends Experiment {
 
+    private final List<Integer> sibling_ground_truth_fields;
+
     SiblingBundling(Path store_path, String repo_name) {
 
         super(store_path, repo_name);
+        sibling_ground_truth_fields = getSiblingGroundTruthFields();
     }
 
     @Override
@@ -39,13 +42,13 @@ public abstract class SiblingBundling extends Experiment {
         final int number_of_records = records.size();
 
         for (int i = 0; i < number_of_records; i++) {
+
             for (int j = i + 1; j < number_of_records; j++) {
 
                 Birth record1 = records.get(i);
                 Birth record2 = records.get(j);
 
                 if (areGroundTruthSiblings(record1, record2)) {
-
                     links.add(new Link(makeRole(record1), makeRole(record2), 1.0f, "ground truth"));
                 }
             }
@@ -63,8 +66,10 @@ public abstract class SiblingBundling extends Experiment {
 
         if (record1 == record2) return false;
 
-        for (int field : getSiblingGroundTruthFields()) {
-            if (!record1.getString(field).equals(record2.getString(field))) return false;
+        for (int field : sibling_ground_truth_fields) {
+
+            String field1 = record1.getString(field);
+            if (field1.equals("") || !field1.equals(record2.getString(field))) return false;
         }
 
         return true;

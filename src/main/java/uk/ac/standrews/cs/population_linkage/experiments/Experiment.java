@@ -11,7 +11,6 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -89,10 +88,10 @@ public abstract class Experiment {
 
     private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Set<Link> ground_truth_links) {
 
+        // NB this mutates the passed in ground truth set.
+
         int true_positives = 0;
         int false_positives = 0;
-
-        Set<Link> copy_of_ground_truth_links = new HashSet<>(ground_truth_links);
 
         for (Link calculated_link : calculated_links) {
 
@@ -102,10 +101,10 @@ public abstract class Experiment {
                 false_positives++;
             }
 
-            copy_of_ground_truth_links.remove(calculated_link);
+            ground_truth_links.remove(calculated_link);
         }
 
-        int false_negatives = copy_of_ground_truth_links.size();
+        int false_negatives = ground_truth_links.size();
 
         System.out.println("TP: " + true_positives);
         System.out.println("FP: " + false_positives);
