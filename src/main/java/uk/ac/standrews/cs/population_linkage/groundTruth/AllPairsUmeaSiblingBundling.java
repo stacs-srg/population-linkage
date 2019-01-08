@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
 public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
@@ -43,7 +44,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
             outstream = new PrintWriter(System.out);
 
         } else {
-            importPreviousState(filename);
+//            importPreviousState(filename);
             outstream = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
         }
     }
@@ -79,82 +80,97 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         long counter = 0;
 
         if (starting_counter == 0) {
-            outstream.println("Time" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn");
+            outstream.println("Time" + DELIMIT + "Record counter" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn");
         }
 
-        System.out.println("Skipping previous output");
+        final int block_size = 10;
+        final int number_of_blocks = birth_records.size() / block_size;
 
-        boolean first_iteration = true;
-        LocalDateTime start_time = LocalDateTime.now();
+        for (int block_count = 0; block_count < number_of_blocks; block_count++) {
 
-        for (int i = 0; i < birth_records.size() - 1; i++) {
-            for (int j = i + 1; j < birth_records.size(); j++) {
+            final CountDownLatch start_gate = new CountDownLatch(1);
+            final CountDownLatch end_gate = new CountDownLatch(combined_metrics.size());
+            final int block_count_fixed = block_count;
 
-                if (counter >= starting_counter) {
+            for (final NamedMetric<LXP> metric : combined_metrics) {
 
-                    if (first_iteration) {
-                        System.out.println("Starting new calculations");
+                new Thread(() -> {
 
-                    } else {
-                        if (counter % DUMP_COUNT_INTERVAL == 0) {
+                    try {
+                        start_gate.await();
 
-                            final LocalDateTime now = LocalDateTime.now();
+                    } catch (InterruptedException ignored) {
+                    }
 
-                            if (OUTPUT_INTERVAL.minus(Duration.between(start_time, now)).isNegative()) {
-                                start_time = now;
-                                dumpState(counter, start_time);
+                    try {
+                        for (int i = block_count_fixed * block_size; i < (block_count_fixed + 1) * block_size; i++) {
+
+                            System.out.println(metric.getMetricName() + ": " + i);
+                            System.out.flush();
+
+                            for (int j = i + 1; j < birth_records.size(); j++) {
+
+                                final Birth b1 = birth_records.get(i);
+                                final Birth b2 = birth_records.get(j);
+
+                                double distance = normalise(metric.distance(b1, b2));
+
+                                final String b1_parent_id = b1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+                                final boolean is_true_link = !b1_parent_id.isEmpty() && b1_parent_id.equals(b2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY));
+
+                                for (final double thresh : thresholds) {
+                                    updateTruthCounts( thresh,  state.get(metric.getMetricName()), is_true_link, distance);
+                                }
                             }
                         }
+                    } finally {
+                        end_gate.countDown();
                     }
-
-                    final Birth b1 = birth_records.get(i);
-                    final Birth b2 = birth_records.get(j);
-
-                    for (final NamedMetric<LXP> metric : combined_metrics) {
-                        for (final double thresh : thresholds) {
-                            updateTruthCounts(metric, thresh, b1, b2);
-                        }
-                    }
-
-                    first_iteration = false;
-                }
-
-                counter++;
+                }).start();
             }
+
+            start_gate.countDown();
+            try {
+                end_gate.await();
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            counter += block_size * birth_records.size();
+
+            dumpState(block_count, counter);
+
+            System.out.println("finished block");
+            System.out.flush();
         }
     }
 
-    private void dumpState(final long counter, final LocalDateTime time) {
+    private void dumpState(final int block_count, final long counter) {
 
         for (final NamedMetric<LXP> metric : combined_metrics) {
 
             final String metric_name = metric.getMetricName();
             final Map<Double, Line> threshold_map = state.get(metric_name);
 
-            for (final Map.Entry<Double, Line> entry : threshold_map.entrySet()) {
-                printTruthCount(time, counter, metric_name, entry.getKey(), entry.getValue());
+            for (final Double threshold : thresholds) {
+                printTruthCount(block_count, counter, metric_name, threshold, threshold_map.get(threshold));
             }
         }
     }
 
-    private void updateTruthCounts(NamedMetric<LXP> metric, double thresh, Birth b1, Birth b2) {
+    private void updateTruthCounts(double threshold, final Map<Double, Line> map, boolean is_true_link, double distance) {
 
-        String metricName = metric.getMetricName();
+        Line truths = map.get(threshold);
 
-        Line truths = state.get(metricName).get(thresh);
+        if (distance <= threshold) {
 
-        double distance = metric.distance(b1, b2);
-        double normalised_distance = normalise(distance);
-
-        String b1_parent_id = b1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-        boolean is_true_link = !b1_parent_id.isEmpty() && b1_parent_id.equals(b2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY));
-
-        if (normalised_distance <= thresh) {
             if (is_true_link) {
                 truths.tp++;
             } else {
                 truths.fp++;
             }
+
         } else {
             if (is_true_link) {
                 truths.fn++;
@@ -164,9 +180,9 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         }
     }
 
-    private void printTruthCount(LocalDateTime time, long counter, String metric_name, Double thresh, Line truth_count) {
+    private void printTruthCount(int block_count, long counter, String metric_name, Double thresh, Line truth_count) {
 
-        outstream.println(time + DELIMIT + counter + DELIMIT + metric_name + DELIMIT + String.format("%.2f", thresh) + DELIMIT + truth_count.tp + DELIMIT + truth_count.fp + DELIMIT + truth_count.fn + DELIMIT + truth_count.tn);
+        outstream.println(LocalDateTime.now() + DELIMIT + block_count + DELIMIT + counter + DELIMIT + metric_name + DELIMIT + String.format("%.2f", thresh) + DELIMIT + truth_count.tp + DELIMIT + truth_count.fp + DELIMIT + truth_count.fn + DELIMIT + truth_count.tn);
         outstream.flush();
     }
 
@@ -181,7 +197,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = ApplicationProperties.getRepositoryName();
+        String repo_name = "umea";
 
         new AllPairsUmeaSiblingBundling(store_path, repo_name, "UmeaDistances.csv").run();
     }
