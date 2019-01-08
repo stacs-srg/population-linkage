@@ -23,7 +23,7 @@ class ThresholdAnalysis {
             new Jaccard(),
             new Cosine(),
             new SED(CHARVAL),
-            new JensenShannon(),
+//            new JensenShannon(),
             new JensenShannon2(CHARVAL));
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
