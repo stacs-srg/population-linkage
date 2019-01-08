@@ -1,2 +1,13 @@
 #!/bin/sh
-mvn -q install:install-file -Dfile=/home/secure/maven/uk/ac/standrews/cs/data-umea/1.0/data-umea-1.0-jar-with-dependencies.jar -DgroupId=uk.ac.standrews.cs -DartifactId=data-umea -Dversion=1.0 -Dpackaging=jar
+
+#####################################################################################
+
+MAVEN_REPO_PATH="/home/secure/maven"
+
+PROJECT="data-umea"
+
+#####################################################################################
+
+SCRIPT_DIRECTORY="`dirname $0`"
+
+source ${SCRIPT_DIRECTORY}/install_data_common.sh
