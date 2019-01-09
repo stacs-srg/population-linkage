@@ -14,16 +14,12 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
 public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
-
-    private static final int DUMP_COUNT_INTERVAL = 10000;
 
     private final Path store_path;
     private final String repo_name;
@@ -31,7 +27,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
     private final String DELIMIT = ",";
     private final PrintWriter outstream;
 
-    private static final Duration OUTPUT_INTERVAL = Duration.ofHours(1);
+    public static final int BLOCK_SIZE = 10;
 
     private AllPairsUmeaSiblingBundling(final Path store_path, final String repo_name, final String filename) throws IOException {
 
@@ -83,8 +79,8 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
             outstream.println("Time" + DELIMIT + "Record counter" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn");
         }
 
-        final int block_size = 10;
-        final int number_of_blocks = birth_records.size() / block_size;
+        final int number_of_records = birth_records.size();
+        final int number_of_blocks = number_of_records / BLOCK_SIZE;
 
         for (int block_count = 0; block_count < number_of_blocks; block_count++) {
 
@@ -103,12 +99,12 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
                     }
 
                     try {
-                        for (int i = block_count_fixed * block_size; i < (block_count_fixed + 1) * block_size; i++) {
+                        for (int i = block_count_fixed * BLOCK_SIZE; i < (block_count_fixed + 1) * BLOCK_SIZE; i++) {
 
                             System.out.println(metric.getMetricName() + ": " + i);
                             System.out.flush();
 
-                            for (int j = i + 1; j < birth_records.size(); j++) {
+                            for (int j = i + 1; j < number_of_records; j++) {
 
                                 final Birth b1 = birth_records.get(i);
                                 final Birth b2 = birth_records.get(j);
@@ -118,8 +114,8 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
                                 final String b1_parent_id = b1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
                                 final boolean is_true_link = !b1_parent_id.isEmpty() && b1_parent_id.equals(b2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY));
 
-                                for (final double thresh : thresholds) {
-                                    updateTruthCounts( thresh,  state.get(metric.getMetricName()), is_true_link, distance);
+                                for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+                                    updateTruthCounts(threshold_index, state.get(metric.getMetricName()), is_true_link, distance);
                                 }
                             }
                         }
@@ -137,9 +133,9 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
                 Thread.currentThread().interrupt();
             }
 
-            counter += block_size * birth_records.size();
+            counter += BLOCK_SIZE * (number_of_records - block_count * BLOCK_SIZE - (BLOCK_SIZE + 1) / 2);
 
-            dumpState(block_count, counter);
+            dumpState((block_count + 1) * BLOCK_SIZE, counter);
 
             System.out.println("finished block");
             System.out.flush();
@@ -151,38 +147,38 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         for (final NamedMetric<LXP> metric : combined_metrics) {
 
             final String metric_name = metric.getMetricName();
-            final Map<Double, Line> threshold_map = state.get(metric_name);
+            final Sample[] samples = state.get(metric_name);
 
-            for (final Double threshold : thresholds) {
-                printTruthCount(block_count, counter, metric_name, threshold, threshold_map.get(threshold));
+            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+                printTruthCount(block_count, counter, metric_name, indexToThreshold(threshold_index), samples[threshold_index]);
             }
         }
     }
 
-    private void updateTruthCounts(double threshold, final Map<Double, Line> map, boolean is_true_link, double distance) {
+    private void updateTruthCounts(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
 
-        Line truths = map.get(threshold);
+        final double threshold = indexToThreshold(threshold_index);
 
         if (distance <= threshold) {
 
             if (is_true_link) {
-                truths.tp++;
+                samples[threshold_index].tp++;
             } else {
-                truths.fp++;
+                samples[threshold_index].fp++;
             }
 
         } else {
             if (is_true_link) {
-                truths.fn++;
+                samples[threshold_index].fn++;
             } else {
-                truths.tn++;
+                samples[threshold_index].tn++;
             }
         }
     }
 
-    private void printTruthCount(int block_count, long counter, String metric_name, Double thresh, Line truth_count) {
+    private void printTruthCount(int outer_record_count, long counter, String metric_name, Double threshold, Sample sample) {
 
-        outstream.println(LocalDateTime.now() + DELIMIT + block_count + DELIMIT + counter + DELIMIT + metric_name + DELIMIT + String.format("%.2f", thresh) + DELIMIT + truth_count.tp + DELIMIT + truth_count.fp + DELIMIT + truth_count.fn + DELIMIT + truth_count.tn);
+        outstream.println(LocalDateTime.now() + DELIMIT + outer_record_count + DELIMIT + counter + DELIMIT + metric_name + DELIMIT + String.format("%.2f", threshold) + DELIMIT + sample.tp + DELIMIT + sample.fp + DELIMIT + sample.fn + DELIMIT + sample.tn);
         outstream.flush();
     }
 
