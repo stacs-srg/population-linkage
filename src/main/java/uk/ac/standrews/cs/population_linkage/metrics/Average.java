@@ -42,7 +42,7 @@ public class Average extends Sigma implements NamedMetric<LXP>  {
 
     @Override
     public String getMetricName() {
-        return "Average"+ "Over" + baseDistance.getMetricName();
+        return "Average/" + baseMetric.getMetricName();
     }
 }
 

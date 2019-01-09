@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.io.IOException;
@@ -143,61 +144,55 @@ public class AnalyseUmeaSiblingBundlingThresholds extends ThresholdAnalysis {
 
     private void checkStateLine(final String line) {
 
-        final Sample parsed_line = parseStateLine(line);
+        final Sample parsed_line = parseSampleLine(line);
 
         if (parsed_line.metric_name.equals(best_metric_name) && parsed_line.threshold == best_threshold) {
 
-            final double precision = precision(parsed_line.tp, parsed_line.fp);
-            final double recall = recall(parsed_line.tp, parsed_line.fn);
-            final double f_measure = fMeasure(precision, recall);
+            final double f_measure = ClassificationMetrics.F1(parsed_line.tp,parsed_line.fp,parsed_line.fn);
 
-            System.out.println(parsed_line.iterations + DELIMIT + String.format("%.2f", f_measure));
+            System.out.println(parsed_line.pair_count + DELIMIT + String.format("%.2f", f_measure));
         }
     }
 
     private void checkStateLine2(final String line) {
 
-        final Sample parsed_line = parseStateLine(line);
+        final Sample parsed_line = parseSampleLine(line);
 
         Map<Double, XXX> map = progression.get(parsed_line.metric_name);
         if (map.containsKey(parsed_line.threshold)) {
 
             XXX xxx = map.get(parsed_line.threshold);
 
-            final double precision = precision(parsed_line.tp, parsed_line.fp);
-            final double recall = recall(parsed_line.tp, parsed_line.fn);
-            final double f_measure = fMeasure(precision, recall);
+            final double f_measure = ClassificationMetrics.F1(parsed_line.tp,parsed_line.fp,parsed_line.fn);
 
             if (f_measure < xxx.lowest_f_measure) xxx.lowest_f_measure = f_measure;
             if (f_measure > xxx.highest_f_measure) xxx.highest_f_measure = f_measure;
             if (xxx.number_of_samples == 0) {
                 xxx.first_f_measure = f_measure;
-                xxx.iterations_for_first = parsed_line.iterations;
+                xxx.iterations_for_first = parsed_line.pair_count;
             }
             xxx.last_f_measure = f_measure;
-            xxx.iterations_for_last = parsed_line.iterations;
+            xxx.iterations_for_last = parsed_line.pair_count;
             xxx.number_of_samples++;
         }
     }
 
     private void checkStateLine3(final String line) {
 
-        final Sample parsed_line = parseStateLine(line);
+        final Sample parsed_line = parseSampleLine(line);
 
         Map<Double, XXX> map = progression.get(parsed_line.metric_name);
         if (map.containsKey(parsed_line.threshold)) {
 
             XXX xxx = map.get(parsed_line.threshold);
 
-            final double precision = precision(parsed_line.tp, parsed_line.fp);
-            final double recall = recall(parsed_line.tp, parsed_line.fn);
-            final double f_measure = fMeasure(precision, recall);
+            final double f_measure = ClassificationMetrics.F1(parsed_line.tp,parsed_line.fp,parsed_line.fn);
 
             if (parsed_line.metric_name.equals("Sigma Over Jaccard") && parsed_line.threshold == 0.5) {
                 double diff_from_final = Math.abs(f_measure - xxx.last_f_measure)/xxx.last_f_measure;
                 if (previous_f_measure == 0.0) previous_f_measure = f_measure;
                 double diff_from_previous = Math.abs(f_measure - previous_f_measure)/ previous_f_measure;
-                System.out.println(String.format("%d,%.3f,%.4f,%.4f",parsed_line.iterations, f_measure, diff_from_final,diff_from_previous));
+                System.out.println(String.format("%d,%.3f,%.4f,%.4f",parsed_line.pair_count, f_measure, diff_from_final,diff_from_previous));
                 previous_f_measure = f_measure;
             }
         }
@@ -205,22 +200,10 @@ public class AnalyseUmeaSiblingBundlingThresholds extends ThresholdAnalysis {
 
     private double previous_f_measure = 0.0;
 
-    private double precision(final int tp, final int fp) {
-        return ((double) tp) / (tp + fp);
-    }
+    public static void main(final String[] args) throws Exception {
 
-    private double recall(final int tp, final int fn) {
-        return ((double) tp) / (tp + fn);
+        new AnalyseUmeaSiblingBundlingThresholds("UmeaDistances.csv").run();
     }
-
-    private double fMeasure(final double precision, final double recall) {
-        return (2 * precision * recall) / (precision + recall);
-    }
-
-//    public static void main(final String[] args) throws Exception {
-//
-//        new AnalyseUmeaSiblingBundlingThresholds("UmeaDistances.csv").run();
-//    }
 
     class XXX {
 
@@ -228,8 +211,8 @@ public class AnalyseUmeaSiblingBundlingThresholds extends ThresholdAnalysis {
         double highest_f_measure = 0.0;
         double first_f_measure = 0.0;
         double last_f_measure = 0.0;
-        int iterations_for_first = 0;
-        int iterations_for_last = 0;
+        long iterations_for_first = 0;
+        long iterations_for_last = 0;
         int number_of_samples = 0;
     }
 }

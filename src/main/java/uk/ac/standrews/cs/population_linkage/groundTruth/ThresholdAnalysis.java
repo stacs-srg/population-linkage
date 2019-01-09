@@ -10,13 +10,13 @@ import java.util.*;
 
 class ThresholdAnalysis {
 
-    private static final int CHARVAL = 512;
     static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
 
     final Map<String, Sample[]> state; // Maps from metric name to counts of TPFP etc.
     final List<NamedMetric<LXP>> combined_metrics;
 
-    int starting_counter = 0;
+    int records_processed = 0;
+    long pairs_processed = 0;
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME,
@@ -64,7 +64,7 @@ class ThresholdAnalysis {
     void importStateLine(final String line) {
 
         try {
-            setStateValue(parseStateLine(line));
+            recordImportedSample(parseSampleLine(line));
 
         } catch (Exception e) {
             System.out.println("error parsing line: " + line);
@@ -72,13 +72,27 @@ class ThresholdAnalysis {
         }
     }
 
-    Sample parseStateLine(final String line) {
+    private void recordImportedSample(final Sample imported_sample) {
+
+        final Sample sample = state.get(imported_sample.metric_name)[thresholdToIndex(imported_sample.threshold)];
+
+        sample.tp = imported_sample.tp;
+        sample.fp = imported_sample.fp;
+        sample.fn = imported_sample.fn;
+        sample.tn = imported_sample.tn;
+
+        records_processed = imported_sample.record_count;
+        pairs_processed = imported_sample.pair_count;
+    }
+
+    Sample parseSampleLine(final String line) {
 
         final Sample result = new Sample();
 
         final String[] fields = line.split(",");
 
-        result.iterations = Integer.parseInt(fields[2]);
+        result.record_count = Integer.parseInt(fields[1]);
+        result.pair_count = Long.parseLong(fields[2]);
         result.metric_name = fields[3];
         result.threshold = Double.parseDouble(fields[4]);
         result.tp = Integer.parseInt(fields[5]);
@@ -87,18 +101,6 @@ class ThresholdAnalysis {
         result.tn = Integer.parseInt(fields[8]);
 
         return result;
-    }
-
-    private void setStateValue(final Sample line) {
-
-        final Sample truths = state.get(line.metric_name)[thresholdToIndex(line.threshold)];
-
-        truths.tp = line.tp;
-        truths.fp = line.fp;
-        truths.fn = line.fn;
-        truths.tn = line.tn;
-
-        starting_counter = line.tp + line.fp + line.fn + line.tn;
     }
 
     private static int thresholdToIndex(final double threshold) {
@@ -113,7 +115,8 @@ class ThresholdAnalysis {
 
     class Sample {
 
-        int iterations = 0;
+        int record_count = 0;
+        long pair_count = 0;
         String metric_name = "";
         double threshold = 0.0;
         int fp = 0;

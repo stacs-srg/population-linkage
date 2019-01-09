@@ -28,12 +28,12 @@ import java.util.List;
  */
 public class Sigma implements NamedMetric<LXP> {
 
-    final NamedMetric<String> baseDistance;
+    final NamedMetric<String> baseMetric;
     private List<Integer> fields;
 
-    public Sigma(NamedMetric<String> baseDistance, List<Integer> fields) {
+    public Sigma(NamedMetric<String> baseMetric, List<Integer> fields) {
 
-        this.baseDistance = baseDistance;
+        this.baseMetric = baseMetric;
         this.fields = fields;
     }
 
@@ -47,7 +47,7 @@ public class Sigma implements NamedMetric<LXP> {
                 String x = a.getString(field);
                 String y = b.getString(field);
 
-                total_distance += baseDistance.distance(x, y);
+                total_distance += baseMetric.distance(x, y);
 
             } catch (NullPointerException e) {
                 throw new RuntimeException("exception comparing field " + field + " in records \n" + a + "\n and \n" + b, e);
@@ -61,6 +61,6 @@ public class Sigma implements NamedMetric<LXP> {
 
     @Override
     public String getMetricName() {
-        return "Sigma Over " + baseDistance.getMetricName();
+        return "Sigma/" + baseMetric.getMetricName();
     }
 }

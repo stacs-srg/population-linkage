@@ -24,7 +24,7 @@ public class Utilities {
     public static final Jaccard JACCARD = new Jaccard();
     public static final Cosine COSINE = new Cosine();
     public static final SED SED = new SED(CHARVAL);
-    public static final JensenShannon2 JENSEN_SHANNON = new JensenShannon2(CHARVAL);
+    public static final JensenShannon JENSEN_SHANNON = new JensenShannon(CHARVAL);
     public static final DamerauLevenshtein DAMERAU_LEVENSHTEIN = new DamerauLevenshtein(1, 1, 1, 1);
 
     public static final Jaro JARO = new Jaro();
