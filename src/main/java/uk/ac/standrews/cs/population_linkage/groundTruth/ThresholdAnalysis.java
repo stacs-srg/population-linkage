@@ -5,6 +5,7 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.phonetic.*;
 
 import java.util.*;
 
@@ -19,11 +20,33 @@ class ThresholdAnalysis {
     int starting_counter = 0;
 
     private static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
+
+            // True metrics
             new Levenshtein(),
             new Jaccard(),
             new Cosine(),
             new SED(CHARVAL),
-            new JensenShannon2(CHARVAL));
+            new JensenShannon2(CHARVAL),
+            new DamerauLevenshtein(1,1,1,1),
+
+            // Pseudo metrics
+
+            new Jaro(),
+            new JaroWinkler(),
+            new Dice(),
+            new NeedlemanWunsch(),
+            new SmithWaterman(),
+            new LongestCommonSubstring(),
+            new BagDistance(),
+            new Compression(),
+
+            // Phonetic comparisons
+
+            new PhoneticWrapper(new Soundex(), new Levenshtein()),
+            new PhoneticWrapper(new Metaphone(), new Levenshtein()),
+            new PhoneticWrapper(new DoubleMetaphone(), new Levenshtein()),
+            new PhoneticWrapper(new NYSIIS(), new Levenshtein())
+            );
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME,
