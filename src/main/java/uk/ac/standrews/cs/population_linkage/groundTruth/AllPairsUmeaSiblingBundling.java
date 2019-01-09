@@ -27,7 +27,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
     private final String DELIMIT = ",";
     private final PrintWriter outstream;
 
-    public static final int BLOCK_SIZE = 10;
+    public static final int BLOCK_SIZE = 100;
 
     private AllPairsUmeaSiblingBundling(final Path store_path, final String repo_name, final String filename) throws IOException {
 
@@ -132,9 +132,10 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
             counter += BLOCK_SIZE * (number_of_records - block_count * BLOCK_SIZE - (BLOCK_SIZE + 1) / 2);
 
-            dumpState((block_count + 1) * BLOCK_SIZE, counter);
+            final int records_checked = (block_count + 1) * BLOCK_SIZE;
+            dumpState(records_checked, counter);
 
-            System.out.println("finished block: " + block_count);
+            System.out.println("finished block: checked " + records_checked + " records");
             System.out.flush();
         }
     }
