@@ -38,7 +38,7 @@ class ThresholdAnalysis {
             new SmithWaterman(),
             new LongestCommonSubstring(),
             new BagDistance(),
-            new Compression(),
+        //    new Compression(),
 
             // Phonetic comparisons
 
