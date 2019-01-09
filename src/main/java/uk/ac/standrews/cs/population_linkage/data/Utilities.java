@@ -8,6 +8,10 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.phonetic.DoubleMetaphone;
+import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
+import uk.ac.standrews.cs.utilities.phonetic.NYSIIS;
+import uk.ac.standrews.cs.utilities.phonetic.PhoneticWrapper;
 
 import java.util.*;
 
@@ -20,10 +24,31 @@ public class Utilities {
     public static final Jaccard JACCARD = new Jaccard();
     public static final Cosine COSINE = new Cosine();
     public static final SED SED = new SED(CHARVAL);
-    public static final JensenShannon JENSEN_SHANNON = new JensenShannon();
-    public static final JensenShannon2 JENSEN_SHANNON2 = new JensenShannon2(CHARVAL);
+    public static final JensenShannon2 JENSEN_SHANNON = new JensenShannon2(CHARVAL);
+    public static final DamerauLevenshtein DAMERAU_LEVENSHTEIN = new DamerauLevenshtein(1, 1, 1, 1);
 
-    public static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, JENSEN_SHANNON2);
+    public static final Jaro JARO = new Jaro();
+    public static final JaroWinkler JARO_WINKLER = new JaroWinkler();
+    public static final Dice DICE = new Dice();
+    public static final NeedlemanWunsch NEEDLEMAN_WUNSCH = new NeedlemanWunsch();
+    public static final SmithWaterman SMITH_WATERMAN = new SmithWaterman();
+    public static final LongestCommonSubstring LONGEST_COMMON_SUBSTRING = new LongestCommonSubstring();
+    public static final BagDistance BAG_DISTANCE = new BagDistance();
+    public static final PhoneticWrapper METAPHONE = new PhoneticWrapper(new Metaphone(), new Levenshtein());
+    public static final PhoneticWrapper DOUBLE_METAPHONE = new PhoneticWrapper(new DoubleMetaphone(), new Levenshtein());
+    public static final PhoneticWrapper NYSIIS = new PhoneticWrapper(new NYSIIS(), new Levenshtein());
+
+    public static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
+
+            // True metrics
+            LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, DAMERAU_LEVENSHTEIN,
+
+            // Pseudo metrics
+            JARO, JARO_WINKLER, DICE, NEEDLEMAN_WUNSCH, SMITH_WATERMAN, LONGEST_COMMON_SUBSTRING, BAG_DISTANCE,
+
+            // Phonetic comparisons
+            METAPHONE, NYSIIS
+    );
 
     public static final List<Integer> SIBLING_BUNDLING_BIRTH_MATCH_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
@@ -36,7 +61,7 @@ public class Utilities {
 
     public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
 
-        return () -> new Iterator<LXP>(){
+        return () -> new Iterator<LXP>() {
 
             Iterator<Birth> birth_records = record_repository.getBirths().iterator();
 
@@ -54,7 +79,7 @@ public class Utilities {
 
     public static Iterable<LXP> getDeathRecords(RecordRepository record_repository) {
 
-        return () -> new Iterator<LXP>(){
+        return () -> new Iterator<LXP>() {
 
             Iterator<Death> death_records = record_repository.getDeaths().iterator();
 
@@ -72,7 +97,7 @@ public class Utilities {
 
     public static Iterable<LXP> getMarriageRecords(RecordRepository record_repository) {
 
-        return () -> new Iterator<LXP>(){
+        return () -> new Iterator<LXP>() {
 
             Iterator<Marriage> marriage_records = record_repository.getMarriages().iterator();
 

@@ -101,9 +101,6 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
                     try {
                         for (int i = block_count_fixed * BLOCK_SIZE; i < (block_count_fixed + 1) * BLOCK_SIZE; i++) {
 
-                            System.out.println(metric.getMetricName() + ": " + i);
-                            System.out.flush();
-
                             for (int j = i + 1; j < number_of_records; j++) {
 
                                 final Birth b1 = birth_records.get(i);
@@ -137,7 +134,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
             dumpState((block_count + 1) * BLOCK_SIZE, counter);
 
-            System.out.println("finished block");
+            System.out.println("finished block: " + block_count);
             System.out.flush();
         }
     }

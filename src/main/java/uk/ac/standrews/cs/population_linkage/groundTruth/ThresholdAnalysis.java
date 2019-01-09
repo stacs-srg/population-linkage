@@ -1,11 +1,10 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
-import uk.ac.standrews.cs.utilities.phonetic.*;
 
 import java.util.*;
 
@@ -18,35 +17,6 @@ class ThresholdAnalysis {
     final List<NamedMetric<LXP>> combined_metrics;
 
     int starting_counter = 0;
-
-    private static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
-
-            // True metrics
-            new Levenshtein(),
-            new Jaccard(),
-            new Cosine(),
-            new SED(CHARVAL),
-            new JensenShannon2(CHARVAL),
-            new DamerauLevenshtein(1,1,1,1),
-
-            // Pseudo metrics
-
-            new Jaro(),
-            new JaroWinkler(),
-            new Dice(),
-            new NeedlemanWunsch(),
-            new SmithWaterman(),
-            new LongestCommonSubstring(),
-            new BagDistance(),
-        //    new Compression(),
-
-            // Phonetic comparisons
-
-            new PhoneticWrapper(new Soundex(), new Levenshtein()),
-            new PhoneticWrapper(new Metaphone(), new Levenshtein()),
-            new PhoneticWrapper(new DoubleMetaphone(), new Levenshtein()),
-            new PhoneticWrapper(new NYSIIS(), new Levenshtein())
-            );
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME,
@@ -85,7 +55,7 @@ class ThresholdAnalysis {
 
         final List<NamedMetric<LXP>> result = new ArrayList<>();
 
-        for (final NamedMetric<String> base_metric : BASE_METRICS) {
+        for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
             result.add(new Sigma(base_metric, SIBLING_BUNDLING_FIELDS));
         }
         return result;
@@ -136,9 +106,9 @@ class ThresholdAnalysis {
         return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1));
     }
 
-     static double indexToThreshold(final int index) {
+    static double indexToThreshold(final int index) {
 
-        return (double)index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
+        return (double) index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
     }
 
     class Sample {

@@ -25,7 +25,7 @@ public class SkyeBitBlasterSiblingBundling extends BitBlasterSiblingBundling {
     @Override
     protected NamedMetric<String> getBaseMetric() {
 
-        return Utilities.JENSEN_SHANNON2;
+        return Utilities.JENSEN_SHANNON;
     }
 
     @Override
