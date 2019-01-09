@@ -24,7 +24,7 @@ public class CreateGroundTruthUmeaBirthDeath {
     private final String DASH = "-";
     private final PrintStream outstream;
 
-    NamedMetric<String>[] base_metrics = new NamedMetric[] { new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(), new JensenShannon2(CHARVAL) };
+    NamedMetric<String>[] base_metrics = new NamedMetric[] { new Levenshtein(), new Jaccard(), new Cosine(), new SED(CHARVAL), new JensenShannon(CHARVAL) };
     NamedMetric<LXP>[] combined_metrics;
     private int[] birth_fields = new int[] { Birth.FORENAME, Birth.SURNAME };
     private int[] death_fields = new int[] { Death.FORENAME, Death.SURNAME };

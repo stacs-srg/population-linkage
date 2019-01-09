@@ -5,7 +5,6 @@ import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.io.PrintStream;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
+import static uk.ac.standrews.cs.population_linkage.data.Utilities.*;
 
 public class MetricSpaceChecks {
 
@@ -27,11 +28,7 @@ public class MetricSpaceChecks {
     private final PrintStream outstream;
 
     private static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
-            new Levenshtein(),
-            new Jaccard(),
-            new SED(CHARVAL),
-            new JensenShannon(),
-            new JensenShannon2(CHARVAL));
+            LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, DAMERAU_LEVENSHTEIN);
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME,
