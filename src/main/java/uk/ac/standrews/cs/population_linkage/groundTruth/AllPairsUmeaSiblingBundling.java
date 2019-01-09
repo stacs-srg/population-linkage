@@ -28,7 +28,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
     private final String DELIMIT = ",";
     private final PrintWriter outstream;
 
-    private static final int BLOCK_SIZE = 10;
+    private static final int BLOCK_SIZE = 100;
 
     private List<Birth> birth_records;
 
