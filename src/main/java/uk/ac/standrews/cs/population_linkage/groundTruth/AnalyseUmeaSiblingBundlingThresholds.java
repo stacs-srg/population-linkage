@@ -150,7 +150,7 @@ public class AnalyseUmeaSiblingBundlingThresholds extends ThresholdAnalysis {
 
             final double f_measure = ClassificationMetrics.F1(parsed_line.tp,parsed_line.fp,parsed_line.fn);
 
-            System.out.println(parsed_line.pair_count + DELIMIT + String.format("%.2f", f_measure));
+            System.out.println(parsed_line.pairs_evaluated + DELIMIT + String.format("%.2f", f_measure));
         }
     }
 
@@ -169,10 +169,10 @@ public class AnalyseUmeaSiblingBundlingThresholds extends ThresholdAnalysis {
             if (f_measure > xxx.highest_f_measure) xxx.highest_f_measure = f_measure;
             if (xxx.number_of_samples == 0) {
                 xxx.first_f_measure = f_measure;
-                xxx.iterations_for_first = parsed_line.pair_count;
+                xxx.iterations_for_first = parsed_line.pairs_evaluated;
             }
             xxx.last_f_measure = f_measure;
-            xxx.iterations_for_last = parsed_line.pair_count;
+            xxx.iterations_for_last = parsed_line.pairs_evaluated;
             xxx.number_of_samples++;
         }
     }
@@ -192,7 +192,7 @@ public class AnalyseUmeaSiblingBundlingThresholds extends ThresholdAnalysis {
                 double diff_from_final = Math.abs(f_measure - xxx.last_f_measure)/xxx.last_f_measure;
                 if (previous_f_measure == 0.0) previous_f_measure = f_measure;
                 double diff_from_previous = Math.abs(f_measure - previous_f_measure)/ previous_f_measure;
-                System.out.println(String.format("%d,%.3f,%.4f,%.4f",parsed_line.pair_count, f_measure, diff_from_final,diff_from_previous));
+                System.out.println(String.format("%d,%.3f,%.4f,%.4f",parsed_line.pairs_evaluated, f_measure, diff_from_final,diff_from_previous));
                 previous_f_measure = f_measure;
             }
         }

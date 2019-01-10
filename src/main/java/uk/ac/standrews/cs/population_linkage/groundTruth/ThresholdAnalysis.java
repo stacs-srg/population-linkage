@@ -11,12 +11,14 @@ import java.util.*;
 class ThresholdAnalysis {
 
     static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
+    private static final double EPSILON = 0.00001;
 
     final Map<String, Sample[]> state; // Maps from metric name to counts of TPFP etc.
     final List<NamedMetric<LXP>> combined_metrics;
 
     int records_processed = 0;
-    long pairs_processed = 0;
+    long pairs_evaluated = 0;
+    long pairs_ignored = 0;
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME,
@@ -45,8 +47,7 @@ class ThresholdAnalysis {
                 samples[i] = new Sample();
             }
 
-            final String metricName = metric.getMetricName();
-            result.put(metricName, samples);
+            result.put(metric.getMetricName(), samples);
         }
         return result;
     }
@@ -74,15 +75,17 @@ class ThresholdAnalysis {
 
     private void recordImportedSample(final Sample imported_sample) {
 
-        final Sample sample = state.get(imported_sample.metric_name)[thresholdToIndex(imported_sample.threshold)];
+        final int i = thresholdToIndex(imported_sample.threshold);
+        final Sample sample = state.get(imported_sample.metric_name)[i];
 
         sample.tp = imported_sample.tp;
         sample.fp = imported_sample.fp;
         sample.fn = imported_sample.fn;
         sample.tn = imported_sample.tn;
 
-        records_processed = imported_sample.record_count;
-        pairs_processed = imported_sample.pair_count;
+        records_processed = imported_sample.records_processed;
+        pairs_evaluated = imported_sample.pairs_evaluated;
+        pairs_ignored = imported_sample.pairs_ignored;
     }
 
     Sample parseSampleLine(final String line) {
@@ -91,21 +94,22 @@ class ThresholdAnalysis {
 
         final String[] fields = line.split(",");
 
-        result.record_count = Integer.parseInt(fields[1]);
-        result.pair_count = Long.parseLong(fields[2]);
-        result.metric_name = fields[3];
-        result.threshold = Double.parseDouble(fields[4]);
-        result.tp = Integer.parseInt(fields[5]);
-        result.fp = Integer.parseInt(fields[6]);
-        result.fn = Integer.parseInt(fields[7]);
-        result.tn = Integer.parseInt(fields[8]);
+        result.records_processed = Integer.parseInt(fields[1]);
+        result.pairs_evaluated = Long.parseLong(fields[2]);
+        result.pairs_ignored = Long.parseLong(fields[3]);
+        result.metric_name = fields[4];
+        result.threshold = Double.parseDouble(fields[5]);
+        result.tp = Integer.parseInt(fields[6]);
+        result.fp = Integer.parseInt(fields[7]);
+        result.fn = Integer.parseInt(fields[8]);
+        result.tn = Integer.parseInt(fields[9]);
 
         return result;
     }
 
     private static int thresholdToIndex(final double threshold) {
 
-        return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1));
+        return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1) + EPSILON);
     }
 
     static double indexToThreshold(final int index) {
@@ -115,8 +119,9 @@ class ThresholdAnalysis {
 
     class Sample {
 
-        int record_count = 0;
-        long pair_count = 0;
+        int records_processed = 0;
+        long pairs_evaluated = 0;
+        long pairs_ignored = 0;
         String metric_name = "";
         double threshold = 0.0;
         int fp = 0;

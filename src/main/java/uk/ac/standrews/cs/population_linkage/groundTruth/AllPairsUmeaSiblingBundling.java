@@ -78,16 +78,12 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
     public void run() throws Exception {
 
         if (records_processed == 0) {
-            outstream.println("Time" + DELIMIT + "Record counter" + DELIMIT + "Pair counter" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn" + DELIMIT + "precision" + DELIMIT + "recall" + DELIMIT + "f-measure");
+            outstream.println("time" + DELIMIT + "records processed" + DELIMIT + "pairs evaluated" + DELIMIT + "pairs ignored" + DELIMIT + "metric name" + DELIMIT + "threshold" + DELIMIT + "tp" + DELIMIT + "fp" + DELIMIT + "fn" + DELIMIT + "tn" + DELIMIT + "precision" + DELIMIT + "recall" + DELIMIT + "f-measure");
         }
 
         for (int block_index = records_processed / BLOCK_SIZE; block_index < birth_records.size() / BLOCK_SIZE; block_index++) {
 
             processBlock(block_index);
-
-            records_processed += BLOCK_SIZE;
-            pairs_processed += numberOfPairsProcessed(block_index);
-
             printSamples();
 
             System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
@@ -112,6 +108,8 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+
+        records_processed += BLOCK_SIZE;
     }
 
     private void processBlockForMetric(final int block_index, final NamedMetric<LXP> metric, final CountDownLatch start_gate, final CountDownLatch end_gate) {
@@ -119,8 +117,10 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         try {
             start_gate.await();
 
+            final boolean evaluating_first_metric = metric == combined_metrics.get(0);
+
             for (int i = block_index * BLOCK_SIZE; i < (block_index + 1) * BLOCK_SIZE; i++) {
-                processRecord(i, metric);
+                processRecord(i, metric, evaluating_first_metric);
             }
 
         } catch (InterruptedException ignored) {
@@ -130,7 +130,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         }
     }
 
-    private void processRecord(final int record_index, final NamedMetric<LXP> metric) {
+    private void processRecord(final int record_index, final NamedMetric<LXP> metric, final boolean increment_counts) {
 
         final int number_of_records = birth_records.size();
 
@@ -140,25 +140,29 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
             final Birth b2 = birth_records.get(j);
 
             final double distance = normalise(metric.distance(b1, b2));
-            final boolean is_true_link = isTrueLink(b1, b2);
+            final LinkStatus link_status = isTrueLink(b1, b2);
 
-            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                recordSamples(threshold_index, state.get(metric.getMetricName()), is_true_link, distance);
+            if (link_status == LinkStatus.UNKNOWN) {
+                if (increment_counts) pairs_ignored++;
+
+            } else {
+                for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+                    recordSamples(threshold_index, state.get(metric.getMetricName()), link_status == LinkStatus.TRUE_LINK, distance);
+                }
+
+                if (increment_counts) pairs_evaluated++;
             }
         }
     }
 
-    private int numberOfPairsProcessed(final int block_index) {
-
-        return BLOCK_SIZE * (birth_records.size() - block_index * BLOCK_SIZE - (BLOCK_SIZE + 1) / 2);
-    }
-
-    private boolean isTrueLink(final Birth b1, final Birth b2) {
+    private LinkStatus isTrueLink(final Birth b1, final Birth b2) {
 
         final String b1_parent_id = b1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
         final String b2_parent_id = b2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
 
-        return !b1_parent_id.isEmpty() && b1_parent_id.equals(b2_parent_id);
+        if (b1_parent_id.isEmpty() || b2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
+
+        return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
     private void recordSamples(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
@@ -190,18 +194,20 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
             final Sample[] samples = state.get(metric_name);
 
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                printSample(records_processed, pairs_processed, metric_name, indexToThreshold(threshold_index), samples[threshold_index]);
+                printSample(metric_name, indexToThreshold(threshold_index), samples[threshold_index]);
             }
         }
     }
 
-    private void printSample(int record_count, long pair_count, String metric_name, Double threshold, Sample sample) {
+    private void printSample(String metric_name, Double threshold, Sample sample) {
 
         outstream.print(LocalDateTime.now());
         outstream.print(DELIMIT);
-        outstream.print(record_count);
+        outstream.print(records_processed);
         outstream.print(DELIMIT);
-        outstream.print(pair_count);
+        outstream.print(pairs_evaluated);
+        outstream.print(DELIMIT);
+        outstream.print(pairs_ignored);
         outstream.print(DELIMIT);
         outstream.print(metric_name);
         outstream.print(DELIMIT);
@@ -238,5 +244,10 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         String repo_name = "umea";
 
         new AllPairsUmeaSiblingBundling(store_path, repo_name, "UmeaDistances.csv").run();
+    }
+
+    private enum LinkStatus {
+
+        TRUE_LINK, NOT_TRUE_LINK, UNKNOWN
     }
 }
