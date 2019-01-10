@@ -12,7 +12,7 @@ public class PrintUmeaMarriageRecordsToFile {
 
     private final Path output_path;
 
-    private PrintUmeaMarriageRecordsToFile(Path output_path) {
+    public PrintUmeaMarriageRecordsToFile(Path output_path) {
 
         this.output_path = output_path;
     }
