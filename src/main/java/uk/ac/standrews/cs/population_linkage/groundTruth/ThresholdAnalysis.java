@@ -13,7 +13,7 @@ class ThresholdAnalysis {
     static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
 
-    final Map<String, Sample[]> state; // Maps from metric name to counts of TPFP etc.
+    final Map<String, Sample[]> linkage_results; // Maps from metric name to counts of TPFP etc.
     final List<NamedMetric<LXP>> combined_metrics;
 
     int records_processed = 0;
@@ -33,7 +33,7 @@ class ThresholdAnalysis {
     ThresholdAnalysis() {
 
         combined_metrics = getCombinedMetrics();
-        state = initialiseState();
+        linkage_results = initialiseState();
     }
 
     private Map<String, Sample[]> initialiseState() {
@@ -65,7 +65,7 @@ class ThresholdAnalysis {
     void importStateLine(final String line) {
 
         try {
-            recordImportedSample(parseSampleLine(line));
+            recordImportedSample(line);
 
         } catch (Exception e) {
             System.out.println("error parsing line: " + line);
@@ -73,32 +73,55 @@ class ThresholdAnalysis {
         }
     }
 
-    private void recordImportedSample(final Sample imported_sample) {
+    private void recordImportedSample(final String line) {
 
-        final int i = thresholdToIndex(imported_sample.threshold);
-        final Sample sample = state.get(imported_sample.metric_name)[i];
+        final String[] fields = extractFields(line);
+
+        records_processed = extractRecordsProcessed(fields);
+        pairs_evaluated = extractPairsEvaluated(fields);
+        pairs_ignored = extractPairsIgnored(fields);
+
+        final double threshold = extractThreshold(fields);
+        final String metric_name = extractMetricName(fields);
+        final Sample imported_sample = extractSample(fields);
+
+        final int index = thresholdToIndex(threshold);
+        final Sample sample = linkage_results.get(metric_name)[index];
 
         sample.tp = imported_sample.tp;
         sample.fp = imported_sample.fp;
         sample.fn = imported_sample.fn;
         sample.tn = imported_sample.tn;
-
-        records_processed = imported_sample.records_processed;
-        pairs_evaluated = imported_sample.pairs_evaluated;
-        pairs_ignored = imported_sample.pairs_ignored;
     }
 
-    Sample parseSampleLine(final String line) {
+    protected String[] extractFields(final String line) {
+        return line.split(",");
+    }
+
+    private int extractRecordsProcessed(final String[] fields) {
+        return Integer.parseInt(fields[1]);
+    }
+
+    protected long extractPairsEvaluated(final String[] fields) {
+        return Long.parseLong(fields[2]);
+    }
+
+    private long extractPairsIgnored(final String[] fields) {
+        return Long.parseLong(fields[3]);
+    }
+
+    protected String extractMetricName(final String[] fields) {
+        return fields[4];
+    }
+
+    protected double extractThreshold(final String[] fields) {
+        return Double.parseDouble(fields[5]);
+    }
+
+    protected Sample extractSample(final String[] fields) {
 
         final Sample result = new Sample();
 
-        final String[] fields = line.split(",");
-
-        result.records_processed = Integer.parseInt(fields[1]);
-        result.pairs_evaluated = Long.parseLong(fields[2]);
-        result.pairs_ignored = Long.parseLong(fields[3]);
-        result.metric_name = fields[4];
-        result.threshold = Double.parseDouble(fields[5]);
         result.tp = Integer.parseInt(fields[6]);
         result.fp = Integer.parseInt(fields[7]);
         result.fn = Integer.parseInt(fields[8]);
@@ -107,7 +130,7 @@ class ThresholdAnalysis {
         return result;
     }
 
-    private static int thresholdToIndex(final double threshold) {
+     static int thresholdToIndex(final double threshold) {
 
         return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1) + EPSILON);
     }
@@ -119,11 +142,6 @@ class ThresholdAnalysis {
 
     class Sample {
 
-        int records_processed = 0;
-        long pairs_evaluated = 0;
-        long pairs_ignored = 0;
-        String metric_name = "";
-        double threshold = 0.0;
         int fp = 0;
         int tp = 0;
         int fn = 0;

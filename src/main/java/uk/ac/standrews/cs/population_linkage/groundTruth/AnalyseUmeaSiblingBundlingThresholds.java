@@ -144,55 +144,64 @@ public class AnalyseUmeaSiblingBundlingThresholds extends ThresholdAnalysis {
 
     private void checkStateLine(final String line) {
 
-        final Sample parsed_line = parseSampleLine(line);
+        final String[] fields = extractFields(line);
+        final Sample parsed_line = extractSample(fields);
 
-        if (parsed_line.metric_name.equals(best_metric_name) && parsed_line.threshold == best_threshold) {
+        if (extractMetricName(fields).equals(best_metric_name) && extractThreshold(fields) == best_threshold) {
 
             final double f_measure = ClassificationMetrics.F1(parsed_line.tp,parsed_line.fp,parsed_line.fn);
 
-            System.out.println(parsed_line.pairs_evaluated + DELIMIT + String.format("%.2f", f_measure));
+            System.out.println(pairs_evaluated + DELIMIT + String.format("%.2f", f_measure));
         }
     }
 
     private void checkStateLine2(final String line) {
 
-        final Sample parsed_line = parseSampleLine(line);
+        final String[] fields = extractFields(line);
 
-        Map<Double, XXX> map = progression.get(parsed_line.metric_name);
-        if (map.containsKey(parsed_line.threshold)) {
+        final Map<Double, XXX> map = progression.get(extractMetricName(fields));
+        final double threshold = extractThreshold(fields);
+        final Sample imported_sample = extractSample(fields);
 
-            XXX xxx = map.get(parsed_line.threshold);
+        if (map.containsKey(threshold)) {
 
-            final double f_measure = ClassificationMetrics.F1(parsed_line.tp,parsed_line.fp,parsed_line.fn);
+            XXX xxx = map.get(threshold);
+
+            final double f_measure = ClassificationMetrics.F1(imported_sample.tp,imported_sample.fp,imported_sample.fn);
 
             if (f_measure < xxx.lowest_f_measure) xxx.lowest_f_measure = f_measure;
             if (f_measure > xxx.highest_f_measure) xxx.highest_f_measure = f_measure;
             if (xxx.number_of_samples == 0) {
                 xxx.first_f_measure = f_measure;
-                xxx.iterations_for_first = parsed_line.pairs_evaluated;
+                xxx.iterations_for_first = extractPairsEvaluated(fields);
             }
             xxx.last_f_measure = f_measure;
-            xxx.iterations_for_last = parsed_line.pairs_evaluated;
+            xxx.iterations_for_last = extractPairsEvaluated(fields);
             xxx.number_of_samples++;
         }
     }
 
     private void checkStateLine3(final String line) {
 
-        final Sample parsed_line = parseSampleLine(line);
+        final String[] fields = extractFields(line);
+        final double threshold = extractThreshold(fields);
+        final Sample imported_sample = extractSample(fields);
 
-        Map<Double, XXX> map = progression.get(parsed_line.metric_name);
-        if (map.containsKey(parsed_line.threshold)) {
+//        final Sample parsed_line = parseSampleLine(line);
 
-            XXX xxx = map.get(parsed_line.threshold);
+        Map<Double, XXX> map = progression.get(extractMetricName(fields));
+        if (map.containsKey(threshold)) {
 
-            final double f_measure = ClassificationMetrics.F1(parsed_line.tp,parsed_line.fp,parsed_line.fn);
+            XXX xxx = map.get(threshold);
 
-            if (parsed_line.metric_name.equals("Sigma Over Jaccard") && parsed_line.threshold == 0.5) {
+            final double f_measure = ClassificationMetrics.F1(imported_sample.tp,imported_sample.fp,imported_sample.fn);
+
+            if (extractMetricName(fields).equals("Sigma Over Jaccard") && threshold == 0.5) {
+
                 double diff_from_final = Math.abs(f_measure - xxx.last_f_measure)/xxx.last_f_measure;
                 if (previous_f_measure == 0.0) previous_f_measure = f_measure;
                 double diff_from_previous = Math.abs(f_measure - previous_f_measure)/ previous_f_measure;
-                System.out.println(String.format("%d,%.3f,%.4f,%.4f",parsed_line.pairs_evaluated, f_measure, diff_from_final,diff_from_previous));
+                System.out.println(String.format("%d,%.3f,%.4f,%.4f",extractPairsEvaluated(fields), f_measure, diff_from_final,diff_from_previous));
                 previous_f_measure = f_measure;
             }
         }
