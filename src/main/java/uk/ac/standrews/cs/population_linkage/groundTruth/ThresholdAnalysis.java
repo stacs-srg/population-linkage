@@ -10,15 +10,18 @@ import java.util.*;
 
 class ThresholdAnalysis {
 
+    static final List<Long> SEEDS = Arrays.asList(4353L, 345345L, 94327L, 234523L, 34523L, 34524L, 56782L, 25244L, 87626L, 42921L);
+
     static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
 
-    final Map<String, Sample[]> linkage_results; // Maps from metric name to counts of TPFP etc.
+    final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
     final List<NamedMetric<LXP>> combined_metrics;
 
-    int records_processed = 0;
-    long pairs_evaluated = 0;
-    long pairs_ignored = 0;
+    final int[] records_processed = new int[SEEDS.size()];
+    final long[] pairs_evaluated = new long[SEEDS.size()];
+    final long[] pairs_ignored = new long[SEEDS.size()];
+    int run_number = 0;
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
             Birth.FATHER_FORENAME,
@@ -36,18 +39,25 @@ class ThresholdAnalysis {
         linkage_results = initialiseState();
     }
 
-    private Map<String, Sample[]> initialiseState() {
+    private List<Map<String, Sample[]>> initialiseState() {
 
-        final Map<String, Sample[]> result = new HashMap<>();
+        final List<Map<String, Sample[]>> result = new ArrayList<>();
 
-        for (final NamedMetric<LXP> metric : combined_metrics) {
+        for (int i = 0; i < SEEDS.size(); i++) {
 
-            final Sample[] samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
-            for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
-                samples[i] = new Sample();
+            final Map<String, Sample[]> map = new HashMap<>();
+
+            for (final NamedMetric<LXP> metric : combined_metrics) {
+
+                final Sample[] samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
+                for (int j = 0; j < NUMBER_OF_THRESHOLDS_SAMPLED; j++) {
+                    samples[j] = new Sample();
+                }
+
+                map.put(metric.getMetricName(), samples);
             }
 
-            result.put(metric.getMetricName(), samples);
+            result.add(map);
         }
         return result;
     }
@@ -77,16 +87,17 @@ class ThresholdAnalysis {
 
         final String[] fields = extractFields(line);
 
-        records_processed = extractRecordsProcessed(fields);
-        pairs_evaluated = extractPairsEvaluated(fields);
-        pairs_ignored = extractPairsIgnored(fields);
+        run_number = extractRunNumber(fields);
+        records_processed[run_number] = extractRecordsProcessed(fields);
+        pairs_evaluated[run_number] = extractPairsEvaluated(fields);
+        pairs_ignored[run_number] = extractPairsIgnored(fields);
 
         final double threshold = extractThreshold(fields);
         final String metric_name = extractMetricName(fields);
         final Sample imported_sample = extractSample(fields);
 
         final int index = thresholdToIndex(threshold);
-        final Sample sample = linkage_results.get(metric_name)[index];
+        final Sample sample = linkage_results.get(run_number).get(metric_name)[index];
 
         sample.tp = imported_sample.tp;
         sample.fp = imported_sample.fp;
@@ -98,39 +109,44 @@ class ThresholdAnalysis {
         return line.split(",");
     }
 
+    private int extractRunNumber(final String[] fields) {
+        // Run number numbered from 1 in output file.
+        return Integer.parseInt(fields[1]) - 1;
+    }
+
     private int extractRecordsProcessed(final String[] fields) {
-        return Integer.parseInt(fields[1]);
+        return Integer.parseInt(fields[2]);
     }
 
     protected long extractPairsEvaluated(final String[] fields) {
-        return Long.parseLong(fields[2]);
-    }
-
-    private long extractPairsIgnored(final String[] fields) {
         return Long.parseLong(fields[3]);
     }
 
+    private long extractPairsIgnored(final String[] fields) {
+        return Long.parseLong(fields[4]);
+    }
+
     protected String extractMetricName(final String[] fields) {
-        return fields[4];
+        return fields[5];
     }
 
     protected double extractThreshold(final String[] fields) {
-        return Double.parseDouble(fields[5]);
+        return Double.parseDouble(fields[6]);
     }
 
     protected Sample extractSample(final String[] fields) {
 
         final Sample result = new Sample();
 
-        result.tp = Integer.parseInt(fields[6]);
-        result.fp = Integer.parseInt(fields[7]);
-        result.fn = Integer.parseInt(fields[8]);
-        result.tn = Integer.parseInt(fields[9]);
+        result.tp = Integer.parseInt(fields[7]);
+        result.fp = Integer.parseInt(fields[8]);
+        result.fn = Integer.parseInt(fields[9]);
+        result.tn = Integer.parseInt(fields[10]);
 
         return result;
     }
 
-     static int thresholdToIndex(final double threshold) {
+    static int thresholdToIndex(final double threshold) {
 
         return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1) + EPSILON);
     }

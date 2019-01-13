@@ -16,9 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
@@ -32,11 +30,13 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
     private final PrintWriter linkage_results_writer;
     private final PrintWriter distance_results_writer;
+    private final PrintWriter linkage_results_metadata_writer;
+    private final PrintWriter distance_results_metadata_writer;
 
-    private List<Birth> birth_records;
+    private final List<Map<String, int[]>> non_link_distance_counts;
+    private final List<Map<String, int[]>> link_distance_counts;
 
-    private final Map<String, int[]> non_link_distance_counts;
-    private final Map<String, int[]> link_distance_counts;
+    private List<List<Birth>> birth_records_per_run;
 
     private AllPairsUmeaSiblingBundling(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename) throws IOException {
 
@@ -47,8 +47,10 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
         importPreviousState(linkage_results_filename);
 
-        linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename, true)));
-        distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename, true)));
+        linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".csv", true)));
+        distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".csv", true)));
+        linkage_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".meta", true)));
+        distance_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".meta", true)));
 
         non_link_distance_counts = initialiseDistances();
         link_distance_counts = initialiseDistances();
@@ -56,13 +58,19 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         setupRecords();
     }
 
-    private Map<String, int[]> initialiseDistances() {
+    private List<Map<String, int[]>> initialiseDistances() {
 
-        final Map<String, int[]> result = new HashMap<>();
+        final List<Map<String, int[]>> result = new ArrayList<>();
 
-        for (final NamedMetric<LXP> metric : combined_metrics) {
+        for (int i = 0; i < SEEDS.size(); i++) {
 
-            result.put(metric.getMetricName(), new int[NUMBER_OF_THRESHOLDS_SAMPLED]);
+            final Map<String, int[]> map = new HashMap<>();
+
+            for (final NamedMetric<LXP> metric : combined_metrics) {
+                map.put(metric.getMetricName(), new int[NUMBER_OF_THRESHOLDS_SAMPLED]);
+            }
+
+            result.add(map);
         }
         return result;
     }
@@ -74,7 +82,6 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
             System.out.println("Importing previous data");
 
             try (final Stream<String> lines = Files.lines(Paths.get(filename))) {
-
                 lines.skip(1).forEachOrdered(this::importStateLine);
             }
         }
@@ -89,17 +96,29 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
         System.out.println("Randomising record order");
 
-        birth_records = Utilities.randomise(births);
+        birth_records_per_run = new ArrayList<>();
+
+        for (Long seed : SEEDS) {
+            birth_records_per_run.add(Utilities.permute(births, seed));
+        }
     }
 
     public void run() throws Exception {
 
-        if (records_processed == 0) printHeader();
+        if (records_processed[0] == 0) {
 
-        for (int block_index = records_processed / BLOCK_SIZE; block_index < birth_records.size() / BLOCK_SIZE; block_index++) {
+            printHeaders();
+            printMetaData();
+        }
 
-            processBlock(block_index);
-            printSamples();
+        for (int block_index = records_processed[0] / BLOCK_SIZE; block_index < birth_records_per_run.get(0).size() / BLOCK_SIZE; block_index++) {
+
+            for (int i = 0; i < SEEDS.size(); i++) {
+
+                run_number = i;
+                processBlock(block_index);
+                printSamples();
+            }
 
             System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
             System.out.flush();
@@ -124,7 +143,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
             Thread.currentThread().interrupt();
         }
 
-        records_processed += BLOCK_SIZE;
+        records_processed[run_number] += BLOCK_SIZE;
     }
 
     private void processBlockForMetric(final int block_index, final NamedMetric<LXP> metric, final CountDownLatch start_gate, final CountDownLatch end_gate) {
@@ -147,6 +166,13 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
     private void processRecord(final int record_index, final NamedMetric<LXP> metric, final boolean increment_counts) {
 
+        final String metric_name = metric.getMetricName();
+
+        final List<Birth> birth_records = birth_records_per_run.get(run_number);
+        final int[] link_counts = link_distance_counts.get(run_number).get(metric_name);
+        final int[] non_link_counts = non_link_distance_counts.get(run_number).get(metric_name);
+        final Sample[] samples = linkage_results.get(run_number).get(metric_name);
+
         final int number_of_records = birth_records.size();
 
         for (int j = record_index + 1; j < number_of_records; j++) {
@@ -158,25 +184,28 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
             final LinkStatus link_status = isTrueLink(b1, b2);
 
             if (link_status == LinkStatus.UNKNOWN) {
-                if (increment_counts) pairs_ignored++;
+                if (increment_counts) {
+                    pairs_ignored[run_number]++;
+                }
 
             } else {
-                final String metric_name = metric.getMetricName();
-                final Sample[] samples = linkage_results.get(metric_name);
+                final boolean is_true_link = link_status == LinkStatus.TRUE_LINK;
 
                 for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                    recordSamples(threshold_index, samples, link_status == LinkStatus.TRUE_LINK, distance);
+                    recordSamples(threshold_index, samples, is_true_link, distance);
                 }
 
                 final int index = thresholdToIndex(distance);
 
-                if (link_status == LinkStatus.TRUE_LINK) {
-                    link_distance_counts.get(metric_name)[index]++;
+                if (is_true_link) {
+                    link_counts[index]++;
                 } else {
-                    non_link_distance_counts.get(metric_name)[index]++;
+                    non_link_counts[index]++;
                 }
 
-                if (increment_counts) pairs_evaluated++;
+                if (increment_counts) {
+                    pairs_evaluated[run_number]++;
+                }
             }
         }
     }
@@ -217,7 +246,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         for (final NamedMetric<LXP> metric : combined_metrics) {
 
             final String metric_name = metric.getMetricName();
-            final Sample[] samples = linkage_results.get(metric_name);
+            final Sample[] samples = linkage_results.get(run_number).get(metric_name);
 
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
                 printSample(metric_name, indexToThreshold(threshold_index), samples[threshold_index]);
@@ -227,9 +256,11 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         }
     }
 
-    private void printHeader() {
+    private void printHeaders() {
 
         linkage_results_writer.print("time");
+        linkage_results_writer.print(DELIMIT);
+        linkage_results_writer.print("run number");
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print("records processed");
         linkage_results_writer.print(DELIMIT);
@@ -257,17 +288,41 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
         linkage_results_writer.println();
         linkage_results_writer.flush();
+
+        distance_results_writer.print("time");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("run number");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("records processed");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("pairs evaluated");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("pairs ignored");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("metric");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("links/non-links");
+        distance_results_writer.print(DELIMIT);
+
+        for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
+            if (i > 0) distance_results_writer.print(DELIMIT);
+            distance_results_writer.print(String.format("%.2f", indexToThreshold(i)));
+        }
+        distance_results_writer.println();
+        distance_results_writer.flush();
     }
 
     private void printSample(String metric_name, Double threshold, Sample sample) {
 
         linkage_results_writer.print(LocalDateTime.now());
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print(records_processed);
+        linkage_results_writer.print(run_number + 1);
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print(pairs_evaluated);
+        linkage_results_writer.print(records_processed[run_number]);
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print(pairs_ignored);
+        linkage_results_writer.print(pairs_evaluated[run_number]);
+        linkage_results_writer.print(DELIMIT);
+        linkage_results_writer.print(pairs_ignored[run_number]);
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print(metric_name);
         linkage_results_writer.print(DELIMIT);
@@ -293,8 +348,8 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
     private void printDistances(String metric_name) {
 
-        final int[] non_link_distance_counts_for_metric = non_link_distance_counts.get(metric_name);
-        final int[] link_distance_counts_for_metric = link_distance_counts.get(metric_name);
+        final int[] non_link_distance_counts_for_metric = non_link_distance_counts.get(run_number).get(metric_name);
+        final int[] link_distance_counts_for_metric = link_distance_counts.get(run_number).get(metric_name);
 
         printDistances(metric_name, false, non_link_distance_counts_for_metric);
         printDistances(metric_name, true, link_distance_counts_for_metric);
@@ -304,15 +359,17 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
         distance_results_writer.print(LocalDateTime.now());
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print(records_processed);
+        distance_results_writer.print(run_number + 1);
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print(pairs_evaluated);
+        distance_results_writer.print(records_processed[run_number]);
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print(pairs_ignored);
+        distance_results_writer.print(pairs_evaluated[run_number]);
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print(pairs_ignored[run_number]);
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print(metric_name);
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print(links ? "links" :"non-links");
+        distance_results_writer.print(links ? "links" : "non-links");
         distance_results_writer.print(DELIMIT);
 
         for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
@@ -321,6 +378,23 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         }
         distance_results_writer.println();
         distance_results_writer.flush();
+    }
+
+    private void printMetaData() {
+
+        linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
+        linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
+        linkage_results_metadata_writer.println("Dataset: Umea");
+        linkage_results_metadata_writer.println("Linkage type: sibling bundling");
+        linkage_results_metadata_writer.println("Records: births");
+        linkage_results_metadata_writer.flush();
+
+        distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
+        distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
+        distance_results_metadata_writer.println("Dataset: Umea");
+        distance_results_metadata_writer.println("Linkage type: sibling bundling");
+        distance_results_metadata_writer.println("Records: births");
+        distance_results_metadata_writer.flush();
     }
 
     /**
@@ -336,7 +410,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsUmeaSiblingBundling(store_path, repo_name, "UmeaThresholdBirthSiblingLinkage.csv", "UmeaThresholdBirthSiblingDistances.csv").run();
+        new AllPairsUmeaSiblingBundling(store_path, repo_name, "UmeaThresholdBirthSiblingLinkage", "UmeaThresholdBirthSiblingDistances").run();
     }
 
     private enum LinkStatus {

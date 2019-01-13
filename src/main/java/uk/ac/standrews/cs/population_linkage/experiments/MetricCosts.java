@@ -27,7 +27,7 @@ public class MetricCosts {
 
         final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
-        final List<LXP> birth_records = Utilities.randomise(Utilities.getBirthRecords(record_repository)).subList(0, 1000);
+        final List<LXP> birth_records = Utilities.permute(Utilities.getBirthRecords(record_repository)).subList(0, 1000);
 
         for (NamedMetric<String> metric : Utilities.BASE_METRICS) {
 

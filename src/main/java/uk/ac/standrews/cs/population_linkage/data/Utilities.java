@@ -117,9 +117,14 @@ public class Utilities {
         uk.ac.standrews.cs.population_records.record_types.Utilities.printSampleRecords(data_set, record_type, number_to_print);
     }
 
-    public static <T> List<T> randomise(final Iterable<T> records) {
+    public static <T> List<T> permute(final Iterable<T> records) {
 
-        Random random = new Random(SEED);
+        return permute(records, SEED);
+    }
+
+    public static <T> List<T> permute(final Iterable<T> records, long seed) {
+
+        Random random = new Random(seed);
 
         List<T> record_list = new ArrayList<>();
         for (T record : records) {
