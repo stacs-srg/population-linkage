@@ -107,8 +107,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         printHeaders();
         printMetaData();
 
-        final int number_of_blocks_to_be_checked = number_of_records / (BLOCK_SIZE);
-        System.out.println("number_of_blocks_to_be_checked: " + number_of_blocks_to_be_checked);
+        final int number_of_blocks_to_be_checked = number_of_records / BLOCK_SIZE;
 
         for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
 
@@ -127,7 +126,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
         for (final NamedMetric<LXP> metric : combined_metrics) {
 
-            new Thread(() -> processBlockForMetric(block_index, metric, start_gate, end_gate)).start();
+            new Thread(() -> processBlockWithMetric(block_index, metric, start_gate, end_gate)).start();
         }
 
         try {
@@ -141,7 +140,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         records_processed += BLOCK_SIZE;
     }
 
-    private void processBlockForMetric(final int block_index, final NamedMetric<LXP> metric, final CountDownLatch start_gate, final CountDownLatch end_gate) {
+    private void processBlockWithMetric(final int block_index, final NamedMetric<LXP> metric, final CountDownLatch start_gate, final CountDownLatch end_gate) {
 
         try {
             start_gate.await();
@@ -187,7 +186,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
                 final boolean is_true_link = link_status == LinkStatus.TRUE_LINK;
 
                 for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                    recordSamples(threshold_index, samples, is_true_link, distance);
+                    recordSample(threshold_index, samples, is_true_link, distance);
                 }
 
                 final int index = thresholdToIndex(distance);
@@ -220,7 +219,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
-    private void recordSamples(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
+    private void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
 
         final double threshold = indexToThreshold(threshold_index);
 
