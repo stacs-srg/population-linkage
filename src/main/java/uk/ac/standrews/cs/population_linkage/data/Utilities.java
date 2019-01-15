@@ -8,7 +8,6 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
-import uk.ac.standrews.cs.utilities.phonetic.DoubleMetaphone;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
 import uk.ac.standrews.cs.utilities.phonetic.NYSIIS;
 import uk.ac.standrews.cs.utilities.phonetic.PhoneticWrapper;
@@ -35,7 +34,6 @@ public class Utilities {
     public static final LongestCommonSubstring LONGEST_COMMON_SUBSTRING = new LongestCommonSubstring();
     public static final BagDistance BAG_DISTANCE = new BagDistance();
     public static final PhoneticWrapper METAPHONE = new PhoneticWrapper(new Metaphone(), new Levenshtein());
-    public static final PhoneticWrapper DOUBLE_METAPHONE = new PhoneticWrapper(new DoubleMetaphone(), new Levenshtein());
     public static final PhoneticWrapper NYSIIS = new PhoneticWrapper(new NYSIIS(), new Levenshtein());
 
     public static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(

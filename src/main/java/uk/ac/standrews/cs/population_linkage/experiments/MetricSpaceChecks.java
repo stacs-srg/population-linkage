@@ -18,7 +18,6 @@ import static uk.ac.standrews.cs.population_linkage.data.Utilities.*;
 
 public class MetricSpaceChecks {
 
-    private static final int CHARVAL = 512;
     private static final int DUMP_COUNT_INTERVAL = 1000000;
     private static final long SEED = 34553543456223L;
     private static final double DELTA = 0.0000001;
@@ -145,7 +144,7 @@ public class MetricSpaceChecks {
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = ApplicationProperties.getRepositoryName();
+        String repo_name = "umea";
 
         new MetricSpaceChecks(store_path, repo_name, "TriangleInequalityChecks").run();
     }
