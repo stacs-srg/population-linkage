@@ -2,13 +2,15 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-class ThresholdAnalysis {
+abstract class ThresholdAnalysis {
 
     static final long SEED = 87626L;
     static final int NUMBER_OF_RUNS = 10;
@@ -22,15 +24,7 @@ class ThresholdAnalysis {
     final long[] pairs_evaluated = new long[NUMBER_OF_RUNS];
     final long[] pairs_ignored = new long[NUMBER_OF_RUNS];
 
-    private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.PARENTS_PLACE_OF_MARRIAGE,
-            Birth.PARENTS_DAY_OF_MARRIAGE,
-            Birth.PARENTS_MONTH_OF_MARRIAGE,
-            Birth.PARENTS_YEAR_OF_MARRIAGE);
+    public abstract List<Integer> getComparisonFields();
 
     ThresholdAnalysis() {
 
@@ -66,7 +60,7 @@ class ThresholdAnalysis {
         final List<NamedMetric<LXP>> result = new ArrayList<>();
 
         for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
-            result.add(new Sigma(base_metric, SIBLING_BUNDLING_FIELDS));
+            result.add(new Sigma(base_metric, getComparisonFields()));
         }
         return result;
     }

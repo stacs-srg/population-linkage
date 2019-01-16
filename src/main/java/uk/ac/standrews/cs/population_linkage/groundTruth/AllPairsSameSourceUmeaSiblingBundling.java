@@ -1,9 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
@@ -20,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
+public abstract class AllPairsSameSourceUmeaSiblingBundling extends ThresholdAnalysis {
 
     private final Path store_path;
     private final String repo_name;
@@ -38,11 +36,11 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
     private final Map<String, Integer> run_numbers_for_metrics;
 
-    private List<Birth> birth_records;
+    private List<LXP> source_records;
     private int number_of_records;
     private int records_processed = 0;
 
-    private AllPairsUmeaSiblingBundling(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename) throws IOException {
+    protected AllPairsSameSourceUmeaSiblingBundling(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename) throws IOException {
 
         super();
 
@@ -60,6 +58,12 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
         setupRecords();
     }
+
+    protected abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
+
+    protected abstract LinkStatus isTrueLink(final LXP record1, final LXP record2);
+
+    protected abstract String getSourceType();
 
     private List<Map<String, int[]>> initialiseDistances() {
 
@@ -94,12 +98,13 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         System.out.println("Reading records from repository: " + repo_name);
 
         final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
-        final Iterable<Birth> births = record_repository.getBirths();
+
+        final Iterable<LXP> records = getSourceRecords(record_repository);
 
         System.out.println("Randomising record order");
 
-        birth_records = Utilities.permute(births, SEED);
-        number_of_records = birth_records.size();
+        source_records = Utilities.permute(records, SEED);
+        number_of_records = source_records.size();
     }
 
     public void run() throws Exception {
@@ -168,11 +173,11 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
 
         for (int j = record_index + 1; j < number_of_records; j++) {
 
-            final Birth b1 = birth_records.get(record_index);
-            final Birth b2 = birth_records.get(j);
+            final LXP record1 = source_records.get(record_index);
+            final LXP record2 = source_records.get(j);
 
-            final double distance = normalise(metric.distance(b1, b2));
-            final LinkStatus link_status = isTrueLink(b1, b2);
+            final double distance = normalise(metric.distance(record1, record2));
+            final LinkStatus link_status = isTrueLink(record1, record2);
 
             if (link_status == LinkStatus.UNKNOWN) {
                 if (increment_counts) {
@@ -209,15 +214,6 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         run_numbers_for_metrics.put(metric_name, run_number);
     }
 
-    private LinkStatus isTrueLink(final Birth b1, final Birth b2) {
-
-        final String b1_parent_id = b1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-        final String b2_parent_id = b2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-
-        if (b1_parent_id.isEmpty() || b2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
-
-        return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
-    }
 
     private void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
 
@@ -388,14 +384,14 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
         linkage_results_metadata_writer.println("Dataset: Umea");
         linkage_results_metadata_writer.println("Linkage type: sibling bundling");
-        linkage_results_metadata_writer.println("Records: births");
+        linkage_results_metadata_writer.println("Records: " + getSourceType() );
         linkage_results_metadata_writer.flush();
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
         distance_results_metadata_writer.println("Dataset: Umea");
         distance_results_metadata_writer.println("Linkage type: sibling bundling");
-        distance_results_metadata_writer.println("Records: births");
+        distance_results_metadata_writer.println("Records: " + getSourceType());
         distance_results_metadata_writer.flush();
     }
 
@@ -407,15 +403,7 @@ public class AllPairsUmeaSiblingBundling extends ThresholdAnalysis {
         return 1d - (1d / (distance + 1d));
     }
 
-    public static void main(String[] args) throws Exception {
-
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
-
-        new AllPairsUmeaSiblingBundling(store_path, repo_name, "UmeaThresholdBirthSiblingLinkage", "UmeaThresholdBirthSiblingDistances").run();
-    }
-
-    private enum LinkStatus {
+    protected enum LinkStatus {
 
         TRUE_LINK, NOT_TRUE_LINK, UNKNOWN
     }
