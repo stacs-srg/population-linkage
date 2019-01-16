@@ -61,6 +61,6 @@ public class Sigma implements NamedMetric<LXP> {
 
     @Override
     public String getMetricName() {
-        return "Sigma-" + baseMetric.getMetricName() + fields.toString() ;
+        return "Sigma-" + baseMetric.getMetricName();
     }
 }

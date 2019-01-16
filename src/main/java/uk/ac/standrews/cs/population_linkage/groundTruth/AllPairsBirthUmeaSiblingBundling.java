@@ -8,7 +8,6 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,8 +39,8 @@ public class AllPairsBirthUmeaSiblingBundling extends AllPairsSameSourceSiblingB
     }
 
     @Override
-    public List<List<Integer>> getComparisonFields() {
-        List<Integer> field_list = Arrays.asList(
+    public List<Integer> getComparisonFields() {
+        return Arrays.asList(
                 Birth.FATHER_FORENAME,
                 Birth.FATHER_SURNAME,
                 Birth.MOTHER_FORENAME,
@@ -50,9 +49,6 @@ public class AllPairsBirthUmeaSiblingBundling extends AllPairsSameSourceSiblingB
                 Birth.PARENTS_DAY_OF_MARRIAGE,
                 Birth.PARENTS_MONTH_OF_MARRIAGE,
                 Birth.PARENTS_YEAR_OF_MARRIAGE);
-        List<List<Integer>> result = new ArrayList<>();
-        result.add(field_list);
-        return result;
     }
 
     public static void main(String[] args) throws Exception {

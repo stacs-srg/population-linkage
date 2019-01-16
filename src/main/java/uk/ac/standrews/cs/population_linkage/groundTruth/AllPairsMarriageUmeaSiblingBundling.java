@@ -2,10 +2,11 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.metrics.Sigma2;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,12 +28,16 @@ public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceSibli
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String b1_parent_id = record1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-        final String b2_parent_id = record2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+        final String m1_groom_id = record1.getString(Marriage.GROOM_BIRTH_RECORD_IDENTITY);
+        final String m2_groom_id = record2.getString(Marriage.GROOM_BIRTH_RECORD_IDENTITY);
+        final String m1_bride_id = record1.getString(Marriage.BRIDE_BIRTH_RECORD_IDENTITY);
+        final String m2_bride_id = record2.getString(Marriage.BRIDE_BIRTH_RECORD_IDENTITY);
 
-        if (b1_parent_id.isEmpty() || b2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
+        if (m1_groom_id.isEmpty() || m2_groom_id.isEmpty() || m1_bride_id.isEmpty() || m2_bride_id.isEmpty() ) {
+            return LinkStatus.UNKNOWN;
+        }
 
-        return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return m1_bride_id.equals(m2_bride_id) && m1_groom_id.equals(m2_groom_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
     @Override
@@ -41,23 +46,34 @@ public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceSibli
     }
 
     @Override
-    public List<List<Integer>> getComparisonFields() {
-        // Need to match the bride and the groom for marriages.
-        List<Integer> field_list1 = Arrays.asList(
+    public List<Integer> getComparisonFields() {
+        return Arrays.asList(
                 Marriage.GROOM_FORENAME,
                 Marriage.GROOM_FATHER_SURNAME,
                 Marriage.GROOM_MOTHER_FORENAME,
                 Marriage.GROOM_MOTHER_MAIDEN_SURNAME);
-        List<Integer> field_list2 = Arrays.asList(
+    }
+
+    public List<Integer> getComparisonFields2() {
+        return Arrays.asList(
                 Marriage.BRIDE_FORENAME,
                 Marriage.BRIDE_FATHER_SURNAME,
                 Marriage.BRIDE_MOTHER_FORENAME,
                 Marriage.BRIDE_MOTHER_MAIDEN_SURNAME);
-        List<List<Integer>> result = new ArrayList<>();
-        result.add(field_list1);
-        result.add(field_list2);
-        return result;
+    }
 
+    @Override
+    protected List<NamedMetric<LXP>> getCombinedMetrics() {
+
+        final List<NamedMetric<LXP>> result = new ArrayList<>();
+
+        for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
+            result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields()));
+            result.add(new Sigma2(base_metric, getComparisonFields2(), getComparisonFields2()));
+            result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2()));
+            result.add(new Sigma2(base_metric, getComparisonFields2(), getComparisonFields()));
+        }
+        return result;
     }
 
     public static void main(String[] args) throws Exception {

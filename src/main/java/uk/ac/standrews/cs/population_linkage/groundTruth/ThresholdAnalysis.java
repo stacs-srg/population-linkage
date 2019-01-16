@@ -28,7 +28,7 @@ abstract class ThresholdAnalysis {
      *
      * @return lists of all sets of comparison fields that will be used for comparing records, can have more than one, hence List<List></list>
      */
-    public abstract List<List<Integer>> getComparisonFields();
+    public abstract List<Integer> getComparisonFields();
 
     ThresholdAnalysis() {
 
@@ -59,15 +59,12 @@ abstract class ThresholdAnalysis {
         return result;
     }
 
-    private List<NamedMetric<LXP>> getCombinedMetrics() {
+    protected List<NamedMetric<LXP>> getCombinedMetrics() {
 
         final List<NamedMetric<LXP>> result = new ArrayList<>();
 
         for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
-            Iterable<List<Integer>> comparison_field_lists = getComparisonFields();
-            for( List<Integer> comparison_fields : comparison_field_lists ) {
-                result.add(new Sigma(base_metric, comparison_fields));
-            }
+                result.add(new Sigma(base_metric, getComparisonFields()));
         }
         return result;
     }

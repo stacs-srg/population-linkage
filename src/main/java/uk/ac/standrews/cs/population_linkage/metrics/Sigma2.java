@@ -32,10 +32,10 @@ public class Sigma2 implements NamedMetric<LXP> {
     protected List<Integer> fieldList1;
     protected List<Integer> fieldList2;
 
-    public Sigma2(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2 ) throws Exception {
+    public Sigma2(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2 ) {
 
         if( fields1.size() != fields2.size() ) {
-            throw new Exception( "Fields must be the same length");
+            throw new RuntimeException( "Fields must be the same length");
         }
         this.baseDistance = baseDistance;
         this.fieldList1 = fields1;
@@ -62,7 +62,7 @@ public class Sigma2 implements NamedMetric<LXP> {
 
     @Override
     public String getMetricName() {
-        return "Sigma" + "Over" + baseDistance.getMetricName();
+        return "Sigma2" + "Over" + baseDistance.getMetricName() + fieldList1.toString() + "," + fieldList2.toString();
     }
 
 }
