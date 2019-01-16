@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-public abstract class AllPairsSameSourceUmeaSiblingBundling extends ThresholdAnalysis {
+public abstract class AllPairsSameSourceSiblingBundling extends ThresholdAnalysis {
 
     private final Path store_path;
     private final String repo_name;
@@ -40,7 +40,7 @@ public abstract class AllPairsSameSourceUmeaSiblingBundling extends ThresholdAna
     private int number_of_records;
     private int records_processed = 0;
 
-    protected AllPairsSameSourceUmeaSiblingBundling(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename) throws IOException {
+    protected AllPairsSameSourceSiblingBundling(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename) throws IOException {
 
         super();
 

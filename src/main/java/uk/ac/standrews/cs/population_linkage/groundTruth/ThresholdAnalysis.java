@@ -24,7 +24,11 @@ abstract class ThresholdAnalysis {
     final long[] pairs_evaluated = new long[NUMBER_OF_RUNS];
     final long[] pairs_ignored = new long[NUMBER_OF_RUNS];
 
-    public abstract List<Integer> getComparisonFields();
+    /**
+     *
+     * @return lists of all sets of comparison fields that will be used for comparing records, can have more than one, hence List<List></list>
+     */
+    public abstract List<List<Integer>> getComparisonFields();
 
     ThresholdAnalysis() {
 
@@ -60,7 +64,10 @@ abstract class ThresholdAnalysis {
         final List<NamedMetric<LXP>> result = new ArrayList<>();
 
         for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
-            result.add(new Sigma(base_metric, getComparisonFields()));
+            Iterable<List<Integer>> comparison_field_lists = getComparisonFields();
+            for( List<Integer> comparison_fields : comparison_field_lists ) {
+                result.add(new Sigma(base_metric, comparison_fields));
+            }
         }
         return result;
     }

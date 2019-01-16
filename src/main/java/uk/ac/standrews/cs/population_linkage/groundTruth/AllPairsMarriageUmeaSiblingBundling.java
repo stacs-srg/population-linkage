@@ -9,10 +9,11 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceUmeaSiblingBundling {
+public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceSiblingBundling {
 
     public AllPairsMarriageUmeaSiblingBundling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {
         super(store_path,repo_name,linkage_results_filename, distance_results_filename);
@@ -40,24 +41,22 @@ public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceUmeaS
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
-        return Arrays.asList(
-                Marriage.FATHER_FORENAME,
-                Marriage.FATHER_SURNAME,
-                Marriage.MOTHER_FORENAME,
-                Marriage.MOTHER_MAIDEN_SURNAME,
-                Marriage.PARENTS_PLACE_OF_MARRIAGE,
-                Marriage.PARENTS_DAY_OF_MARRIAGE,
-                Marriage.PARENTS_MONTH_OF_MARRIAGE,
-                Marriage.PARENTS_YEAR_OF_MARRIAGE);
-//
-//\item Marriage.GROOM\_FATHER\_FORENAME,
-//\item Marriage.GROOM\_FATHER\_SURNAME,
-//\item Marriage.GROOM\_MOTHER\_FORENAME,
-//\item Marriage.GROOM\_MOTHER\_MAIDEN\_SURNAME
-// and symmetrically with the bride's mother and father.
-// Note that the bride's mother/father may be matched with the groom's mother/father
-// on another marriage record due to the asymmetry with brothers and sisters getting married.
+    public List<List<Integer>> getComparisonFields() {
+        // Need to match the bride and the groom for marriages.
+        List<Integer> field_list1 = Arrays.asList(
+                Marriage.GROOM_FORENAME,
+                Marriage.GROOM_FATHER_SURNAME,
+                Marriage.GROOM_MOTHER_FORENAME,
+                Marriage.GROOM_MOTHER_MAIDEN_SURNAME);
+        List<Integer> field_list2 = Arrays.asList(
+                Marriage.BRIDE_FORENAME,
+                Marriage.BRIDE_FATHER_SURNAME,
+                Marriage.BRIDE_MOTHER_FORENAME,
+                Marriage.BRIDE_MOTHER_MAIDEN_SURNAME);
+        List<List<Integer>> result = new ArrayList<>();
+        result.add(field_list1);
+        result.add(field_list2);
+        return result;
 
     }
 
