@@ -11,6 +11,13 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This class performs sibling bundling linkage analysis on data from deaths.
+ * It compares two sets of parental names from two death certificates
+ * The fields used for comparison are listed in getComparisonFields().
+ * The ground truth is listed in isTrueLink.
+ **/
+
 public class AllPairsDeathUmeaSiblingBundling extends AllPairsSameSourceLinkageAnalysis {
 
     public AllPairsDeathUmeaSiblingBundling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {

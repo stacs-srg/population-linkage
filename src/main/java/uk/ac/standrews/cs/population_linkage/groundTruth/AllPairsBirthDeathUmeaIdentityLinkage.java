@@ -12,6 +12,14 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+
+/* This class performs linkage analysis on data from births and deaths.
+ * It compares the baby and parent's names on a birth certificate with the deceased's names and the deceased's parents names from a death certificate.
+ * This is identity linkage on the baby and the deceased.
+ * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
+ * The ground truth is listed in isTrueLink.
+ **/
+
 public class AllPairsBirthDeathUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
 
     public AllPairsBirthDeathUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {

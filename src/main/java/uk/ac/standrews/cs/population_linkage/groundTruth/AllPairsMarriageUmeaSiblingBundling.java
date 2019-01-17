@@ -14,6 +14,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This class performs sibling bundling linkage analysis on data from marriages.
+ * It compares two sets of parental names from two marriage certificates
+ * The fields used for comparison are listed in getComparisonFields().
+ * This code is a little strange, to establish if the partners in two marriages are siblings you need to check:
+ *      are the bride's parents the same on both certificates (two marriages of sisters), or
+ *      are the groom's parents the same on both certificates, (two marriages of brothers), or
+ *      are the groom's parents on the first the same as the bride's parents on the second (two marriages of brother and sister), or
+ *      are the bride's parents on the first the same as the groom's parents on the second (two marriages of sister and brother).
+ * The ground truth is listed in isTrueLink.
+ **/
+
 public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceLinkageAnalysis {
 
     public AllPairsMarriageUmeaSiblingBundling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {
@@ -27,6 +39,8 @@ public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceLinka
 
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
+
+        // groom and bride are the same on both records!
 
         final String m1_groom_id = record1.getString(Marriage.GROOM_BIRTH_RECORD_IDENTITY);
         final String m2_groom_id = record2.getString(Marriage.GROOM_BIRTH_RECORD_IDENTITY);

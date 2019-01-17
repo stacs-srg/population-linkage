@@ -15,7 +15,8 @@ import java.util.List;
 
 /**
  * This class performs linkage analysis on data from births and marriages.
- * It compares the baby on a birth certificate with the bride from a marriage certificate.
+ * It compares the baby's and parent's names on a birth certificate with the brides and her parents names from a marriage certificate.
+ * This is identity linkage using birth and marriage records.
  * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
  * The ground truth is listed in isTrueLink.
  **/

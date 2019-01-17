@@ -18,6 +18,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * This class performs linkage analysis on data pulled from a single data sources, for example births.
+ *
+ * Classes extending this class are required to implement the following methods:
+ *     getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
+ *     getSourceType(), which provides a textual description of the first data source, for example, "births"
+ *     LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of two datum's from the source
+ *     getComparisonFields(), returns the set of fields to be used for distance comparison from data source 1 (note the name)
+ */
+
 public abstract class AllPairsSameSourceLinkageAnalysis extends ThresholdAnalysis {
 
     private final Path store_path;

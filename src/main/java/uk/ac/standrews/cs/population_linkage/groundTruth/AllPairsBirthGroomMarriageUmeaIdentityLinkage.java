@@ -12,6 +12,14 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This class performs linkage analysis on data from births and marriages.
+ * It compares the baby's and parent's names on a birth certificate with the grooms and his parents names from a marriage certificate.
+ * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
+ * This is identity linkage between the baby and the groom.
+ * The ground truth is listed in isTrueLink.
+ **/
+
 public class AllPairsBirthGroomMarriageUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
 
     public AllPairsBirthGroomMarriageUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {
