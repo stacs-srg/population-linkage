@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 /*----------------------
-    Data Set conatins:
+    Data Set contains:
         id1
         id2
         is_true_link

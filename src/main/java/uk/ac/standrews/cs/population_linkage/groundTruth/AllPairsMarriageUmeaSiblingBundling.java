@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceSiblingBundling {
+public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceLinkageAnalysis {
 
     public AllPairsMarriageUmeaSiblingBundling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {
         super(store_path,repo_name,linkage_results_filename, distance_results_filename);
@@ -48,7 +48,7 @@ public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceSibli
     @Override
     public List<Integer> getComparisonFields() {
         return Arrays.asList(
-                Marriage.GROOM_FORENAME,
+                Marriage.GROOM_FATHER_FORENAME,
                 Marriage.GROOM_FATHER_SURNAME,
                 Marriage.GROOM_MOTHER_FORENAME,
                 Marriage.GROOM_MOTHER_MAIDEN_SURNAME);
@@ -56,7 +56,7 @@ public class AllPairsMarriageUmeaSiblingBundling extends AllPairsSameSourceSibli
 
     public List<Integer> getComparisonFields2() {
         return Arrays.asList(
-                Marriage.BRIDE_FORENAME,
+                Marriage.BRIDE_FATHER_FORENAME,
                 Marriage.BRIDE_FATHER_SURNAME,
                 Marriage.BRIDE_MOTHER_FORENAME,
                 Marriage.BRIDE_MOTHER_MAIDEN_SURNAME);

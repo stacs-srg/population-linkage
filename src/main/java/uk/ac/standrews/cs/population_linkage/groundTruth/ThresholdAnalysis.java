@@ -10,6 +10,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is the base class for performing linkage analysis from ground truth.
+ * Classes extending this class are required to implement the following method:
+ *     getComparisonFields(), returns the set of fields to be used for distance comparison from the data source
+ * Known subclasses are:
+ * AllPairsSameSourceLinkageAnalysis, which compares records from a single data source
+ * AllPairs2SourcesLinkageAnalysis, which compares records from two different data sources
+ */
+
 abstract class ThresholdAnalysis {
 
     static final long SEED = 87626L;

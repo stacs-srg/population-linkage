@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-public class AllPairsDeathUmeaSiblingBundling extends AllPairsSameSourceSiblingBundling {
+public class AllPairsDeathUmeaSiblingBundling extends AllPairsSameSourceLinkageAnalysis {
 
     public AllPairsDeathUmeaSiblingBundling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {
         super(store_path,repo_name,linkage_results_filename, distance_results_filename);
