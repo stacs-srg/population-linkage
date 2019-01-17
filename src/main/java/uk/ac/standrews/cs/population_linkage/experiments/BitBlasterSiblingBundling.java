@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 public abstract class BitBlasterSiblingBundling extends SimilaritySearchSiblingBundling {
 
-    BitBlasterSiblingBundling(Path store_path, String repo_name) {
+    public BitBlasterSiblingBundling(Path store_path, String repo_name) {
 
         super(store_path, repo_name);
     }
