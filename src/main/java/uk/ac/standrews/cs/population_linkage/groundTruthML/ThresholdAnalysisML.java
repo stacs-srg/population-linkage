@@ -1,8 +1,6 @@
-package uk.ac.standrews.cs.population_linkage.groundTruth;
+package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
-import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.ArrayList;
@@ -19,7 +17,7 @@ import java.util.Map;
  * AllPairs2SourcesLinkageAnalysis, which compares records from two different data sources
  */
 
-abstract class ThresholdAnalysis {
+abstract class ThresholdAnalysisML {
 
     static final long SEED = 87626L;
     static final int NUMBER_OF_RUNS = 10;
@@ -28,10 +26,10 @@ abstract class ThresholdAnalysis {
     private static final double EPSILON = 0.00001;
 
     final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
-    final List<NamedMetric<LXP>> combined_metrics;
 
     final long[] pairs_evaluated = new long[NUMBER_OF_RUNS];
     final long[] pairs_ignored = new long[NUMBER_OF_RUNS];
+    final List<NamedMetric<String>> metrics;
 
     /**
      *
@@ -39,9 +37,9 @@ abstract class ThresholdAnalysis {
      */
     public abstract List<Integer> getComparisonFields();
 
-    ThresholdAnalysis() {
+    ThresholdAnalysisML() {
 
-        combined_metrics = getCombinedMetrics();
+        metrics = Utilities.BASE_METRICS;
         linkage_results = initialiseState();
     }
 
@@ -53,7 +51,7 @@ abstract class ThresholdAnalysis {
 
             final Map<String, Sample[]> map = new HashMap<>();
 
-            for (final NamedMetric<LXP> metric : combined_metrics) {
+            for (final NamedMetric<String> metric : metrics) {
 
                 final Sample[] samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
                 for (int j = 0; j < NUMBER_OF_THRESHOLDS_SAMPLED; j++) {
@@ -64,16 +62,6 @@ abstract class ThresholdAnalysis {
             }
 
             result.add(map);
-        }
-        return result;
-    }
-
-    protected List<NamedMetric<LXP>> getCombinedMetrics() {
-
-        final List<NamedMetric<LXP>> result = new ArrayList<>();
-
-        for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
-                result.add(new Sigma(base_metric, getComparisonFields()));
         }
         return result;
     }
