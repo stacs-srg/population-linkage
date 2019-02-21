@@ -6,3 +6,12 @@ target
 application-checked-in.properties
 application-local.properties
 application.properties
+src/main/resources/UmeaThresholdBirthSiblingDistances.csv
+src/main/resources/UmeaThresholdBirthSiblingLinkage.csv
+src/main/resources/UmeaThresholdMarriageSiblingDistances.meta
+src/main/resources/UmeaThresholdBirthSiblingLinkage.meta
+UmeaDistances.csv
+UmeaThresholdMarriageSiblingDistances.csv
+UmeaThresholdMarriageSiblingLinkage.csv
+UmeaThresholdMarriageSiblingLinkage.meta
+src/main/scripts/R/.Rhistory

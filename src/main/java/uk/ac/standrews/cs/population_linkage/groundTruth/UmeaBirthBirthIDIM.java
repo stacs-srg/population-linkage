@@ -8,7 +8,7 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 import uk.ac.standrews.cs.utilities.stats.ConfidenceIntervals;
-import uk.ac.standrews.cs.utilities.stats.Means;
+import uk.ac.standrews.cs.utilities.tables.Means;
 import uk.al_richard.metricbitblaster.production.DistanceExponent;
 
 import java.nio.file.Path;
