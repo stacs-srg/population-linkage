@@ -21,21 +21,22 @@ import java.util.List;
  * The ground truth is listed in isTrueLink.
  **/
 
-public class AllPairsBirthBrideMarriageUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
+public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
 
-    public AllPairsBirthBrideMarriageUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked) throws IOException {
+    public AllPairsBrideMarriageBirthUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked) throws IOException {
         super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords1(RecordRepository record_repository) {
-        return Utilities.getBirthRecords( record_repository );
+        return Utilities.getDeathRecords( record_repository );
     }
 
     @Override
     public Iterable<LXP> getSourceRecords2(RecordRepository record_repository) {
-        return Utilities.getDeathRecords( record_repository );
+        return Utilities.getBirthRecords( record_repository );
     }
+
 
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
@@ -50,27 +51,16 @@ public class AllPairsBirthBrideMarriageUmeaIdentityLinkage extends AllPairs2Sour
 
     @Override
     protected String getSourceType1() {
-        return "births";
-    }
-
-    @Override
-    protected String getSourceType2() {
         return "marriages";
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
-        return Arrays.asList(
-                Birth.FORENAME,
-                Birth.SURNAME,
-                Birth.FATHER_FORENAME,
-                Birth.FATHER_SURNAME,
-                Birth.MOTHER_FORENAME,
-                Birth.MOTHER_MAIDEN_SURNAME );
+    protected String getSourceType2() {
+        return "births";
     }
 
     @Override
-    protected List<Integer> getComparisonFields2() {
+    public List<Integer> getComparisonFields() {
         return Arrays.asList(
                 Marriage.BRIDE_FORENAME,
                 Marriage.BRIDE_SURNAME,
@@ -80,11 +70,22 @@ public class AllPairsBirthBrideMarriageUmeaIdentityLinkage extends AllPairs2Sour
                 Marriage.BRIDE_MOTHER_MAIDEN_SURNAME );
     }
 
+    @Override
+    public List<Integer> getComparisonFields2() {
+        return Arrays.asList(
+                Birth.FORENAME,
+                Birth.SURNAME,
+                Birth.FATHER_FORENAME,
+                Birth.FATHER_SURNAME,
+                Birth.MOTHER_FORENAME,
+                Birth.MOTHER_MAIDEN_SURNAME );
+    }
+
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsBirthBrideMarriageUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthBridesBrideMarriageIdentityLinkage", "UmeaThresholdBirthBrideMarriageIdentityDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
+        new AllPairsBrideMarriageBirthUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthBridesBrideMarriageIdentityLinkage", "UmeaThresholdBirthBrideMarriageIdentityDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
     }
 }

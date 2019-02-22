@@ -58,7 +58,7 @@ public class AllPairsBirthFatherUmeaIdentityLinkage extends AllPairsSameSourceLi
     public List<Integer> getComparisonFields2() {
         return Arrays.asList(
                 Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME );
+                Birth.FATHER_SURNAME );
     }
 
     @Override
