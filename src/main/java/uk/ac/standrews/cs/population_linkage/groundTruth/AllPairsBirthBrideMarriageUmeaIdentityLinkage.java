@@ -23,8 +23,8 @@ import java.util.List;
 
 public class AllPairsBirthBrideMarriageUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
 
-    public AllPairsBirthBrideMarriageUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename);
+    public AllPairsBirthBrideMarriageUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked) throws IOException {
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked);
     }
 
     @Override
@@ -85,6 +85,6 @@ public class AllPairsBirthBrideMarriageUmeaIdentityLinkage extends AllPairs2Sour
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsBirthBrideMarriageUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthBridesBrideMarriageIdentityLinkage", "UmeaThresholdBirthBrideMarriageIdentityDistances").run();
+        new AllPairsBirthBrideMarriageUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthBridesBrideMarriageIdentityLinkage", "UmeaThresholdBirthBrideMarriageIdentityDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
     }
 }

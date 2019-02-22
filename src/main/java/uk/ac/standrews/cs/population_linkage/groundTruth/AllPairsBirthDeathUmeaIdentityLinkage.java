@@ -22,8 +22,8 @@ import java.util.List;
 
 public class AllPairsBirthDeathUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
 
-    public AllPairsBirthDeathUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename);
+    public AllPairsBirthDeathUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked) throws IOException {
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename, number_of_records_to_be_checked);
     }
 
     @Override
@@ -90,6 +90,6 @@ public class AllPairsBirthDeathUmeaIdentityLinkage extends AllPairs2SourcesLinka
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsBirthDeathUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthDeathIdentityLinkage", "UmeaThresholdBirthDeathIdentityDistances").run();
+        new AllPairsBirthDeathUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthDeathIdentityLinkage", "UmeaThresholdBirthDeathIdentityDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
     }
 }

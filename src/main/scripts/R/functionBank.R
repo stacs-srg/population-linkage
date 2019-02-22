@@ -35,6 +35,8 @@ SL0.8AbsError <- function( mydata, measure ) {
 # This returns a new data frame containing the metric,threshold, closeness, records processed derived from the data parmeter for the supplied measure 
 analyse_space <- function( data, measure ) {
   
+  thresholds <- c( 0.4, 0.6, 0.8 )
+  
   closeness.df <- data.frame( metric = character(),
                               threshold = double(),
                               closeness = double(),

@@ -50,9 +50,9 @@ public abstract class AllPairsSameSourceLinkageAnalysis extends ThresholdAnalysi
     private int number_of_records;
     private int records_processed = 0;
 
-    protected AllPairsSameSourceLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename) throws IOException {
+    protected AllPairsSameSourceLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked) throws IOException {
 
-        super();
+        super(number_of_records_to_be_checked);
 
         this.store_path = store_path;
         this.repo_name = repo_name;

@@ -54,9 +54,10 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
     private int number_of_records2;
     private int records_processed = 0;
 
-    protected AllPairs2SourcesLinkageAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename) throws IOException {
 
-        super();
+    protected AllPairs2SourcesLinkageAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked ) throws IOException {
+
+        super( number_of_records_to_be_checked );
 
         this.store_path = store_path;
         this.repo_name = repo_name1;
@@ -138,7 +139,7 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
         source_records1 = Utilities.permute(records1, SEED);
         source_records2 = Utilities.permute(records2, SEED);
 
-        number_of_records1 = source_records1.size();
+        number_of_records1 = number_of_records_to_be_checked == CHECK_ALL_RECORDS ? source_records1.size() : number_of_records_to_be_checked;
         number_of_records2 = source_records2.size();
     }
 

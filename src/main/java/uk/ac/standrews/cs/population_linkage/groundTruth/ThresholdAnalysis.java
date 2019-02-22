@@ -32,6 +32,10 @@ abstract class ThresholdAnalysis {
 
     final long[] pairs_evaluated = new long[NUMBER_OF_RUNS];
     final long[] pairs_ignored = new long[NUMBER_OF_RUNS];
+    final int number_of_records_to_be_checked;
+
+    static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
+    static final int CHECK_ALL_RECORDS = -1;
 
     /**
      *
@@ -39,8 +43,9 @@ abstract class ThresholdAnalysis {
      */
     public abstract List<Integer> getComparisonFields();
 
-    ThresholdAnalysis() {
+    ThresholdAnalysis(int number_of_records_to_be_checked) {
 
+        this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         combined_metrics = getCombinedMetrics();
         linkage_results = initialiseState();
     }
