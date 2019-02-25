@@ -22,7 +22,6 @@ import java.util.Map;
 abstract class ThresholdAnalysis {
 
     static final long SEED = 87626L;
-    static final int NUMBER_OF_RUNS = 10;
 
     static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
@@ -30,8 +29,9 @@ abstract class ThresholdAnalysis {
     final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
     final List<NamedMetric<LXP>> combined_metrics;
 
-    final long[] pairs_evaluated = new long[NUMBER_OF_RUNS];
-    final long[] pairs_ignored = new long[NUMBER_OF_RUNS];
+    final int number_of_runs;
+    final long[] pairs_evaluated;
+    final long[] pairs_ignored;
     final int number_of_records_to_be_checked;
 
     static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
@@ -43,8 +43,11 @@ abstract class ThresholdAnalysis {
      */
     public abstract List<Integer> getComparisonFields();
 
-    ThresholdAnalysis(int number_of_records_to_be_checked) {
+    ThresholdAnalysis(int number_of_records_to_be_checked, int number_of_runs) {
 
+        this.number_of_runs = number_of_runs;
+        pairs_evaluated = new long[number_of_runs];
+        pairs_ignored = new long[number_of_runs];
         this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         combined_metrics = getCombinedMetrics();
         linkage_results = initialiseState();
@@ -54,7 +57,7 @@ abstract class ThresholdAnalysis {
 
         final List<Map<String, Sample[]>> result = new ArrayList<>();
 
-        for (int i = 0; i < NUMBER_OF_RUNS; i++) {
+        for (int i = 0; i < number_of_runs; i++) {
 
             final Map<String, Sample[]> map = new HashMap<>();
 

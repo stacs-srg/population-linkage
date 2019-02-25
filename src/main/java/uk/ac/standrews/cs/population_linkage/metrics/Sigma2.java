@@ -62,7 +62,17 @@ public class Sigma2 implements NamedMetric<LXP> {
 
     @Override
     public String getMetricName() {
-        return "Sigma2" + "Over" + baseDistance.getMetricName() + fieldList1.toString() + "," + fieldList2.toString();
+        return "Sigma2" + "-" + baseDistance.getMetricName() + "-" + hypenConcat( fieldList1 ) + "--" + hypenConcat( fieldList2 );
+    }
+
+    private static String hypenConcat(List<Integer> fieldList) {
+        StringBuilder sb = new StringBuilder();
+        for( int i = 0; i < fieldList.size() - 1; i++ ) {
+            sb.append( Integer.toString( fieldList.get(i) ) );
+            sb.append( "-" );
+        }
+        sb.append( Integer.toString( fieldList.get( fieldList.size() - 1 ) ) );
+        return sb.toString();
     }
 
 }

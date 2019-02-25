@@ -3,11 +3,11 @@ source( "FunctionBank.R" )
 
 conditionLoadIntoGlobal( "/tmp/UmeaThresholdBirthSiblingDistances.csv", "sibdata" )
 
-mydata$precision <- as.numeric(mydata$precision)
-mydata$recall <- as.numeric(mydata$recall)
-mydata$f_measure <- as.numeric(mydata$f_measure)
-mydata$metric <- as.factor(mydata$metric)
-mydata$link_nonlink <- as.factor(mydata$link_nonlink)
+sibdata$precision <- as.numeric(sibdata$precision)
+sibdata$recall <- as.numeric(sibdata$recall)
+sibdata$f_measure <- as.numeric(sibdata$f_measure)
+sibdata$metric <- as.factor(sibdata$metric)
+sibdata$link_nonlink <- as.factor(sibdata$link_nonlink)
 
-plotMacdonalds( mydata )
+plotMacdonalds( sibdata )
 

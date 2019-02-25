@@ -55,9 +55,9 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
     private int records_processed = 0;
 
 
-    protected AllPairs2SourcesLinkageAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked ) throws IOException {
+    protected AllPairs2SourcesLinkageAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs ) throws IOException {
 
-        super( number_of_records_to_be_checked );
+        super( number_of_records_to_be_checked, number_of_runs );
 
         this.store_path = store_path;
         this.repo_name = repo_name1;
@@ -101,7 +101,7 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
 
         final List<Map<String, int[]>> result = new ArrayList<>();
 
-        for (int i = 0; i < NUMBER_OF_RUNS; i++) {
+        for (int i = 0; i < number_of_runs; i++) {
 
             final Map<String, int[]> map = new HashMap<>();
 
@@ -248,7 +248,7 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
             }
 
             run_number++;
-            if (run_number == NUMBER_OF_RUNS) run_number = 0;
+            if (run_number == number_of_runs) run_number = 0;
         }
 
         run_numbers_for_metrics.put(metric_name, run_number);
@@ -282,7 +282,7 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
 
             final String metric_name = metric.getMetricName();
 
-            for (int run_number = 0; run_number < NUMBER_OF_RUNS; run_number++) {
+            for (int run_number = 0; run_number < number_of_runs; run_number++) {
                 final Sample[] samples = linkage_results.get(run_number).get(metric_name);
 
                 for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {

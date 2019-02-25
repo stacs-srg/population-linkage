@@ -23,8 +23,10 @@ import java.util.List;
 
 public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
 
+    private static final int NUMBER_OF_RUNS = 1;
+
     public AllPairsBrideMarriageBirthUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked);
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked,NUMBER_OF_RUNS);
     }
 
     @Override
