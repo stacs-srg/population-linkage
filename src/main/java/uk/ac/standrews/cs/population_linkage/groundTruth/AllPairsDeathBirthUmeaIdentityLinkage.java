@@ -43,8 +43,8 @@ public class AllPairsDeathBirthUmeaIdentityLinkage extends AllPairs2SourcesLinka
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String b1_parent_id = record1.getString(Birth.CHILD_IDENTITY);
-        final String b2_parent_id = record2.getString(Death.DECEASED_IDENTITY);
+        final String b2_parent_id = record1.getString(Death.DECEASED_IDENTITY);
+        final String b1_parent_id = record2.getString(Birth.CHILD_IDENTITY);
 
         if (b1_parent_id.isEmpty() || b2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
 

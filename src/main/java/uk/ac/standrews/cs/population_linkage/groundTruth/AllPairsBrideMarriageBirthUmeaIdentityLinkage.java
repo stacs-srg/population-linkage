@@ -31,7 +31,7 @@ public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
 
     @Override
     public Iterable<LXP> getSourceRecords1(RecordRepository record_repository) {
-        return Utilities.getDeathRecords( record_repository );
+        return Utilities.getMarriageRecords( record_repository );
     }
 
     @Override
@@ -43,8 +43,8 @@ public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String b_parent_id = record1.getString(Birth.CHILD_IDENTITY);
-        final String m_parent_id = record2.getString(Marriage.BRIDE_BIRTH_RECORD_IDENTITY);
+        final String m_parent_id = record1.getString(Marriage.BRIDE_BIRTH_RECORD_IDENTITY);
+        final String b_parent_id = record2.getString(Birth.CHILD_IDENTITY);
 
         if (b_parent_id.isEmpty() || m_parent_id.isEmpty() ) return LinkStatus.UNKNOWN;
 
