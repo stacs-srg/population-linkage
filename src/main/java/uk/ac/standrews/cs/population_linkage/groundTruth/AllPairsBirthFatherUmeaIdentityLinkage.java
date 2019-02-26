@@ -31,7 +31,7 @@ public class AllPairsBirthFatherUmeaIdentityLinkage extends AllPairsSameSourceLi
 
     @Override
     public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
-        return Utilities.getMarriageRecords( record_repository );
+        return Utilities.getBirthRecords( record_repository );
     }
 
     @Override
