@@ -37,12 +37,12 @@ public class AllPairsBirthFatherUmeaIdentityLinkage extends AllPairsSameSourceLi
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String b1_parent_id = record1.getString(Birth.CHILD_IDENTITY);
-        final String b2_parent_id = record2.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
+        final String record_id1 = record1.getString(Birth.STANDARDISED_ID);
+        final String record_id2 = record2.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
 
-        if (b1_parent_id.isEmpty() || b2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
+        if (record_id1.isEmpty() || record_id2.isEmpty()) return LinkStatus.UNKNOWN;
 
-        return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return record_id1.equals(record_id2) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
     @Override

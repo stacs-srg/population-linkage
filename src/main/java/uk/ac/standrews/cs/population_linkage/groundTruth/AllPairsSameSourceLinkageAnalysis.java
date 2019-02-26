@@ -132,6 +132,7 @@ public abstract class AllPairsSameSourceLinkageAnalysis extends ThresholdAnalysi
             System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
             System.out.flush();
         }
+        System.out.println( "Run completed" );System.out.flush();
     }
 
     private void processBlock(final int block_index) {
