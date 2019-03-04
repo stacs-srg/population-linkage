@@ -114,7 +114,8 @@ public abstract class AllPairsSameSourceLinkageAnalysis extends ThresholdAnalysi
         System.out.println("Randomising record order");
 
         source_records = Utilities.permute(records, SEED);
-        number_of_records = source_records.size();
+        number_of_records = number_of_records_to_be_checked == CHECK_ALL_RECORDS ? source_records.size() : number_of_records_to_be_checked;
+
     }
 
     public void run() throws Exception {
