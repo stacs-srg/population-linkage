@@ -50,12 +50,12 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
 
     private List<LXP> source_records1;
     private List<LXP> source_records2;
-    private int number_of_records1;
-    private int number_of_records2;
-    private int records_processed = 0;
+    private long number_of_records1;
+    private long number_of_records2;
+    private long records_processed = 0;
 
 
-    protected AllPairs2SourcesLinkageAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs ) throws IOException {
+    protected AllPairs2SourcesLinkageAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, long number_of_records_to_be_checked, int number_of_runs ) throws IOException {
 
         super( number_of_records_to_be_checked, number_of_runs );
 
@@ -148,7 +148,7 @@ public abstract class AllPairs2SourcesLinkageAnalysis extends ThresholdAnalysis 
         printHeaders();
         printMetaData();
 
-        final int number_of_blocks_to_be_checked = number_of_records1 / BLOCK_SIZE;
+        final long number_of_blocks_to_be_checked = number_of_records1 / BLOCK_SIZE;
 
         for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
 
