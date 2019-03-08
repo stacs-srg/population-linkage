@@ -20,17 +20,16 @@ import java.util.List;
  * The ground truth is listed in isTrueLink.
  **/
 
-public class AllPairsDeathBirthUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
+public class UmeaDeathBirth extends TwoSourcesLinkageAnalysis {
 
-    private static final int NUMBER_OF_RUNS = 1;
 
-    public AllPairsDeathBirthUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, long number_of_records_to_be_checked) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename, number_of_records_to_be_checked,NUMBER_OF_RUNS);
+    public UmeaDeathBirth(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename, number_of_records_to_be_checked,number_of_runs);
     }
 
 
     @Override
-    public Iterable<LXP> getSourceRecords1(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
         return Utilities.getDeathRecords( record_repository );
     }
 
@@ -52,7 +51,7 @@ public class AllPairsDeathBirthUmeaIdentityLinkage extends AllPairs2SourcesLinka
     }
 
     @Override
-    protected String getSourceType1() {
+    protected String getSourceType() {
         return "deaths";
     }
 
@@ -95,6 +94,9 @@ public class AllPairsDeathBirthUmeaIdentityLinkage extends AllPairs2SourcesLinka
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsDeathBirthUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthDeathIdentityLinkage", "UmeaThresholdBirthDeathIdentityDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
+        int NUMBER_OF_RUNS = 1;
+
+        new UmeaDeathBirth(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED,NUMBER_OF_RUNS).run();
+
     }
 }

@@ -14,7 +14,7 @@ import java.util.Map;
  *     getComparisonFields(), returns the set of fields to be used for distance comparison from the data source
  * Known subclasses are:
  * AllPairsSameSourceLinkageAnalysisML, which compares records from a single data source
- * AllPairs2SourcesLinkageAnalysis, which compares records from two different data sources
+ * TwoSourcesLinkageAnalysis, which compares records from two different data sources
  */
 
 abstract class ThresholdAnalysisML {

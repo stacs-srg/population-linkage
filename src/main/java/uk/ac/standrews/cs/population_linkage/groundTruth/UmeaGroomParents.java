@@ -12,25 +12,22 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-
 /**
  * This class performs linkage analysis on data from births and marriages.
- * It compares the baby's and parent's names on a birth certificate with the brides and her parents names from a marriage certificate.
- * This is identity linkage using birth and marriage records.
+ * It compares the baby's and parent's names on a birth certificate with the grooms and his parents names from a marriage certificate.
  * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
+ * This is identity linkage between the baby and the groom.
  * The ground truth is listed in isTrueLink.
  **/
 
-public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
+public class UmeaGroomParents extends TwoSourcesLinkageAnalysis {
 
-    private static final int NUMBER_OF_RUNS = 1;
-
-    public AllPairsBrideMarriageBirthUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, long number_of_records_to_be_checked) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked,NUMBER_OF_RUNS);
+    public UmeaGroomParents(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked,number_of_runs);
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords1(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
         return Utilities.getMarriageRecords( record_repository );
     }
 
@@ -43,7 +40,7 @@ public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String m_parent_id = record1.getString(Marriage.BRIDE_BIRTH_RECORD_IDENTITY);
+        final String m_parent_id = record1.getString(Marriage.GROOM_IDENTITY);
         final String b_parent_id = record2.getString(Birth.CHILD_IDENTITY);
 
         if (b_parent_id.isEmpty() || m_parent_id.isEmpty() ) return LinkStatus.UNKNOWN;
@@ -52,7 +49,7 @@ public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
     }
 
     @Override
-    protected String getSourceType1() {
+    protected String getSourceType() {
         return "marriages";
     }
 
@@ -64,12 +61,12 @@ public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
     @Override
     public List<Integer> getComparisonFields() {
         return Arrays.asList(
-                Marriage.BRIDE_FORENAME,
-                Marriage.BRIDE_SURNAME,
-                Marriage.BRIDE_FATHER_FORENAME,
-                Marriage.BRIDE_FATHER_SURNAME,
-                Marriage.BRIDE_MOTHER_FORENAME,
-                Marriage.BRIDE_MOTHER_MAIDEN_SURNAME );
+                Marriage.GROOM_FORENAME,
+                Marriage.GROOM_SURNAME,
+                Marriage.GROOM_FATHER_FORENAME,
+                Marriage.GROOM_FATHER_SURNAME,
+                Marriage.GROOM_MOTHER_FORENAME,
+                Marriage.GROOM_MOTHER_MAIDEN_SURNAME );
     }
 
     @Override
@@ -83,11 +80,14 @@ public class AllPairsBrideMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
                 Birth.MOTHER_MAIDEN_SURNAME );
     }
 
+
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsBrideMarriageBirthUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthBridesBrideMarriageIdentityLinkage", "UmeaThresholdBirthBrideMarriageIdentityDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
+        int NUMBER_OF_RUNS = 1;
+
+        new UmeaGroomParents(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }

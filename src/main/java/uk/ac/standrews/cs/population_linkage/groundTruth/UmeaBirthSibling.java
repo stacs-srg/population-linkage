@@ -17,13 +17,11 @@ import java.util.List;
  * The fields used for comparison are listed in getComparisonFields().
  * The ground truth is listed in isTrueLink.
  **/
+public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
-public class AllPairsBirthUmeaSiblingBundling extends AllPairsSameSourceLinkageAnalysis {
 
-    private static final int NUMBER_OF_RUNS = 10;
-
-    public AllPairsBirthUmeaSiblingBundling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, long number_of_records_to_be_checked) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked, NUMBER_OF_RUNS );
+    public UmeaBirthSibling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked, number_of_runs );
     }
 
     @Override
@@ -65,7 +63,9 @@ public class AllPairsBirthUmeaSiblingBundling extends AllPairsSameSourceLinkageA
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsBirthUmeaSiblingBundling(store_path, repo_name, "UmeaThresholdBirthSiblingLinkage", "UmeaThresholdBirthSiblingDistances",CHECK_ALL_RECORDS).run();
+        final int NUMBER_OF_RUNS = 1; // was 10 when run with  CHECK_ALL_RECORDS for exhaustive
+
+        new UmeaBirthSibling(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED,NUMBER_OF_RUNS).run();
     }
 
 

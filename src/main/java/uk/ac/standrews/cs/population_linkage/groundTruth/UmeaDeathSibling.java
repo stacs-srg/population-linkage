@@ -18,12 +18,10 @@ import java.util.List;
  * The ground truth is listed in isTrueLink.
  **/
 
-public class AllPairsDeathUmeaSiblingBundling extends AllPairsSameSourceLinkageAnalysis {
+public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
 
-    private static final int NUMBER_OF_RUNS = 1;
-
-    public AllPairsDeathUmeaSiblingBundling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, long number_of_records_to_be_checked) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, NUMBER_OF_RUNS);
+    public UmeaDeathSibling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
     }
 
     @Override
@@ -60,8 +58,9 @@ public class AllPairsDeathUmeaSiblingBundling extends AllPairsSameSourceLinkageA
 
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
+        int NUMBER_OF_RUNS = 1;
 
-        new AllPairsDeathUmeaSiblingBundling(store_path, repo_name, "UmeaThresholdDeathSiblingLinkage", "UmeaThresholdDeathSiblingDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
+        new UmeaDeathSibling(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 
 

@@ -62,10 +62,10 @@ public class Sigma2 implements NamedMetric<LXP> {
 
     @Override
     public String getMetricName() {
-        return "Sigma2" + "-" + baseDistance.getMetricName() + "-" + hypenConcat( fieldList1 ) + "--" + hypenConcat( fieldList2 );
+        return "Sigma2" + "-" + baseDistance.getMetricName() + "-" + hyphenConcat( fieldList1 ) + "--" + hyphenConcat( fieldList2 );
     }
 
-    private static String hypenConcat(List<Integer> fieldList) {
+    private static String hyphenConcat(List<Integer> fieldList) {
         StringBuilder sb = new StringBuilder();
         for( int i = 0; i < fieldList.size() - 1; i++ ) {
             sb.append( Integer.toString( fieldList.get(i) ) );

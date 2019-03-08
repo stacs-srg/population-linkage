@@ -14,22 +14,19 @@ import java.util.List;
 
 /**
  * This class performs linkage analysis on data from births and marriages.
- * It compares the baby's and parent's names on a birth certificate with the grooms and his parents names from a marriage certificate.
- * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
+ * It compares the baby's and parent's names on a birth certificate with the groom and his parents names from a marriage certificate.
  * This is identity linkage between the baby and the groom.
+ * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
  * The ground truth is listed in isTrueLink.
  **/
+public class UmeaGroomsParents extends TwoSourcesLinkageAnalysis {
 
-public class AllPairsGroomMarriageBirthUmeaIdentityLinkage extends AllPairs2SourcesLinkageAnalysis {
-
-    private static final int NUMBER_OF_RUNS = 1;
-
-    public AllPairsGroomMarriageBirthUmeaIdentityLinkage(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, long number_of_records_to_be_checked) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked,NUMBER_OF_RUNS);
+    public UmeaGroomsParents(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked,number_of_runs);
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords1(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
         return Utilities.getMarriageRecords( record_repository );
     }
 
@@ -38,20 +35,22 @@ public class AllPairsGroomMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
         return Utilities.getBirthRecords( record_repository );
     }
 
-
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String m_parent_id = record1.getString(Marriage.GROOM_BIRTH_RECORD_IDENTITY);
-        final String b_parent_id = record2.getString(Birth.CHILD_IDENTITY);
+        final String m_parent_id1 = record1.getString(Marriage.GROOM_FATHER_IDENTITY);
+        final String m_parent_id2 = record1.getString(Marriage.GROOM_MOTHER_IDENTITY);
+        final String b_parent_id1 = record2.getString(Birth.FATHER_IDENTITY);
+        final String b_parent_id2 = record2.getString(Birth.MOTHER_IDENTITY);
 
-        if (b_parent_id.isEmpty() || m_parent_id.isEmpty() ) return LinkStatus.UNKNOWN;
+        if (b_parent_id1.isEmpty() || b_parent_id2.isEmpty() ||
+            m_parent_id1.isEmpty() || m_parent_id2.isEmpty() ) return LinkStatus.UNKNOWN;
 
-        return b_parent_id.equals(m_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return b_parent_id1.equals(m_parent_id1) && b_parent_id2.equals(m_parent_id2) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
     @Override
-    protected String getSourceType1() {
+    protected String getSourceType() {
         return "marriages";
     }
 
@@ -63,8 +62,6 @@ public class AllPairsGroomMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
     @Override
     public List<Integer> getComparisonFields() {
         return Arrays.asList(
-                Marriage.GROOM_FORENAME,
-                Marriage.GROOM_SURNAME,
                 Marriage.GROOM_FATHER_FORENAME,
                 Marriage.GROOM_FATHER_SURNAME,
                 Marriage.GROOM_MOTHER_FORENAME,
@@ -74,8 +71,6 @@ public class AllPairsGroomMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
     @Override
     public List<Integer> getComparisonFields2() {
         return Arrays.asList(
-                Birth.FORENAME,
-                Birth.SURNAME,
                 Birth.FATHER_FORENAME,
                 Birth.FATHER_SURNAME,
                 Birth.MOTHER_FORENAME,
@@ -83,11 +78,14 @@ public class AllPairsGroomMarriageBirthUmeaIdentityLinkage extends AllPairs2Sour
     }
 
 
+
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new AllPairsGroomMarriageBirthUmeaIdentityLinkage(store_path, repo_name,"UmeaThresholdBirthBridesGroomMarriageIdentityLinkage", "UmeaThresholdBirthGroomMarriageIdentityDistances",DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED).run();
+        int NUMBER_OF_RUNS = 1;
+
+        new UmeaGroomsParents(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED,NUMBER_OF_RUNS).run();
     }
 }
