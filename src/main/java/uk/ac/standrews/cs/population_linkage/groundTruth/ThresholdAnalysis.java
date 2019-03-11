@@ -445,7 +445,10 @@ abstract class ThresholdAnalysis {
         try {
             throw new RuntimeException();
         } catch (RuntimeException e) {
-            return e.getStackTrace()[1].getClassName();
+            String full_classname = e.getStackTrace()[2].getClassName(); // need to jump over getCallingClassName frame and getLinkageResultsFilename frame
+            String simple_classname = full_classname.substring( full_classname.lastIndexOf(".") + 1 ); // find last dot in classpath and then loose that too.
+            System.out.println( "Calling class = " + simple_classname);
+            return simple_classname;
         }
     }
 
