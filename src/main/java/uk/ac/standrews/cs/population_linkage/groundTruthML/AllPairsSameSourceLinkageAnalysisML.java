@@ -152,7 +152,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
                         for (int field_selector : getComparisonFields()) {
 
-                            final double distance = normalise(metric.distance(record1.getString(field_selector), record2.getString(field_selector)));
+                            final double distance = metric.distance(record1.getString(field_selector), record2.getString(field_selector));
                             outputMeasurement(distance);
                         }
                     }
