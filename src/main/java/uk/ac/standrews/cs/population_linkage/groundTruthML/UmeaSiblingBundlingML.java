@@ -63,7 +63,7 @@ public class UmeaSiblingBundlingML extends AllPairsSameSourceLinkageAnalysisML {
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        new UmeaSiblingBundlingML(store_path, repo_name, "UmeaMLBirthSiblingDistances").run();
+        new UmeaSiblingBundlingML(store_path, repo_name, "UmeaSiblingBundlingMLDistances").run();
     }
 
 
