@@ -2,11 +2,10 @@ setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
 
 path <- "~/repos/github/population-linkage/src/main/resources/"
-f1 <- "UmeaThresholdBirthSiblingLinkage.csv"
-f2 <- "UmeaBirthFatherIdentityLinkage.csv"
-f3 <- "UmeaThresholdBirthBridesBrideMarriageIdentityLinkage.csv"
-  
-filename <- f3
+f1 <- "UmeaBirthFatherPRFByThreshold.csv"
+f2 <- "UmeaBirthSiblingPRFByThreshold.csv"
+
+filename <- f2
 
 conditionLoadIntoGlobal( paste(path,filename,sep=""), "mydata" )
 

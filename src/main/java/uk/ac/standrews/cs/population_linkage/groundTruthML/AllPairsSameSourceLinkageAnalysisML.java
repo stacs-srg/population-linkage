@@ -144,20 +144,21 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
             if (link_status != LinkStatus.UNKNOWN) {
 
-                for (final NamedMetric<String> metric : metrics) {
+                if (shouldPrintResult(link_status, last_status)) {
 
-                    for (int field_selector : getComparisonFields()) {
+                    last_status = link_status;
 
-                        if( shouldPrintResult( link_status,last_status ) ) {
+                    for (final NamedMetric<String> metric : metrics) {
+
+                        for (int field_selector : getComparisonFields()) {
+
                             final double distance = normalise(metric.distance(record1.getString(field_selector), record2.getString(field_selector)));
-                            last_status = link_status;
                             outputMeasurement(distance);
-                            distance_results_writer.print(link_status);
-                            distance_results_writer.println();
-                            distance_results_writer.flush();
                         }
-
                     }
+                    distance_results_writer.print(statusToPrintFormat(link_status));
+                    distance_results_writer.println();
+                    distance_results_writer.flush();
                 }
             }
         }
@@ -167,9 +168,9 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         if( link_status == LinkStatus.TRUE_LINK ) { // always print true links
             return true;
         }
-        if( link_status == LinkStatus.NOT_TRUE_LINK && last_status == LinkStatus.NOT_TRUE_LINK ) { // never print two falses in a row
+        if( last_status == LinkStatus.NOT_TRUE_LINK && link_status == LinkStatus.NOT_TRUE_LINK ) { // never print two falses in a row
             return false;
-        } else if( link_status == LinkStatus.NOT_TRUE_LINK && last_status == LinkStatus.TRUE_LINK) { // last was true so print the false
+        } else if( last_status == LinkStatus.TRUE_LINK && link_status == LinkStatus.NOT_TRUE_LINK ) { // last was true so print the false
             return true;
         }
         return true; // print if status was unknown or last was unknown
@@ -229,5 +230,15 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
     protected enum LinkStatus {
 
         TRUE_LINK, NOT_TRUE_LINK, UNKNOWN
+    }
+
+    private String statusToPrintFormat( LinkStatus ls ) {
+        if( ls == LinkStatus.TRUE_LINK ) {
+            return "1";
+        } else if( ls == LinkStatus.NOT_TRUE_LINK ) {
+            return "-1";
+        } else {
+            return "0";
+        }
     }
 }
