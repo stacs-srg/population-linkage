@@ -12,7 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This class performs sibling bundling linkage analysis on data from marriages a bride and a groom who are brother and sister
+ * This class performs sibling bundling linkage analysis on data
+ * from marriages a bride and a groom who are brother and sister
  */
 public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis {
 

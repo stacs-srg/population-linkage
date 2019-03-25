@@ -12,7 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This class performs sibling bundling linkage analysis on data from marriages looking for a groom and a bride who are brother and sister
+ * This class performs sibling bundling linkage analysis on data from
+ * marriages looking for a groom and a bride who are brother and sister
  */
 public class UmeaGroomBrideSibling extends AsymmetricSingleSourceLinkageAnalysis {
 
@@ -27,7 +28,6 @@ public class UmeaGroomBrideSibling extends AsymmetricSingleSourceLinkageAnalysis
 
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
-
 
         final String m1_groom_father_id = record1.getString(Marriage.GROOM_FATHER_IDENTITY);
         final String m1_groom_mother_id = record2.getString(Marriage.GROOM_MOTHER_IDENTITY);

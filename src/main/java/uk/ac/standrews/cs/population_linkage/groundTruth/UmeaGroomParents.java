@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * This class performs linkage analysis on data from births and marriages.
- * It compares the baby's and parent's names on a birth certificate with the grooms and his parents names from a marriage certificate.
+ * It compares the baby's and parent's names on a birth certificate with the groom and his parents names from a marriage certificate.
  * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
  * This is identity linkage between the baby and the groom.
  * The ground truth is listed in isTrueLink.
@@ -40,12 +40,12 @@ public class UmeaGroomParents extends TwoSourcesLinkageAnalysis {
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String m_parent_id = record1.getString(Marriage.GROOM_IDENTITY);
-        final String b_parent_id = record2.getString(Birth.CHILD_IDENTITY);
+        final String m_groom_id = record1.getString(Marriage.GROOM_IDENTITY);
+        final String b_child_id = record2.getString(Birth.CHILD_IDENTITY);
 
-        if (b_parent_id.isEmpty() || m_parent_id.isEmpty() ) return LinkStatus.UNKNOWN;
+        if (m_groom_id.isEmpty() || b_child_id.isEmpty() ) return LinkStatus.UNKNOWN;
 
-        return b_parent_id.equals(m_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return b_child_id.equals(m_groom_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
     @Override

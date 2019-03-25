@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * This class performs linkage analysis on data from births and marriages.
- * It compares the parent's names on a birth certificate with the brides parents names from a marriage certificate.
+ * It compares the baby's names and the parent's names on a birth certificate with the bride and brides parents names from a marriage certificate.
  * This is identity linkage over the baby and the bride.
  * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
  * The ground truth is listed in isTrueLink.
@@ -38,15 +38,12 @@ public class UmeaBrideParents extends TwoSourcesLinkageAnalysis {
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String m_parent_id1 = record1.getString(Marriage.BRIDE_FATHER_IDENTITY);
-        final String m_parent_id2 = record1.getString(Marriage.BRIDE_MOTHER_IDENTITY);
-        final String b_parent_id1 = record2.getString(Birth.FATHER_IDENTITY);
-        final String b_parent_id2 = record2.getString(Birth.MOTHER_IDENTITY);
+        final String m_bride_id = record1.getString(Marriage.BRIDE_IDENTITY);
+        final String b_child_id = record2.getString(Birth.CHILD_IDENTITY);
 
-        if (b_parent_id1.isEmpty() || b_parent_id2.isEmpty() ||
-            m_parent_id1.isEmpty() || m_parent_id2.isEmpty() ) return LinkStatus.UNKNOWN;
+        if (m_bride_id.isEmpty() || b_child_id.isEmpty() ) return LinkStatus.UNKNOWN;
 
-        return b_parent_id1.equals(m_parent_id1) && b_parent_id2.equals(m_parent_id2) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return b_child_id.equals(m_bride_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
 
@@ -63,6 +60,8 @@ public class UmeaBrideParents extends TwoSourcesLinkageAnalysis {
     @Override
     public List<Integer> getComparisonFields() {
         return Arrays.asList(
+                Marriage.BRIDE_FORENAME,
+                Marriage.BRIDE_SURNAME,
                 Marriage.BRIDE_FATHER_FORENAME,
                 Marriage.BRIDE_FATHER_SURNAME,
                 Marriage.BRIDE_MOTHER_FORENAME,
@@ -72,6 +71,8 @@ public class UmeaBrideParents extends TwoSourcesLinkageAnalysis {
     @Override
     public List<Integer> getComparisonFields2() {
         return Arrays.asList(
+                Birth.FORENAME,
+                Birth.SURNAME,
                 Birth.FATHER_FORENAME,
                 Birth.FATHER_SURNAME,
                 Birth.MOTHER_FORENAME,
