@@ -6,9 +6,8 @@ import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.utilities.Statistics;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
-import uk.ac.standrews.cs.utilities.stats.ConfidenceIntervals;
-import uk.ac.standrews.cs.utilities.tables.Means;
 import uk.al_richard.metricbitblaster.production.DistanceExponent;
 
 import java.nio.file.Path;
@@ -77,8 +76,8 @@ public class UmeaBirthBirthIDIM {
     }
 
     private void print_dimensions(NamedMetric<String> metric, ArrayList<Double> data, String field_names, String idim_method) {
-        double mean = Means.calculateMean(data);
-        double ci = ConfidenceIntervals.calculateConfidenceInterval(data);
+        double mean = Statistics.mean(data);
+        double ci = Statistics.confidenceInterval(data);
         double min = Collections.min(data);
         double max = Collections.max(data);
 
