@@ -30,7 +30,7 @@ public class UmeaBrideBrideSibling extends SymmetricSingleSourceLinkageAnalysis 
 
         final String m1_bride_father_id = record1.getString(Marriage.BRIDE_FATHER_IDENTITY);
         final String m1_bride_mother_id = record1.getString(Marriage.BRIDE_MOTHER_IDENTITY);
-        final String m2_bride_father_id = record1.getString(Marriage.BRIDE_FATHER_IDENTITY);
+        final String m2_bride_father_id = record2.getString(Marriage.BRIDE_FATHER_IDENTITY);
         final String m2_bride_mother_id = record2.getString(Marriage.BRIDE_MOTHER_IDENTITY);
 
         if (m1_bride_father_id.isEmpty() || m2_bride_father_id.isEmpty() ||  m1_bride_mother_id.isEmpty() || m2_bride_mother_id.isEmpty()) {

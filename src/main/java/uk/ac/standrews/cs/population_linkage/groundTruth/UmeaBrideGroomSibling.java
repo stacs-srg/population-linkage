@@ -31,7 +31,7 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
 
         final String m1_bride_father_id = record1.getString(Marriage.BRIDE_FATHER_IDENTITY);
         final String m1_bride_mother_id = record1.getString(Marriage.BRIDE_MOTHER_IDENTITY);
-        final String m2_groom_father_id = record1.getString(Marriage.GROOM_FATHER_IDENTITY);
+        final String m2_groom_father_id = record2.getString(Marriage.GROOM_FATHER_IDENTITY);
         final String m2_groom_mother_id = record2.getString(Marriage.GROOM_MOTHER_IDENTITY);
 
         if (m1_bride_father_id.isEmpty() || m2_groom_father_id.isEmpty() ||  m1_bride_mother_id.isEmpty() || m2_groom_mother_id.isEmpty()) {
