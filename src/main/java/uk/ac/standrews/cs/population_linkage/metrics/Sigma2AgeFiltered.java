@@ -31,8 +31,8 @@ public class Sigma2AgeFiltered extends Sigma2 implements NamedMetric<LXP>  {
     protected Integer birthyear_field1;
     protected Integer birthyear_field2;
 
-    final static int sexual_maturity_age = 14; // father must be older than child by this amount
-    final static int max_father_age = 80;
+    final static int min_fathering_age = 14; // father must be older than child by this amount
+    final static int max_fathering_age = 80;
 
     public Sigma2AgeFiltered(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2, Integer birthyear_field1, Integer birthyear_field2   ) {
 
@@ -43,7 +43,7 @@ public class Sigma2AgeFiltered extends Sigma2 implements NamedMetric<LXP>  {
 
 
     @Override
-    // gives distance of 1 for records in which the dob for a is earlier by sexual_maturity_age than dob for b
+    // gives distance of 1 for records in which the dob for a is earlier by min_fathering_age than dob for b
     // and for records for which b's dob is more than 80 after a's dob
     // years are enough
     public double distance(LXP father_birth_cert, LXP child_birth_cert) {
@@ -55,7 +55,7 @@ public class Sigma2AgeFiltered extends Sigma2 implements NamedMetric<LXP>  {
             int father_yob = Integer.parseInt(father_yob_as_string);
             int child_yob = Integer.parseInt(child_yob_as_string);
 
-            if ( child_yob > father_yob + max_father_age || father_yob + sexual_maturity_age < child_yob ) {
+            if ( child_yob > father_yob + max_fathering_age || child_yob < father_yob + min_fathering_age) {
                 return 1;
             }
         } catch( NumberFormatException e ) {
