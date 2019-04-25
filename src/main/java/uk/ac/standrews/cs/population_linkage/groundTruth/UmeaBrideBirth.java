@@ -40,12 +40,12 @@ public class UmeaBrideBirth extends TwoSourcesLinkageAnalysis {
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String m_parent_id = record1.getString(Marriage.BRIDE_IDENTITY);
-        final String b_parent_id = record2.getString(Birth.CHILD_IDENTITY);
+        final String m_bride_id = record1.getString(Marriage.BRIDE_IDENTITY);
+        final String b_child_id = record2.getString(Birth.CHILD_IDENTITY);
 
-        if (b_parent_id.isEmpty() || m_parent_id.isEmpty() ) return LinkStatus.UNKNOWN;
+        if (m_bride_id.isEmpty() || b_child_id.isEmpty() ) return LinkStatus.UNKNOWN;
 
-        return b_parent_id.equals(m_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return b_child_id.equals(m_bride_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
 
     @Override

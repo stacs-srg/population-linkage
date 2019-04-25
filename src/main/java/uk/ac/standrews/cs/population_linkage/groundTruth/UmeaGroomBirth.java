@@ -14,14 +14,15 @@ import java.util.List;
 
 /**
  * This class performs linkage analysis on data from births and marriages.
- * It compares the baby's names and the parent's names on a birth certificate with the bride and brides parents names from a marriage certificate.
- * This is identity linkage over the baby and the bride.
+ * It compares the baby's and parent's names on a birth certificate with the groom and his parents names from a marriage certificate.
  * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
+ * This is identity linkage between the baby and the groom.
  * The ground truth is listed in isTrueLink.
  **/
-public class UmeaBrideParents extends TwoSourcesLinkageAnalysis {
 
-    public UmeaBrideParents(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+public class UmeaGroomBirth extends TwoSourcesLinkageAnalysis {
+
+    public UmeaGroomBirth(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
         super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked,number_of_runs);
     }
 
@@ -35,17 +36,17 @@ public class UmeaBrideParents extends TwoSourcesLinkageAnalysis {
         return Utilities.getBirthRecords( record_repository );
     }
 
+
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String m_bride_id = record1.getString(Marriage.BRIDE_IDENTITY);
+        final String m_groom_id = record1.getString(Marriage.GROOM_IDENTITY);
         final String b_child_id = record2.getString(Birth.CHILD_IDENTITY);
 
-        if (m_bride_id.isEmpty() || b_child_id.isEmpty() ) return LinkStatus.UNKNOWN;
+        if (m_groom_id.isEmpty() || b_child_id.isEmpty() ) return LinkStatus.UNKNOWN;
 
-        return b_child_id.equals(m_bride_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return b_child_id.equals(m_groom_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
     }
-
 
     @Override
     protected String getSourceType() {
@@ -60,12 +61,12 @@ public class UmeaBrideParents extends TwoSourcesLinkageAnalysis {
     @Override
     public List<Integer> getComparisonFields() {
         return Arrays.asList(
-                Marriage.BRIDE_FORENAME,
-                Marriage.BRIDE_SURNAME,
-                Marriage.BRIDE_FATHER_FORENAME,
-                Marriage.BRIDE_FATHER_SURNAME,
-                Marriage.BRIDE_MOTHER_FORENAME,
-                Marriage.BRIDE_MOTHER_MAIDEN_SURNAME );
+                Marriage.GROOM_FORENAME,
+                Marriage.GROOM_SURNAME,
+                Marriage.GROOM_FATHER_FORENAME,
+                Marriage.GROOM_FATHER_SURNAME,
+                Marriage.GROOM_MOTHER_FORENAME,
+                Marriage.GROOM_MOTHER_MAIDEN_SURNAME );
     }
 
     @Override
@@ -79,12 +80,14 @@ public class UmeaBrideParents extends TwoSourcesLinkageAnalysis {
                 Birth.MOTHER_MAIDEN_SURNAME );
     }
 
+
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
+
         int NUMBER_OF_RUNS = 1;
 
-        new UmeaBrideParents(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED,NUMBER_OF_RUNS).run();
+        new UmeaGroomBirth(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }

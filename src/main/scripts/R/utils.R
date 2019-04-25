@@ -23,3 +23,7 @@ conditionLoadIntoGlobal <- function( filename, name, sep="," ) {
     assign(name, data, envir=.GlobalEnv)
   }
 }
+
+clear <- function() {
+  cat("\014")  
+}

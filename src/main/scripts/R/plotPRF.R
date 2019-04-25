@@ -2,7 +2,7 @@ setwd("~/repos/github/population-linkage/src/main/scripts/R")
 
 source("FunctionBank.R")
 
-conditionLoadIntoGlobal( "~/repos/github/population-linkage/src/main/resources/UmeaThresholdBirthSiblingLinkage.csv", "mydata" )
+conditionLoadIntoGlobal( "~/repos/github/population-linkage/src/main/resources/UmeaBirthFatherPRFByThreshold.csv", "mydata" )
 
 mydata$precision <- as.numeric(mydata$precision)
 mydata$recall <- as.numeric(mydata$recall)
