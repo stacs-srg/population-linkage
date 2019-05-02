@@ -8,10 +8,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class UmeaRecordsAnalysis {
 
@@ -31,6 +28,13 @@ public class UmeaRecordsAnalysis {
         addIds(unique_person_ids_in_births, births, Birth.FATHER_IDENTITY);
 
         System.out.println("Number of unique person IDs: " + unique_person_ids_in_births.size());
+
+        final int missing_birth_names = countMissingNames(
+                births,
+                Arrays.asList(Birth.FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_FORENAME),
+                Arrays.asList(Birth.SURNAME, Birth.MOTHER_SURNAME, Birth.FATHER_SURNAME));
+
+        System.out.println("Number of missing names in birth records: " + missing_birth_names);
 
         //////////////////////////
 
@@ -61,6 +65,13 @@ public class UmeaRecordsAnalysis {
 
         System.out.println("Number of unique person IDs: " + unique_person_ids_in_marriages.size());
 
+        final int missing_marriage_names = countMissingNames(
+                marriages,
+                Arrays.asList(Marriage.BRIDE_FORENAME, Marriage.GROOM_FORENAME, Marriage.BRIDE_MOTHER_FORENAME, Marriage.BRIDE_FATHER_FORENAME, Marriage.GROOM_MOTHER_FORENAME, Marriage.GROOM_FATHER_FORENAME),
+                Arrays.asList(Marriage.BRIDE_SURNAME, Marriage.GROOM_SURNAME, Marriage.BRIDE_MOTHER_MAIDEN_SURNAME, Marriage.BRIDE_FATHER_SURNAME, Marriage.GROOM_MOTHER_MAIDEN_SURNAME, Marriage.GROOM_FATHER_SURNAME));
+
+        System.out.println("Number of missing names in marriage records: " + missing_marriage_names);
+
         //////////////////////////
 
         final List<String> non_id_bride_mother_names = getNamesWithoutId(marriages, Marriage.BRIDE_MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_FORENAME, Marriage.BRIDE_MOTHER_MAIDEN_SURNAME, "bride mothers");
@@ -88,6 +99,13 @@ public class UmeaRecordsAnalysis {
 
         System.out.println("Number of unique person IDs: " + unique_person_ids_in_deaths.size());
 
+        final int missing_death_names = countMissingNames(
+                deaths,
+                Arrays.asList(Death.FORENAME, Death.SPOUSE_NAMES, Death.MOTHER_FORENAME, Death.FATHER_FORENAME),
+                Arrays.asList(Death.SURNAME, Death.SPOUSE_NAMES, Death.MOTHER_MAIDEN_SURNAME, Death.FATHER_SURNAME));
+
+        System.out.println("Number of missing names in death records: " + missing_death_names);
+
         //////////////////////////
 
         final List<String> non_id_deceased_spouse_names = getNamesWithoutId(deaths, Death.SPOUSE_IDENTITY, Death.SPOUSE_NAMES, Death.SPOUSE_NAMES, "deceased spouses");
@@ -106,11 +124,38 @@ public class UmeaRecordsAnalysis {
         final List<String> non_id_names = append(non_id_mother_names,non_id_father_names,non_id_bride_mother_names,non_id_groom_mother_names,non_id_bride_father_names,non_id_groom_father_names,non_id_deceased_spouse_names,non_id_deceased_mother_names,non_id_deceased_father_names);
 
         System.out.println();
+        System.out.println("Number of overall missing names: " + missing_birth_names + missing_marriage_names + missing_death_names);
         System.out.println("Number of overall people without IDs: " + non_id_names.size());
         System.out.println("Number of overall unique names without IDs: " + new HashSet<>(non_id_names).size());
     }
 
-    private Set<String> union(final Set<String>... sets) {
+    private int countMissingNames(final DataSet dataset, final List<Integer> forename_indices, final List<Integer> surname_indices) {
+
+        int count = 0;
+
+        for (List<String> row : dataset.getRecords()) {
+            count += countMissingNames(row, forename_indices, surname_indices);
+        }
+
+        return count;
+    }
+
+    private int countMissingNames(final List<String> row, final List<Integer> forename_indices, final List<Integer> surname_indices) {
+
+        int count = 0;
+
+        for (int i = 0; i < forename_indices.size(); i++) {
+
+            if (row.get(forename_indices.get(i)).isEmpty() && row.get(surname_indices.get(i)).isEmpty()) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    @SafeVarargs
+    private final Set<String> union(final Set<String>... sets) {
 
         final Set<String> result = new HashSet<>();
 
@@ -120,7 +165,8 @@ public class UmeaRecordsAnalysis {
         return result;
     }
 
-    private List<String> append(final List<String>... lists) {
+    @SafeVarargs
+    private final List<String> append(final List<String>... lists) {
 
         final List<String> result = new ArrayList<>();
 
