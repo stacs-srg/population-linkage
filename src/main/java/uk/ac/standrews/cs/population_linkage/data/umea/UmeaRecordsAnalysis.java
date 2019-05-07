@@ -37,9 +37,13 @@ public class UmeaRecordsAnalysis {
                 Arrays.asList(Birth.SURNAME, Birth.MOTHER_SURNAME, Birth.FATHER_SURNAME));
 
         final int number_of_inferred_birth_surnames = countInferredSurnames(births);
+        final int number_of_remaining_missing_birth_surnames = countMissingNames(births, "SURNAME");
 
         System.out.println("Number of missing names in birth records: " + number_of_missing_birth_names);
         System.out.println("Number of inferred surnames in birth records: " + number_of_inferred_birth_surnames);
+        System.out.println("Number of remaining missing surnames in birth records: " + number_of_remaining_missing_birth_surnames);
+        System.out.format("Proportion of baby names on birth records missing surnames: %d%%", proportionAsPercentage(number_of_remaining_missing_birth_surnames + number_of_inferred_birth_surnames, births.getRecords().size()));
+        System.out.println();
 
         //////////////////////////
 
@@ -110,9 +114,13 @@ public class UmeaRecordsAnalysis {
                 Arrays.asList(Death.SURNAME, Death.SPOUSE_NAMES, Death.MOTHER_MAIDEN_SURNAME, Death.FATHER_SURNAME));
 
         final int number_of_inferred_death_surnames = countInferredSurnames(deaths);
+        final int number_of_remaining_missing_death_surnames = countMissingNames(deaths, "SURNAME");
 
         System.out.println("Number of missing names in death records: " + missing_death_names);
         System.out.println("Number of inferred surnames in death records: " + number_of_inferred_death_surnames);
+        System.out.println("Number of remaining missing surnames in death records: " + number_of_remaining_missing_death_surnames);
+        System.out.format("Proportion of deceased names on death records missing surnames: %d%%", proportionAsPercentage(number_of_remaining_missing_death_surnames + number_of_inferred_death_surnames, deaths.getRecords().size()));
+        System.out.println();
 
         //////////////////////////
 
@@ -135,6 +143,11 @@ public class UmeaRecordsAnalysis {
         System.out.println("Number of overall missing names: " + (number_of_missing_birth_names + missing_marriage_names + missing_death_names));
         System.out.println("Number of overall people without IDs: " + non_id_names.size());
         System.out.println("Number of overall unique names without IDs: " + new HashSet<>(non_id_names).size());
+    }
+
+    private int proportionAsPercentage(final int i, final int j) {
+
+        return Math.round(100 * (float)i / (float)j);
     }
 
     private int countInferredSurnames(final PopulationDataSet births) throws IOException {
