@@ -28,27 +28,26 @@ import java.util.List;
  */
 public class Sigma2 implements NamedMetric<LXP> {
 
-    protected final NamedMetric<String> baseDistance;
-    protected List<Integer> fieldList1;
-    protected List<Integer> fieldList2;
+    final NamedMetric<String> baseDistance;
+    List<Integer> fieldList1;
+    List<Integer> fieldList2;
 
-    public Sigma2(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2 ) {
+    public Sigma2(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2) {
 
-        if( fields1.size() != fields2.size() ) {
-            throw new RuntimeException( "Fields must be the same length");
+        if (fields1.size() != fields2.size()) {
+            throw new RuntimeException("Field lists must be the same length");
         }
         this.baseDistance = baseDistance;
         this.fieldList1 = fields1;
         this.fieldList2 = fields2;
     }
 
-
     @Override
     public double distance(LXP a, LXP b) {
 
         double total_distance = 0.0d;
 
-        for( int i = 0; i < fieldList1.size(); i++ ) {
+        for (int i = 0; i < fieldList1.size(); i++) {
             int field1_index = fieldList1.get(i);
             int field2_index = fieldList2.get(i);
 
@@ -57,23 +56,20 @@ public class Sigma2 implements NamedMetric<LXP> {
         }
 
         return total_distance;
-
     }
 
     @Override
     public String getMetricName() {
-        return "Sigma2" + "-" + baseDistance.getMetricName() + "-" + hyphenConcat( fieldList1 ) + "--" + hyphenConcat( fieldList2 );
+        return "Sigma2" + "-" + baseDistance.getMetricName() + "-" + hyphenConcat(fieldList1) + "--" + hyphenConcat(fieldList2);
     }
 
-    private static String hyphenConcat(List<Integer> fieldList) {
+    static String hyphenConcat(List<Integer> fieldList) {
         StringBuilder sb = new StringBuilder();
-        for( int i = 0; i < fieldList.size() - 1; i++ ) {
-            sb.append( Integer.toString( fieldList.get(i) ) );
-            sb.append( "-" );
+        for (int i = 0; i < fieldList.size() - 1; i++) {
+            sb.append(fieldList.get(i));
+            sb.append("-");
         }
-        sb.append( Integer.toString( fieldList.get( fieldList.size() - 1 ) ) );
+        sb.append(fieldList.get(fieldList.size() - 1));
         return sb.toString();
     }
-
 }
-

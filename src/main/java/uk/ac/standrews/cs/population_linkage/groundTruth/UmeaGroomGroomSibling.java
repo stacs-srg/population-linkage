@@ -11,13 +11,16 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * This class performs sibling bundling linkage analysis on data from marriages  looking for two grooms who are brothers or a groom's remarriage.
- */
+/* Performs linkage analysis on data from marriages.
+ * It compares the grooms' parents' names on two marriage records.
+ * The fields used for comparison are listed in getComparisonFields().
+ * This is indirect sibling linkage between the grooms on two marriage records.
+ * The ground truth is listed in isTrueLink.
+ **/
 public class UmeaGroomGroomSibling extends SymmetricSingleSourceLinkageAnalysis {
 
-    public UmeaGroomGroomSibling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
+    private UmeaGroomGroomSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs);
     }
 
     @Override
@@ -28,18 +31,29 @@ public class UmeaGroomGroomSibling extends SymmetricSingleSourceLinkageAnalysis 
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        // two grooms who are brothers or a remarriage.
-
+        final String m1_groom_id = record1.getString(Marriage.GROOM_IDENTITY);
         final String m1_groom_father_id = record1.getString(Marriage.GROOM_FATHER_IDENTITY);
         final String m1_groom_mother_id = record1.getString(Marriage.GROOM_MOTHER_IDENTITY);
-        final String m2_groom_father_id = record1.getString(Marriage.GROOM_FATHER_IDENTITY);
+        final String m2_groom_id = record2.getString(Marriage.GROOM_IDENTITY);
+        final String m2_groom_father_id = record2.getString(Marriage.GROOM_FATHER_IDENTITY);
         final String m2_groom_mother_id = record2.getString(Marriage.GROOM_MOTHER_IDENTITY);
 
-        if (m1_groom_father_id.isEmpty() || m2_groom_father_id.isEmpty() ||  m1_groom_mother_id.isEmpty() || m2_groom_mother_id.isEmpty()) {
+        if (m1_groom_father_id.isEmpty() || m2_groom_father_id.isEmpty() || m1_groom_mother_id.isEmpty() || m2_groom_mother_id.isEmpty()) {
             return LinkStatus.UNKNOWN;
         }
 
-        return  m1_groom_father_id.equals(m2_groom_father_id) && m1_groom_mother_id.equals(m2_groom_mother_id)  ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        // Exclude matches for multiple marriages of the same groom.
+        return !m1_groom_id.equals(m2_groom_id) && m1_groom_father_id.equals(m2_groom_father_id) && m1_groom_mother_id.equals(m2_groom_mother_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+    }
+
+    @Override
+    String getDatasetName() {
+        return "Umea";
+    }
+
+    @Override
+    String getLinkageType() {
+        return "sibling bundling between grooms on marriage records";
     }
 
     @Override
@@ -63,6 +77,6 @@ public class UmeaGroomGroomSibling extends SymmetricSingleSourceLinkageAnalysis 
 
         int NUMBER_OF_RUNS = 1;
 
-        new UmeaGroomGroomSibling(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaGroomGroomSibling(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }

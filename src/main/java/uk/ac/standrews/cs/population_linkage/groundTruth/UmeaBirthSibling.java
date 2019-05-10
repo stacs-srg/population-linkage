@@ -11,22 +11,21 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * This class performs sibling bundling linkage analysis on data from births.
- * It compares two sets of parental marriage information from two birth certificates
+/* Performs linkage analysis on data from births.
+ * It compares the parents' names, date and place of marriage on two birth records.
  * The fields used for comparison are listed in getComparisonFields().
+ * This is indirect sibling linkage between the babies on two birth records.
  * The ground truth is listed in isTrueLink.
  **/
 public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
-
-    public UmeaBirthSibling(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked, number_of_runs );
+    private UmeaBirthSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
-        return Utilities.getBirthRecords( record_repository );
+        return Utilities.getBirthRecords(record_repository);
     }
 
     @Override
@@ -38,6 +37,16 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
         if (b1_parent_id.isEmpty() || b2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
 
         return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+    }
+
+    @Override
+    String getDatasetName() {
+        return "Umea";
+    }
+
+    @Override
+    String getLinkageType() {
+        return "sibling bundling between babies on birth records";
     }
 
     @Override
@@ -65,8 +74,6 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
         final int NUMBER_OF_RUNS = 1; // was 10 when run with  CHECK_ALL_RECORDS for exhaustive
 
-        new UmeaBirthSibling(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED,NUMBER_OF_RUNS).run();
+        new UmeaBirthSibling(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
-
-
 }

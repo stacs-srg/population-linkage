@@ -56,8 +56,8 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
         System.out.println("Reading records from repository: " + repo_name );
 
         final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
-        final Iterable<LXP> records1 = getSourceRecords(record_repository);
 
+        final Iterable<LXP> records1 = getSourceRecords(record_repository);
         final Iterable<LXP> records2 = getSourceRecords2(record_repository);
 
         System.out.println("Randomising record order");
@@ -80,15 +80,15 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
 
         linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
-        linkage_results_metadata_writer.println("Dataset: Umea");
-        linkage_results_metadata_writer.println("Linkage type: sibling bundling");
+        linkage_results_metadata_writer.println("Dataset: " + getDatasetName());
+        linkage_results_metadata_writer.println("Linkage type: " + getLinkageType());
         linkage_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         linkage_results_metadata_writer.flush();
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
-        distance_results_metadata_writer.println("Dataset: Umea");
-        distance_results_metadata_writer.println("Linkage type: sibling bundling");
+        distance_results_metadata_writer.println("Dataset: " + getDatasetName());
+        distance_results_metadata_writer.println("Linkage type: " + getLinkageType());
         distance_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         distance_results_metadata_writer.flush();
     }

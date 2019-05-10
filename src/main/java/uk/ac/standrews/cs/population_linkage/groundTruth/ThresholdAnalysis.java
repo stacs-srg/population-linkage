@@ -24,15 +24,15 @@ abstract class ThresholdAnalysis {
 
     static final long SEED = 87626L;
 
-    static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
+    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
 
-    final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
-    final List<NamedMetric<LXP>> combined_metrics;
+    private final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
+    private final List<NamedMetric<LXP>> combined_metrics;
 
     final int number_of_runs;
-    final long[] pairs_evaluated;
-    final long[] pairs_ignored;
+    private final long[] pairs_evaluated;
+    private final long[] pairs_ignored;
     final int number_of_records_to_be_checked;
 
     static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
@@ -41,27 +41,30 @@ abstract class ThresholdAnalysis {
     final Path store_path;
     final String repo_name;
 
-    static final int BLOCK_SIZE = 100;
-    static final String DELIMIT = ",";
+    private static final int BLOCK_SIZE = 100;
+    private static final String DELIMIT = ",";
 
-    final PrintWriter linkage_results_writer;
-    final PrintWriter distance_results_writer;
+    private final PrintWriter linkage_results_writer;
+    private final PrintWriter distance_results_writer;
     final PrintWriter linkage_results_metadata_writer;
     final PrintWriter distance_results_metadata_writer;
 
-    final List<Map<String, int[]>> non_link_distance_counts;
-    final List<Map<String, int[]>> link_distance_counts;
+    private final List<Map<String, int[]>> non_link_distance_counts;
+    private final List<Map<String, int[]>> link_distance_counts;
 
-    final Map<String, Integer> run_numbers_for_metrics;
+    private final Map<String, Integer> run_numbers_for_metrics;
     List<LXP> source_records;
     int number_of_records;
-    int records_processed = 0;
+    private int records_processed = 0;
 
     /**
-     * @return lists of all sets of comparison fields that will be used for comparing records, can have more than one, hence List<List></list>
+     * @return list of comparison fields that will be used for comparing records
      */
     abstract List<Integer> getComparisonFields();
+
+    abstract String getDatasetName();
     abstract String getSourceType();
+    abstract String getLinkageType();
     abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
     abstract void setupRecords();
     abstract void processRecord(int i, NamedMetric<LXP> metric, boolean evaluating_first_metric);
@@ -224,7 +227,7 @@ abstract class ThresholdAnalysis {
         run_numbers_for_metrics.put(metric_name, run_number);
     }
 
-    protected void processPair(NamedMetric<LXP> metric, boolean increment_counts, int run_number, LXP record1, LXP record2) {
+    private void processPair(NamedMetric<LXP> metric, boolean increment_counts, int run_number, LXP record1, LXP record2) {
 
         final double distance = normalise(metric.distance(record1, record2));
         final LinkStatus link_status = isTrueLink(record1, record2);
@@ -260,7 +263,7 @@ abstract class ThresholdAnalysis {
         }
     }
 
-    void printSamples() {
+    private void printSamples() {
 
         for (final NamedMetric<LXP> metric : combined_metrics) {
 
@@ -287,12 +290,12 @@ abstract class ThresholdAnalysis {
         printDistances(run_number, metric_name, true, link_distance_counts_for_metric);
     }
 
-    static int thresholdToIndex(final double threshold) {
+    private static int thresholdToIndex(final double threshold) {
 
         return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1) + EPSILON);
     }
 
-    static double indexToThreshold(final int index) {
+    private static double indexToThreshold(final int index) {
 
         return (double) index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
     }
@@ -387,7 +390,7 @@ abstract class ThresholdAnalysis {
         linkage_results_writer.flush();
     }
 
-    void printDistances(final int run_number, final String metric_name, boolean links, int[] distances) {
+    private void printDistances(final int run_number, final String metric_name, boolean links, int[] distances) {
 
         distance_results_writer.print(LocalDateTime.now());
         distance_results_writer.print(DELIMIT);
@@ -412,7 +415,7 @@ abstract class ThresholdAnalysis {
         distance_results_writer.flush();
     }
 
-    void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
+    private void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
 
         final double threshold = indexToThreshold(threshold_index);
 
@@ -437,11 +440,11 @@ abstract class ThresholdAnalysis {
      * @param distance - the distance to be normalised
      * @return the distance in the range 0-1:  1 - ( 1 / d + 1 )
      */
-    double normalise(double distance) {
+    private double normalise(double distance) {
         return 1d - (1d / (distance + 1d));
     }
 
-    static String getCallingClassName() {
+    private static String getCallingClassName() {
         try {
             throw new RuntimeException();
         } catch (RuntimeException e) {

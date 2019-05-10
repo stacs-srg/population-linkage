@@ -14,33 +14,46 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/* This class performs linkage analysis on data from birth certificates.
+/* Performs linkage analysis on data from births.
  * It compares the baby's names on a birth certificate with the father's names on another birth certificate.
- * It attempts to find the a person in the roles of baby and father on two different certificates, and thus is identity linkage
  * The fields used for comparison are listed in getComparisonFields() and getComparisonFields2().
+ * This is identity linkage between the baby on one record and the father on another record.
  * The ground truth is listed in isTrueLink.
  **/
-
 public class UmeaBirthFather extends AsymmetricSingleSourceLinkageAnalysis {
 
-    public UmeaBirthFather(Path store_path, String repo_name, String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(store_path,repo_name,linkage_results_filename, distance_results_filename,number_of_records_to_be_checked,number_of_runs);
+    private UmeaBirthFather(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs);
+    }
+
+    UmeaBirthFather(Path store_path, String repo_name, String linkage_results_filename, String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
-        return Utilities.getBirthRecords( record_repository );
+        return Utilities.getBirthRecords(record_repository);
     }
 
     @Override
     protected LinkStatus isTrueLink(LXP record1, LXP record2) {
 
-        final String record_id1 = record1.getString(Birth.CHILD_IDENTITY);
-        final String record_id2 = record2.getString(Birth.FATHER_IDENTITY);
+        final String child_id = record1.getString(Birth.CHILD_IDENTITY);
+        final String father_id = record2.getString(Birth.FATHER_IDENTITY);
 
-        if (record_id1.isEmpty() || record_id2.isEmpty()) return LinkStatus.UNKNOWN;
+        if (child_id.isEmpty() || father_id.isEmpty()) return LinkStatus.UNKNOWN;
 
-        return record_id1.equals(record_id2) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return child_id.equals(father_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+    }
+
+    @Override
+    String getDatasetName() {
+        return "Umea";
+    }
+
+    @Override
+    String getLinkageType() {
+        return "identity linkage between baby on birth record and father on birth record";
     }
 
     @Override
@@ -52,14 +65,14 @@ public class UmeaBirthFather extends AsymmetricSingleSourceLinkageAnalysis {
     public List<Integer> getComparisonFields() {
         return Arrays.asList(
                 Birth.FORENAME,
-                Birth.SURNAME );
+                Birth.SURNAME);
     }
 
     @Override
     public List<Integer> getComparisonFields2() {
         return Arrays.asList(
                 Birth.FATHER_FORENAME,
-                Birth.FATHER_SURNAME );
+                Birth.FATHER_SURNAME);
     }
 
     @Override
@@ -79,6 +92,6 @@ public class UmeaBirthFather extends AsymmetricSingleSourceLinkageAnalysis {
         String repo_name = "umea";
         int NUMBER_OF_RUNS = 1;
 
-        new UmeaBirthFather(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED,NUMBER_OF_RUNS).run();
+        new UmeaBirthFather(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }
