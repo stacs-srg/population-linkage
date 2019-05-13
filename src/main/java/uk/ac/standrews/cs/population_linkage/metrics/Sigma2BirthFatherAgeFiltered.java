@@ -27,11 +27,14 @@ import java.util.List;
  */
 public class Sigma2BirthFatherAgeFiltered extends Sigma2 {
 
-    private int child_birth_year_field;
-    private int father_birth_year_field;
+    // A large distance, since distances are not necessarily normalised.
+    private static final double LARGE_DISTANCE = 1000;
 
-    private final static int min_fathering_age = 14; // father must be older than child by this amount
-    private final static int max_fathering_age = 80;
+    private final static int MIN_FATHERING_AGE = 14; // father must be older than child by this amount
+    private final static int MAX_FATHERING_AGE = 80;
+
+    private final int child_birth_year_field;
+    private final int father_birth_year_field;
 
     public Sigma2BirthFatherAgeFiltered(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2, int child_birth_year_field, int father_birth_year_field) {
 
@@ -41,21 +44,15 @@ public class Sigma2BirthFatherAgeFiltered extends Sigma2 {
     }
 
     @Override
-    // gives distance of 1 for records in which the dob for a is earlier by min_fathering_age than dob for b
-    // and for records for which b's dob is more than 80 after a's dob
-    // years are enough
     public double distance(LXP child_birth_cert, LXP father_birth_cert) {
 
         try {
-            String child_yob_as_string = child_birth_cert.getString(child_birth_year_field);
-            String father_yob_as_string = father_birth_cert.getString(father_birth_year_field);
 
-            int child_yob = Integer.parseInt(child_yob_as_string);
-            int father_yob = Integer.parseInt(father_yob_as_string);
+            final int child_year_of_birth = Integer.parseInt(child_birth_cert.getString(child_birth_year_field));
+            final int father_year_of_birth = Integer.parseInt(father_birth_cert.getString(father_birth_year_field));
 
-            if (child_yob > father_yob + max_fathering_age || child_yob < father_yob + min_fathering_age) {
-                // TODO don't think this is right - sigma isn't normalised, so 1 may be a very small distance.
-                return 1;
+            if (child_year_of_birth > father_year_of_birth + MAX_FATHERING_AGE || child_year_of_birth < father_year_of_birth + MIN_FATHERING_AGE) {
+                return LARGE_DISTANCE;
             }
         } catch (NumberFormatException e) {
             // eat exception and just do distance calc normally
@@ -65,7 +62,6 @@ public class Sigma2BirthFatherAgeFiltered extends Sigma2 {
 
     @Override
     public String getMetricName() {
-        return "Sigma2AgeFiltered" + "-" + baseDistance.getMetricName() + "-" + hyphenConcat(fieldList1) + "--" + hyphenConcat(fieldList2);
+        return "Sigma2BirthFatherAgeFiltered" + "-" + baseDistance.getMetricName() + "-" + hyphenConcat(fieldList1) + "--" + hyphenConcat(fieldList2);
     }
 }
-
