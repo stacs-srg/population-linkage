@@ -33,6 +33,7 @@ public abstract class SimilaritySearchSiblingBundling extends SiblingBundling {
     }
 
     protected RecordRepository getRecordRepository()  {
+        System.out.println( "Using RecordRepository named - " + repo_name + " from " + store_path );
         return new RecordRepository(store_path, repo_name);
     }
 
