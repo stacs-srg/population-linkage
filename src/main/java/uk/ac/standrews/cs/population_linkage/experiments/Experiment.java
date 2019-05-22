@@ -11,6 +11,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,18 @@ public abstract class Experiment {
         printHeader();
 
         final Iterable<LXP> birth_records = getRecords(record_repository);
+
+        final Iterable<LXP> br2 = getRecords(record_repository);
+        Iterator<LXP> iter = br2.iterator();
+        for( int i = 0; i < 4; i++ ) {
+            if( iter.hasNext() ) {
+                LXP xx = iter.next();
+                System.out.println( "Read birth: " + xx );
+            } else {
+                System.out.println( "No more records at " + i );
+                break;
+            }
+        }
 
         System.out.println("r3");
         final Linker sibling_bundler = getLinker();
