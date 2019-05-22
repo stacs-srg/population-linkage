@@ -76,6 +76,6 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
         // number_of_records_to_be_checked = CHECK_ALL_RECORDS for exhaustive otherwise DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED or some other specific number.
 
-        new UmeaBirthSibling(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), CHECK_ALL_RECORDS, NUMBER_OF_RUNS).run();
+        new UmeaBirthSibling(store_path, repo_name, CHECK_ALL_RECORDS, NUMBER_OF_RUNS).run();
     }
 }
