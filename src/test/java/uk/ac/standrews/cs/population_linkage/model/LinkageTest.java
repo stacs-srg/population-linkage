@@ -6,6 +6,8 @@ import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.Metadata;
 import uk.ac.standrews.cs.storr.impl.StaticLXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
@@ -40,7 +42,7 @@ public abstract class LinkageTest {
 
     protected abstract Linker getLinker();
 
-    protected abstract boolean equal(final Link link, final String id1, final String id2);
+    protected abstract boolean equal(final Link link, final IStoreReference id1, final IStoreReference id2);
 
     @Before
     public void init() {
@@ -60,7 +62,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkAllRecordPairsWithSingleDataSet() {
+    public void checkAllRecordPairsWithSingleDataSet() throws PersistentObjectException {
 
         linker.setThreshold(Double.MAX_VALUE);
 
@@ -89,7 +91,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkAllRecordPairsWithTwoDataSets() {
+    public void checkAllRecordPairsWithTwoDataSets() throws PersistentObjectException {
 
         linker.setThreshold(Double.MAX_VALUE);
         linker.addRecords(birth_records, death_records);
@@ -110,7 +112,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceZeroWithSingleDataSet() {
+    public void checkRecordPairsWithinDistanceZeroWithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
 
@@ -123,7 +125,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceZeroWithTwoDataSets() {
+    public void checkRecordPairsWithinDistanceZeroWithTwoDataSets() throws PersistentObjectException {
 
         // "jane smyth" distance 0 from "jane smyth"
 
@@ -135,7 +137,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceOneWithSingleDataSet() {
+    public void checkRecordPairsWithinDistanceOneWithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
 
@@ -148,7 +150,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceOneWithTwoDataSets() {
+    public void checkRecordPairsWithinDistanceOneWithTwoDataSets() throws PersistentObjectException {
 
         // "john smith" distance 1.0 from "john stith"
         // "jane smyth" distance 0 from "jane smyth"
@@ -162,7 +164,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceTwoWithSingleDataSet() {
+    public void checkRecordPairsWithinDistanceTwoWithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
         // "jane smyth" distance 2.0 from "janet smith"
@@ -181,7 +183,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceTwoWithTwoDataSets() {
+    public void checkRecordPairsWithinDistanceTwoWithTwoDataSets() throws PersistentObjectException {
 
         // "john smith" distance 1.0 from "john stith"
         // "janet smith" distance 2.0 from "janet smythe"
@@ -204,11 +206,11 @@ public abstract class LinkageTest {
         assertTrue(containsPair(linker.getLinks(), birth4, death3));
     }
 
-    boolean containsPair(Iterable<Link> record_pairs, LXP record1, LXP record2) {
+    boolean containsPair(Iterable<Link> record_pairs, LXP record1, LXP record2) throws PersistentObjectException {
 
         for (Link p : record_pairs) {
-            if (equal(p, linker.getIdentifier1(record1), linker.getIdentifier2(record2)))
-                return true;
+                if (equal(p, linker.getIdentifier1(record1), linker.getIdentifier2(record2)))
+                    return true;
         }
         return false;
     }

@@ -14,8 +14,8 @@ import java.util.List;
 public class UmeaBitBlasterSiblingBundling extends BitBlasterSiblingBundling {
 
     private static final List<Integer> SIBLING_GROUND_TRUTH_FIELDS = Collections.singletonList(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-    private static final double MATCH_THRESHOLD = 4.0;
-    private static final int NUMBER_OF_PROGRESS_UPDATES = 10000;
+    private static final double MATCH_THRESHOLD = 1.22222222;
+    private static final int NUMBER_OF_PROGRESS_UPDATES = 100;
 
     private UmeaBitBlasterSiblingBundling(Path store_path, String repo_name) {
 
@@ -25,7 +25,7 @@ public class UmeaBitBlasterSiblingBundling extends BitBlasterSiblingBundling {
     @Override
     protected NamedMetric<String> getBaseMetric() {
 
-        return Utilities.JENSEN_SHANNON;
+        return Utilities.JACCARD;
     }
 
     @Override

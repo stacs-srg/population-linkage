@@ -6,6 +6,8 @@ import uk.ac.standrews.cs.population_linkage.model.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -48,8 +50,12 @@ public abstract class SiblingBundling extends Experiment {
                 Birth record1 = records.get(i);
                 Birth record2 = records.get(j);
 
-                if (areGroundTruthSiblings(record1, record2)) {
-                    links.add(new Link(makeRole(record1), makeRole(record2), 1.0f, "ground truth"));
+                try {
+                    if (areGroundTruthSiblings(record1, record2)) {
+                        links.add(new Link(makeRole(record1), makeRole(record2), 1.0f, "ground truth"));
+                    }
+                } catch (PersistentObjectException e) {
+                    ErrorHandling.error( "PersistentObjectException adding getGroundTruthLinks" );
                 }
             }
         }
@@ -57,9 +63,9 @@ public abstract class SiblingBundling extends Experiment {
         return links;
     }
 
-    private Role makeRole(final Birth record) {
+    private Role makeRole(final Birth record) throws PersistentObjectException {
 
-        return new Role(record.getString(Birth.STANDARDISED_ID), Birth.ROLE_BABY);
+        return new Role(record.getThisRef(), Birth.ROLE_BABY);
     }
 
     private boolean areGroundTruthSiblings(LXP record1, LXP record2) {

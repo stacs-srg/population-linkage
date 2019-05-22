@@ -65,10 +65,10 @@ public class UmeaNameDistribution {
             addToFirstNames( baby_firstname ); addToSurnames( baby_surname ); addToCombinedNames( baby_firstname,baby_surname );
             String father_firstname = b.getString( Birth.FATHER_FORENAME );
             String father_surname = b.getString( Birth.FATHER_SURNAME );
-            addToFirstNames( father_firstname ); addToSurnames( father_surname ); addToCombinedNames( father_surname,father_surname );
+            addToFirstNames( father_firstname ); addToSurnames( father_surname ); addToCombinedNames( father_firstname,father_surname );
             String mother_firstname = b.getString( Birth.MOTHER_FORENAME );
             String mother_surname = b.getString( Birth.MOTHER_SURNAME );
-            addToFirstNames( mother_firstname ); addToSurnames( mother_surname ); addToCombinedNames( mother_surname,mother_surname );
+            addToFirstNames( mother_firstname ); addToSurnames( mother_surname ); addToCombinedNames( mother_firstname,mother_surname );
         }
     }
 
@@ -80,10 +80,10 @@ public class UmeaNameDistribution {
             addToFirstNames( deceased_firstname ); addToSurnames( deceased_surname ); addToCombinedNames( deceased_firstname,deceased_surname );
             String father_firstname = d.getString( Death.FATHER_FORENAME );
             String father_surname = d.getString( Death.FATHER_SURNAME );
-            addToFirstNames( father_firstname ); addToSurnames( father_surname ); addToCombinedNames( father_surname,father_surname );
+            addToFirstNames( father_firstname ); addToSurnames( father_surname ); addToCombinedNames( father_firstname,father_surname );
             String mother_firstname = d.getString( Death.MOTHER_FORENAME );
             String mother_surname = d.getString( Death.MOTHER_SURNAME );
-            addToFirstNames( mother_firstname ); addToSurnames( mother_surname ); addToCombinedNames( mother_surname,mother_surname );
+            addToFirstNames( mother_firstname ); addToSurnames( mother_surname ); addToCombinedNames( mother_firstname,mother_surname );
         }
     }
 
@@ -95,20 +95,20 @@ public class UmeaNameDistribution {
             addToFirstNames( groom_firstname ); addToSurnames( groom_surname ); addToCombinedNames( groom_firstname,groom_surname );
             String groom_father_firstname = m.getString( Marriage.GROOM_FATHER_FORENAME );
             String groom_father_surname = m.getString( Marriage.GROOM_FATHER_SURNAME );
-            addToFirstNames( groom_father_firstname ); addToSurnames( groom_father_surname ); addToCombinedNames( groom_father_surname,groom_father_surname );
+            addToFirstNames( groom_father_firstname ); addToSurnames( groom_father_surname ); addToCombinedNames( groom_father_firstname,groom_father_surname );
             String groom_mother_firstname = m.getString( Marriage.GROOM_MOTHER_FORENAME );
             String groom_mother_surname = m.getString( Marriage.GROOM_MOTHER_MAIDEN_SURNAME );
-            addToFirstNames( groom_mother_firstname ); addToSurnames( groom_mother_surname ); addToCombinedNames( groom_mother_surname,groom_mother_surname );
+            addToFirstNames( groom_mother_firstname ); addToSurnames( groom_mother_surname ); addToCombinedNames( groom_mother_firstname,groom_mother_surname );
 
             String bride_firstname = m.getString( Marriage.BRIDE_FORENAME );
             String bride_surname = m.getString( Marriage.BRIDE_SURNAME );
             addToFirstNames( bride_firstname ); addToSurnames( bride_surname ); addToCombinedNames( bride_firstname,bride_surname );
             String bride_father_firstname = m.getString( Marriage.BRIDE_FATHER_FORENAME );
             String bride_father_surname = m.getString( Marriage.BRIDE_FATHER_SURNAME );
-            addToFirstNames( bride_father_firstname ); addToSurnames( bride_father_firstname ); addToCombinedNames( bride_father_surname,bride_father_surname );
+            addToFirstNames( bride_father_firstname ); addToSurnames( bride_father_firstname ); addToCombinedNames( bride_father_firstname,bride_father_surname );
             String bride_mother_firstname = m.getString( Marriage.BRIDE_MOTHER_FORENAME );
             String bride_mother_surname = m.getString( Marriage.BRIDE_MOTHER_MAIDEN_SURNAME );
-            addToFirstNames( bride_mother_firstname ); addToSurnames( bride_mother_surname ); addToCombinedNames( bride_mother_surname,bride_mother_surname );
+            addToFirstNames( bride_mother_firstname ); addToSurnames( bride_mother_surname ); addToCombinedNames( bride_mother_firstname,bride_mother_surname );
         }
     }
 

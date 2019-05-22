@@ -26,6 +26,6 @@ public class PrintUmeaDeathRecordsToFile {
 
     public static void main(String[] args) throws Exception {
 
-        new PrintUmeaDeathRecordsToFile(Paths.get("/Users/graham/Desktop/deaths.csv")).run();
+        new PrintUmeaDeathRecordsToFile(Paths.get("/Users/al/Desktop/deaths.csv")).run();
     }
 }

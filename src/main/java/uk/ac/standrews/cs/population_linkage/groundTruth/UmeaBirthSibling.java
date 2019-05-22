@@ -72,8 +72,10 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
 
-        final int NUMBER_OF_RUNS = 1; // was 10 when run with  CHECK_ALL_RECORDS for exhaustive
+        final int NUMBER_OF_RUNS = 1;
 
-        new UmeaBirthSibling(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        // number_of_records_to_be_checked = CHECK_ALL_RECORDS for exhaustive otherwise DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED or some other specific number.
+
+        new UmeaBirthSibling(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), CHECK_ALL_RECORDS, NUMBER_OF_RUNS).run();
     }
 }

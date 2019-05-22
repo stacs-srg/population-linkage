@@ -23,7 +23,7 @@ SL0.8AbsError <- function( mydata, measure ) {
     geom_line( aes( y=abs_diff ) ) +
     geom_errorbar( aes( ymin=abs_diff-ci, ymax=abs_diff+ci ),width=1 ) +
     #  geom_line( aes( y=ci  ) ) +
-    scale_x_continuous( minor_breaks=seq(0,max(plotdata$records.processed),10000 ) ) +
+    scale_x_continuous( minor_breaks=seq(0,max(plotdata$records.processed),10000 ), labels=scales::comma) +
     ggtitle( "Absolute Errors in F_measure" ) +
     ylab( "Absolute difference between measured and known value") +
     xlab( "Records processed") +
@@ -229,7 +229,7 @@ plotZeroPlots <- function(df, metric, lim, measure, thresh, filename) {
 plotAllZeroPlots <- function(plotdata, measure, filename, xlimit) {
   
   plot <- ggplot() 
-  val <- 1
+  val <- "black"  # was 1 for different colours with increment commented below.
   
   for(thresh in unique(plotdata$threshold)) {
     for( metric in unique(plotdata$metric)) {
@@ -237,8 +237,8 @@ plotAllZeroPlots <- function(plotdata, measure, filename, xlimit) {
       final <- subset[nrow(subset),measure]
       subset[,'final'] <- final
       subset[,'col_val'] <- val
-      plot <- plot + geom_line(data=subset, aes(x=records.processed, y=final-get(measure), colour=col_val )  )
-      val <- val + 1
+      plot <- plot + geom_line(data=subset, aes(x=records.processed, y=final-get(measure)  )  ) # colour=col_val
+      #val <- val + 1
     }
   }
   
@@ -247,8 +247,11 @@ plotAllZeroPlots <- function(plotdata, measure, filename, xlimit) {
     geom_segment(aes(x=0,xend=xlimit,y=0.01,yend=0.01), colour = 'red', linetype = 2) +
     geom_segment(aes(x=0,xend=xlimit,y=-0.01,yend=-0.01), colour = 'red', linetype = 2) +
     xlim(0,xlimit) + 
-    ggtitle(paste("Max error", measure)) + 
-    theme(legend.position="none")
+    #ggtitle(paste("Max error", measure)) + 
+    labs(x = "Records processed", y = "Error in F-measure" ) +
+    theme(legend.position="none", panel.background = element_rect(fill="white"),
+          panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                          colour = "grey") )
   
   ggsave( paste0( filename,"-",xlimit,".png", sep="" ),plot,dpi=320 )
 }

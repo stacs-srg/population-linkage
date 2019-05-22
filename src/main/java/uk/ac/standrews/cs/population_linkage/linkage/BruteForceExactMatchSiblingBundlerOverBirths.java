@@ -2,6 +2,8 @@ package uk.ac.standrews.cs.population_linkage.linkage;
 
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLinker {
@@ -34,12 +36,12 @@ public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLink
     }
 
     @Override
-    protected String getIdentifier1(LXP record) {
-        return record.getString(Birth.STANDARDISED_ID);
+    protected IStoreReference getIdentifier1(LXP record) throws PersistentObjectException {
+        return record.getThisRef();
     }
 
     @Override
-    protected String getIdentifier2(LXP record) {
-        return record.getString(Birth.STANDARDISED_ID);
+    protected IStoreReference getIdentifier2(LXP record) throws PersistentObjectException {
+        return record.getThisRef();
     }
 }

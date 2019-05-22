@@ -1,19 +1,21 @@
 package uk.ac.standrews.cs.population_linkage.model;
 
+import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
+
 import java.util.Objects;
 
 public class Role {
 
-    private String record_id;  // TODO change to IStoreReference
+    private IStoreReference record_id;
     private String role_type;
 
-    public Role(String record_id, String role_type) {
+    public Role(IStoreReference record_id, String role_type) {
 
         this.record_id = record_id;
         this.role_type = role_type;
     }
 
-    public String getRecordId() {
+    public IStoreReference getRecordId() {
 
         return record_id;
     }
@@ -39,6 +41,6 @@ public class Role {
 
     @Override
     public String toString() {
-        return record_id;
+        return record_id.toString();
     }
 }

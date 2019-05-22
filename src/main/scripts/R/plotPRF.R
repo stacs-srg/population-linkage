@@ -2,7 +2,7 @@ setwd("~/repos/github/population-linkage/src/main/scripts/R")
 
 source("FunctionBank.R")
 
-conditionLoadIntoGlobal( "~/repos/github/population-linkage/src/main/resources/UmeaBirthFatherPRFByThreshold.csv", "mydata" )
+conditionLoadIntoGlobal( "~/repos/github/population-linkage/src/main/resources/UmeaThresholdBirthSiblingLinkage.csv", "mydata" )
 
 mydata$precision <- as.numeric(mydata$precision)
 mydata$recall <- as.numeric(mydata$recall)
@@ -10,7 +10,7 @@ mydata$f_measure <- as.numeric(mydata$f_measure)
 
 RUNS <- 10
 thresholds <- c( 0.4, 0.6, 0.8 )
-xlimits <- c (10000,227889)
+xlimits <- c (25000,227889)
 
 subsetted <- mydata[which(mydata$run.number<RUNS),]    # takes first N runs for each metric, 10 is all of them.
 

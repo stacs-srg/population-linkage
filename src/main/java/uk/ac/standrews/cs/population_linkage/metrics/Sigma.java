@@ -50,9 +50,9 @@ public class Sigma implements NamedMetric<LXP> {
                 total_distance += baseMetric.distance(x, y);
 
             } catch (NullPointerException e) {
-                throw new RuntimeException("exception comparing field " + field + " in records \n" + a + "\n and \n" + b, e);
+                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName( field  ) + " in records \n" + a + "\n and \n" + b, e);
             } catch (Exception e) {
-                throw new RuntimeException("exception comparing fields " + a.getString(field) + " and " + b.getString(field) + " from field " + field + " in records \n" + a + "\n and \n" + b, e);
+                throw new RuntimeException("exception comparing fields " + a.getString(field) + " and " + b.getString(field) + " from field " + a.getMetaData().getFieldName( field  ) + " in records \n" + a + "\n and \n" + b, e);
             }
         }
 

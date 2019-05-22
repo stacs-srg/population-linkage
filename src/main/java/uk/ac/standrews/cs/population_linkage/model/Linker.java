@@ -1,6 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.model;
 
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.PercentageProgressIndicator;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -71,10 +73,14 @@ public abstract class Linker {
 
                     if (pair.distance <= threshold) {
 
-                        Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
-                        Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
+                        try {
+                            Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
+                            Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
 
-                        next = new Link(role1, role2, 1.0f, getLinkType(), getProvenance());
+                            next = new Link(role1, role2, 1.0f, getLinkType(), getProvenance());
+                        } catch (PersistentObjectException e) {
+                            throw new RuntimeException( "PersistentObjectException" );
+                        }
                     }
                     else throw new NoSuchElementException();
                 }
@@ -102,9 +108,9 @@ public abstract class Linker {
 
     protected abstract String getRoleType2();
 
-    protected abstract String getIdentifier1(LXP record);
+    protected abstract IStoreReference getIdentifier1(LXP record) throws PersistentObjectException;
 
-    protected abstract String getIdentifier2(LXP record);
+    protected abstract IStoreReference getIdentifier2(LXP record) throws PersistentObjectException;
 
     protected int count(final Iterable<LXP> records) {
 
