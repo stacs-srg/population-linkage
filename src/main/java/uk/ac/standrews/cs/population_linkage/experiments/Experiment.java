@@ -8,6 +8,7 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
+import java.io.*;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -60,9 +61,13 @@ public abstract class Experiment {
         final Iterable<Link> sibling_links = sibling_bundler.getLinks();
         LocalDateTime time_stamp = LocalDateTime.now();
 
+        dumpToFile( "links", sibling_links );
+
         System.out.println("r6");
         final Set<Link> ground_truth_links = getGroundTruthLinks(record_repository);
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
+
+        dumpToFile( "ground_truth", ground_truth_links );
 
         System.out.println("r7");
         final LinkageQuality linkage_quality = evaluateLinkage(sibling_links, ground_truth_links);
@@ -70,6 +75,20 @@ public abstract class Experiment {
 
         System.out.println("r8");
         linkage_quality.print(System.out);
+    }
+
+    private void dumpToFile(String filename, Iterable<Link> links) throws IOException {
+        File f = new File( filename );
+        if( ! f.exists() ) {
+            f.createNewFile();
+        }
+        BufferedWriter bw = new BufferedWriter( new FileWriter( f ) );
+        for( Link l : links ) {
+            bw.write( "Role1:\t" + l.getRole1().getRoleType() + "\tRole2:\t" + l.getRole2().getRoleType() + "\tid1:\t" + l.getRole1().getRecordId() + "\tid2:\t" + l.getRole1().getRecordId() ) ;
+            bw.newLine();
+            bw.flush();
+        }
+        bw.close();
     }
 
     protected abstract RecordRepository getRecordRepository();
