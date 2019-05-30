@@ -12,6 +12,7 @@ import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,6 +41,8 @@ public abstract class LinkageTest {
     final List<LXP> death_records = Arrays.asList(death1, death2, death3, death4, death5);
 
     Linker linker;
+
+    static int lxp_id = 0;
 
     protected abstract Linker getLinker();
 
@@ -72,24 +75,23 @@ public abstract class LinkageTest {
         // By default, assume links are asymmetric, so we want to consider record pair (a,b) as well as (b,a), but not (a,a).
         assertEquals((birth_records.size() - 1) * birth_records.size(), count(linker.getLinks()));
 
-//        assertTrue(containsPair(linker.getLinks(), birth1, birth2));
-//        assertTrue(containsPair(linker.getLinks(), birth1, birth3));
-//        assertTrue(containsPair(linker.getLinks(), birth1, birth4));
-//        assertTrue(containsPair(linker.getLinks(), birth2, birth1));
-//        assertTrue(containsPair(linker.getLinks(), birth2, birth3));
-//        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
-//        assertTrue(containsPair(linker.getLinks(), birth3, birth1));
-//        assertTrue(containsPair(linker.getLinks(), birth3, birth2));
-//        assertTrue(containsPair(linker.getLinks(), birth3, birth4));
-//        assertTrue(containsPair(linker.getLinks(), birth4, birth1));
-//        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
-//        assertTrue(containsPair(linker.getLinks(), birth4, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth3));
 
-        final Iterable<Link> links = linker.getLinks();
-        assertFalse(containsPair(links, birth1, birth1));
-//        assertFalse(containsPair(linker.getLinks(), birth2, birth2));
-//        assertFalse(containsPair(linker.getLinks(), birth3, birth3));
-//        assertFalse(containsPair(linker.getLinks(), birth4, birth4));
+        assertFalse(containsPair(linker.getLinks(), birth1, birth1));
+        assertFalse(containsPair(linker.getLinks(), birth2, birth2));
+        assertFalse(containsPair(linker.getLinks(), birth3, birth3));
+        assertFalse(containsPair(linker.getLinks(), birth4, birth4));
     }
 
     @Test
@@ -234,11 +236,20 @@ public abstract class LinkageTest {
         System.out.println("----------");
     }
 
+    List<Link> getPairs(Iterable<Link> recordPairs) {
+
+        List<Link> result = new ArrayList<>();
+        for (Link pair : recordPairs) {
+            result.add(pair);
+        }
+        return result;
+    }
+
     class DummyLXP extends StaticLXP {
 
         String rep = "";
         int number_of_fields;
-        IStoreReference store_reference = new StoreReference(null, "", "", 0);
+        IStoreReference store_reference = new StoreReference(null, "dummy-repo", "dummy-bucket", lxp_id++);
 
         DummyLXP(String... values) {
 
