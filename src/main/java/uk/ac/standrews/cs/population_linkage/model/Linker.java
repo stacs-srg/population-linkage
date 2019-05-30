@@ -79,7 +79,7 @@ public abstract class Linker {
 
                             next = new Link(role1, role2, 1.0f, getLinkType(), getProvenance());
                         } catch (PersistentObjectException e) {
-                            throw new RuntimeException( "PersistentObjectException" );
+                            throw new RuntimeException(e);
                         }
                     }
                     else throw new NoSuchElementException();
