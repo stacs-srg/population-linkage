@@ -229,7 +229,7 @@ abstract class ThresholdAnalysis {
 
     private void processPair(NamedMetric<LXP> metric, boolean increment_counts, int run_number, LXP record1, LXP record2) {
 
-        final double distance = normalise(metric.distance(record1, record2));
+        final double distance = metric.normalisedDistance(record1, record2);
         final LinkStatus link_status = isTrueLink(record1, record2);
 
         if (link_status == LinkStatus.UNKNOWN) {
@@ -436,13 +436,6 @@ abstract class ThresholdAnalysis {
         }
     }
 
-    /**
-     * @param distance - the distance to be normalised
-     * @return the distance in the range 0-1:  1 - ( 1 / d + 1 )
-     */
-    private double normalise(double distance) {
-        return 1d - (1d / (distance + 1d));
-    }
 
     private static String getCallingClassName() {
         try {

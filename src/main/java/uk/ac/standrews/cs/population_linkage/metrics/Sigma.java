@@ -18,6 +18,7 @@ package uk.ac.standrews.cs.population_linkage.metrics;
 
 
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.List;
@@ -57,6 +58,11 @@ public class Sigma implements NamedMetric<LXP> {
         }
 
         return total_distance;
+    }
+
+    @Override
+    public double normalisedDistance(LXP x, LXP y) {
+        return Metric.normalise( distance(x,y));
     }
 
     @Override
