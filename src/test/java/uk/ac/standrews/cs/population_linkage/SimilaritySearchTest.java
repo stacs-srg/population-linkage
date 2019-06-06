@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.ArrayList;
@@ -35,6 +36,11 @@ public abstract class SimilaritySearchTest {
                 double delta_y = p1.y - p2.y;
 
                 return Math.sqrt(delta_x * delta_x + delta_y * delta_y);
+            }
+
+            @Override
+            public double normalisedDistance(final Point p1, final Point p2) {
+                return Metric.normalise(distance(p1, p2));
             }
         };
     }

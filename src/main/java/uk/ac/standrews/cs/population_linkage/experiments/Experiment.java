@@ -8,7 +8,10 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -28,6 +31,14 @@ public abstract class Experiment {
         this.repo_name = repo_name;
     }
 
+    private static String prettyPrint(Duration duration) {
+
+        return String.format("%sh %sm %ss",
+                duration.toHours(),
+                duration.toMinutes() - TimeUnit.HOURS.toMinutes(duration.toHours()),
+                duration.getSeconds() - TimeUnit.MINUTES.toSeconds(duration.toMinutes()));
+    }
+
     public void run() throws Exception {
 
         System.out.println("r1");
@@ -41,12 +52,12 @@ public abstract class Experiment {
 
         final Iterable<LXP> br2 = getRecords(record_repository);
         Iterator<LXP> iter = br2.iterator();
-        for( int i = 0; i < 4; i++ ) {
-            if( iter.hasNext() ) {
+        for (int i = 0; i < 4; i++) {
+            if (iter.hasNext()) {
                 LXP xx = iter.next();
-                System.out.println( "Read birth: " + xx );
+                System.out.println("Read birth: " + xx);
             } else {
-                System.out.println( "No more records at " + i );
+                System.out.println("No more records at " + i);
                 break;
             }
         }
@@ -61,13 +72,13 @@ public abstract class Experiment {
         final Iterable<Link> sibling_links = sibling_bundler.getLinks();
         LocalDateTime time_stamp = LocalDateTime.now();
 
-        dumpToFile( "links", sibling_links );
+        dumpToFile("links", sibling_links);
 
         System.out.println("r6");
         final Set<Link> ground_truth_links = getGroundTruthLinks(record_repository);
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
-        dumpToFile( "ground_truth", ground_truth_links );
+        dumpToFile("ground_truth", ground_truth_links);
 
         System.out.println("r7");
         final LinkageQuality linkage_quality = evaluateLinkage(sibling_links, ground_truth_links);
@@ -78,13 +89,14 @@ public abstract class Experiment {
     }
 
     private void dumpToFile(String filename, Iterable<Link> links) throws IOException {
-        File f = new File( filename );
-        if( ! f.exists() ) {
+
+        File f = new File(filename);
+        if (!f.exists()) {
             f.createNewFile();
         }
-        BufferedWriter bw = new BufferedWriter( new FileWriter( f ) );
-        for( Link l : links ) {
-            bw.write( "Role1:\t" + l.getRole1().getRoleType() + "\tRole2:\t" + l.getRole2().getRoleType() + "\tid1:\t" + l.getRole1().getRecordId() + "\tid2:\t" + l.getRole1().getRecordId() ) ;
+        BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+        for (Link l : links) {
+            bw.write("Role1:\t" + l.getRole1().getRoleType() + "\tRole2:\t" + l.getRole2().getRoleType() + "\tid1:\t" + l.getRole1().getRecordId() + "\tid2:\t" + l.getRole2().getRecordId());
             bw.newLine();
             bw.flush();
         }
@@ -147,13 +159,5 @@ public abstract class Experiment {
         double f_measure = ClassificationMetrics.F1(true_positives, false_positives, false_negatives);
 
         return new LinkageQuality(precision, recall, f_measure);
-    }
-
-    private static String prettyPrint(Duration duration) {
-
-        return String.format("%sh %sm %ss",
-                duration.toHours(),
-                duration.toMinutes() - TimeUnit.HOURS.toMinutes(duration.toHours()),
-                duration.getSeconds() - TimeUnit.MINUTES.toSeconds(duration.toMinutes()));
     }
 }
