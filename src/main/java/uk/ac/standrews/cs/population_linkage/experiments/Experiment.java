@@ -96,11 +96,23 @@ public abstract class Experiment {
         }
         BufferedWriter bw = new BufferedWriter(new FileWriter(f));
         for (Link l : links) {
-            bw.write("Role1:\t" + l.getRole1().getRoleType() + "\tRole2:\t" + l.getRole2().getRoleType() + "\tid1:\t" + l.getRole1().getRecordId() + "\tid2:\t" + l.getRole2().getRecordId());
+            bw.write("Role1:\t" + l.getRole1().getRoleType() + "\tRole2:\t" + l.getRole2().getRoleType() + "\tid1:\t" + l.getRole1().getRecordId() + "\tid2:\t" + l.getRole2().getRecordId() + "\tprovenance:\t" + combineProvenance(l.getProvenance()));
             bw.newLine();
             bw.flush();
         }
         bw.close();
+    }
+
+    private String combineProvenance(final List<String> provenance) {
+
+        final StringBuilder builder = new StringBuilder();
+
+        for (String s: provenance) {
+            if (builder.length() > 0) builder.append("/");
+            builder.append(s);
+        }
+
+        return builder.toString();
     }
 
     protected abstract RecordRepository getRecordRepository();

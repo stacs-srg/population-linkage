@@ -29,6 +29,12 @@ public class Link {
         return role2;
     }
 
+    public float getConfidence() { return confidence; }
+
+    public String getLinkType() { return link_type; }
+
+    public List<String> getProvenance() { return provenance; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

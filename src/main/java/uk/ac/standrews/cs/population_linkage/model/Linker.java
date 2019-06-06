@@ -77,7 +77,7 @@ public abstract class Linker {
                             Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
                             Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
 
-                            next = new Link(role1, role2, 1.0f, getLinkType(), getProvenance());
+                            next = new Link(role1, role2, 1.0f, getLinkType(), getProvenance() + ", distance: " + pair.distance);
                         } catch (PersistentObjectException e) {
                             throw new RuntimeException(e);
                         }
