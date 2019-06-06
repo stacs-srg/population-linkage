@@ -14,7 +14,7 @@ import java.util.List;
 public class UmeaBitBlasterSiblingBundling extends BitBlasterSiblingBundling {
 
     private static final List<Integer> SIBLING_GROUND_TRUTH_FIELDS = Collections.singletonList(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-    private static final double MATCH_THRESHOLD = 8 * 1.22222222; // 8 fields * max F-measure for Jaccard at 1.5 (from R metric power table [FRobustness2).
+    private static final double MATCH_THRESHOLD = 2.03; // from R metric power table [FRobustness2).
     private static final int NUMBER_OF_PROGRESS_UPDATES = 100;
 
     private UmeaBitBlasterSiblingBundling(Path store_path, String repo_name) {
