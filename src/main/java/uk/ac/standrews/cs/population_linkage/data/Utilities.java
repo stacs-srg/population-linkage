@@ -57,6 +57,7 @@ public class Utilities {
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
 
+
     public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
 
         return () -> new Iterator<LXP>() {
