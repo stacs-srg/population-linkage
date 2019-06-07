@@ -29,7 +29,7 @@ public class UmeaGroomGroomSibling extends SymmetricSingleSourceLinkageAnalysis 
     }
 
     @Override
-    protected LinkStatus isTrueLink(LXP record1, LXP record2) {
+    protected LinkStatus isTrueMatch(LXP record1, LXP record2) {
 
         final String m1_groom_id = record1.getString(Marriage.GROOM_IDENTITY);
         final String m1_groom_father_id = record1.getString(Marriage.GROOM_FATHER_IDENTITY);
@@ -43,7 +43,7 @@ public class UmeaGroomGroomSibling extends SymmetricSingleSourceLinkageAnalysis 
         }
 
         // Exclude matches for multiple marriages of the same groom.
-        return !m1_groom_id.equals(m2_groom_id) && m1_groom_father_id.equals(m2_groom_father_id) && m1_groom_mother_id.equals(m2_groom_mother_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return !m1_groom_id.equals(m2_groom_id) && m1_groom_father_id.equals(m2_groom_father_id) && m1_groom_mother_id.equals(m2_groom_mother_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
     }
 
     @Override

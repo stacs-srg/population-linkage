@@ -66,12 +66,6 @@ public class ExactMatchSiblingBundling extends SiblingBundling {
         return NUMBER_OF_PROGRESS_UPDATES;
     }
 
-    @Override
-    protected List<Integer> getSiblingGroundTruthFields() {
-
-        return SIBLING_GROUND_TRUTH_FIELDS;
-    }
-
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();

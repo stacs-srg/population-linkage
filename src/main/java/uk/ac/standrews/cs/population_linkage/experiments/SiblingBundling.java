@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.population_linkage.model.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -17,18 +18,15 @@ import java.util.Set;
 
 public abstract class SiblingBundling extends Experiment {
 
-    private final List<Integer> sibling_ground_truth_fields;
-
     SiblingBundling(Path store_path, String repo_name) {
 
         super(store_path, repo_name);
-        sibling_ground_truth_fields = getSiblingGroundTruthFields();
     }
 
     @Override
     protected List<Integer> getMatchFields() {
 
-        return Utilities.SIBLING_BUNDLING_BIRTH_MATCH_FIELDS;
+        return Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
     }
 
     protected Set<Link> getGroundTruthLinks(final RecordRepository record_repository) {
@@ -70,16 +68,6 @@ public abstract class SiblingBundling extends Experiment {
 
     private boolean areGroundTruthSiblings(LXP record1, LXP record2) {
 
-        if (record1 == record2) return false;
-
-        for (int field : sibling_ground_truth_fields) {
-
-            String field1 = record1.getString(field);
-            if (field1.equals("") || !field1.equals(record2.getString(field))) return false;
-        }
-
-        return true;
+        return Utilities.isTrueMatchBirthSiblingUmea(record1, record2) == LinkStatus.TRUE_MATCH;
     }
-
-    protected abstract List<Integer> getSiblingGroundTruthFields();
 }

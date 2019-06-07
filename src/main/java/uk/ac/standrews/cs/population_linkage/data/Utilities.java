@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.data;
 
+import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -26,15 +27,15 @@ public class Utilities {
     public static final JensenShannon JENSEN_SHANNON = new JensenShannon(CHARVAL);
     public static final DamerauLevenshtein DAMERAU_LEVENSHTEIN = new DamerauLevenshtein(1, 1, 1, 1);
 
-    public static final Jaro JARO = new Jaro();
-    public static final JaroWinkler JARO_WINKLER = new JaroWinkler();
-    public static final Dice DICE = new Dice();
-    public static final NeedlemanWunsch NEEDLEMAN_WUNSCH = new NeedlemanWunsch();
-    public static final SmithWaterman SMITH_WATERMAN = new SmithWaterman();
-    public static final LongestCommonSubstring LONGEST_COMMON_SUBSTRING = new LongestCommonSubstring();
-    public static final BagDistance BAG_DISTANCE = new BagDistance();
-    public static final PhoneticWrapper METAPHONE = new PhoneticWrapper(new Metaphone(), new Levenshtein());
-    public static final PhoneticWrapper NYSIIS = new PhoneticWrapper(new NYSIIS(), new Levenshtein());
+    private static final Jaro JARO = new Jaro();
+    private static final JaroWinkler JARO_WINKLER = new JaroWinkler();
+    private static final Dice DICE = new Dice();
+    private static final NeedlemanWunsch NEEDLEMAN_WUNSCH = new NeedlemanWunsch();
+    private static final SmithWaterman SMITH_WATERMAN = new SmithWaterman();
+    private static final LongestCommonSubstring LONGEST_COMMON_SUBSTRING = new LongestCommonSubstring();
+    private static final BagDistance BAG_DISTANCE = new BagDistance();
+    private static final PhoneticWrapper METAPHONE = new PhoneticWrapper(new Metaphone(), new Levenshtein());
+    private static final PhoneticWrapper NYSIIS = new PhoneticWrapper(new NYSIIS(), new Levenshtein());
 
     public static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
 
@@ -48,7 +49,8 @@ public class Utilities {
             METAPHONE, NYSIIS
     );
 
-    public static final List<Integer> SIBLING_BUNDLING_BIRTH_MATCH_FIELDS = Arrays.asList(
+    public static final List<Integer> SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS = Arrays.asList(
+
             Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
             Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME,
             Birth.PARENTS_PLACE_OF_MARRIAGE,
@@ -57,6 +59,47 @@ public class Utilities {
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
 
+    public static LinkStatus isTrueMatchBirthSiblingUmea(LXP record1, LXP record2) {
+
+        final String b1_parent_marriage_id = record1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+        final String b2_parent_marriage_id = record2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+
+        final String b1_mother_id = record1.getString(Birth.MOTHER_IDENTITY);
+        final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY);
+
+        final String b1_father_id = record1.getString(Birth.FATHER_IDENTITY);
+        final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY);
+
+        final String b1_mother_birth_id = record1.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
+        final String b2_mother_birth_id = record2.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
+
+        final String b1_father_birth_id = record1.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
+        final String b2_father_birth_id = record2.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
+
+        if (!b1_parent_marriage_id.isEmpty() && b1_parent_marriage_id.equals(b2_parent_marriage_id)) return LinkStatus.TRUE_MATCH;
+
+        if (!b1_mother_id.isEmpty() && b1_mother_id.equals(b2_mother_id) && !b1_father_id.isEmpty() && b1_father_id.equals(b2_father_id)) return LinkStatus.TRUE_MATCH;
+
+        if (!b1_mother_birth_id.isEmpty() && b1_mother_birth_id.equals(b2_mother_birth_id) && !b1_father_birth_id.isEmpty() && b1_father_birth_id.equals(b2_father_birth_id)) return LinkStatus.TRUE_MATCH;
+
+        if (b1_parent_marriage_id.isEmpty() && b2_parent_marriage_id.isEmpty() &&
+                b1_mother_id.isEmpty() && b2_mother_id.isEmpty() &&
+                b1_father_id.isEmpty() && b2_father_id.isEmpty() &&
+                b1_mother_birth_id.isEmpty() && b2_mother_birth_id.isEmpty() &&
+                b1_father_birth_id.isEmpty() && b2_father_birth_id.isEmpty()) return LinkStatus.UNKNOWN;
+
+        return LinkStatus.NOT_TRUE_MATCH;
+    }
+
+    public static LinkStatus isTrueMatchBirthSiblingSkye(LXP record1, LXP record2) {
+
+        final String b1_family_id = record1.getString(Birth.FAMILY);
+        final String b2_family_id = record2.getString(Birth.FAMILY);
+
+        if (b1_family_id.isEmpty() || b2_family_id.isEmpty()) return LinkStatus.UNKNOWN;
+
+        return b1_family_id.equals(b2_family_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
+    }
 
     public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
 

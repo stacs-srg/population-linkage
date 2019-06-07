@@ -48,25 +48,56 @@ public class Sigma implements NamedMetric<LXP> {
                 String x = a.getString(field);
                 String y = b.getString(field);
 
-                total_distance += baseMetric.distance(x, y);
+                final double field_distance = baseMetric.distance(x, y);
+                total_distance += field_distance;
 
             } catch (NullPointerException e) {
-                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName( field  ) + " in records \n" + a + "\n and \n" + b, e);
+                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(field) + " in records \n" + a + "\n and \n" + b, e);
             } catch (Exception e) {
-                throw new RuntimeException("exception comparing fields " + a.getString(field) + " and " + b.getString(field) + " from field " + a.getMetaData().getFieldName( field  ) + " in records \n" + a + "\n and \n" + b, e);
+                throw new RuntimeException("exception comparing fields " + a.getString(field) + " and " + b.getString(field) + " from field " + a.getMetaData().getFieldName(field) + " in records \n" + a + "\n and \n" + b, e);
             }
         }
 
+        printDistance(a, b);
         return total_distance;
+    }
+
+    private synchronized void printDistance(LXP a, LXP b) {
+
+        double total_distance = 0.0d;
+
+        System.out.println("\n-----------------");
+        System.out.println("number of fields: " + fields.size());
+
+        for (int field : fields) {
+            try {
+                String x = a.getString(field);
+                String y = b.getString(field);
+
+                System.out.println("field values: " + x + ", " + y);
+
+                final double field_distance = baseMetric.distance(x, y);
+                System.out.println("field distance: " + field_distance);
+                total_distance += field_distance;
+
+            } catch (NullPointerException e) {
+                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(field) + " in records \n" + a + "\n and \n" + b, e);
+            } catch (Exception e) {
+                throw new RuntimeException("exception comparing fields " + a.getString(field) + " and " + b.getString(field) + " from field " + a.getMetaData().getFieldName(field) + " in records \n" + a + "\n and \n" + b, e);
+            }
+        }
+
+        System.out.println("total distance: " + total_distance);
+        System.out.println("\n-----------------");
     }
 
     @Override
     public double normalisedDistance(LXP x, LXP y) {
-        return Metric.normalise( distance(x,y));
+        return Metric.normalise(distance(x, y));
     }
 
     @Override
     public String getMetricName() {
-        return "Sigma-" + baseMetric.getMetricName();
+        return "Sigma-" + baseMetric.getMetricName() + "-" + Sigma2.hyphenConcat(fields);
     }
 }

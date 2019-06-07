@@ -31,7 +31,7 @@ public class MetricCosts {
 
         for (NamedMetric<String> metric : Utilities.BASE_METRICS) {
 
-            calculateAllDistances(birth_records, new Sigma(metric, Utilities.SIBLING_BUNDLING_BIRTH_MATCH_FIELDS));
+            calculateAllDistances(birth_records, new Sigma(metric, Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
         }
     }
 

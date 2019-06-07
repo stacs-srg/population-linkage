@@ -32,14 +32,14 @@ public class UmeaBirthMother extends AsymmetricSingleSourceLinkageAnalysis {
     }
 
     @Override
-    protected LinkStatus isTrueLink(LXP record1, LXP record2) {
+    protected LinkStatus isTrueMatch(LXP record1, LXP record2) {
 
         final String child_id = record1.getString(Birth.CHILD_IDENTITY);
         final String mother_id = record2.getString(Birth.MOTHER_IDENTITY);
 
         if (child_id.isEmpty() || mother_id.isEmpty()) return LinkStatus.UNKNOWN;
 
-        return child_id.equals(mother_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return child_id.equals(mother_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
     }
 
     @Override

@@ -69,7 +69,7 @@ abstract class ThresholdAnalysis {
     abstract void setupRecords();
     abstract void processRecord(int i, NamedMetric<LXP> metric, boolean evaluating_first_metric);
     abstract void printMetaData();
-    abstract LinkStatus isTrueLink(final LXP record1, final LXP record2);
+    abstract LinkStatus isTrueMatch(final LXP record1, final LXP record2);
     abstract List<NamedMetric<LXP>> getCombinedMetrics();
 
     ThresholdAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
@@ -230,7 +230,7 @@ abstract class ThresholdAnalysis {
     private void processPair(NamedMetric<LXP> metric, boolean increment_counts, int run_number, LXP record1, LXP record2) {
 
         final double distance = metric.normalisedDistance(record1, record2);
-        final LinkStatus link_status = isTrueLink(record1, record2);
+        final LinkStatus link_status = isTrueMatch(record1, record2);
 
         if (link_status == LinkStatus.UNKNOWN) {
             if (increment_counts) {
@@ -243,7 +243,7 @@ abstract class ThresholdAnalysis {
             final int[] link_counts = link_distance_counts.get(run_number).get(metric_name);
             final int[] non_link_counts = non_link_distance_counts.get(run_number).get(metric_name);
             final Sample[] samples = linkage_results.get(run_number).get(metric_name);
-            final boolean is_true_link = link_status == LinkStatus.TRUE_LINK;
+            final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
 
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
                 recordSample(threshold_index, samples, is_true_link, distance);
@@ -464,10 +464,5 @@ abstract class ThresholdAnalysis {
         long tp = 0;
         long fn = 0;
         long tn = 0;
-    }
-
-    protected enum LinkStatus {
-
-        TRUE_LINK, NOT_TRUE_LINK, UNKNOWN
     }
 }

@@ -50,7 +50,7 @@ public class LinkageExperiment {
 
         double match_threshold = 2.03; // from R metric power table [FRobustness2).
         NamedMetric<String> base_metric = Utilities.JACCARD;
-        List<Integer>  match_fields = Utilities.SIBLING_BUNDLING_BIRTH_MATCH_FIELDS;
+        List<Integer>  match_fields = Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
         List<Integer> ground_truth_fields = Collections.singletonList(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
         NamedMetric<LXP> composite_metric = new Sigma(base_metric, match_fields);
 
