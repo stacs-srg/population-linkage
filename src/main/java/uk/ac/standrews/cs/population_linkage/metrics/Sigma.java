@@ -58,7 +58,7 @@ public class Sigma implements NamedMetric<LXP> {
             }
         }
 
-        printDistance(a, b);
+//        printDistance(a, b);
         return total_distance;
     }
 

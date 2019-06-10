@@ -29,7 +29,7 @@ public class Link {
         return role2;
     }
 
-    public float getConfidence() { return confidence; }
+    public double getConfidence() { return confidence; }
 
     public String getLinkType() { return link_type; }
 

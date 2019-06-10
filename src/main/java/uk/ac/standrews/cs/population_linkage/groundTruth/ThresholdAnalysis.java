@@ -304,7 +304,7 @@ abstract class ThresholdAnalysis {
 
         linkage_results_writer.print("time");
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print("run number");
+        linkage_results_writer.print("link number");
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print("records processed");
         linkage_results_writer.print(DELIMIT);
@@ -335,7 +335,7 @@ abstract class ThresholdAnalysis {
 
         distance_results_writer.print("time");
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("run number");
+        distance_results_writer.print("link number");
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print("records processed");
         distance_results_writer.print(DELIMIT);

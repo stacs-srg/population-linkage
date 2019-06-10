@@ -53,7 +53,7 @@ public class AnalyseGroundTruthUmea {
 
     public static void main(String[] args) throws Exception {
 
-       // new AnalyseGroundTruthUmea("/Users/al/Desktop/UmeaSiblingBundlingDistances.csv","/Users/al/Desktop/UmeaSiblingBundlingMeasures.csv" ).run();
+       // new AnalyseGroundTruthUmea("/Users/al/Desktop/UmeaSiblingBundlingDistances.csv","/Users/al/Desktop/UmeaSiblingBundlingMeasures.csv" ).link();
         new AnalyseGroundTruthUmea("/Users/al/Desktop/UmeaDistances.csv","/Users/al/Desktop/UmeaMeasures.csv" ).run();
 
     }
