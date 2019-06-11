@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.nio.file.Path;
 
-public class DoUmeaBBSibLinkage {
+public class DoUmeaBBBrideBirthLinkage {
 
     public static void main(String[] args) throws Exception {
 
@@ -22,15 +22,15 @@ public class DoUmeaBBSibLinkage {
         double match_threshold = 2.03;                          // from R metric power table [FRobustness2).
         NamedMetric<String> base_metric = Utilities.JACCARD;
 
-        String links_persistent_name = "BirthBirthSiblingLinks";
-        String gt_persistent_name = "BirthBirthSiblingGT";
+        String links_persistent_name = "BrideBirthSiblingLinks";
+        String gt_persistent_name = "BrideBirthSiblingGT";
 
         String source_repository_name = "umea";
         String results_repository_name = "umea_results";
 
         RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
 
-        Linkage linkage = new  UmeaBirthBirthSiblingLinkage( results_repository_name,  links_persistent_name,  gt_persistent_name,  source_repository_name,  record_repository);
+        Linkage linkage = new UmeaBrideBirthIdentityLinkage( results_repository_name,  links_persistent_name,  gt_persistent_name,  source_repository_name,  record_repository);
 
         NamedMetric<LXP> composite_metric = new Sigma(base_metric, linkage.getLinkageFields1());
 
