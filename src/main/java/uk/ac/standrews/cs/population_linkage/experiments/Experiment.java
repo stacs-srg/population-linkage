@@ -6,7 +6,8 @@ import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -123,9 +124,9 @@ public abstract class Experiment {
 
     protected abstract Linker getLinker();
 
-    protected abstract NamedMetric<String> getBaseMetric();
+    protected abstract StringMetric getBaseMetric();
 
-    protected abstract NamedMetric<LXP> getCompositeMetric();
+    protected abstract Metric<LXP> getCompositeMetric();
 
     protected abstract List<Integer> getMatchFields();
 

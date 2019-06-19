@@ -18,7 +18,7 @@ package uk.ac.standrews.cs.population_linkage.metrics;
 
 
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class Sigma2BirthFatherAgeFiltered extends Sigma2 {
     private final int child_birth_year_field;
     private final int father_birth_year_field;
 
-    public Sigma2BirthFatherAgeFiltered(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2, int child_birth_year_field, int father_birth_year_field) {
+    public Sigma2BirthFatherAgeFiltered(StringMetric baseDistance, List<Integer> fields1, List<Integer> fields2, int child_birth_year_field, int father_birth_year_field) {
 
         super(baseDistance, fields1, fields2);
         this.child_birth_year_field = child_birth_year_field;
@@ -44,7 +44,7 @@ public class Sigma2BirthFatherAgeFiltered extends Sigma2 {
     }
 
     @Override
-    public double distance(LXP child_birth_cert, LXP father_birth_cert) {
+    public double calculateDistance(LXP child_birth_cert, LXP father_birth_cert) {
 
         try {
 

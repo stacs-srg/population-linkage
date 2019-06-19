@@ -2,10 +2,12 @@ package uk.ac.standrews.cs.population_linkage.linkage;
 
 import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.al_richard.metricbitblaster.production.ParallelBitBlaster2;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
@@ -13,14 +15,14 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
     private static final long SEED = 34258723425L;
     private ParallelBitBlaster2<T> bit_blaster;
 
-    public BitBlasterSearchStructure(NamedMetric<T> distance_metric, Iterable<T> data) {
+    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data) {
 
         List<T> copy_of_data = copyData(data);
 
         init(distance_metric, chooseRandomReferencePoints(copy_of_data, DEFAULT_NUMBER_OF_REFERENCE_POINTS), copy_of_data);
     }
 
-    public BitBlasterSearchStructure(NamedMetric<T> distance_metric, List<T> reference_points, Iterable<T> data) {
+    public BitBlasterSearchStructure(Metric<T> distance_metric, List<T> reference_points, Iterable<T> data) {
 
         init(distance_metric, reference_points, copyData(data));
     }
@@ -29,7 +31,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         bit_blaster.terminate();
     }
 
-    private void init(final NamedMetric<T> distance_metric, final List<T> reference_points, final List<T> data) {
+    private void init(final Metric<T> distance_metric, final List<T> reference_points, final List<T> data) {
 
         try {
             bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2, true);

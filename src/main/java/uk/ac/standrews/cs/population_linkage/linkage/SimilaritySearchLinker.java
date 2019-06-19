@@ -6,7 +6,7 @@ import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.Iterator;
 import java.util.List;
@@ -18,7 +18,7 @@ public abstract class SimilaritySearchLinker extends Linker {
     private Iterable<LXP> smaller_set;
     private int smaller_set_size;
 
-    protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
 

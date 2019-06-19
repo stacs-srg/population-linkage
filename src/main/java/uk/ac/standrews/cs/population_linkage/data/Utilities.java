@@ -8,7 +8,7 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 import uk.ac.standrews.cs.utilities.metrics.*;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
 import uk.ac.standrews.cs.utilities.phonetic.NYSIIS;
 import uk.ac.standrews.cs.utilities.phonetic.PhoneticWrapper;
@@ -23,8 +23,8 @@ public class Utilities {
     public static final Levenshtein LEVENSHTEIN = new Levenshtein();
     public static final Jaccard JACCARD = new Jaccard();
     public static final Cosine COSINE = new Cosine();
-    public static final SED SED = new SED(CHARVAL);
-    public static final JensenShannon JENSEN_SHANNON = new JensenShannon(CHARVAL);
+    public static final SED SED = new SED();
+    public static final JensenShannon JENSEN_SHANNON = new JensenShannon();
     public static final DamerauLevenshtein DAMERAU_LEVENSHTEIN = new DamerauLevenshtein(1, 1, 1, 1);
 
     private static final Jaro JARO = new Jaro();
@@ -37,7 +37,7 @@ public class Utilities {
     private static final PhoneticWrapper METAPHONE = new PhoneticWrapper(new Metaphone(), new Levenshtein());
     private static final PhoneticWrapper NYSIIS = new PhoneticWrapper(new NYSIIS(), new Levenshtein());
 
-    public static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
+    public static final List<StringMetric> BASE_METRICS = Arrays.asList(
 
             // True metrics
             LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, DAMERAU_LEVENSHTEIN,

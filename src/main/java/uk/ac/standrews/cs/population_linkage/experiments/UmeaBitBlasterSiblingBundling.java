@@ -4,7 +4,8 @@ import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.nio.file.Path;
 
@@ -18,14 +19,22 @@ public class UmeaBitBlasterSiblingBundling extends BitBlasterSiblingBundling {
         super(store_path, repo_name);
     }
 
+    public static void main(String[] args) throws Exception {
+
+        Path store_path = ApplicationProperties.getStorePath();
+        String repository_name = "umea";
+
+        new UmeaBitBlasterSiblingBundling(store_path, repository_name).run();
+    }
+
     @Override
-    protected NamedMetric<String> getBaseMetric() {
+    protected StringMetric getBaseMetric() {
 
         return Utilities.JACCARD;
     }
 
     @Override
-    protected NamedMetric<LXP> getCompositeMetric() {
+    protected Metric<LXP> getCompositeMetric() {
 
         return new Sigma(getBaseMetric(), getMatchFields());
     }
@@ -40,13 +49,5 @@ public class UmeaBitBlasterSiblingBundling extends BitBlasterSiblingBundling {
     protected int getNumberOfProgressUpdates() {
 
         return NUMBER_OF_PROGRESS_UPDATES;
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        Path store_path = ApplicationProperties.getStorePath();
-        String repository_name = "umea";
-
-        new UmeaBitBlasterSiblingBundling(store_path, repository_name).run();
     }
 }

@@ -6,7 +6,6 @@ import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.PercentageProgressIndicator;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -14,13 +13,13 @@ import java.util.NoSuchElementException;
 public abstract class Linker {
 
     protected double threshold;
-    protected final NamedMetric<LXP> distance_metric;
+    protected final Metric<LXP> distance_metric;
     private Iterable<LXP> records1;
     private Iterable<LXP> records2;
 
     protected final ProgressIndicator linkage_progress_indicator;
 
-    public Linker(NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    public Linker(Metric<LXP> distance_metric, int number_of_progress_updates) {
 
         this.distance_metric = distance_metric;
         threshold = Double.MAX_VALUE;

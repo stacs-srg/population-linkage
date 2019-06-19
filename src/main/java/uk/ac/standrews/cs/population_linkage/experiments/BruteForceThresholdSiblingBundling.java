@@ -6,19 +6,16 @@ import uk.ac.standrews.cs.population_linkage.linkage.BruteForceSiblingBundlerOve
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
 
 public class BruteForceThresholdSiblingBundling extends SiblingBundling {
 
     private static final double MATCH_THRESHOLD = 2.0;
     private static final int NUMBER_OF_PROGRESS_UPDATES = 100;
-    private static final List<Integer> SIBLING_GROUND_TRUTH_FIELDS = Collections.singletonList(Birth.FAMILY);
 
     private BruteForceThresholdSiblingBundling(Path store_path, String repo_name) {
 
@@ -49,12 +46,12 @@ public class BruteForceThresholdSiblingBundling extends SiblingBundling {
     }
 
     @Override
-    protected NamedMetric<String> getBaseMetric() {
+    protected StringMetric getBaseMetric() {
         return Utilities.LEVENSHTEIN;
     }
 
     @Override
-    protected NamedMetric<LXP> getCompositeMetric() {
+    protected Metric<LXP> getCompositeMetric() {
         return new Sigma(getBaseMetric(), getMatchFields());
     }
 

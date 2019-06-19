@@ -4,7 +4,7 @@ import uk.ac.standrews.cs.population_linkage.linkage.BruteForceLinker;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class BruteForceLinkageTest extends LinkageTest {
 
@@ -28,7 +28,7 @@ public class BruteForceLinkageTest extends LinkageTest {
 
     class TestLinker extends BruteForceLinker {
 
-        TestLinker(double threshold, final NamedMetric<LXP> metric) {
+        TestLinker(double threshold, final Metric<LXP> metric) {
 
             super(metric, 0);
             setThreshold(threshold);

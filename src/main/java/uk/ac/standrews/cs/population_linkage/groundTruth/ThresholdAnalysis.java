@@ -3,7 +3,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -23,32 +23,24 @@ import java.util.concurrent.CountDownLatch;
 abstract class ThresholdAnalysis {
 
     static final long SEED = 87626L;
-
-    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
-    private static final double EPSILON = 0.00001;
-
-    private final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
-    private final List<NamedMetric<LXP>> combined_metrics;
-
-    final int number_of_runs;
-    private final long[] pairs_evaluated;
-    private final long[] pairs_ignored;
-    final int number_of_records_to_be_checked;
-
     static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
     static final int CHECK_ALL_RECORDS = -1;
-
-    final Path store_path;
-    final String repo_name;
-
+    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
+    private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;
     private static final String DELIMIT = ",";
-
-    private final PrintWriter linkage_results_writer;
-    private final PrintWriter distance_results_writer;
+    final int number_of_runs;
+    final int number_of_records_to_be_checked;
+    final Path store_path;
+    final String repo_name;
     final PrintWriter linkage_results_metadata_writer;
     final PrintWriter distance_results_metadata_writer;
-
+    private final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
+    private final List<Metric<LXP>> combined_metrics;
+    private final long[] pairs_evaluated;
+    private final long[] pairs_ignored;
+    private final PrintWriter linkage_results_writer;
+    private final PrintWriter distance_results_writer;
     private final List<Map<String, int[]>> non_link_distance_counts;
     private final List<Map<String, int[]>> link_distance_counts;
 
@@ -56,21 +48,6 @@ abstract class ThresholdAnalysis {
     List<LXP> source_records;
     int number_of_records;
     private int records_processed = 0;
-
-    /**
-     * @return list of comparison fields that will be used for comparing records
-     */
-    abstract List<Integer> getComparisonFields();
-
-    abstract String getDatasetName();
-    abstract String getSourceType();
-    abstract String getLinkageType();
-    abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
-    abstract void setupRecords();
-    abstract void processRecord(int i, NamedMetric<LXP> metric, boolean evaluating_first_metric);
-    abstract void printMetaData();
-    abstract LinkStatus isTrueMatch(final LXP record1, final LXP record2);
-    abstract List<NamedMetric<LXP>> getCombinedMetrics();
 
     ThresholdAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
 
@@ -95,6 +72,60 @@ abstract class ThresholdAnalysis {
 
         setupRecords();
     }
+
+    private static int thresholdToIndex(final double threshold) {
+
+        return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1) + EPSILON);
+    }
+
+    private static double indexToThreshold(final int index) {
+
+        return (double) index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
+    }
+
+    private static String getCallingClassName() {
+        try {
+            throw new RuntimeException();
+        } catch (RuntimeException e) {
+            String full_classname = e.getStackTrace()[2].getClassName(); // need to jump over getCallingClassName frame and getLinkageResultsFilename frame
+            String simple_classname = full_classname.substring(full_classname.lastIndexOf(".") + 1); // find last dot in classpath and then loose that too.
+            System.out.println("Calling class = " + simple_classname);
+            return simple_classname;
+        }
+    }
+
+    static String getLinkageResultsFilename() {
+
+        return getCallingClassName() + "PRFByThreshold";
+    }
+
+    static String getDistanceResultsFilename() {
+
+        return getCallingClassName() + "LinksByDistance";
+    }
+
+    /**
+     * @return list of comparison fields that will be used for comparing records
+     */
+    abstract List<Integer> getComparisonFields();
+
+    abstract String getDatasetName();
+
+    abstract String getSourceType();
+
+    abstract String getLinkageType();
+
+    abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
+
+    abstract void setupRecords();
+
+    abstract void processRecord(int i, Metric<LXP> metric, boolean evaluating_first_metric);
+
+    abstract void printMetaData();
+
+    abstract LinkStatus isTrueMatch(final LXP record1, final LXP record2);
+
+    abstract List<Metric<LXP>> getCombinedMetrics();
 
     public void run() throws Exception {
 
@@ -123,7 +154,7 @@ abstract class ThresholdAnalysis {
 
             final Map<String, Sample[]> map = new HashMap<>();
 
-            for (final NamedMetric<LXP> metric : combined_metrics) {
+            for (final Metric<LXP> metric : combined_metrics) {
 
                 final Sample[] samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
                 for (int j = 0; j < NUMBER_OF_THRESHOLDS_SAMPLED; j++) {
@@ -146,7 +177,7 @@ abstract class ThresholdAnalysis {
 
             final Map<String, int[]> map = new HashMap<>();
 
-            for (final NamedMetric<LXP> metric : combined_metrics) {
+            for (final Metric<LXP> metric : combined_metrics) {
                 map.put(metric.getMetricName(), new int[NUMBER_OF_THRESHOLDS_SAMPLED]);
             }
 
@@ -159,7 +190,7 @@ abstract class ThresholdAnalysis {
 
         final Map<String, Integer> map = new HashMap<>();
 
-        for (final NamedMetric<LXP> metric : combined_metrics) {
+        for (final Metric<LXP> metric : combined_metrics) {
             map.put(metric.getMetricName(), 0);
         }
 
@@ -171,7 +202,7 @@ abstract class ThresholdAnalysis {
         final CountDownLatch start_gate = new CountDownLatch(1);
         final CountDownLatch end_gate = new CountDownLatch(combined_metrics.size());
 
-        for (final NamedMetric<LXP> metric : combined_metrics) {
+        for (final Metric<LXP> metric : combined_metrics) {
 
             new Thread(() -> processBlockWithMetric(block_index, metric, start_gate, end_gate)).start();
         }
@@ -187,7 +218,7 @@ abstract class ThresholdAnalysis {
         records_processed += BLOCK_SIZE;
     }
 
-    private void processBlockWithMetric(final int block_index, final NamedMetric<LXP> metric, final CountDownLatch start_gate, final CountDownLatch end_gate) {
+    private void processBlockWithMetric(final int block_index, final Metric<LXP> metric, final CountDownLatch start_gate, final CountDownLatch end_gate) {
 
         try {
             start_gate.await();
@@ -208,7 +239,7 @@ abstract class ThresholdAnalysis {
         }
     }
 
-    void processRecord(final int record_index, final int last_record_index, final List<LXP> records1, final List<LXP> records2, final NamedMetric<LXP> metric, final boolean increment_counts) {
+    void processRecord(final int record_index, final int last_record_index, final List<LXP> records1, final List<LXP> records2, final Metric<LXP> metric, final boolean increment_counts) {
 
         final String metric_name = metric.getMetricName();
         int run_number = run_numbers_for_metrics.get(metric_name);
@@ -227,9 +258,9 @@ abstract class ThresholdAnalysis {
         run_numbers_for_metrics.put(metric_name, run_number);
     }
 
-    private void processPair(NamedMetric<LXP> metric, boolean increment_counts, int run_number, LXP record1, LXP record2) {
+    private void processPair(Metric<LXP> metric, boolean increment_counts, int run_number, LXP record1, LXP record2) {
 
-        final double distance = metric.normalisedDistance(record1, record2);
+        final double distance = metric.distance(record1, record2);
         final LinkStatus link_status = isTrueMatch(record1, record2);
 
         if (link_status == LinkStatus.UNKNOWN) {
@@ -265,7 +296,7 @@ abstract class ThresholdAnalysis {
 
     private void printSamples() {
 
-        for (final NamedMetric<LXP> metric : combined_metrics) {
+        for (final Metric<LXP> metric : combined_metrics) {
 
             final String metric_name = metric.getMetricName();
 
@@ -288,16 +319,6 @@ abstract class ThresholdAnalysis {
 
         printDistances(run_number, metric_name, false, non_link_distance_counts_for_metric);
         printDistances(run_number, metric_name, true, link_distance_counts_for_metric);
-    }
-
-    private static int thresholdToIndex(final double threshold) {
-
-        return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1) + EPSILON);
-    }
-
-    private static double indexToThreshold(final int index) {
-
-        return (double) index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
     }
 
     private void printHeaders() {
@@ -434,28 +455,6 @@ abstract class ThresholdAnalysis {
                 samples[threshold_index].tn++;
             }
         }
-    }
-
-
-    private static String getCallingClassName() {
-        try {
-            throw new RuntimeException();
-        } catch (RuntimeException e) {
-            String full_classname = e.getStackTrace()[2].getClassName(); // need to jump over getCallingClassName frame and getLinkageResultsFilename frame
-            String simple_classname = full_classname.substring( full_classname.lastIndexOf(".") + 1 ); // find last dot in classpath and then loose that too.
-            System.out.println( "Calling class = " + simple_classname);
-            return simple_classname;
-        }
-    }
-
-    static String getLinkageResultsFilename() {
-
-        return getCallingClassName() + "PRFByThreshold";
-    }
-
-    static String getDistanceResultsFilename() {
-
-        return getCallingClassName() + "LinksByDistance";
     }
 
     class Sample {

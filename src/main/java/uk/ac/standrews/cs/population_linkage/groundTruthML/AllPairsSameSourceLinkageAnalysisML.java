@@ -3,7 +3,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruthML;
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -70,7 +70,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
             final Map<String, int[]> map = new HashMap<>();
 
-            for (final NamedMetric<String> metric : metrics) {
+            for (final StringMetric metric : metrics) {
                 map.put(metric.getMetricName(), new int[NUMBER_OF_THRESHOLDS_SAMPLED]);
             }
 
@@ -83,7 +83,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         final Map<String, Integer> map = new HashMap<>();
 
-        for (final NamedMetric<String> metric : metrics) {
+        for (final StringMetric metric : metrics) {
             map.put(metric.getMetricName(), 0);
         }
 
@@ -148,11 +148,11 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
                     last_status = link_status;
 
-                    for (final NamedMetric<String> metric : metrics) {
+                    for (final StringMetric metric : metrics) {
 
                         for (int field_selector : getComparisonFields()) {
 
-                            final double distance = metric.normalisedDistance(record1.getString(field_selector), record2.getString(field_selector));
+                            final double distance = metric.distance(record1.getString(field_selector), record2.getString(field_selector));
                             outputMeasurement(distance);
                         }
                     }
@@ -190,7 +190,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         LXP a_source_record = source_records.get(0);
 
-        for (final NamedMetric<String> metric : metrics) {
+        for (final StringMetric metric : metrics) {
 
             String name = metric.getMetricName();
             for (int field_selector : getComparisonFields()) {
@@ -217,14 +217,6 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         distance_results_metadata_writer.println("Linkage type: sibling bundling");
         distance_results_metadata_writer.println("Records: " + getSourceType());
         distance_results_metadata_writer.flush();
-    }
-
-    /**
-     * @param distance - the distance to be normalised
-     * @return the distance in the range 0-1:  1 - ( 1 / d + 1 )
-     */
-    private double normalise(double distance) {
-        return 1d - (1d / (distance + 1d));
     }
 
     protected enum LinkStatus {

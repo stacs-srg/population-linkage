@@ -4,7 +4,7 @@ import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_linkage.model.RecordPair;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.Iterator;
 
@@ -13,7 +13,7 @@ public abstract class BruteForceLinker extends Linker {
     /**
      * @param number_of_progress_updates the number of updates to be given, zero or negative to suppress updates
      */
-    protected BruteForceLinker(NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    protected BruteForceLinker(Metric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
     }

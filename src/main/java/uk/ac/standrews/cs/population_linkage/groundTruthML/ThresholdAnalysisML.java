@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ abstract class ThresholdAnalysisML {
 
     final long[] pairs_evaluated = new long[NUMBER_OF_RUNS];
     final long[] pairs_ignored = new long[NUMBER_OF_RUNS];
-    final List<NamedMetric<String>> metrics;
+    final List<StringMetric> metrics;
 
     /**
      *
@@ -51,7 +51,7 @@ abstract class ThresholdAnalysisML {
 
             final Map<String, Sample[]> map = new HashMap<>();
 
-            for (final NamedMetric<String> metric : metrics) {
+            for (final StringMetric metric : metrics) {
 
                 final Sample[] samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
                 for (int j = 0; j < NUMBER_OF_THRESHOLDS_SAMPLED; j++) {

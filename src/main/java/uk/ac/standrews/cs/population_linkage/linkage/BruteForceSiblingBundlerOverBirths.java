@@ -4,13 +4,13 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class BruteForceSiblingBundlerOverBirths extends BruteForceLinker {
 
     private double threshold;
 
-    public BruteForceSiblingBundlerOverBirths(NamedMetric<LXP> distance_metric, double threshold, int number_of_progress_updates) {
+    public BruteForceSiblingBundlerOverBirths(Metric<LXP> distance_metric, double threshold, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
 

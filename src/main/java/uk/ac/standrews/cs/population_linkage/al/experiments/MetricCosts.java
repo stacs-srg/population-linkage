@@ -5,7 +5,8 @@ import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -29,13 +30,13 @@ public class MetricCosts {
 
         final List<LXP> birth_records = Utilities.permute(Utilities.getBirthRecords(record_repository)).subList(0, 1000);
 
-        for (NamedMetric<String> metric : Utilities.BASE_METRICS) {
+        for (StringMetric metric : Utilities.BASE_METRICS) {
 
             calculateAllDistances(birth_records, new Sigma(metric, Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
         }
     }
 
-    private void calculateAllDistances(final List<LXP> birth_records, NamedMetric<LXP> metric) {
+    private void calculateAllDistances(final List<LXP> birth_records, Metric<LXP> metric) {
 
         LocalDateTime start = LocalDateTime.now();
 

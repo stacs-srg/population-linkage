@@ -6,7 +6,8 @@ import uk.ac.standrews.cs.population_linkage.metrics.Sigma2;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -76,11 +77,11 @@ public class UmeaBirthFather extends AsymmetricSingleSourceLinkageAnalysis {
     }
 
     @Override
-    protected List<NamedMetric<LXP>> getCombinedMetrics() {
+    protected List<Metric<LXP>> getCombinedMetrics() {
 
-        final List<NamedMetric<LXP>> result = new ArrayList<>();
+        final List<Metric<LXP>> result = new ArrayList<>();
 
-        for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
+        for (final StringMetric base_metric : Utilities.BASE_METRICS) {
             result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2()));
         }
         return result;

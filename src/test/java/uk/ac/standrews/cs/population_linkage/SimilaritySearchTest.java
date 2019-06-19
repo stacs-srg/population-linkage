@@ -5,7 +5,6 @@ import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +16,12 @@ public abstract class SimilaritySearchTest {
     private static final double MAX_SIDE_OF_SQUARE = 10.0;
     private static final double MAX_THRESHOLD = 12.0;
 
-    private NamedMetric<Point> metric;
+    private Metric<Point> metric;
 
     @Before
     public void setup() {
 
-        metric = new NamedMetric<Point>() {
+        metric = new Metric<Point>() {
 
             @Override
             public String getMetricName() {
@@ -30,22 +29,17 @@ public abstract class SimilaritySearchTest {
             }
 
             @Override
-            public double distance(final Point p1, final Point p2) {
+            public double calculateDistance(final Point p1, final Point p2) {
 
                 double delta_x = p1.x - p2.x;
                 double delta_y = p1.y - p2.y;
 
-                return Math.sqrt(delta_x * delta_x + delta_y * delta_y);
-            }
-
-            @Override
-            public double normalisedDistance(final Point p1, final Point p2) {
-                return Metric.normalise(distance(p1, p2));
+                return normaliseArbitraryPositiveDistance(Math.sqrt(delta_x * delta_x + delta_y * delta_y));
             }
         };
     }
 
-    abstract SearchStructure<Point> getSearchStructure(NamedMetric<Point> metric, List<Point> data_points, List<Point> reference_points);
+    abstract SearchStructure<Point> getSearchStructure(Metric<Point> metric, List<Point> data_points, List<Point> reference_points);
 
     abstract List<Point> getReferencePoints(List<Point> data_points, int number_of_reference_points);
 

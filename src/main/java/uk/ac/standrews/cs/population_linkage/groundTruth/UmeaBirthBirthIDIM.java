@@ -7,7 +7,8 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.Statistics;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import uk.al_richard.metricbitblaster.production.DistanceExponent;
 
 import java.nio.file.Path;
@@ -47,7 +48,7 @@ public class UmeaBirthBirthIDIM {
         List<LXP> dat = new ArrayList<>();
         birth_records.forEach(dat::add);
 
-        for (NamedMetric<String> metric : Utilities.BASE_METRICS) {
+        for (StringMetric metric : Utilities.BASE_METRICS) {
 
             printIDIM(dat, metric, matchFields4, "BFN BFS BMF MFS");
             printIDIM(dat, metric, matchFields6, "BN BS BFN BFS BMF MFS");
@@ -55,7 +56,7 @@ public class UmeaBirthBirthIDIM {
         }
     }
 
-    private void printIDIM(List<LXP> dat, NamedMetric<String> metric, List<Integer> fields, String field_names) throws Exception {
+    private void printIDIM(List<LXP> dat, StringMetric metric, List<Integer> fields, String field_names) throws Exception {
 
         final int num_samples = 10;
         final ArrayList<Double> triana_data = new ArrayList<>();
@@ -71,7 +72,7 @@ public class UmeaBirthBirthIDIM {
         System.out.println();
     }
 
-    private void print_dimensions(NamedMetric<String> metric, ArrayList<Double> data, String field_names, String idim_method) {
+    private void print_dimensions(StringMetric metric, ArrayList<Double> data, String field_names, String idim_method) {
         double mean = Statistics.mean(data);
         double ci = Statistics.confidenceInterval(data);
         double min = Collections.min(data);
@@ -80,7 +81,7 @@ public class UmeaBirthBirthIDIM {
         System.out.println(idim_method + ": 95% CI Birth-Birth IDIM over " + field_names + " (" + metric.getMetricName() + ") : " + df2.format(mean - ci) + " , " + df2.format(mean) + " , " + df2.format(mean + ci) + " min/max = " + df2.format(min) + "," + df2.format(max));
     }
 
-    protected NamedMetric<LXP> getCompositeMetric(NamedMetric<String> metric, List<Integer> fields) {
+    protected Metric<LXP> getCompositeMetric(StringMetric metric, List<Integer> fields) {
 
         return new Sigma(metric, fields);
     }

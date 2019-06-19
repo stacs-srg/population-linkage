@@ -19,7 +19,7 @@ package uk.ac.standrews.cs.population_linkage.metrics;
 
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.util.List;
 
@@ -27,13 +27,13 @@ import java.util.List;
  * Sigma function for combining metrics  - compares different field lists over data
  * Created by al on 13/12/18
  */
-public class Sigma2 implements NamedMetric<LXP> {
+public class Sigma2 extends Metric<LXP> {
 
-    final NamedMetric<String> baseDistance;
+    final StringMetric baseDistance;
     List<Integer> fieldList1;
     List<Integer> fieldList2;
 
-    public Sigma2(NamedMetric<String> baseDistance, List<Integer> fields1, List<Integer> fields2) {
+    public Sigma2(StringMetric baseDistance, List<Integer> fields1, List<Integer> fields2) {
 
         if (fields1.size() != fields2.size()) {
             throw new RuntimeException("Field lists must be the same length");
@@ -44,7 +44,7 @@ public class Sigma2 implements NamedMetric<LXP> {
     }
 
     @Override
-    public double distance(LXP a, LXP b) {
+    public double calculateDistance(LXP a, LXP b) {
 
         double total_distance = 0.0d;
 
@@ -56,12 +56,7 @@ public class Sigma2 implements NamedMetric<LXP> {
             total_distance += f_distance;
         }
 
-        return total_distance;
-    }
-
-    @Override
-    public double normalisedDistance(LXP x, LXP y) {
-        return Metric.normalise( distance(x,y));
+        return normaliseArbitraryPositiveDistance(total_distance);
     }
 
     @Override

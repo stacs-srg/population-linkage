@@ -10,7 +10,7 @@ import uk.ac.standrews.cs.storr.impl.StoreReference;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ public abstract class LinkageTest {
     final LXP death4 = new DummyLXP("anthony", "aardvark", "8");
     final LXP death5 = new DummyLXP("tony", "armdadillo", "9");
 
-    final NamedMetric<LXP> metric = new Sigma(new Levenshtein(), Arrays.asList(0, 1));
+    final Metric<LXP> metric = new Sigma(new Levenshtein(), Arrays.asList(0, 1));
 
     final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3, birth4);
     final List<LXP> death_records = Arrays.asList(death1, death2, death3, death4, death5);
@@ -58,10 +58,10 @@ public abstract class LinkageTest {
     public void distancesCorrect() {
 
         assertEquals(0.0, linker.getMetric().distance(birth1, birth1), DELTA);
-        assertEquals(4.0, linker.getMetric().distance(birth1, birth2), DELTA);
-        assertEquals(4.0, linker.getMetric().distance(birth1, birth3), DELTA);
+        assertEquals(0.4444444, linker.getMetric().distance(birth1, birth2), DELTA);
+        assertEquals(0.5555555, linker.getMetric().distance(birth1, birth3), DELTA);
         assertEquals(0.0, linker.getMetric().distance(birth2, birth2), DELTA);
-        assertEquals(2.0, linker.getMetric().distance(birth2, birth3), DELTA);
+        assertEquals(0.5, linker.getMetric().distance(birth2, birth3), DELTA);
         assertEquals(0.0, linker.getMetric().distance(birth3, birth3), DELTA);
     }
 
@@ -141,11 +141,11 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceOneWithSingleDataSet() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance035WithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
 
-        linker.setThreshold(1.0);
+        linker.setThreshold(0.35);
         linker.addRecords(birth_records, birth_records);
 
         assertEquals(2, count(linker.getLinks()));
@@ -154,12 +154,12 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceOneWithTwoDataSets() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance035WithTwoDataSets() throws PersistentObjectException {
 
-        // "john smith" distance 1.0 from "john stith"
+        // "john smith" distance 0.333 from "john stith"
         // "jane smyth" distance 0 from "jane smyth"
 
-        linker.setThreshold(1.0);
+        linker.setThreshold(0.35);
         linker.addRecords(birth_records, death_records);
 
         assertEquals(2, count(linker.getLinks()));
@@ -168,36 +168,38 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceTwoWithSingleDataSet() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance05WithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
-        // "jane smyth" distance 2.0 from "janet smith"
-        // "jane smyth" distance 2.0 from "janet smith"
+        // "john smith" distance 0.444 from "janet smith"
+        // "janet smith" distance 0.5 from "jane smyth"
 
-        linker.setThreshold(2.0);
+        linker.setThreshold(0.5);
         linker.addRecords(birth_records, birth_records);
 
-        assertEquals(6, count(linker.getLinks()));
+        assertEquals(10, count(linker.getLinks()));
         assertTrue(containsPair(linker.getLinks(), birth2, birth3));
         assertTrue(containsPair(linker.getLinks(), birth3, birth2));
-        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
-        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
         assertTrue(containsPair(linker.getLinks(), birth3, birth4));
         assertTrue(containsPair(linker.getLinks(), birth4, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth2));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth2, birth4));
+        assertTrue(containsPair(linker.getLinks(), birth4, birth2));
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceTwoWithTwoDataSets() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance05WithTwoDataSets() throws PersistentObjectException {
 
-        // "john smith" distance 1.0 from "john stith"
-        // "janet smith" distance 2.0 from "janet smythe"
-        // "janet smith" distance 2.0 from "jane smyth"
-        // "jane smyth" distance 2.0 from "janet smythe"
+        // "john smith" distance 0.333 from "john stith"
+        // "janet smith" distance 0.4 from "janet smythe"
+        // "janet smith" distance 0.5 from "jane smyth"
+        // "jane smyth" distance 0.5 from "janet smythe"
         // "jane smyth" distance 0 from "jane smyth"
-        // "janet smith" distance 2.0 from "janet smythe"
-        // "janet smith" distance 2.0 from "jane smyth"
 
-        linker.setThreshold(2.0);
+        linker.setThreshold(0.5);
         linker.addRecords(birth_records, death_records);
 
         assertEquals(7, count(linker.getLinks()));
@@ -213,7 +215,9 @@ public abstract class LinkageTest {
     boolean containsPair(Iterable<Link> record_pairs, LXP record1, LXP record2) throws PersistentObjectException {
 
         for (Link p : record_pairs) {
-                if (equal(p, linker.getIdentifier1(record1), linker.getIdentifier2(record2)))
+            final IStoreReference identifier1 = linker.getIdentifier1(record1);
+            final IStoreReference identifier2 = linker.getIdentifier2(record2);
+            if (equal(p, identifier1, identifier2))
                     return true;
         }
         return false;

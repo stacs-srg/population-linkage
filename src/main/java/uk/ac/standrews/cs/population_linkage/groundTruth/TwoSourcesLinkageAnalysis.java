@@ -4,7 +4,8 @@ import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma2;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -40,11 +41,11 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     protected abstract List<Integer> getComparisonFields2();
 
     @Override
-    protected List<NamedMetric<LXP>> getCombinedMetrics() {
+    protected List<Metric<LXP>> getCombinedMetrics() {
 
-        final List<NamedMetric<LXP>> result = new ArrayList<>();
+        final List<Metric<LXP>> result = new ArrayList<>();
 
-        for (final NamedMetric<String> base_metric : Utilities.BASE_METRICS) {
+        for (final StringMetric base_metric : Utilities.BASE_METRICS) {
             result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2()));
         }
         return result;
@@ -70,7 +71,7 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    void processRecord(final int record_index, final NamedMetric<LXP> metric, final boolean increment_counts) {
+    void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
 
         processRecord(record_index, number_of_records2, source_records, source_records2, metric, increment_counts);
     }

@@ -4,11 +4,11 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class BruteForceExactMatchSiblingBundlerOverBirths extends BruteForceLinker {
 
-    public BruteForceExactMatchSiblingBundlerOverBirths(NamedMetric<LXP> distance_metric, int number_of_progress_updates) {
+    public BruteForceExactMatchSiblingBundlerOverBirths(Metric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
 

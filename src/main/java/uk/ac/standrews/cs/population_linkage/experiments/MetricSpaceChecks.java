@@ -5,7 +5,8 @@ import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -26,7 +27,7 @@ public class MetricSpaceChecks {
 
     private final PrintStream outstream;
 
-    private static final List<NamedMetric<String>> BASE_METRICS = Arrays.asList(
+    private static final List<StringMetric> BASE_METRICS = Arrays.asList(
             LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, DAMERAU_LEVENSHTEIN);
 
     private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
@@ -39,7 +40,7 @@ public class MetricSpaceChecks {
             Birth.PARENTS_MONTH_OF_MARRIAGE,
             Birth.PARENTS_YEAR_OF_MARRIAGE);
 
-    private List<NamedMetric<LXP>> combined_metrics;
+    private List<Metric<LXP>> combined_metrics;
 
     private MetricSpaceChecks(Path store_path, String repo_name, String filename) throws Exception {
 
@@ -55,11 +56,11 @@ public class MetricSpaceChecks {
         combined_metrics = getCombinedMetrics();
     }
 
-    private List<NamedMetric<LXP>> getCombinedMetrics() {
+    private List<Metric<LXP>> getCombinedMetrics() {
 
-        List<NamedMetric<LXP>> result = new ArrayList<>();
+        List<Metric<LXP>> result = new ArrayList<>();
 
-        for (NamedMetric<String> base_metric : BASE_METRICS) {
+        for (StringMetric base_metric : BASE_METRICS) {
             result.add(new Sigma(base_metric, SIBLING_BUNDLING_FIELDS));
         }
         return result;
@@ -87,7 +88,7 @@ public class MetricSpaceChecks {
             Birth b2 = birth_records.get(random.nextInt(size));
             Birth b3 = birth_records.get(random.nextInt(size));
 
-            for (NamedMetric<LXP> metric : combined_metrics) {
+            for (Metric<LXP> metric : combined_metrics) {
 
                 String metric_name = metric.getMetricName();
 

@@ -8,7 +8,8 @@ import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -47,12 +48,12 @@ public class ExactMatchSiblingBundling extends SiblingBundling {
     }
 
     @Override
-    protected NamedMetric<String> getBaseMetric() {
+    protected StringMetric getBaseMetric() {
         return Utilities.LEVENSHTEIN;
     }
 
     @Override
-    protected NamedMetric<LXP> getCompositeMetric() {
+    protected Metric<LXP> getCompositeMetric() {
         return new Sigma(getBaseMetric(), getMatchFields());
     }
 

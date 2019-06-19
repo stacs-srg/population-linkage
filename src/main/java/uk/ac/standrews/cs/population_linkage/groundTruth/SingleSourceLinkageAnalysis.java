@@ -3,7 +3,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.NamedMetric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,7 +35,7 @@ public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    void processRecord(final int record_index, final NamedMetric<LXP> metric, final boolean increment_counts) {
+    void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
 
         processRecord(record_index, number_of_records, source_records, source_records, metric, increment_counts);
     }
