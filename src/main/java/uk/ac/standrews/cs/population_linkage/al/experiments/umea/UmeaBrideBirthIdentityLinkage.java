@@ -16,19 +16,24 @@ import java.util.*;
 
 public class UmeaBrideBirthIdentityLinkage extends Linkage {
 
+    private final Iterable<LXP> birth_records;
+    private final Iterable<LXP> marriage_records;
+
     public UmeaBrideBirthIdentityLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, ground_truth_persistent_name, source_repository_name, record_repository);
+        birth_records = Utilities.getBirthRecords(record_repository);
+        marriage_records = Utilities.getMarriageRecords(record_repository);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords1() {
-        return Utilities.getBirthRecords(record_repository);
+        return birth_records;
     }
 
     @Override
     public Iterable<LXP> getSourceRecords2() {
-        return Utilities.getMarriageRecords(record_repository);
+        return marriage_records;
     }
 
     @Override

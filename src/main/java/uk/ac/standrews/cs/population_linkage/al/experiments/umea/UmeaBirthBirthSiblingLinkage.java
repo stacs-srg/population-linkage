@@ -20,19 +20,22 @@ import static uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus.TRUE_
 
 public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
+    private final Iterable<LXP> birth_records;
+
     public UmeaBirthBirthSiblingLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, ground_truth_persistent_name, source_repository_name, record_repository);
+        birth_records = Utilities.getBirthRecords(record_repository);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords1() {
-        return Utilities.getBirthRecords(record_repository);
+        return birth_records;
     }
 
     @Override
     public Iterable<LXP> getSourceRecords2() {
-        return Utilities.getBirthRecords(record_repository);
+        return birth_records;
     }
 
     @Override
@@ -115,8 +118,7 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
     @Override
     public void makeLinksPersistent(Iterable<Link> links) {
-//        makePersistentUsingStorr(store_path, results_repository_name, links_persistent_name, links);  // use makePersistentUsingStor or makePersistentUsingFile
-        makePersistentUsingFile("/Users/graham/Desktop/links.txt", links);  // use makePersistentUsingStor or makePersistentUsingFile
+        makePersistentUsingStorr(store_path, results_repository_name, links_persistent_name, links);  // use makePersistentUsingStor or makePersistentUsingFile
     }
 
     @Override
