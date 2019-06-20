@@ -20,7 +20,7 @@ public class LinkageFramework {
         this.linker = linker;
     }
 
-    public void link() throws Exception {
+    public void link() {
 
         System.out.println("r1r2r3r4");
 
@@ -46,9 +46,7 @@ public class LinkageFramework {
         linkage_quality.print(System.out);
     }
 
-
     ///////////////////////////// I/O /////////////////////////////
-
 
     private static String prettyPrint(Duration duration) {
 
@@ -59,7 +57,6 @@ public class LinkageFramework {
     }
 
     ///////////////////////////// Private methods /////////////////////////////
-
 
     private LocalDateTime nextTimeStamp(final LocalDateTime previous_time_stamp, final String step_description) {
 

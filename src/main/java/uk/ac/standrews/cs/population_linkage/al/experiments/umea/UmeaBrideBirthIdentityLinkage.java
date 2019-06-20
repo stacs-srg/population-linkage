@@ -1,8 +1,8 @@
-package uk.ac.standrews.cs.population_linkage.al.experiments;
+package uk.ac.standrews.cs.population_linkage.al.experiments.umea;
 
+import uk.ac.standrews.cs.population_linkage.al.experiments.Linkage;
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.population_linkage.model.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -12,25 +12,13 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
-import java.nio.file.Path;
 import java.util.*;
 
 public class UmeaBrideBirthIdentityLinkage extends Linkage {
 
-    Path store_path = ApplicationProperties.getStorePath();
+    public UmeaBrideBirthIdentityLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
-    private final String results_repository_name;
-    private final String links_persistent_name;     // may be a filename or a bucket name.
-    private final String gt_persistent_name;
-    private final String source_repository_name;
-    private final RecordRepository record_repository;
-
-    public UmeaBrideBirthIdentityLinkage(String results_repository_name, String links_persistent_name, String gt_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        this.results_repository_name = results_repository_name;
-        this.links_persistent_name = links_persistent_name;
-        this.gt_persistent_name = gt_persistent_name;
-        this.source_repository_name = source_repository_name;
-        this.record_repository = record_repository;
+        super(results_repository_name, links_persistent_name, ground_truth_persistent_name, source_repository_name, record_repository);
     }
 
     @Override
@@ -142,12 +130,12 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
 
     @Override
     public void makeLinksPersistent(Iterable<Link> links) {
-        makePersistentUsingStor( store_path, results_repository_name, links_persistent_name, links );  // use makePersistentUsingStor or makePersistentUsingFile
+        makePersistentUsingStorr( store_path, results_repository_name, links_persistent_name, links );  // use makePersistentUsingStor or makePersistentUsingFile
     }
 
     @Override
     public void makeGroundTruthPersistent(Iterable<Link> links) {
-        makePersistentUsingStor( store_path, results_repository_name, gt_persistent_name, links ); // use makePersistentUsingStor or makePersistentUsingFile
+        makePersistentUsingStorr( store_path, results_repository_name, ground_truth_persistent_name, links ); // use makePersistentUsingStor or makePersistentUsingFile
     }
 
     /////////////////// Private methods ///////////////////

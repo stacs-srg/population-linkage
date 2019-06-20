@@ -1,8 +1,10 @@
 package uk.ac.standrews.cs.population_linkage.al.experiments;
 
 import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.population_linkage.model.Role;
+import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.BucketKind;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.Store;
@@ -23,6 +25,24 @@ import java.util.Set;
 
 public abstract class Linkage {
 
+    protected final String results_repository_name;
+    protected final String links_persistent_name;
+    protected final String ground_truth_persistent_name;
+    protected final String source_repository_name;
+    protected final RecordRepository record_repository;
+    protected Path store_path;
+
+    public Linkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+
+        this.results_repository_name = results_repository_name;
+        this.links_persistent_name = links_persistent_name;
+        this.ground_truth_persistent_name = ground_truth_persistent_name;
+        this.source_repository_name = source_repository_name;
+        this.record_repository = record_repository;
+
+        store_path = ApplicationProperties.getStorePath();
+    }
+
     public abstract Iterable<LXP> getSourceRecords1();
 
     public abstract Iterable<LXP> getSourceRecords2();
@@ -41,9 +61,9 @@ public abstract class Linkage {
 
     public abstract List<Integer> getLinkageFields2();
 
-    public abstract Role makeRole1( LXP lxp ) throws PersistentObjectException;
+    public abstract Role makeRole1(LXP lxp) throws PersistentObjectException;
 
-    public abstract Role makeRole2(LXP lxp ) throws PersistentObjectException;
+    public abstract Role makeRole2(LXP lxp) throws PersistentObjectException;
 
     public abstract Set<Link> getGroundTruthLinks();
 
@@ -53,37 +73,34 @@ public abstract class Linkage {
 
     //////////////////////// Private ///////////////////////
 
-    void makePersistentUsingStor(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
+    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
+
         try {
             IStore store = new Store(store_path);
+
             IRepository results_repository;
             try {
                 results_repository = store.getRepository(results_repo_name);
             } catch (RepositoryException e) {
-                results_repository = store.makeRepository( results_repo_name );
+                results_repository = store.makeRepository(results_repo_name);
             }
+
             IBucket bucket;
             try {
                 bucket = results_repository.getBucket(bucket_name);
             } catch (RepositoryException e) {
-                bucket = results_repository.makeBucket( bucket_name, BucketKind. DIRECTORYBACKED, new LXPLink().getClass() );
+                bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, LXPLink.class);
             }
 
             for (Link link : links) {
                 bucket.makePersistent(linkToLxp(link));
-
             }
-        }
-        catch (RepositoryException e) {
-            throw new RuntimeException( e.getMessage() );
-        }
-        catch (BucketException e) {
-            throw new RuntimeException( e.getMessage() );
+        } catch (RepositoryException | BucketException e) {
+            throw new RuntimeException(e);
         }
     }
 
-
-    void makePersistentUsingFile(String name, Iterable<Link> links) {
+    protected void makePersistentUsingFile(String name, Iterable<Link> links) {
 
         try {
             File f = new File(name);
@@ -97,13 +114,12 @@ public abstract class Linkage {
                 bw.flush();
             }
             bw.close();
-        } catch( IOException e ) {
-            throw new RuntimeException( e.getMessage() );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-
-    LXPLink linkToLxp(Link link) {
+    private LXPLink linkToLxp(Link link) {
         return new LXPLink(link);
     }
 
@@ -111,12 +127,11 @@ public abstract class Linkage {
 
         final StringBuilder builder = new StringBuilder();
 
-        for (String s: provenance) {
+        for (String s : provenance) {
             if (builder.length() > 0) builder.append("/");
             builder.append(s);
         }
 
         return builder.toString();
     }
-
 }

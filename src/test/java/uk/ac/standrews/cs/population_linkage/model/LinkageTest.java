@@ -33,7 +33,7 @@ public abstract class LinkageTest {
     final LXP death2 = new DummyLXP("john", "stith", "6");
     final LXP death3 = new DummyLXP("jane", "smyth", "7");
     final LXP death4 = new DummyLXP("anthony", "aardvark", "8");
-    final LXP death5 = new DummyLXP("tony", "armdadillo", "9");
+    final LXP death5 = new DummyLXP("tony", "armadillo", "9");
 
     final Metric<LXP> metric = new Sigma(new Levenshtein(), Arrays.asList(0, 1));
 
