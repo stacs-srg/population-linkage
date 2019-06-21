@@ -1,7 +1,9 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.umea.calibration.GroundTruth;
 import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.population_linkage.model.Role;
@@ -40,7 +42,7 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return Utilities.isTrueMatchBirthSiblingUmea(record1, record2);
+        return GroundTruth.isTrueMatchBirthSiblingUmea(record1, record2);
     }
 
     @Override
@@ -65,12 +67,12 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
     @Override
     public List<Integer> getLinkageFields1() {
-        return Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
+        return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
     }
 
     @Override
     public List<Integer> getLinkageFields2() {
-        return Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
+        return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
     }
 
     @Override

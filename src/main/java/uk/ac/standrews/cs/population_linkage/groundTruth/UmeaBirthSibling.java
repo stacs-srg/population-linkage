@@ -1,6 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.umea.calibration.GroundTruth;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -29,7 +31,7 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
     @Override
     protected LinkStatus isTrueMatch(LXP record1, LXP record2) {
 
-        return Utilities.isTrueMatchBirthSiblingUmea(record1, record2);
+        return GroundTruth.isTrueMatchBirthSiblingUmea(record1, record2);
     }
 
     @Override
@@ -49,7 +51,7 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
     @Override
     public List<Integer> getComparisonFields() {
-        return Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
+        return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
     }
 
     public static void main(String[] args) throws Exception {

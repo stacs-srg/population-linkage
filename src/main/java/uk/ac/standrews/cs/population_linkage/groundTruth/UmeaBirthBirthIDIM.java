@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -48,7 +49,7 @@ public class UmeaBirthBirthIDIM {
         List<LXP> dat = new ArrayList<>();
         birth_records.forEach(dat::add);
 
-        for (StringMetric metric : Utilities.BASE_METRICS) {
+        for (StringMetric metric : Constants.BASE_METRICS) {
 
             printIDIM(dat, metric, matchFields4, "BFN BFS BMF MFS");
             printIDIM(dat, metric, matchFields6, "BN BS BFN BFS BMF MFS");

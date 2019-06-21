@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.population_linkage.model.Role;

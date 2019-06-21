@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ abstract class ThresholdAnalysisML {
 
     ThresholdAnalysisML() {
 
-        metrics = Utilities.BASE_METRICS;
+        metrics = Constants.BASE_METRICS;
         linkage_results = initialiseState();
     }
 

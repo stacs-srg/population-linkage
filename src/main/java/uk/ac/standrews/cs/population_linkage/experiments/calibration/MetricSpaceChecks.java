@@ -1,45 +1,30 @@
 package uk.ac.standrews.cs.population_linkage.experiments.calibration;
 
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static uk.ac.standrews.cs.population_linkage.data.Utilities.*;
+import static uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants.*;
 
 public class MetricSpaceChecks {
 
     private static final int DUMP_COUNT_INTERVAL = 1000000;
     private static final long SEED = 34553543456223L;
     private static final double DELTA = 0.0000001;
+
     private final Path store_path;
     private final String repo_name;
 
     private final PrintStream outstream;
-
-    private static final List<StringMetric> BASE_METRICS = Arrays.asList(
-            LEVENSHTEIN, JACCARD, COSINE, SED, JENSEN_SHANNON, DAMERAU_LEVENSHTEIN);
-
-    private static final List<Integer> SIBLING_BUNDLING_FIELDS = Arrays.asList(
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.PARENTS_PLACE_OF_MARRIAGE,
-            Birth.PARENTS_DAY_OF_MARRIAGE,
-            Birth.PARENTS_MONTH_OF_MARRIAGE,
-            Birth.PARENTS_YEAR_OF_MARRIAGE);
-
     private List<Metric<LXP>> combined_metrics;
 
     private MetricSpaceChecks(Path store_path, String repo_name, String filename) throws Exception {
@@ -56,27 +41,25 @@ public class MetricSpaceChecks {
         combined_metrics = getCombinedMetrics();
     }
 
+    public void run() throws Exception {
+
+        checkTriangleInequality(new RecordRepository(store_path, repo_name));
+    }
+
     private List<Metric<LXP>> getCombinedMetrics() {
 
         List<Metric<LXP>> result = new ArrayList<>();
 
-        for (Metric<String> base_metric : BASE_METRICS) {
-            result.add(new Sigma(base_metric, SIBLING_BUNDLING_FIELDS));
+        for (Metric<String> base_metric : TRUE_METRICS) {
+            result.add(new Sigma(base_metric, SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
         }
         return result;
     }
 
-    public void run() throws Exception {
-
-        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
-
-        checkTriangleInequality(record_repository.getBirths());
-    }
-
-    private void checkTriangleInequality(Iterable<Birth> births) {
+    private void checkTriangleInequality(RecordRepository record_repository) {
 
         Random random = new Random(SEED);
-        List<Birth> birth_records = getBirthsInRandomOrder(births);
+        final List<LXP> birth_records = Utilities.permute(Utilities.getBirthRecords(record_repository));
 
         long counter = 0;
 
@@ -84,9 +67,9 @@ public class MetricSpaceChecks {
 
             int size = birth_records.size();
 
-            Birth b1 = birth_records.get(random.nextInt(size));
-            Birth b2 = birth_records.get(random.nextInt(size));
-            Birth b3 = birth_records.get(random.nextInt(size));
+            LXP b1 = birth_records.get(random.nextInt(size));
+            LXP b2 = birth_records.get(random.nextInt(size));
+            LXP b3 = birth_records.get(random.nextInt(size));
 
             for (Metric<LXP> metric : combined_metrics) {
 
@@ -122,30 +105,10 @@ public class MetricSpaceChecks {
         return distance1 > distance2 + distance3 + DELTA || distance2 > distance1 + distance3 + DELTA || distance3 > distance1 + distance2 + DELTA;
     }
 
-    private List<Birth> getBirthsInRandomOrder(final Iterable<Birth> births) {
-
-        Random random = new Random(SEED);
-
-        List<Birth> birth_records = new ArrayList<>();
-        for (Birth b : births) {
-            birth_records.add(b);
-        }
-
-        int number_of_records = birth_records.size();
-
-        for (int i = 0; i < number_of_records; i++) {
-            int swap_index = random.nextInt(number_of_records);
-            Birth temp = birth_records.get(i);
-            birth_records.set(i, birth_records.get(swap_index));
-            birth_records.set(swap_index, temp);
-        }
-        return birth_records;
-    }
-
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "skye";
 
         new MetricSpaceChecks(store_path, repo_name, "TriangleInequalityChecks").run();
     }

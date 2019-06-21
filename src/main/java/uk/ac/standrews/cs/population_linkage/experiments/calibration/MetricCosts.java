@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.calibration;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -30,9 +31,9 @@ public class MetricCosts {
 
         final List<LXP> birth_records = Utilities.permute(Utilities.getBirthRecords(record_repository)).subList(0, 1000);
 
-        for (StringMetric metric : Utilities.BASE_METRICS) {
+        for (StringMetric metric : Constants.BASE_METRICS) {
 
-            calculateAllDistances(birth_records, new Sigma(metric, Utilities.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
+            calculateAllDistances(birth_records, new Sigma(metric, Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
         }
     }
 

@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.data.kilmarnock;
 
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockBirthsDataSet;
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 
 public class PrintKilmarnockBirthRecordsSample {
 

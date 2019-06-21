@@ -1,6 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkage.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.model.Linker;
@@ -14,7 +13,7 @@ import java.nio.file.Path;
 public abstract class LinkageRunner {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
-    private static final StringMetric DEFAULT_BASE_METRIC = Utilities.JACCARD;
+    private static final StringMetric DEFAULT_BASE_METRIC = Constants.JACCARD;
 
     public void run(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name, final String results_repository_name, double match_threshold) {
 

@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -25,7 +25,7 @@ public abstract class SymmetricSingleSourceLinkageAnalysis extends SingleSourceL
 
         final List<Metric<LXP>> result = new ArrayList<>();
 
-        for (final StringMetric base_metric : Utilities.BASE_METRICS) {
+        for (final StringMetric base_metric : Constants.BASE_METRICS) {
             result.add(new Sigma(base_metric, getComparisonFields()));
         }
         return result;

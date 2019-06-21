@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.data.umea;
 
 import uk.ac.standrews.cs.data.umea.UmeaMarriagesDataSet;
-import uk.ac.standrews.cs.population_linkage.data.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 
 public class PrintUmeaMarriageRecordsSample {
 
