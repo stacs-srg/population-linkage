@@ -1,9 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.model.Link;
-import uk.ac.standrews.cs.population_linkage.model.Role;
+import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.BucketKind;
 import uk.ac.standrews.cs.storr.impl.LXP;

@@ -3,10 +3,10 @@ package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
-import uk.ac.standrews.cs.population_linkage.experiments.umea.calibration.GroundTruth;
-import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.model.Link;
-import uk.ac.standrews.cs.population_linkage.model.Role;
+import uk.ac.standrews.cs.population_linkage.experiments.umea.characterisation.GroundTruth;
+import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus.TRUE_MATCH;
+import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
 public class UmeaBirthBirthSiblingLinkage extends Linkage {
 

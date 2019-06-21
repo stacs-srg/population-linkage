@@ -3,7 +3,7 @@ package uk.ac.standrews.cs.population_linkage.data.kilmarnock;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockBirthsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockDeathsDataSet;
 import uk.ac.standrews.cs.data.kilmarnock.KilmarnockMarriagesDataSet;
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 

@@ -1,8 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.population_linkage.model.Link;
-import uk.ac.standrews.cs.population_linkage.model.LinkageQuality;
-import uk.ac.standrews.cs.population_linkage.model.Linker;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.time.Duration;

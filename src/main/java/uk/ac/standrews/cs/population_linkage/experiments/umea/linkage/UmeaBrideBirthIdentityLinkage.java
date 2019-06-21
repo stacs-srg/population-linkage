@@ -2,9 +2,9 @@ package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
-import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.model.Link;
-import uk.ac.standrews.cs.population_linkage.model.Role;
+import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;

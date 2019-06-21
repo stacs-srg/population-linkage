@@ -3,7 +3,7 @@ package uk.ac.standrews.cs.population_linkage.data.skye;
 import uk.ac.standrews.cs.data.skye.SkyeBirthsDataSet;
 import uk.ac.standrews.cs.data.skye.SkyeDeathsDataSet;
 import uk.ac.standrews.cs.data.skye.SkyeMarriagesDataSet;
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 

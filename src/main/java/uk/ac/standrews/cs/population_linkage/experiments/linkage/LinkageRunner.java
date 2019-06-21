@@ -1,8 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.linkage.SearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.model.Linker;
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;

@@ -3,7 +3,7 @@ package uk.ac.standrews.cs.population_linkage.data.umea;
 import uk.ac.standrews.cs.data.umea.UmeaBirthsDataSet;
 import uk.ac.standrews.cs.data.umea.UmeaDeathsDataSet;
 import uk.ac.standrews.cs.data.umea.UmeaMarriagesDataSet;
-import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 

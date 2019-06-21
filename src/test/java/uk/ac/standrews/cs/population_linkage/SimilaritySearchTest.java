@@ -2,7 +2,7 @@ package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 

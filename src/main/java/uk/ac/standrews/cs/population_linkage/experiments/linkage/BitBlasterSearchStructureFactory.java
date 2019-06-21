@@ -1,8 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.population_linkage.linkage.BitBlasterSearchStructure;
-import uk.ac.standrews.cs.population_linkage.linkage.SearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.model.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class BitBlasterSearchStructureFactory<T> implements SearchStructureFactory<T> {
