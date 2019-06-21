@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.al.experiments;
+package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.population_linkage.groundTruth.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;

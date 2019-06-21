@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.al.experiments;
+package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.population_linkage.model.Link;
 import uk.ac.standrews.cs.storr.impl.Metadata;
@@ -7,7 +7,6 @@ import uk.ac.standrews.cs.storr.types.LXPBaseType;
 import uk.ac.standrews.cs.storr.types.LXP_LIST;
 import uk.ac.standrews.cs.storr.types.LXP_REF;
 import uk.ac.standrews.cs.storr.types.LXP_SCALAR;
-
 
 public class LXPLink extends StaticLXP {
 

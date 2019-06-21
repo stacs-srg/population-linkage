@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments;
+package uk.ac.standrews.cs.population_linkage.experiments.calibration;
 
 import uk.ac.standrews.cs.population_linkage.data.Utilities;
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;

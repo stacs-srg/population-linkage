@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments;
+package uk.ac.standrews.cs.population_linkage.experiments.calibration;
 
 import uk.ac.standrews.cs.population_linkage.linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma;
@@ -60,7 +60,7 @@ public class MetricSpaceChecks {
 
         List<Metric<LXP>> result = new ArrayList<>();
 
-        for (StringMetric base_metric : BASE_METRICS) {
+        for (Metric<String> base_metric : BASE_METRICS) {
             result.add(new Sigma(base_metric, SIBLING_BUNDLING_FIELDS));
         }
         return result;

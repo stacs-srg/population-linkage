@@ -1,8 +1,8 @@
-package uk.ac.standrews.cs.population_linkage.al.experiments.umea;
+package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
-import uk.ac.standrews.cs.population_linkage.al.experiments.BitBlasterSearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.al.experiments.Linkage;
-import uk.ac.standrews.cs.population_linkage.al.experiments.LinkageRunner;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.BitBlasterSearchStructureFactory;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.LinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkage.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.linkage.SimilaritySearchSiblingBundlerOverBirths;
 import uk.ac.standrews.cs.population_linkage.metrics.Sigma2;
