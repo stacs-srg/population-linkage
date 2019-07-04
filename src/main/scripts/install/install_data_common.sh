@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 scp -q ${MAVEN_USER}@${MAVEN_HOST}:${MAVEN_REPO_PATH}/uk/ac/standrews/cs/${PROJECT}/1.0-SNAPSHOT/maven-metadata.xml .
 BUILD_NUMBER=$(sed -ne '/buildNumber/{s/.*<buildNumber>\(.*\)<\/buildNumber>.*/\1/p;q;}' < maven-metadata.xml)
