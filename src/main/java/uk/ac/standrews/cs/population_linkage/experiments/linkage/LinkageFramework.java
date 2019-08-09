@@ -27,6 +27,8 @@ public class LinkageFramework {
         final Iterable<Link> links = linker.getLinks();
         LocalDateTime time_stamp = LocalDateTime.now();
 
+        System.out.println("r5.5");
+
         linkage.makeLinksPersistent(links);
 
         System.out.println("r6");
