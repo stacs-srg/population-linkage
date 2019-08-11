@@ -22,7 +22,7 @@ public class SimpleLinker {
         DataSet birth_records = SyntheticScotlandBirthsDataSet.factory(args[0], args[1], args[2].equals("true"), args[3]);
 
         long readInTime = System.nanoTime();
-        System.out.println("Linkage in (s): " + (readInTime - startTime)/1E9);
+        System.out.println("Read in in (s): " + (readInTime - startTime)/1E9);
 
         HashMap<String, ArrayList<SyntheticBirthRecord>> siblingBundles = new HashMap<>();
         HashMap<String, ArrayList<SyntheticBirthRecord>> gtSiblingBundles = new HashMap<>();
