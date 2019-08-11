@@ -1,10 +1,9 @@
 package uk.ac.standrews.cs.population_linkage.data.synthetic;
 
 
-
-import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticMarriagesDataSet;
 import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticScotlandBirthsDataSet;
 import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticScotlandDeathsDataSet;
+import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticScotlandMarriagesDataSet;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
@@ -50,7 +49,7 @@ public class ImportSyntheticScotlandRecordsToStore {
         record_repository.importDeathRecords(death_records);
         System.out.println("Imported " + death_records.getRecords().size() + " death records");
 
-        DataSet marriage_records = SyntheticMarriagesDataSet.factory(populationSize, populationNumber, corrupted, corruptionNumber);
+        DataSet marriage_records = SyntheticScotlandMarriagesDataSet.factory(populationSize, populationNumber, corrupted, corruptionNumber);
         record_repository.importMarriageRecords(marriage_records);
         System.out.println("Imported " + marriage_records.getRecords().size() + " marriage records");
 
