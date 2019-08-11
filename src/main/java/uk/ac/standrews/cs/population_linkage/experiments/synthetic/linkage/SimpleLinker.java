@@ -19,7 +19,7 @@ public class SimpleLinker {
 
         long startTime = System.nanoTime();
 
-        DataSet birth_records = SyntheticScotlandBirthsDataSet.factory("9m", "1", false, "");
+        DataSet birth_records = SyntheticScotlandBirthsDataSet.factory(args[0], args[1], args[2].equals("true"), args[3]);
 
         long readInTime = System.nanoTime();
         System.out.println("Linkage in (s): " + (readInTime - startTime)/1E9);
