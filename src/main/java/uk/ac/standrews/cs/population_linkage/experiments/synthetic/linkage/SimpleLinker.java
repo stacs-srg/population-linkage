@@ -19,7 +19,7 @@ public class SimpleLinker {
 
         long startTime = System.nanoTime();
 
-        DataSet birth_records = SyntheticScotlandBirthsDataSet.factory("570k", "1", false, "");
+        DataSet birth_records = SyntheticScotlandBirthsDataSet.factory("9m", "1", false, "");
 
         long readInTime = System.nanoTime();
         System.out.println("Linkage in (s): " + (readInTime - startTime)/1E9);
@@ -142,24 +142,6 @@ public class SimpleLinker {
 
 
     }
-
-//    private static Map<String, Integer> missingFromFamilyGroupedByLinkageFamilyDominantID(ArrayList<SyntheticBirthRecord> fam) {
-//
-//        Map<String, Integer> map = new HashMap<>();
-//
-//        fam.forEach((person) -> {
-//
-//
-//            if(!person.familyID.equals(ID)) {
-//                map.putIfAbsent(person.familyID, 0);
-//                Integer c = map.get(person.familyID);
-//                map.put(person.familyID, ++c);
-//            }
-//        });
-//
-//        return map;
-//
-//    }
 
     private static int incorrectlyInFamily(ArrayList<SyntheticBirthRecord> fam, String ID) {
 
