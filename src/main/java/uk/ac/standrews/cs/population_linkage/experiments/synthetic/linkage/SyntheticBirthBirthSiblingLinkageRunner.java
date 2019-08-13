@@ -9,9 +9,9 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSiblingLinkageRunner {
 
-    protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
-        return new BruteForceSiblingBundlerOverBirths(composite_metric, match_threshold, super.getNumberOfProgressUpdates());
-    }
+//    protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
+//        return new BruteForceSiblingBundlerOverBirths(composite_metric, match_threshold, super.getNumberOfProgressUpdates());
+//    }
 
     public static void main(String[] args) {
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.

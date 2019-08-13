@@ -50,6 +50,12 @@ public class SyntheticBirthRecord {
 
     }
 
+    public String toString() {
+        return id + " - " + forename + " " + surname + " | " + fathersForename + " " + fathersSurname + " | " +
+                mothersForename + " " + mothersMaidenSurname + " | " + parentsPlaceOfMarriage + " | " +
+                parentsYearOfMarriage + " | " + familyID + "\n";
+    }
+
     public String FFN_FSN() {
         return fathersForename + "_" + fathersSurname;
     }

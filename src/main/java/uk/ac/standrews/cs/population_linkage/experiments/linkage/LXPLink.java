@@ -9,11 +9,11 @@ import uk.ac.standrews.cs.storr.types.LXP_SCALAR;
 
 public class LXPLink extends StaticLXP {
 
-    @LXP_REF(type = "LXP")
+    @LXP_REF(type = "lxp")
     public static int ref1;
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int ROLE1_TYPE;
-    @LXP_REF(type = "LXP")
+    @LXP_REF(type = "lxp")
     public static int ref2;
     @LXP_SCALAR(type = LXPBaseType.STRING)
     public static int ROLE2_TYPE;

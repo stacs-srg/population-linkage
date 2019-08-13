@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LinkageFramework {
 
@@ -30,6 +31,7 @@ public class LinkageFramework {
         System.out.println("r5.5");
 
         linkage.makeLinksPersistent(links);
+
 
         System.out.println("r6");
         final Set<Link> ground_truth_links = linkage.getGroundTruthLinks();

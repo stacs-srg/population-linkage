@@ -101,6 +101,15 @@ public class SimpleLinker {
                 // fn = M*C
                 false_negatives.addAndGet(m*c);
 
+                if(m*c != 0) {
+
+                    String famString = familyToLabeledString(gtFamily, "GT");
+                    famString += familyToLabeledString(fam, "Linked");
+
+                    System.out.println("FN Fam\n" + famString);
+
+                }
+
                 if(i > 1) {
                     Map<String, Integer> grouped = incorrectlyInFamilyGroupedByGTFamilyID(fam, ID);
                     grouped.forEach((famID, n) -> {
@@ -141,6 +150,21 @@ public class SimpleLinker {
         System.out.println("");
 
 
+
+
+    }
+
+    private static String familyToLabeledString(ArrayList<SyntheticBirthRecord> fam, String label) {
+
+        StringBuilder s = new StringBuilder();
+
+        s.append("-S----- " + label + " -------\n");
+        for(SyntheticBirthRecord r : fam) {
+            s.append(r.toString());
+        }
+        s.append("-E----- " + label + " -------\n");
+
+        return s.toString();
 
 
     }
