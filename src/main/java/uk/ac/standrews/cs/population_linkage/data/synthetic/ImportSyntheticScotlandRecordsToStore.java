@@ -28,10 +28,12 @@ public class ImportSyntheticScotlandRecordsToStore {
         this.corruptionNumber = corruptionNumber;
 
         if(corrupted)
-            this.repo_name = "scotland_" + populationSize + "_" + populationNumber + "_corruption_" + corruptionNumber;
+            this.repo_name = "scotland_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
         else {
             this.repo_name = "scotland_" + populationSize + "_" + populationNumber + "_clean";
         }
+
+        System.out.println("REPO NAME: " + this.repo_name);
     }
 
     public void run() throws Exception {
@@ -60,8 +62,7 @@ public class ImportSyntheticScotlandRecordsToStore {
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = ApplicationProperties.getRepositoryName();
 
-        new ImportSyntheticScotlandRecordsToStore(store_path, "3k", "1", false, "").run();
+        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2].equals("true"), args[3]).run();
     }
 }

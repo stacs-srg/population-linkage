@@ -99,10 +99,11 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
     }
 
     @Override
-    public Set<Link> getGroundTruthLinks() {
+    public Map<String, Link> getGroundTruthLinks() {
 
-        final Set<Link> links = new HashSet<>();
+        final Map<String, Link> links = new HashMap<>();
 
+        // NOTE by TOM - I've changed stuff in this method (set to maps) this may change the context of your todos
         // TODO GRAHAM created a temp map in memory
         // TODO GRAHAM do we want to create persistent maps in store, or index the bucket fields.
 
@@ -120,8 +121,8 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
                     for (LXP marriage_record : marriage_records) {
 
                         try {
-
-                            links.add(new Link(makeRole1(birth_record), makeRole2(marriage_record), 1.0f, "ground truth"));
+                            Link l = new Link(makeRole1(birth_record), makeRole2(marriage_record), 1.0f, "ground truth");
+                            links.put(l.toString(), l);
                         } catch (PersistentObjectException e) {
                             ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
                         }

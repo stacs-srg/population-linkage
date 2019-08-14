@@ -81,6 +81,7 @@ public class SimpleLinker {
 
         restructuredSiblingBundles.forEach((ID, families) -> {
 
+            System.out.println(ID);
             ArrayList<SyntheticBirthRecord> gtFamily = gtSiblingBundles.get(ID);
 
             for(ArrayList<SyntheticBirthRecord> fam : families) {
@@ -95,20 +96,20 @@ public class SimpleLinker {
                 // fp = I*C
                 false_positives.addAndGet(i * c);
 
-                // tp = trinagleNumbers[C]
+                // tp = triangleNumbers[C]
                 true_positives.addAndGet(triangleNumbers[c]);
 
                 // fn = M*C
                 false_negatives.addAndGet(m*c);
 
-                if(m*c != 0) {
-
-                    String famString = familyToLabeledString(gtFamily, "GT");
-                    famString += familyToLabeledString(fam, "Linked");
-
-                    System.out.println("FN Fam\n" + famString);
-
-                }
+//                if(m*c != 0) {
+//
+//                    String famString = familyToLabeledString(gtFamily, "GT");
+//                    famString += familyToLabeledString(fam, "Linked");
+//
+//                    System.out.println("FN Fam\n" + famString);
+//
+//                }
 
                 if(i > 1) {
                     Map<String, Integer> grouped = incorrectlyInFamilyGroupedByGTFamilyID(fam, ID);
@@ -186,8 +187,6 @@ public class SimpleLinker {
         Map<String, Integer> map = new HashMap<>();
 
         fam.forEach((person) -> {
-
-
             if(!person.familyID.equals(ID)) {
                 map.putIfAbsent(person.familyID, 0);
                 Integer c = map.get(person.familyID);

@@ -13,10 +13,7 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
@@ -86,9 +83,9 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
     }
 
     @Override
-    public Set<Link> getGroundTruthLinks() {
+    public Map<String, Link> getGroundTruthLinks() {
 
-        final Set<Link> links = new HashSet<>();
+        final Map<String, Link> links = new HashMap<>();
 
         final List<LXP> records = new ArrayList<>();
 
@@ -105,9 +102,20 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
                 LXP record1 = records.get(i);
                 LXP record2 = records.get(j);
 
+
                 try {
                     if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
-                        links.add(new Link(makeRole1(record1), makeRole2(record2), 1.0f, "ground truth"));
+//                        if(record1.getString(Birth.FATHER_SURNAME).equals("Prochazka") || record2.getString(Birth.FATHER_SURNAME).equals("Prochazka")) {
+//                            showLXP(record1);
+//                            showLXP(record2);
+//                        }
+
+                        Link l = new Link(makeRole1(record1), makeRole2(record2), 1.0f, "ground truth");
+                        links.put(l.toString(), l);
+
+                        Link l2 = new Link(makeRole2(record2), makeRole1(record1), 1.0f, "ground truth"); // <<<<<<<<<<<<<<<<<<<<< TODO BOTH DIRECTIONS HACK BY AL
+                        links.put(l2.toString(), l2);
+
                     }
                 } catch (PersistentObjectException e) {
                     ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
@@ -126,5 +134,11 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
     @Override
     public void makeGroundTruthPersistent(Iterable<Link> links) {
         makePersistentUsingStorr(store_path, results_repository_name, ground_truth_persistent_name, links); // use makePersistentUsingStor or makePersistentUsingFile
+    }
+
+
+    public static void showLXP(LXP lxp) {
+        System.out.println(lxp.getString(Birth.FORENAME) + " " + lxp.getString(Birth.SURNAME) + " // "
+                + lxp.getString(Birth.FATHER_FORENAME) + " " + lxp.getString(Birth.FATHER_SURNAME) + " " + lxp.getString(Birth.FAMILY));
     }
 }

@@ -1,9 +1,14 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,14 +35,16 @@ public class LinkageFramework {
 
         System.out.println("r5.5");
 
-        linkage.makeLinksPersistent(links);
+//        linkage.makeLinksPersistent(links);
 
 
         System.out.println("r6");
-        final Set<Link> ground_truth_links = linkage.getGroundTruthLinks();
+        final Map<String, Link> ground_truth_links = linkage.getGroundTruthLinks();
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
-        linkage.makeGroundTruthPersistent(ground_truth_links);
+        linkage.makeGroundTruthPersistent(ground_truth_links.values());
+
+//        Iterator<Link> linksMade = linkage.getLinksMade();
 
         System.out.println("r7");
         final LinkageQuality linkage_quality = evaluateLinkage(links, ground_truth_links);
@@ -66,26 +73,33 @@ public class LinkageFramework {
         return next;
     }
 
-    private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Set<Link> ground_truth_links) {
+    private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Map<String, Link> ground_truth_links) {
 
         // NB this mutates the passed in ground truth set.
 
         int true_positives = 0;
+        int count_gt_links = ground_truth_links.size() / 2; //<<<<<<<<<<<<<<< these have been double counted
         int false_positives = 0;
 
         for (Link calculated_link : calculated_links) {
 
-            if (ground_truth_links.contains(calculated_link)) {
+            if (ground_truth_links.get(calculated_link.toString()) != null) {
                 true_positives++;
             } else {
+                showLink(calculated_link);
                 false_positives++;
             }
 
-            ground_truth_links.remove(calculated_link);
+//            ground_truth_links.remove(calculated_link.toString());
         }
 
-        int false_negatives = ground_truth_links.size();
+        true_positives = true_positives / 2; //<<<<<<<<<<<<<<< these have been double counted
+        false_positives = false_positives / 2; //<<<<<<<<<<<<<<< these have been double counted
 
+        int false_negatives = count_gt_links - true_positives;
+
+
+        System.out.println("GT Links: " + count_gt_links);
         System.out.println("TP: " + true_positives);
         System.out.println("FP: " + false_positives);
         System.out.println("FN: " + false_negatives);
@@ -95,5 +109,23 @@ public class LinkageFramework {
         double f_measure = ClassificationMetrics.F1(true_positives, false_positives, false_negatives);
 
         return new LinkageQuality(precision, recall, f_measure);
+    }
+
+    private void showLink(Link calculated_link) {
+
+        try {
+            LXP person1 = calculated_link.getRole1().getRecordId().getReferend();
+            LXP person2 = calculated_link.getRole2().getRecordId().getReferend();
+
+
+
+            System.out.println("B1: " + person1.getString(Birth.FORENAME) + " " + person1.getString(Birth.SURNAME) + " // "
+                    + "B1F: " + person1.getString(Birth.FATHER_FORENAME) + " " + person1.getString(Birth.FATHER_SURNAME) + " " + person1.getString(Birth.FAMILY) + " -> " +
+                    "B2: " + person2.getString(Birth.FORENAME) + " " + person2.getString(Birth.SURNAME) + " // " +
+                    "B2F: " + person2.getString(Birth.FATHER_FORENAME) + " " + person2.getString(Birth.FATHER_SURNAME) + " " + person2.getString(Birth.FAMILY));
+
+        } catch (Exception e) {}
+
+
     }
 }

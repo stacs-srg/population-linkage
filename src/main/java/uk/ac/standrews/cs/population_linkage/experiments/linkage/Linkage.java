@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class Linkage {
@@ -64,11 +65,23 @@ public abstract class Linkage {
 
     public abstract Role makeRole2(LXP lxp) throws PersistentObjectException;
 
-    public abstract Set<Link> getGroundTruthLinks();
+    public abstract Map<String, Link> getGroundTruthLinks();
 
     public abstract void makeLinksPersistent(Iterable<Link> links);
 
     public abstract void makeGroundTruthPersistent(Iterable<Link> links);
+
+//    public Iterator<Link> getLinksMade() {
+//        try {
+//            IRepository repo = new Store(store_path).getRepository(results_repository_name);
+//            IBucket<LXPLink> bucket = repo.getBucket(links_persistent_name, LXPLink.class);
+//
+//            return bucket.getIterator(LXPLink.class);
+//        } catch (RepositoryException e) {
+//            throw new RuntimeException("No made links repo found when expected -" +
+//                    " make sure your made the repo you're trying to access");
+//        }
+//    }
 
     //////////////////////// Private ///////////////////////
 
