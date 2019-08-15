@@ -2,6 +2,7 @@ package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.time.Duration;
@@ -78,12 +79,12 @@ public class LinkageFramework {
         // NB this mutates the passed in ground truth set.
 
         int true_positives = 0;
-        int count_gt_links = ground_truth_links.size() / 2; //<<<<<<<<<<<<<<< these have been double counted
+        int count_gt_links = ground_truth_links.size(); //<<<<<<<<<<<<<<< these have been double counted
         int false_positives = 0;
 
         for (Link calculated_link : calculated_links) {
 
-            if (ground_truth_links.get(calculated_link.toString()) != null) {
+            if (ground_truth_links.get(toKey(calculated_link)) != null) {
                 true_positives++;
             } else {
                 showLink(calculated_link);
@@ -126,6 +127,24 @@ public class LinkageFramework {
 
         } catch (Exception e) {}
 
+
+    }
+
+    private String toKey(Link link) {
+        String s1 = null;
+        try {
+            s1 = link.getRole1().getRecordId().getReferend().getString(Birth.ORIGINAL_ID);
+            String s2 = link.getRole2().getRecordId().getReferend().getString(Birth.ORIGINAL_ID);
+
+            if(s1.compareTo(s2) < 0)
+                return s1 + "-" + s2;
+            else
+                return s2 + "-" + s1;
+
+        } catch (BucketException e) {
+            e.printStackTrace();
+            throw new Error(e);
+        }
 
     }
 }

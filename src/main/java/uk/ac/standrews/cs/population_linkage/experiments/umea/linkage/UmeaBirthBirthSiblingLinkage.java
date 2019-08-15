@@ -111,10 +111,11 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 //                        }
 
                         Link l = new Link(makeRole1(record1), makeRole2(record2), 1.0f, "ground truth");
-                        links.put(l.toString(), l);
+                        String linkKey = toKey(record1, record2);
+                        links.put(linkKey.toString(), l);
 
-                        Link l2 = new Link(makeRole2(record2), makeRole1(record1), 1.0f, "ground truth"); // <<<<<<<<<<<<<<<<<<<<< TODO BOTH DIRECTIONS HACK BY AL
-                        links.put(l2.toString(), l2);
+//                        Link l2 = new Link(makeRole2(record2), makeRole1(record1), 1.0f, "ground truth"); // <<<<<<<<<<<<<<<<<<<<< TODO BOTH DIRECTIONS HACK BY AL
+//                        links.put(l2.toString(), l2);
 
                     }
                 } catch (PersistentObjectException e) {
@@ -124,6 +125,17 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
         }
 
         return links;
+    }
+
+    private String toKey(LXP record1, LXP record2) {
+        String s1 = record1.getString(Birth.ORIGINAL_ID);
+        String s2 = record2.getString(Birth.ORIGINAL_ID);
+
+        if(s1.compareTo(s2) < 0)
+            return s1 + "-" + s2;
+        else
+            return s2 + "-" + s1;
+
     }
 
     @Override

@@ -23,6 +23,7 @@ public abstract class LinkageRunner {
         final Linker linker = getLinker(match_threshold, composite_metric, search_factory);
 
         new LinkageFramework(linkage, linker).link();
+
     }
 
     protected abstract Linkage getLinkage(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
