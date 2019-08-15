@@ -8,8 +8,10 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSiblingLinkageRunner {
 
@@ -22,20 +24,18 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
         StringMetric metric = Constants.get(stringMetric);
 
         Path resultsFile = Paths.get(args[3]);
-        OutputStreamWriter osw;
-
-
         try {
             FileManipulation.createFileIfDoesNotExist(resultsFile);
-            osw = FileManipulation.getOutputStreamWriter(resultsFile);
             if(FileManipulation.countLines(resultsFile) == 0) {
-                osw.write("dataset,threshold,metric,tp,fp,fn,precision,recall,f-measure\n");
+                Files.write(resultsFile, ("dataset,threshold,metric,tp,fp,fn,precision,recall,f-measure" +
+                        System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
             }
 
             LinkageQuality lq = new SyntheticBirthBirthSiblingLinkageRunner().evaluateOnly(sourceRepoName, threshold, metric);
 
-            osw.write(sourceRepoName + "," + threshold + "," + stringMetric + "," + lq.toCSV() + "\n");
-            osw.close();
+            Files.write(resultsFile, (sourceRepoName + "," + threshold + "," + stringMetric + "," + lq.toCSV() +
+                    System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

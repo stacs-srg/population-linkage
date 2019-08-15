@@ -120,30 +120,40 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
     public int numberOfGroundTruthTrueLinks() {
 
-        int c = 0;
+        AtomicInteger c = new AtomicInteger();
 
-        final List<LXP> records = new ArrayList<>();
+//        final List<LXP> records = new ArrayList<>();
 
-        for (LXP lxp : record_repository.getBirths()) {
-            records.add(lxp);
-        }
+//        for (LXP lxp : record_repository.getBirths()) {
+//            records.add(lxp);
+//        }
+//
+//        final int number_of_records = records.size();
 
-        final int number_of_records = records.size();
+        record_repository.getBirths().forEach(record1 -> {
+            c.decrementAndGet(); // this accounts for comparison to self
 
-        for (int i = 0; i < number_of_records; i++) {
-            for (int j = i + 1; j < number_of_records; j++) {
-
-                LXP record1 = records.get(i);
-                LXP record2 = records.get(j);
-
-                if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
-                    c++;
+            record_repository.getBirths().forEach(record2 -> {
+                if(record1.getString(Birth.FAMILY).equals(record2.getString(Birth.FAMILY))) {
+                    c.incrementAndGet(); // Ground Truth True Match
                 }
+            });
+        });
 
-            }
-        }
+//        for (int i = 0; i < number_of_records; i++) {
+//            for (int j = i + 1; j < number_of_records; j++) {
+//
+//                LXP record1 = records.get(i);
+//                LXP record2 = records.get(j);
+//
+//                if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
+//                    c.getAndIncrement();
+//                }
+//
+//            }
+//        }
 
-        return c;
+        return c.get() / 2; // Accounts for having counted links in both directions
     }
 
     @Override
