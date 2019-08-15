@@ -13,7 +13,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 20;
     private static final long SEED = 34258723425L;
-    private ParallelBitBlaster<T> bit_blaster;
+    private ParallelBitBlaster2<T> bit_blaster;
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data) {
 
@@ -34,8 +34,8 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
     private void init(final Metric<T> distance_metric, final List<T> reference_points, final List<T> data) {
 
         try {
-//            bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2, false, true);
-            bit_blaster = new ParallelBitBlaster<>(distance_metric::distance, reference_points, data, 2, true);
+            bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2, true, true);
+//            bit_blaster = new ParallelBitBlaster<>(distance_metric::distance, reference_points, data, 2, true);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
