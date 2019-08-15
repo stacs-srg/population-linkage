@@ -18,7 +18,7 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
         String sourceRepoName = args[0];
         double threshold = Double.valueOf(args[1]);
 
-        String stringMetric = "JACCARD";
+        String stringMetric = args[2];
         StringMetric metric = Constants.get(stringMetric);
 
         Path resultsFile = Paths.get(args[3]);
