@@ -65,4 +65,43 @@ public class Constants {
 
         return result;
     }
+
+    public static StringMetric get(String stringMetric) {
+
+        switch (stringMetric.toUpperCase()) {
+            case "COSINE":
+                return COSINE;
+            case "DAMERAU_LEVENSHTEIN":
+                return DAMERAU_LEVENSHTEIN;
+            case "JACCARD":
+                return JACCARD;
+            case "JENSEN_SHANNON":
+                return JENSEN_SHANNON;
+            case "LEVENSHTEIN":
+                return LEVENSHTEIN;
+            case "SED":
+                return SED;
+            case "BAG_DISTANCE":
+                return BAG_DISTANCE;
+            case "DICE":
+                return DICE;
+            case "JARO":
+                return JARO;
+            case "JARO_WINKLER":
+                return JARO_WINKLER;
+            case "LONGEST_COMMON_SUBSTRING":
+                return LONGEST_COMMON_SUBSTRING;
+            case "NEEDLEMAN_WUNSCH":
+                return NEEDLEMAN_WUNSCH;
+            case "SMITH_WATERMAN":
+                return SMITH_WATERMAN;
+            case "METAPHONE":
+                return METAPHONE;
+            case "NYSIIS":
+                return NYSIIS;
+            default:
+                throw new UnsupportedOperationException("Specified Metric Not Supported");
+        }
+
+    }
 }

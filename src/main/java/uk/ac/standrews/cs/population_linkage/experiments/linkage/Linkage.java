@@ -71,6 +71,10 @@ public abstract class Linkage {
 
     public abstract void makeGroundTruthPersistent(Iterable<Link> links);
 
+    public abstract int numberOfGroundTruthTrueLinks();
+
+    public abstract LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links);
+
 //    public Iterator<Link> getLinksMade() {
 //        try {
 //            IRepository repo = new Store(store_path).getRepository(results_repository_name);
@@ -146,6 +150,7 @@ public abstract class Linkage {
 
         return builder.toString();
     }
+
 
 
 }

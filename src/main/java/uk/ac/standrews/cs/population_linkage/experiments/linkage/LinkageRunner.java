@@ -12,6 +12,7 @@ public abstract class LinkageRunner {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
     private static final StringMetric DEFAULT_BASE_METRIC = Constants.JACCARD;
+    private StringMetric baseMetric = DEFAULT_BASE_METRIC;
 
     public void run(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name, final String results_repository_name, double match_threshold) {
 
@@ -23,6 +24,21 @@ public abstract class LinkageRunner {
         final Linker linker = getLinker(match_threshold, composite_metric, search_factory);
 
         new LinkageFramework(linkage, linker).link();
+
+    }
+
+    public LinkageQuality evaluateOnly(final String source_repository_name, double match_threshold, StringMetric baseMetric) {
+
+        this.baseMetric = baseMetric;
+
+        final Path store_path = ApplicationProperties.getStorePath();
+        final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
+        final Linkage linkage = getLinkage(null, null, source_repository_name, null, record_repository);
+        final Metric<LXP> composite_metric = getCompositeMetric(linkage);
+        final SearchStructureFactory<LXP> search_factory = getSearchFactory(composite_metric);
+        final Linker linker = getLinker(match_threshold, composite_metric, search_factory);
+
+        return new LinkageFramework(linkage, linker).linkForEvaluationOnly();
 
     }
 
@@ -39,6 +55,6 @@ public abstract class LinkageRunner {
     }
 
     protected StringMetric getBaseMetric() {
-        return DEFAULT_BASE_METRIC;
+        return baseMetric;
     }
 }

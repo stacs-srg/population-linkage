@@ -1,19 +1,17 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_linkage.experiments.umea.characterisation.GroundTruth;
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
@@ -105,17 +103,10 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
                 try {
                     if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
-//                        if(record1.getString(Birth.FATHER_SURNAME).equals("Prochazka") || record2.getString(Birth.FATHER_SURNAME).equals("Prochazka")) {
-//                            showLXP(record1);
-//                            showLXP(record2);
-//                        }
 
                         Link l = new Link(makeRole1(record1), makeRole2(record2), 1.0f, "ground truth");
                         String linkKey = toKey(record1, record2);
                         links.put(linkKey.toString(), l);
-
-//                        Link l2 = new Link(makeRole2(record2), makeRole1(record1), 1.0f, "ground truth"); // <<<<<<<<<<<<<<<<<<<<< TODO BOTH DIRECTIONS HACK BY AL
-//                        links.put(l2.toString(), l2);
 
                     }
                 } catch (PersistentObjectException e) {
@@ -125,6 +116,60 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
         }
 
         return links;
+    }
+
+    public int numberOfGroundTruthTrueLinks() {
+
+        int c = 0;
+
+        final List<LXP> records = new ArrayList<>();
+
+        for (LXP lxp : record_repository.getBirths()) {
+            records.add(lxp);
+        }
+
+        final int number_of_records = records.size();
+
+        for (int i = 0; i < number_of_records; i++) {
+            for (int j = i + 1; j < number_of_records; j++) {
+
+                LXP record1 = records.get(i);
+                LXP record2 = records.get(j);
+
+                if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
+                    c++;
+                }
+
+            }
+        }
+
+        return c;
+    }
+
+    @Override
+    public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
+
+        AtomicInteger tp = new AtomicInteger();
+        AtomicInteger fp = new AtomicInteger();
+
+        links.forEach(link -> {
+            try {
+                String p1FamilyID = link.getRole1().getRecordId().getReferend().getString(Birth.FAMILY);
+                String p2FamilyID = link.getRole2().getRecordId().getReferend().getString(Birth.FAMILY);
+
+                if(p1FamilyID.equals(p2FamilyID)) {
+                    tp.getAndIncrement();
+                } else {
+                    fp.getAndIncrement();
+                }
+
+            } catch (BucketException ignored) { }
+        });
+
+        // divisions by two as links are symetrical
+        int fn = numberOfGroundTruthTrueLinks - tp.get()/2;
+
+        return new LinkageQuality(tp.get()/2, fp.get()/2, fn);
     }
 
     private String toKey(LXP record1, LXP record2) {

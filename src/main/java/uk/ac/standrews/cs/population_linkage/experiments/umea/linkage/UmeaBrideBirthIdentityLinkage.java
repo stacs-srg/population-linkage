@@ -1,10 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -142,6 +139,16 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
     @Override
     public void makeGroundTruthPersistent(Iterable<Link> links) {
         makePersistentUsingStorr( store_path, results_repository_name, ground_truth_persistent_name, links ); // use makePersistentUsingStor or makePersistentUsingFile
+    }
+
+    @Override
+    public int numberOfGroundTruthTrueLinks() {
+        return -1;
+    }
+
+    @Override
+    public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
+        return null;
     }
 
     /////////////////// Private methods ///////////////////

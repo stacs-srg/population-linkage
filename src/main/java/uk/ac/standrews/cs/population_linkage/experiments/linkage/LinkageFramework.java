@@ -6,6 +6,7 @@ import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,6 +56,35 @@ public class LinkageFramework {
         linkage_quality.print(System.out);
     }
 
+    public LinkageQuality linkForEvaluationOnly() {
+
+        System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
+
+        // Adds two datasets into linker - these will be used to contruct the iterator shortly
+        // In the birth sibling bundling case these are both births
+        linker.addRecords(linkage.getSourceRecords1(), linkage.getSourceRecords2());
+
+        System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
+        final Iterable<Link> links = linker.getLinks();
+
+        LocalDateTime time_stamp = LocalDateTime.now();
+
+        System.out.println("Counting ground truth links @ " + LocalDateTime.now().toString());
+        final int ground_truth_links = linkage.numberOfGroundTruthTrueLinks();
+        time_stamp = nextTimeStamp(time_stamp, "count ground truth links");
+
+
+        System.out.println("Evaluating links @ " + LocalDateTime.now().toString());
+        LinkageQuality quality = linkage.evaluateWithoutPersisting(ground_truth_links, links);
+        nextTimeStamp(time_stamp, "perform and evaluate linkage");
+
+        nextTimeStamp(time_stamp, "perform and evaluate linkage");
+
+        quality.print(System.out);
+        return quality;
+    }
+
+
     ///////////////////////////// I/O /////////////////////////////
 
     private static String prettyPrint(Duration duration) {
@@ -101,15 +131,8 @@ public class LinkageFramework {
 
 
         System.out.println("GT Links: " + count_gt_links);
-        System.out.println("TP: " + true_positives);
-        System.out.println("FP: " + false_positives);
-        System.out.println("FN: " + false_negatives);
 
-        double precision = ClassificationMetrics.precision(true_positives, false_positives);
-        double recall = ClassificationMetrics.recall(true_positives, false_negatives);
-        double f_measure = ClassificationMetrics.F1(true_positives, false_positives, false_negatives);
-
-        return new LinkageQuality(precision, recall, f_measure);
+        return new LinkageQuality(true_positives, false_positives, false_negatives);
     }
 
     private void showLink(Link calculated_link) {
