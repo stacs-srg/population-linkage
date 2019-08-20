@@ -73,8 +73,8 @@ public class ImportSyntheticScotlandRecordsToStore {
 
         String[] populationNames   = {"synthetic-scotland"};
         String[] populationSizes   = {"13k","133k","530k"};
-        String[] populationNumbers = {"1"}; // ,"2","3","4","5"
-        String[] corruptionNumbers = {"0","1"}; // ,"2"
+        String[] populationNumbers = {"1","2","3","4","5"};
+        String[] corruptionNumbers = {"0","1","2"};
 
         for(String populationName : populationNames)
             for (String populationSize : populationSizes)

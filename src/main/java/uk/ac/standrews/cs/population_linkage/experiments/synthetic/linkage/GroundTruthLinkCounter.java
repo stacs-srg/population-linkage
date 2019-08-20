@@ -1,11 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
 
-import uk.ac.standrews.cs.population_linkage.data.synthetic.ImportSyntheticScotlandRecordsToStore;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.LinkageQuality;
-import uk.ac.standrews.cs.population_linkage.experiments.umea.linkage.UmeaBirthBirthSiblingLinkage;
 import uk.ac.standrews.cs.utilities.FileManipulation;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,16 +63,16 @@ public class GroundTruthLinkCounter extends SyntheticBirthBirthSiblingLinkageRun
 
     public static void main(String[] args) {
 //        new GroundTruthLinkCounter(args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5])).count();
-        countAll(Paths.get(args[5]));
+        countAll(Paths.get(args[0]));
     }
 
 
     public static void countAll(Path resultsFile) {
 
         String[] populationNames   = {"synthetic-scotland"};
-        String[] populationSizes   = {"13k","133k"}; // ,"530k"
-        String[] populationNumbers = {"1"}; // ,"2","3","4","5"
-        String[] corruptionNumbers = {"0"}; // ,"1","2"
+        String[] populationSizes   = {"13k","133k","530k"};
+        String[] populationNumbers = {"1","2","3","4","5"};
+        String[] corruptionNumbers = {"0","1","2"};
 
         for(String populationName : populationNames)
             for (String populationSize : populationSizes)
