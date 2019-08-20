@@ -43,6 +43,7 @@ public class LinkageQuality {
     }
 
     public String toCSV() {
-        return tp +"," + fp + "," + fn + "," + precision + "," + recall + "," + f_measure;
+        return tp +"," + fp + "," + fn + "," + String.format("%.4f", precision) + ","
+                + String.format("%.4f", recall) + "," + String.format("%.4f", f_measure);
     }
 }

@@ -120,7 +120,6 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
     public int numberOfGroundTruthTrueLinks() {
 
-//        AtomicInteger c = new AtomicInteger();
         int c = 0;
 
         final List<LXP> records = new ArrayList<>();
@@ -130,16 +129,6 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
         }
 
         final int number_of_records = records.size();
-
-//        record_repository.getBirths().forEach(record1 -> {
-//            c.decrementAndGet(); // this accounts for comparison to self
-//
-//            record_repository.getBirths().forEach(record2 -> {
-//                if(record1.getString(Birth.FAMILY).equals(record2.getString(Birth.FAMILY))) {
-//                    c.incrementAndGet(); // Ground Truth True Match
-//                }
-//            });
-//        });
 
         for (int i = 0; i < number_of_records; i++) {
             for (int j = i + 1; j < number_of_records; j++) {
@@ -154,34 +143,33 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
             }
         }
 
-//        return c.get() / 2; // Accounts for having counted links in both directions
         return c;
     }
 
     @Override
     public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
 
-        AtomicInteger tp = new AtomicInteger();
-        AtomicInteger fp = new AtomicInteger();
+        int tp = 0;
+        int fp = 0;
 
-        links.forEach(link -> {
+        for(Link link : links) {
             try {
                 String p1FamilyID = link.getRole1().getRecordId().getReferend().getString(Birth.FAMILY);
                 String p2FamilyID = link.getRole2().getRecordId().getReferend().getString(Birth.FAMILY);
 
-                if(p1FamilyID.equals(p2FamilyID)) {
-                    tp.getAndIncrement();
+                if (p1FamilyID.equals(p2FamilyID)) {
+                    tp++;
                 } else {
-                    fp.getAndIncrement();
+                    fp++;
                 }
 
             } catch (BucketException ignored) { }
-        });
+        }
 
         // divisions by two as links are symetrical
-        int fn = numberOfGroundTruthTrueLinks - tp.get()/2;
+        int fn = numberOfGroundTruthTrueLinks - tp/2;
 
-        return new LinkageQuality(tp.get()/2, fp.get()/2, fn);
+        return new LinkageQuality(tp/2, fp/2, fn);
     }
 
     private String toKey(LXP record1, LXP record2) {

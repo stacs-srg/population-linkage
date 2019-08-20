@@ -1,9 +1,9 @@
 package uk.ac.standrews.cs.population_linkage.data.synthetic;
 
 
-import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticScotlandBirthsDataSet;
-import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticScotlandDeathsDataSet;
-import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticScotlandMarriagesDataSet;
+import uk.ac.standrews.cs.data.synthetic.SyntheticBirthsDataSet;
+import uk.ac.standrews.cs.data.synthetic.SyntheticDeathsDataSet;
+import uk.ac.standrews.cs.data.synthetic.SyntheticMarriagesDataSet;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
@@ -14,23 +14,25 @@ public class ImportSyntheticScotlandRecordsToStore {
 
     private final Path store_path;
     private final String repo_name;
+    private final String populationName;
     private final String populationSize;
     private final String populationNumber;
     private final boolean corrupted;
     private final String corruptionNumber;
 
-    public ImportSyntheticScotlandRecordsToStore(Path store_path, String populationSize, String populationNumber, boolean corrupted, String corruptionNumber) {
+    public ImportSyntheticScotlandRecordsToStore(Path store_path, String populationName, String populationSize, String populationNumber, boolean corrupted, String corruptionNumber) {
 
         this.store_path = store_path;
         this.populationNumber = populationNumber;
+        this.populationName = populationName;
         this.populationSize = populationSize;
         this.corrupted = corrupted;
         this.corruptionNumber = corruptionNumber;
 
         if(corrupted)
-            this.repo_name = "scotland_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
+            this.repo_name = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
         else {
-            this.repo_name = "scotland_" + populationSize + "_" + populationNumber + "_clean";
+            this.repo_name = populationName + "_" + populationSize + "_" + populationNumber + "_clean";
         }
 
         System.out.println("REPO NAME: " + this.repo_name);
@@ -43,15 +45,15 @@ public class ImportSyntheticScotlandRecordsToStore {
         System.out.println("Importing Synthetic records into repository: " + repo_name);
         System.out.println();
 
-        DataSet birth_records = SyntheticScotlandBirthsDataSet.factory(populationSize, populationNumber, corrupted, corruptionNumber);
+        DataSet birth_records = SyntheticBirthsDataSet.factory(populationName, populationSize, populationNumber, corrupted, corruptionNumber);
         record_repository.importBirthRecords(birth_records);
         System.out.println("Imported " + birth_records.getRecords().size() + " birth records");
 
-        DataSet death_records = SyntheticScotlandDeathsDataSet.factory(populationSize, populationNumber, corrupted, corruptionNumber);
+        DataSet death_records = SyntheticDeathsDataSet.factory(populationName, populationSize, populationNumber, corrupted, corruptionNumber);
         record_repository.importDeathRecords(death_records);
         System.out.println("Imported " + death_records.getRecords().size() + " death records");
 
-        DataSet marriage_records = SyntheticScotlandMarriagesDataSet.factory(populationSize, populationNumber, corrupted, corruptionNumber);
+        DataSet marriage_records = SyntheticMarriagesDataSet.factory(populationName, populationSize, populationNumber, corrupted, corruptionNumber);
         record_repository.importMarriageRecords(marriage_records);
         System.out.println("Imported " + marriage_records.getRecords().size() + " marriage records");
 
@@ -63,6 +65,24 @@ public class ImportSyntheticScotlandRecordsToStore {
 
         Path store_path = ApplicationProperties.getStorePath();
 
-        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2].equals("true"), args[3]).run();
+//        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2], args[3].equals("true"), args[4]).run();
+        addAllToStore(store_path);
+    }
+
+    public static void addAllToStore(Path store_path) throws Exception {
+
+        String[] populationNames   = {"synthetic-scotland"};
+        String[] populationSizes   = {"13k","133k","530k"};
+        String[] populationNumbers = {"1"}; // ,"2","3","4","5"
+        String[] corruptionNumbers = {"0","1"}; // ,"2"
+
+        for(String populationName : populationNames)
+            for (String populationSize : populationSizes)
+                for(String populationNumber : populationNumbers)
+                    for(String corruptionNumber : corruptionNumbers)
+                        new ImportSyntheticScotlandRecordsToStore(store_path, populationName, populationSize,
+                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber).run();
+
+
     }
 }

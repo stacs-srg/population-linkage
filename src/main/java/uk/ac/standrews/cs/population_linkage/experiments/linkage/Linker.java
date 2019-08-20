@@ -32,6 +32,8 @@ public abstract class Linker {
         this.records2 = records2;
     }
 
+    public void terminate() {}
+
     public Iterable<Link> getLinks() {
 
         final Iterator<RecordPair> matching_pairs = getMatchingRecordPairs(records1, records2).iterator();
@@ -68,9 +70,9 @@ public abstract class Linker {
                     do {
                         pair = matching_pairs.next();
                     }
-                    while (pair.distance > threshold && matching_pairs.hasNext());
+                    while ((pair.distance > threshold || !isViableLink(pair)) && matching_pairs.hasNext());
 
-                    if (pair.distance <= threshold) {
+                    if (pair.distance <= threshold && isViableLink(pair)) {
 
                         try {
                             Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
@@ -86,6 +88,10 @@ public abstract class Linker {
                 else throw new NoSuchElementException();
             }
         };
+    }
+
+    protected boolean isViableLink(RecordPair pair) { // Overwrite this with any viability checking of links that is required
+        return true;
     }
 
     public void setThreshold(double threshold) {

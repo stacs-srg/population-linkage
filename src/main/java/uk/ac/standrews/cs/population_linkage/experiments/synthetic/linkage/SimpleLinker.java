@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
 
-import uk.ac.standrews.cs.data.synthetic.scot_test.SyntheticScotlandBirthsDataSet;
+import uk.ac.standrews.cs.data.synthetic.SyntheticBirthsDataSet;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
@@ -19,7 +19,7 @@ public class SimpleLinker {
 
         long startTime = System.nanoTime();
 
-        DataSet birth_records = SyntheticScotlandBirthsDataSet.factory(args[0], args[1], args[2].equals("true"), args[3]);
+        DataSet birth_records = SyntheticBirthsDataSet.factory(args[0], args[1], args[2], args[3].equals("true"), args[4]);
 
         long readInTime = System.nanoTime();
         System.out.println("Read in in (s): " + (readInTime - startTime)/1E9);

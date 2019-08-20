@@ -16,9 +16,9 @@ public class Constants {
     public static final Cosine COSINE = new Cosine();
     public static final DamerauLevenshtein DAMERAU_LEVENSHTEIN = new DamerauLevenshtein(1, 1, 1, 1);
     public static final Jaccard JACCARD = new Jaccard();
-    public static final JensenShannon JENSEN_SHANNON = new JensenShannon();
+    public static JensenShannon JENSEN_SHANNON = new JensenShannon();
     public static final Levenshtein LEVENSHTEIN = new Levenshtein();
-    public static final SED SED = new SED();
+    public static SED SED = new SED();
 
     public static final BagDistance BAG_DISTANCE = new BagDistance();
     public static final Dice DICE = new Dice();
@@ -54,6 +54,8 @@ public class Constants {
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
 
+    public static final String SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"FATHER_FORENAME, FATHER_SURNAME, MOTHER_FORENAME, MOTHER_MAIDEN_SURNAME, PARENTS_PLACE_OF_MARRIAGE, PARENTS_DAY_OF_MARRIAGE, PARENTS_MONTH_OF_MARRIAGE, PARENTS_YEAR_OF_MARRIAGE\"";
+
     @SafeVarargs
     private static List<StringMetric> concatenate(final List<StringMetric>... lists) {
 
@@ -67,6 +69,10 @@ public class Constants {
     }
 
     public static StringMetric get(String stringMetric) {
+        return get(stringMetric, 512);
+    }
+
+    public static StringMetric get(String stringMetric, int CHAR_VAL_UPPER_BOUND) {
 
         switch (stringMetric.toUpperCase()) {
             case "COSINE":
@@ -76,11 +82,12 @@ public class Constants {
             case "JACCARD":
                 return JACCARD;
             case "JENSEN_SHANNON":
+                JENSEN_SHANNON = new JensenShannon(CHAR_VAL_UPPER_BOUND);
                 return JENSEN_SHANNON;
             case "LEVENSHTEIN":
                 return LEVENSHTEIN;
             case "SED":
-                return SED;
+                return SED = new SED(CHAR_VAL_UPPER_BOUND);
             case "BAG_DISTANCE":
                 return BAG_DISTANCE;
             case "DICE":

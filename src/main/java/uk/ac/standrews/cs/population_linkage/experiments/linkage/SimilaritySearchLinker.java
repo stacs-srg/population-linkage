@@ -44,6 +44,10 @@ public abstract class SimilaritySearchLinker extends Linker {
         search_structure = search_structure_factory.newSearchStructure(larger_set);
     }
 
+    public void terminate() {
+        search_structure.terminate();
+    }
+
     @Override
     public Iterable<RecordPair> getMatchingRecordPairs(final Iterable<LXP> records1, final Iterable<LXP> records2) {
 

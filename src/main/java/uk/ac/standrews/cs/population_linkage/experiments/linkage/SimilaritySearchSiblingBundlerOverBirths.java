@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkageConfig;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
@@ -43,4 +44,10 @@ public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLi
     protected IStoreReference getIdentifier2(LXP record) throws PersistentObjectException {
         return record.getThisRef();
     }
+
+    protected boolean isViableLink(RecordPair pair) {
+        return LinkageConfig.isViableLink(pair);
+    }
+
+
 }

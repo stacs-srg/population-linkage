@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.MemoryLogger;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
@@ -56,7 +57,7 @@ public class LinkageFramework {
         linkage_quality.print(System.out);
     }
 
-    public LinkageQuality linkForEvaluationOnly() {
+    public LinkageQuality linkForEvaluationOnly(int numberOfGroundTruthLinks) {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
 
@@ -64,21 +65,20 @@ public class LinkageFramework {
         // In the birth sibling bundling case these are both births
         linker.addRecords(linkage.getSourceRecords1(), linkage.getSourceRecords2());
 
+        MemoryLogger.update();
+
         System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
         final Iterable<Link> links = linker.getLinks();
 
+        MemoryLogger.update();
+
         LocalDateTime time_stamp = LocalDateTime.now();
 
-        System.out.println("Counting ground truth links @ " + LocalDateTime.now().toString());
-        final int ground_truth_links = linkage.numberOfGroundTruthTrueLinks();
-        time_stamp = nextTimeStamp(time_stamp, "count ground truth links");
-
-
         System.out.println("Evaluating links @ " + LocalDateTime.now().toString());
-        LinkageQuality quality = linkage.evaluateWithoutPersisting(ground_truth_links, links);
+        LinkageQuality quality = linkage.evaluateWithoutPersisting(numberOfGroundTruthLinks, links);
         nextTimeStamp(time_stamp, "perform and evaluate linkage");
 
-        nextTimeStamp(time_stamp, "perform and evaluate linkage");
+        MemoryLogger.update();
 
         quality.print(System.out);
         return quality;

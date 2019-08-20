@@ -75,18 +75,6 @@ public abstract class Linkage {
 
     public abstract LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links);
 
-//    public Iterator<Link> getLinksMade() {
-//        try {
-//            IRepository repo = new Store(store_path).getRepository(results_repository_name);
-//            IBucket<LXPLink> bucket = repo.getBucket(links_persistent_name, LXPLink.class);
-//
-//            return bucket.getIterator(LXPLink.class);
-//        } catch (RepositoryException e) {
-//            throw new RuntimeException("No made links repo found when expected -" +
-//                    " make sure your made the repo you're trying to access");
-//        }
-//    }
-
     //////////////////////// Private ///////////////////////
 
     protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
