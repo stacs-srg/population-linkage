@@ -35,10 +35,6 @@ public abstract class SimilaritySearchLinker extends Linker {
 
     public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
 
-
-
-//        Iterable<LXP> filteredRecords2 = filterRecords(records2);
-
         super.addRecords(records1, records2);
 
         int records1_size = count(records1);

@@ -152,19 +152,22 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
         int tp = 0;
         int fp = 0;
 
-        for(Link link : links) {
-            try {
-                String p1FamilyID = link.getRole1().getRecordId().getReferend().getString(Birth.FAMILY);
-                String p2FamilyID = link.getRole2().getRecordId().getReferend().getString(Birth.FAMILY);
+        try {
+            for (Link link : links) {
+                try {
+                    String p1FamilyID = link.getRole1().getRecordId().getReferend().getString(Birth.FAMILY);
+                    String p2FamilyID = link.getRole2().getRecordId().getReferend().getString(Birth.FAMILY);
 
-                if (p1FamilyID.equals(p2FamilyID)) {
-                    tp++;
-                } else {
-                    fp++;
+                    if (p1FamilyID.equals(p2FamilyID)) {
+                        tp++;
+                    } else {
+                        fp++;
+                    }
+
+                } catch (BucketException ignored) {
                 }
-
-            } catch (BucketException ignored) { }
-        }
+            }
+        } catch (NoSuchElementException ignored) {}
 
         // divisions by two as links are symetrical
         int fn = numberOfGroundTruthTrueLinks - tp/2;
