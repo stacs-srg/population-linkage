@@ -151,6 +151,16 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
         return null;
     }
 
+    @Override
+    public Iterable<LXP> getPreFilteredSourceRecords1() {
+        return getSourceRecords1();
+    }
+
+    @Override
+    public Iterable<LXP> getPreFilteredSourceRecords2() {
+        return getSourceRecords2();
+    }
+
     /////////////////// Private methods ///////////////////
 
     private boolean is_legal(String child_id) {

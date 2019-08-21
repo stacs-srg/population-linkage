@@ -55,7 +55,9 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
             FileManipulation.createFileIfDoesNotExist(resultsFile);
             if(FileManipulation.countLines(resultsFile) == 0) {
                 new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
-                        .appendToFile("population,size,pop#,corruption#,linkage-approach,threshold,metric,max-sibling-gap,tp,fp,fn,precision,recall,f-measure,link-time-seconds,max-memory-usage,code-version,hostname,linkage-fields" +
+                        .appendToFile("population,size,pop#,corruption#,linkage-approach,threshold,metric," +
+                                "max-sibling-gap,tp,fp,fn,precision,recall,f-measure,link-time-seconds," +
+                                "max-memory-usage,#ROs,code-version,hostname,linkage-fields" +
                         System.lineSeparator());
             }
 
@@ -77,12 +79,12 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
                 hostname = "NA";
             }
 
-
             new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
                     .appendToFile(populationName + "," + populationSize + "," + populationNumber + "," +
                             corruptionNumber + "," + linkageApproach + "," + threshold + "," + stringMetric + "," +
                             maxSiblingGap + "," + lq.toCSV() + "," + timeTakenInSeconds + "," + MemoryLogger.getMax() +
-                            "," + gitVersion + ","  + hostname + "," + Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS + System.lineSeparator());
+                            "," + numberOfReferenceObjects + "," + gitVersion + ","  + hostname + "," +
+                            Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS + System.lineSeparator());
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -91,6 +93,10 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
 
     public void setCacheSizes(RecordRepository record_repository) {
         record_repository.setBirthsCacheSize(defaultCacheSize);
+    }
+
+    private int requiredNumberOfMarriageFields() {
+        return 1;
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {

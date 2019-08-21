@@ -172,6 +172,59 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
         return new LinkageQuality(tp/2, fp/2, fn);
     }
 
+    private Collection<LXP> filteredBirthRecords = null;
+
+    @Override
+    public Iterable<LXP> getPreFilteredSourceRecords1() {
+
+        if(filteredBirthRecords == null) {
+
+            filteredBirthRecords = new HashSet<>();
+
+            for(LXP record : birth_records) {
+
+                String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
+                String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
+                String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
+//                String mothersSurname = record.getString(Birth.MOTHER_SURNAME).trim();
+
+                String marriageYear = record.getString(Birth.PARENTS_YEAR_OF_MARRIAGE).trim();
+                String marriagePlace = record.getString(Birth.PARENTS_PLACE_OF_MARRIAGE).trim();
+
+                if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
+                        fathersSurname.equals("") || fathersSurname.equals("missing") ||
+                        mothersForename.equals("") || mothersForename.equals("missing"))) {
+//                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                    // no key info is missing - so we'll consider this record
+                    // if it's not missing too much marriage info
+                    int numberOfPopulatedMarriageFields = 0;
+
+                    if(!(marriageYear.equals("") || marriageYear.equals("missing"))) {
+                        numberOfPopulatedMarriageFields++;
+                    }
+
+                    if(!(marriagePlace.equals("") || marriagePlace.equals("missing"))) {
+                        numberOfPopulatedMarriageFields++;
+                    }
+
+                    if(numberOfPopulatedMarriageFields >= requiredNumberOfMarriageFields()) {
+                        filteredBirthRecords.add(record);
+                    } // else reject record for linkage - not enough info
+                } // else reject record for linkage - not enough info
+            }
+        }
+        return filteredBirthRecords;
+    }
+
+    private int requiredNumberOfMarriageFields() {
+        return 1;
+    }
+
+    @Override
+    public Iterable<LXP> getPreFilteredSourceRecords2() {
+        return getPreFilteredSourceRecords1();
+    }
+
     private String toKey(LXP record1, LXP record2) {
         String s1 = record1.getString(Birth.ORIGINAL_ID);
         String s2 = record2.getString(Birth.ORIGINAL_ID);

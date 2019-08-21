@@ -1,8 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.al_richard.metricbitblaster.production.ParallelBitBlaster;
 import uk.al_richard.metricbitblaster.production.ParallelBitBlaster2;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     // TOM - was 20
     private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 70;
-    private static final long SEED = 34258723425L;
+    private static long SEED = 34258723425L;
     private ParallelBitBlaster2<T> bit_blaster;
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data) {
@@ -23,27 +23,57 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
     public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data, int numberOfReferenceObjects) {
         List<T> copy_of_data = copyData(data);
 
-        init(distance_metric, chooseRandomReferencePoints(copy_of_data, numberOfReferenceObjects), copy_of_data);
+        boolean initiliased = false;
+        int tries = 0;
+
+        int maxTries = 5;
+
+        while(!initiliased && tries < maxTries) {
+            try {
+                init(distance_metric, chooseRandomReferencePoints(copy_of_data, numberOfReferenceObjects), copy_of_data);
+                initiliased = true;
+            } catch (Exception e) {
+                tries++;
+                SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
+                System.out.println("Initilisation exception - trying again with diferent reference points - new seed: " + SEED);
+            }
+        }
+
+        if(tries == maxTries)
+            throw new RuntimeException("Failed to init");
+
     }
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, List<T> reference_points, Iterable<T> data) {
 
-        init(distance_metric, reference_points, copyData(data));
+        boolean initiliased = false;
+        int tries = 0;
+
+        while(!initiliased && tries < 4) {
+            try {
+                init(distance_metric, reference_points, copyData(data));
+                initiliased = true;
+            } catch (Exception e) {
+                System.out.println("Initilisation exception - trying again with diferent reference points");
+                tries++;
+                SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
+            }
+        }
+
     }
 
     public void terminate() {
         bit_blaster.terminate();
     }
 
-    private void init(final Metric<T> distance_metric, final List<T> reference_points, final List<T> data) {
+    private void init(final Metric<T> distance_metric, final List<T> reference_points, final List<T> data) throws Exception {
 
-        try {
-            bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2, Runtime.getRuntime().availableProcessors(), true, true);
-//            bit_blaster = new ParallelBitBlaster<>(distance_metric::distance, reference_points, data, 2, true);
+        boolean fourPoint = distance_metric.getMetricName().equals(JensenShannon.metricName);
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2,
+                Runtime.getRuntime().availableProcessors(), fourPoint, false);
+
+
     }
 
     @Override

@@ -140,5 +140,7 @@ public abstract class Linkage {
     }
 
 
+    public abstract Iterable<LXP> getPreFilteredSourceRecords1();
 
+    public abstract Iterable<LXP> getPreFilteredSourceRecords2();
 }

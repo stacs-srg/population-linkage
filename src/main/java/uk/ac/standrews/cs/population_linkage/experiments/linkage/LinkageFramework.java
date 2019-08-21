@@ -63,7 +63,7 @@ public class LinkageFramework {
 
         // Adds two datasets into linker - these will be used to contruct the iterator shortly
         // In the birth sibling bundling case these are both births
-        linker.addRecords(linkage.getSourceRecords1(), linkage.getSourceRecords2());
+        linker.addRecords(linkage.getPreFilteredSourceRecords1(), linkage.getPreFilteredSourceRecords2());
 
         MemoryLogger.update();
 

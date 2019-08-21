@@ -36,6 +36,8 @@ public class LinkageJobQueueHandler {
                 List<String> columnLabels = jobs.get(0);
                 List<String> job = jobs.remove(1);
 
+                System.out.println("Job taken: " + job);
+
                 overwriteToJobFile(fileChannel, jobs);
                 fileChannel.close();
                 System.out.println("Released job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -43,16 +45,16 @@ public class LinkageJobQueueHandler {
                 // At this point we have a linkage job no body else has - now we need to:
                 // put job info into variables
 
-                String populationName = job.get(columnLabels.indexOf("population"));
-                String populationSize = job.get(columnLabels.indexOf("size"));
-                String populationNumber = job.get(columnLabels.indexOf("pop#"));
-                String corruptionNumber = job.get(columnLabels.indexOf("corruption#"));
+                String populationName = job.get(columnLabels.indexOf("population")).trim();
+                String populationSize = job.get(columnLabels.indexOf("size")).trim();
+                String populationNumber = job.get(columnLabels.indexOf("pop#")).trim();
+                String corruptionNumber = job.get(columnLabels.indexOf("corruption#")).trim();
                 boolean corrupted = !corruptionNumber.equals("0");
-                double threshold = Double.valueOf(job.get(columnLabels.indexOf("threshold")));
-                String metric = job.get(columnLabels.indexOf("metric"));
-                int maxSiblingGap = Integer.valueOf(job.get(columnLabels.indexOf("max-sibling-gap")));
-                int cacheSize = Integer.valueOf(job.get(columnLabels.indexOf("cache-size")));
-                int numROs = Integer.valueOf(job.get(columnLabels.indexOf("#ROs")));
+                double threshold = Double.valueOf(job.get(columnLabels.indexOf("threshold")).trim());
+                String metric = job.get(columnLabels.indexOf("metric")).trim();
+                int maxSiblingGap = Integer.valueOf(job.get(columnLabels.indexOf("max-sibling-gap")).trim());
+                int cacheSize = Integer.valueOf(job.get(columnLabels.indexOf("cache-size")).trim());
+                int numROs = Integer.valueOf(job.get(columnLabels.indexOf("#ROs")).trim());
 
                 // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
                 new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber)

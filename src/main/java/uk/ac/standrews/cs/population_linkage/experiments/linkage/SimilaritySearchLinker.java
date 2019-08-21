@@ -5,6 +5,8 @@ import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,6 +34,10 @@ public abstract class SimilaritySearchLinker extends Linker {
 
 
     public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
+
+
+
+//        Iterable<LXP> filteredRecords2 = filterRecords(records2);
 
         super.addRecords(records1, records2);
 
