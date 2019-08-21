@@ -12,15 +12,18 @@ import java.util.Random;
 public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     // TOM - was 20
-    private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 100;
+    private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 70;
     private static final long SEED = 34258723425L;
     private ParallelBitBlaster2<T> bit_blaster;
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data) {
+        this(distance_metric, data, DEFAULT_NUMBER_OF_REFERENCE_POINTS);
+    }
 
+    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data, int numberOfReferenceObjects) {
         List<T> copy_of_data = copyData(data);
 
-        init(distance_metric, chooseRandomReferencePoints(copy_of_data, DEFAULT_NUMBER_OF_REFERENCE_POINTS), copy_of_data);
+        init(distance_metric, chooseRandomReferencePoints(copy_of_data, numberOfReferenceObjects), copy_of_data);
     }
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, List<T> reference_points, Iterable<T> data) {

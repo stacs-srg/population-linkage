@@ -15,6 +15,12 @@ public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLi
         setThreshold(threshold);
     }
 
+    public SimilaritySearchSiblingBundlerOverBirths(SearchStructureFactory<LXP> search_structure_factory, double threshold, Metric<LXP> distance_metric, int number_of_progress_updates, int numberOfReferenceObjects) {
+
+        super(search_structure_factory, distance_metric, number_of_progress_updates, numberOfReferenceObjects);
+        setThreshold(threshold);
+    }
+
     @Override
     protected String getLinkType() {
         return "sibling";

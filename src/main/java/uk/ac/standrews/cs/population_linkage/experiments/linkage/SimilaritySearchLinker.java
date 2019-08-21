@@ -15,12 +15,21 @@ public abstract class SimilaritySearchLinker extends Linker {
     private Iterable<LXP> smaller_set;
     private int smaller_set_size;
 
+    private int numberOfReferenceObjects = 70;
+
     protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, int number_of_progress_updates) {
 
         super(distance_metric, number_of_progress_updates);
 
         this.search_structure_factory = search_structure_factory;
     }
+
+    protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, int number_of_progress_updates, int numberOfReferenceObjects) {
+
+        this(search_structure_factory, distance_metric, number_of_progress_updates);
+        this.numberOfReferenceObjects = numberOfReferenceObjects;
+    }
+
 
     public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
 

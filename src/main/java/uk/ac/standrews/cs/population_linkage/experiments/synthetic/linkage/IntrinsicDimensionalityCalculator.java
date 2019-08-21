@@ -1,23 +1,27 @@
 package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
 
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.RecordPair;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Sigma;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
+import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 
-public class IntrinsicDimensionalityCalculator extends SyntheticBirthBirthSiblingLinkageRunner {
+public class IntrinsicDimensionalityCalculator {
 
     private String sourceRepoName;
     private String populationName;
     private String populationSize;
     private String populationNumber;
-    private boolean corrupted;
     private String corruptionNumber;
     private Path resultsFile;
     private int numberOfRecords;
@@ -27,7 +31,6 @@ public class IntrinsicDimensionalityCalculator extends SyntheticBirthBirthSiblin
         this.populationName = populationName;
         this.populationSize = populationSize;
         this.populationNumber = populationNumber;
-        this.corrupted = corrupted;
         this.corruptionNumber = corruptionNumber;
         this.resultsFile = resultsFile;
 
@@ -44,27 +47,89 @@ public class IntrinsicDimensionalityCalculator extends SyntheticBirthBirthSiblin
     public void calculate(String stringMetric, int sampleN, String fieldsDescriptor, List<Integer> fields) {
         System.out.println("Calculating intrinsic dimensionality for population: " + sourceRepoName);
 
-        StringMetric metric = Constants.get(stringMetric);
+        StringMetric metric = Constants.get(stringMetric, 2048);
 
         try {
             FileManipulation.createFileIfDoesNotExist(resultsFile);
             if(FileManipulation.countLines(resultsFile) == 0) {
-                Files.write(resultsFile, ("population,size,pop#,corruption#,metric,intrinsic-dimensionality,sample-size,calc-time-seconds,on-fields" +
-                        System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
+                new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
+                        .appendToFile("population,size,pop#,corruption#,metric,intrinsic-dimensionality,sample-size,calc-time-seconds,on-fields" +
+                        System.lineSeparator());
             }
 
             long startTime = System.currentTimeMillis();
             double instinsicDimensionality = calculateIntrinsicDimensionality(sourceRepoName, metric, fields, sampleN, numberOfRecords);
             long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
-            Files.write(resultsFile, (populationName + "," + populationSize + "," + populationNumber + "," +
-                            corruptionNumber + "," + stringMetric +  "," + instinsicDimensionality + "," + sampleN + "," +
-                            timeTakenInSeconds + "," + fieldsDescriptor + System.lineSeparator()).getBytes(),
-                    StandardOpenOption.APPEND);
+            new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
+                    .appendToFile((populationName + "," + populationSize + "," + populationNumber + "," +
+                    corruptionNumber + "," + stringMetric +  "," + instinsicDimensionality + "," + sampleN + "," +
+                    timeTakenInSeconds + "," + fieldsDescriptor + System.lineSeparator()));
+
+//            Files.write(resultsFile, .getBytes(),
+//                    StandardOpenOption.APPEND);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public double calculateIntrinsicDimensionality(final String source_repository_name, StringMetric baseMetric, List<Integer> fields, int sampleN, int numberOfRecords) {
+
+        final Path store_path = ApplicationProperties.getStorePath();
+        final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
+
+        Sigma distanceFunction = new Sigma(baseMetric, fields);
+
+        List<RecordPair> pairs = new ArrayList<>();
+
+        int everyNthPair = (int) Math.pow(numberOfRecords, 2) / sampleN;
+
+        long consideredPairs = 0;
+        long sampledPairs = 0;
+        double sumOfDistances = 0;
+
+        for(LXP record1 : Utilities.getBirthRecords(record_repository)) {
+            for(LXP record2 : Utilities.getBirthRecords(record_repository)) {
+
+                if(toSample(consideredPairs, everyNthPair)) {
+                    double distance = distanceFunction.calculateDistance(record1, record2);
+                    pairs.add(new RecordPair(record1, record2, distance));
+
+                    sampledPairs++;
+                    sumOfDistances += distance;
+                }
+
+                consideredPairs++;
+            }
+        }
+
+        double mean = sumOfDistances / sampledPairs;
+
+        double cumalativeSum = 0;
+
+        for(RecordPair pair : pairs) {
+            cumalativeSum += Math.pow(pair.distance - mean, 2) / sampledPairs;
+        }
+
+        double standardDeviation = Math.sqrt(cumalativeSum);
+
+        double intrinsicDimensionality = (mean*mean) / Math.pow(2*standardDeviation, 2);
+
+        System.out.println("Sampled Pairs: " + sampledPairs);
+        System.out.println("mean of distances: " + mean);
+        System.out.println("standard deviation: " + standardDeviation);
+        System.out.println("Intrinsic Dimensionality: " + intrinsicDimensionality);
+
+        record_repository.stopStoreWatcher();
+
+        return intrinsicDimensionality;
+
+    }
+
+    private boolean toSample(long consideredPairs, int everyNthPair) {
+        if(everyNthPair <= 1) return true;
+        return consideredPairs % everyNthPair == 0;
     }
 
     public static void main(String[] args) {

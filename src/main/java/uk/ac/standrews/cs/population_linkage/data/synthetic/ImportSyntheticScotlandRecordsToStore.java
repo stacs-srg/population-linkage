@@ -38,7 +38,7 @@ public class ImportSyntheticScotlandRecordsToStore {
         System.out.println("REPO NAME: " + this.repo_name);
     }
 
-    public void run() throws Exception {
+    public RecordRepository run() throws Exception {
 
         RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
@@ -59,14 +59,16 @@ public class ImportSyntheticScotlandRecordsToStore {
 
         System.out.println();
         System.out.println("Complete");
+
+        return record_repository;
     }
 
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
 
-//        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2], args[3].equals("true"), args[4]).run();
-        addAllToStore(store_path);
+        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2], args[3].equals("true"), args[4]).run();
+//        addAllToStore(store_path);
     }
 
     public static void addAllToStore(Path store_path) throws Exception {

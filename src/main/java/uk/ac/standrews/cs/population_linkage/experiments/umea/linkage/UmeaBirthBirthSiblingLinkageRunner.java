@@ -26,7 +26,7 @@ public class UmeaBirthBirthSiblingLinkageRunner extends LinkageRunner {
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
-        return new BitBlasterSearchStructureFactory<>(composite_metric);
+        return new BitBlasterSearchStructureFactory<>(composite_metric, 70);
     }
 
     public static void main(String[] args) {

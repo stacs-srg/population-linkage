@@ -41,6 +41,9 @@ public abstract class LinkageRunner {
 
         final Path store_path = ApplicationProperties.getStorePath();
         final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
+
+        setCacheSizes(record_repository);
+
         final Linkage linkage = getLinkage(null, null, source_repository_name, null, record_repository);
         final Metric<LXP> composite_metric = getCompositeMetric(linkage);
         final SearchStructureFactory<LXP> search_factory = getSearchFactory(composite_metric);
@@ -56,6 +59,12 @@ public abstract class LinkageRunner {
         return lq;
     }
 
+    public void setCacheSizes(RecordRepository record_repository) {
+        record_repository.setBirthsCacheSize(10000);
+        record_repository.setDeathsCacheSize(10000);
+        record_repository.setMarriagesCacheSize(10000);
+    }
+
     public int countNumberOfGroundTruthLinks(final String source_repository_name) {
 
         final Path store_path = ApplicationProperties.getStorePath();
@@ -68,63 +77,7 @@ public abstract class LinkageRunner {
         return numberOfGroundTruthLinks;
     }
 
-    public double calculateIntrinsicDimensionality(final String source_repository_name, StringMetric baseMetric, List<Integer> fields, int sampleN, int numberOfRecords) {
 
-        final Path store_path = ApplicationProperties.getStorePath();
-        final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
-
-        Sigma distanceFunction = new Sigma(baseMetric, fields);
-
-        List<RecordPair> pairs = new ArrayList<>();
-
-        int everyNthPair = (int) Math.pow(numberOfRecords, 2) / sampleN;
-
-        long consideredPairs = 0;
-        long sampledPairs = 0;
-        double sumOfDistances = 0;
-
-        for(LXP record1 : Utilities.getBirthRecords(record_repository)) {
-            for(LXP record2 : Utilities.getBirthRecords(record_repository)) {
-
-                if(toSample(consideredPairs, everyNthPair)) {
-                    double distance = distanceFunction.calculateDistance(record1, record2);
-                    pairs.add(new RecordPair(record1, record2, distance));
-
-                    sampledPairs++;
-                    sumOfDistances += distance;
-                }
-
-                consideredPairs++;
-            }
-        }
-
-        double mean = sumOfDistances / sampledPairs;
-
-        double cumalativeSum = 0;
-
-        for(RecordPair pair : pairs) {
-            cumalativeSum += Math.pow(pair.distance - mean, 2) / sampledPairs;
-        }
-
-        double standardDeviation = Math.sqrt(cumalativeSum);
-
-        double intrinsicDimensionality = (mean*mean) / Math.pow(2*standardDeviation, 2);
-
-        System.out.println("Sampled Pairs: " + sampledPairs);
-        System.out.println("mean of distances: " + mean);
-        System.out.println("standard deviation: " + standardDeviation);
-        System.out.println("Intrinsic Dimensionality: " + intrinsicDimensionality);
-
-        record_repository.stopStoreWatcher();
-
-        return intrinsicDimensionality;
-
-    }
-
-    private boolean toSample(long consideredPairs, int everyNthPair) {
-        if(everyNthPair <= 1) return true;
-        return consideredPairs % everyNthPair == 0;
-    }
 
     protected abstract Linkage getLinkage(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
