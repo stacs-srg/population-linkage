@@ -8,3 +8,4 @@ fi
 
 
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkageJobQueueHandler" -e -Dexec.args="$2 $3 $4 $5 $6"
+

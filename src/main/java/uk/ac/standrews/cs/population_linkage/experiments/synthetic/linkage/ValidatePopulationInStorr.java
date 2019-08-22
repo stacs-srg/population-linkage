@@ -159,7 +159,7 @@ public class ValidatePopulationInStorr {
 
     }
 
-    private int getCountFromLog(Path recordCounts, String bucket, String populationName, String populationSize, String populationNumber, String corruptionNumber) throws IOException {
+    public static int getCountFromLog(Path recordCounts, String bucket, String populationName, String populationSize, String populationNumber, String corruptionNumber) throws IOException {
 
         List<String> counts = FileManipulation.readAllLines(FileManipulation.getInputStream(recordCounts));
 

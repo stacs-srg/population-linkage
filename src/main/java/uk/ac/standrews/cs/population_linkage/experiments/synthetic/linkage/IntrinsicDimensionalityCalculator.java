@@ -132,31 +132,43 @@ public class IntrinsicDimensionalityCalculator {
         return consideredPairs % everyNthPair == 0;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
         List<Integer> fields = Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
         String fieldDescriptors = Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS;
 
-        new IntrinsicDimensionalityCalculator(
-                args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5]), Integer.valueOf(args[6])
-        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
+//        new IntrinsicDimensionalityCalculator(
+//                args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5]), Integer.valueOf(args[6])
+//        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
 
+        countAll(Paths.get(args[0]), Paths.get(args[1]));
     }
 
-//    public static void countAll(Path resultsFile) {
-//
-//        String[] populationNames   = {"synthetic-scotland"};
-//        String[] populationSizes   = {"13k","133k"}; // ,"530k"
-//        String[] populationNumbers = {"1"}; // ,"2","3","4","5"
-//        String[] corruptionNumbers = {"0"}; // ,"1","2"
-//
-//        for(String populationName : populationNames)
-//            for (String populationSize : populationSizes)
-//                for(String populationNumber : populationNumbers)
-//                    for(String corruptionNumber : corruptionNumbers)
-//                        new GroundTruthLinkCounter(populationName, populationSize,
-//                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber, resultsFile).count();
-//
-//
-//    }
+    public static void countAll(Path idCalcsFile, Path recordCountsFile) throws Exception {
+
+        String[] populationNames   = {"synthetic-scotland"};
+        String[] populationSizes   = {"13k","133k","530k"};
+        String[] populationNumbers = {"1","2","3","4","5"};
+        String[] corruptionNumbers = {"0"}; //,"1","2"};
+
+        for(String populationName : populationNames)
+            for (String populationSize : populationSizes)
+                for(String populationNumber : populationNumbers)
+                    for(String corruptionNumber : corruptionNumbers) {
+                        new ValidatePopulationInStorr(populationName, populationSize, populationNumber, !corruptionNumber.equals("0"), corruptionNumber)
+                                .validate(recordCountsFile);
+
+                        int recordCount = ValidatePopulationInStorr.getCountFromLog(recordCountsFile,
+                                RecordRepository.BIRTHS_BUCKET_NAME, populationName, populationSize,
+                                populationNumber, corruptionNumber);
+
+                        new IntrinsicDimensionalityCalculator(populationName, populationSize,
+                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber,
+                                idCalcsFile, recordCount).calculate("JENSEN_SHANNON", 100000,
+                                                                        Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS,
+                                                                        Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS);
+                    }
+
+
+    }
 }
