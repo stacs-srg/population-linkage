@@ -71,7 +71,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         boolean fourPoint = distance_metric.getMetricName().equals(JensenShannon.metricName);
 
         bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2,
-                Runtime.getRuntime().availableProcessors(), fourPoint, false);
+                Runtime.getRuntime().availableProcessors(), fourPoint, true);
 
 
     }

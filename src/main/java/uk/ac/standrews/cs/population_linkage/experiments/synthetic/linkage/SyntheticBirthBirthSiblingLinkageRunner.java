@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSiblingLinkageRunner {
 
-    private int defaultCacheSize = 10000;
+    private int birthsCacheSize;
 
     private String populationName;
     private String populationSize;
@@ -31,7 +31,7 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
         this.populationNumber = populationNumber;
         this.corruptionNumber = corruptionNumber;
         this.resultsFile = resultsFile;
-        this.defaultCacheSize = cacheSize;
+        this.birthsCacheSize = cacheSize;
 
         if(corrupted)
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
@@ -45,7 +45,7 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
 
     public void link(double threshold, String stringMetric, int numberOfGroundTruthLinks, int maxSiblingGap) {
 
-        StringMetric metric = Constants.get(stringMetric, 2048);
+        StringMetric metric = Constants.get(stringMetric, 4096);
         new LinkageConfig(maxSiblingGap);// probs needs refactor
         String linkageApproach = "sibling-birth-bundler";
 
@@ -92,7 +92,7 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
     }
 
     public void setCacheSizes(RecordRepository record_repository) {
-        record_repository.setBirthsCacheSize(defaultCacheSize);
+        record_repository.setBirthsCacheSize(birthsCacheSize);
     }
 
     private int requiredNumberOfMarriageFields() {

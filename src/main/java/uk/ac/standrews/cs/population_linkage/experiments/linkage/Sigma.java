@@ -61,6 +61,7 @@ public class Sigma extends Metric<LXP> {
 
     @Override
     public String getMetricName() {
-        return "Sigma-" + base_metric.getMetricName() + "-" + Sigma2.hyphenConcat(fields);
+        return base_metric.getMetricName();
+        //        return "Sigma-" + base_metric.getMetricName() + "-" + Sigma2.hyphenConcat(fields);
     }
 }
