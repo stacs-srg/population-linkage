@@ -113,8 +113,14 @@ public class SSBirthDeathSiblingLinkage extends Linkage {
 
         int c = 0;
 
+        // we put the deaths into memory so that we dont have to 'retrieve' them from the storr for every birth
+        List<LXP> deathRecords = new ArrayList<>();
+        for(LXP death : record_repository.getDeaths()) {
+            deathRecords.add(death);
+        }
+
         for(LXP birth : record_repository.getBirths()) {
-            for(LXP death : record_repository.getDeaths()) {
+            for(LXP death : deathRecords) {
                 if(isTrueMatch(birth, death).equals(TRUE_MATCH))
                     c++;
             }
