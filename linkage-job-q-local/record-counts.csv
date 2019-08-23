@@ -30,3 +30,6 @@ synthetic-scotland,133k,1,2,birth_records,110143,2019-08-22T18:44:08.806
 synthetic-scotland,133k,1,1,birth_records,110143,2019-08-22T18:47:37.758
 synthetic-scotland,133k,1,1,death_records,68402,2019-08-22T18:49:21.318
 synthetic-scotland,133k,1,1,marriage_records,30845,2019-08-22T18:50:46.847
+synthetic-scotland,133k,3,2,birth_records,111143,2019-08-23T00:06:33.793
+synthetic-scotland,133k,3,2,death_records,68918,2019-08-23T00:08:34.560
+synthetic-scotland,133k,3,2,marriage_records,31096,2019-08-23T00:10:13.508

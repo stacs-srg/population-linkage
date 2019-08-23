@@ -6,5 +6,5 @@ then
     echo Setting heap size: $1GB
 fi
 
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.IntrinsicDimensionalityCalculator" -e -Dexec.args="$2"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.IntrinsicDimensionalityCalculator" -e -Dexec.args="$2 $3"
 

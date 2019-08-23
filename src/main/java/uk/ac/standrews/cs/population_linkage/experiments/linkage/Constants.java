@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
@@ -54,7 +55,27 @@ public class Constants {
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
 
+    public static final List<Integer> SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS = Arrays.asList(
+
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME
+    );
+
+    public static final List<Integer> SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS = Arrays.asList(
+
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_SURNAME
+    );
+
     public static final String SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"FATHER_FORENAME, FATHER_SURNAME, MOTHER_FORENAME, MOTHER_MAIDEN_SURNAME, PARENTS_PLACE_OF_MARRIAGE, PARENTS_DAY_OF_MARRIAGE, PARENTS_MONTH_OF_MARRIAGE, PARENTS_YEAR_OF_MARRIAGE\"";
+
+    public static final String SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS_AS_STRINGS = "\"Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME\"";
+    public static final String SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"Death.FATHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME\"";
+
 
     @SafeVarargs
     private static List<StringMetric> concatenate(final List<StringMetric>... lists) {

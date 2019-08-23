@@ -16,8 +16,7 @@ public abstract class SimilaritySearchLinker extends Linker {
     private SearchStructure<LXP> search_structure;
     private Iterable<LXP> smaller_set;
     private int smaller_set_size;
-
-    private int numberOfReferenceObjects = 70;
+    private boolean recordOrderFlipped = false;
 
     protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, int number_of_progress_updates) {
 
@@ -25,13 +24,6 @@ public abstract class SimilaritySearchLinker extends Linker {
 
         this.search_structure_factory = search_structure_factory;
     }
-
-    protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, int number_of_progress_updates, int numberOfReferenceObjects) {
-
-        this(search_structure_factory, distance_metric, number_of_progress_updates);
-        this.numberOfReferenceObjects = numberOfReferenceObjects;
-    }
-
 
     public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
 
@@ -46,10 +38,12 @@ public abstract class SimilaritySearchLinker extends Linker {
             smaller_set = records1;
             smaller_set_size = records1_size;
             larger_set = records2;
+            recordOrderFlipped = false;
         } else {
             smaller_set = records2;
             smaller_set_size = records2_size;
             larger_set = records1;
+            recordOrderFlipped = true;
         }
 
         search_structure = search_structure_factory.newSearchStructure(larger_set);
@@ -110,7 +104,11 @@ public abstract class SimilaritySearchLinker extends Linker {
                         if (moreLinksAvailable()) {
 
                             DataDistance<LXP> data_distance = nearest_records.get(neighbours_index++);
-                            next_pair = new RecordPair(next_record_from_smaller_set, data_distance.value, data_distance.distance);
+                            // this can potentionally flip the records round what what was specified - okay for symetric linkage but messes up asymetric linkage...
+                            if(recordOrderFlipped)
+                                next_pair = new RecordPair(data_distance.value, next_record_from_smaller_set, data_distance.distance);
+                            else
+                                next_pair = new RecordPair(next_record_from_smaller_set, data_distance.value, data_distance.distance);
 
                             if (!moreLinksAvailableFromCurrentRecordFromSmallerSet()) getNextRecordFromSmallerSet();
 

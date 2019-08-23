@@ -1,23 +1,26 @@
-package uk.ac.standrews.cs.population_linkage.experiments.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkagePostFilter;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.RecordPair;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.SearchStructureFactory;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLinker {
+public class SimilaritySearchSiblingBundlerOverBirthsAndDeaths extends SimilaritySearchLinker {
 
-    public SimilaritySearchSiblingBundlerOverBirths(SearchStructureFactory<LXP> search_structure_factory, double threshold, Metric<LXP> distance_metric, int number_of_progress_updates) {
 
+    protected SimilaritySearchSiblingBundlerOverBirthsAndDeaths(SearchStructureFactory<LXP> search_structure_factory, double threshold, Metric<LXP> distance_metric, int number_of_progress_updates) {
         super(search_structure_factory, distance_metric, number_of_progress_updates);
         setThreshold(threshold);
     }
 
     @Override
     protected String getLinkType() {
-        return "birth-birth-sibling";
+        return "birth-death-sibling";
     }
 
     @Override
@@ -32,7 +35,7 @@ public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLi
 
     @Override
     protected String getRoleType2() {
-        return Birth.ROLE_BABY;
+        return Death.ROLE_DECEASED;
     }
 
     @Override
@@ -46,7 +49,7 @@ public class SimilaritySearchSiblingBundlerOverBirths extends SimilaritySearchLi
     }
 
     protected boolean isViableLink(RecordPair pair) {
-        return LinkagePostFilter.isViableBBSiblingLink(pair);
+        return LinkagePostFilter.isViableBDSiblingLink(pair);
     }
 
 }

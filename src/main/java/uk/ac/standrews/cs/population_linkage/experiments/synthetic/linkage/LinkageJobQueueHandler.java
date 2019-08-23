@@ -53,24 +53,40 @@ public class LinkageJobQueueHandler {
                 double threshold = Double.valueOf(job.get(columnLabels.indexOf("threshold")).trim());
                 String metric = job.get(columnLabels.indexOf("metric")).trim();
                 int maxSiblingGap = Integer.valueOf(job.get(columnLabels.indexOf("max-sibling-gap")).trim());
-                int cacheSize = Integer.valueOf(job.get(columnLabels.indexOf("cache-size")).trim());
+                int birthsCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("births-cache-size")).trim());
+                int marriagesCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
+                int deathsCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
                 int numROs = Integer.valueOf(job.get(columnLabels.indexOf("#ROs")).trim());
+                String linkageType = job.get(columnLabels.indexOf("linkage-type")).trim();
 
                 // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
                 new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber)
                         .validate(recordCountsFile);
 
-                int numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                        corrupted, corruptionNumber, gtCountsFile).count();
+                switch (linkageType) {
+                    case SyntheticBirthBirthSiblingLinkageRunner.linkageApproach:
+                        SyntheticBirthBirthSiblingLinkageRunner sbbslr = new SyntheticBirthBirthSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
+                                corruptionNumber, linkageResultsFile, birthsCacheSize, numROs);
 
-                new SyntheticBirthBirthSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
-                        corruptionNumber, linkageResultsFile, cacheSize, numROs).link(threshold, metric, numberOfGTLinks, maxSiblingGap);
+                        int numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
+                                corrupted, corruptionNumber, gtCountsFile).count(sbbslr, SyntheticBirthBirthSiblingLinkageRunner.linkageApproach);
 
+                        sbbslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
+                        break;
+                    case SSBirthDeathSiblingLinkageRunner.linkageApproach:
+                        SSBirthDeathSiblingLinkageRunner ssbdslr = new SSBirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
+                                corruptionNumber, linkageResultsFile, birthsCacheSize, deathsCacheSize, numROs);
+
+                        numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
+                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr, SSBirthDeathSiblingLinkageRunner.linkageApproach);
+
+                        ssbdslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
+                }
 
             } else {
                 fileChannel.close();
                 System.out.println("No jobs in job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                Thread.sleep(5000);
+                Thread.sleep(60000);
             }
         }
 

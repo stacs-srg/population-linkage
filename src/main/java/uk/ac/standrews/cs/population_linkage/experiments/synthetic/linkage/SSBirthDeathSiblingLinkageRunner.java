@@ -1,7 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
-import uk.ac.standrews.cs.population_linkage.experiments.umea.linkage.UmeaBirthBirthSiblingLinkageRunner;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -11,9 +10,30 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSiblingLinkageRunner {
+public class SSBirthDeathSiblingLinkageRunner extends LinkageRunner {
+
+    @Override
+    protected Linkage getLinkage(String links_persistent_name, String gt_persistent_name, String source_repository_name, String results_repository_name, RecordRepository record_repository) {
+        return new SSBirthDeathSiblingLinkage(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
+    }
+
+    @Override
+    protected Linker getLinker(double match_threshold, Metric<LXP> composite_metric, SearchStructureFactory<LXP> search_factory) {
+        return new SimilaritySearchSiblingBundlerOverBirthsAndDeaths(search_factory, match_threshold, composite_metric, getNumberOfProgressUpdates());
+    }
+
+    @Override
+    protected Metric<LXP> getCompositeMetric(Linkage linkage) {
+        return new Sigma2(getBaseMetric(), linkage.getLinkageFields1(), linkage.getLinkageFields2());
+    }
+
+    @Override
+    protected SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric) {
+        return new BitBlasterSearchStructureFactory<>(composite_metric, numberOfReferenceObjects);
+    }
 
     private int birthsCacheSize;
+    private int deathsCacheSize;
 
     private String populationName;
     private String populationSize;
@@ -24,13 +44,18 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
 
     private String sourceRepoName;
 
-    public SyntheticBirthBirthSiblingLinkageRunner(String populationName, String populationSize, String populationNumber, boolean corrupted, String corruptionNumber, Path resultsFile, int cacheSize, int numberOfReferenceObjects) {
+    static final String linkageApproach = "birth-death-sibling";
+
+    public SSBirthDeathSiblingLinkageRunner(String populationName, String populationSize, String populationNumber,
+                                            boolean corrupted, String corruptionNumber, Path resultsFile,
+                                            int birthsCacheSize, int deathsCacheSize, int numberOfReferenceObjects) {
         this.populationName = populationName;
         this.populationSize = populationSize;
         this.populationNumber = populationNumber;
         this.corruptionNumber = corruptionNumber;
         this.resultsFile = resultsFile;
-        this.birthsCacheSize = cacheSize;
+        this.birthsCacheSize = birthsCacheSize;
+        this.deathsCacheSize = deathsCacheSize;
 
         if(corrupted)
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
@@ -41,8 +66,6 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
 
         this.numberOfReferenceObjects = numberOfReferenceObjects;
     }
-
-    static final String linkageApproach = "sibling-birth-bundler";
 
     public void link(double threshold, String stringMetric, int numberOfGroundTruthLinks, int maxSiblingGap) {
 
@@ -61,8 +84,8 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
             JobRunnerIO.appendToResultsFile(threshold, stringMetric, maxSiblingGap, lq, timeTakenInSeconds,
                     resultsFile, populationName, populationSize, populationNumber, corruptionNumber,
                     linkageApproach, numberOfReferenceObjects,
-                    Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS,
-                    Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS);
+                    Constants.SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS_AS_STRINGS,
+                    Constants.SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS_AS_STRINGS);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -71,10 +94,7 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
 
     public void setCacheSizes(RecordRepository record_repository) {
         record_repository.setBirthsCacheSize(birthsCacheSize);
-    }
-
-    protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
-        return new BitBlasterSearchStructureFactory<>(composite_metric, numberOfReferenceObjects);
+        record_repository.setDeathsCacheSize(deathsCacheSize);
     }
 
     public static void main(String[] args) {
@@ -89,13 +109,16 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
         Path resultsFile = Paths.get(args[7]);
         int numberOfGroundTruthLinks = Integer.valueOf(args[8]);
         int maxSiblingGap = Integer.valueOf(args[9]);
-        int cacheSize = Integer.valueOf(args[10]);
-        int numROs= Integer.valueOf(args[11]);
+        int birthsCacheSize = Integer.valueOf(args[10]);
+        int deathsCacheSize = Integer.valueOf(args[11]);
+        int numROs= Integer.valueOf(args[12]);
 
-        new SyntheticBirthBirthSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
-                corruptionNumber, resultsFile, cacheSize, numROs)
+        new SSBirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
+                corruptionNumber, resultsFile, birthsCacheSize, deathsCacheSize, numROs)
                 .link(threshold, stringMetric, numberOfGroundTruthLinks, maxSiblingGap);
 
     }
+
+
 
 }

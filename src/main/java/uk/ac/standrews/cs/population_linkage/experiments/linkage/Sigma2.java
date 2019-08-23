@@ -49,11 +49,19 @@ public class Sigma2 extends Metric<LXP> {
         double total_distance = 0.0d;
 
         for (int i = 0; i < fieldList1.size(); i++) {
-            int field1_index = fieldList1.get(i);
-            int field2_index = fieldList2.get(i);
 
-            double f_distance = baseDistance.distance(a.getString(field1_index), b.getString(field2_index));
-            total_distance += f_distance;
+            try {
+                int field1_index = fieldList1.get(i);
+                int field2_index = fieldList2.get(i);
+
+                double f_distance = baseDistance.distance(a.getString(field1_index), b.getString(field2_index));
+                total_distance += f_distance;
+
+            } catch (NullPointerException e) {
+                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(i) + " in records \n" + a + "\n and \n" + b, e);
+            } catch (Exception e) {
+                throw new RuntimeException("exception comparing fields " + a.getString(i) + " and " + b.getString(i) + " from field " + a.getMetaData().getFieldName(i) + " in records \n" + a + "\n and \n" + b, e);
+            }
         }
 
         return normaliseArbitraryPositiveDistance(total_distance);
