@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
@@ -89,8 +89,14 @@ public class IntrinsicDimensionalityCalculator {
         long sampledPairs = 0;
         double sumOfDistances = 0;
 
-        for(LXP record1 : Utilities.getBirthRecords(record_repository)) {
-            for(LXP record2 : Utilities.getBirthRecords(record_repository)) {
+        List<LXP> births = new ArrayList<>();
+
+        for(LXP r: Utilities.getBirthRecords(record_repository))
+            births.add(r);
+
+
+        for(LXP record1 : births) {
+            for(LXP record2 : births) {
 
                 if(toSample(consideredPairs, everyNthPair)) {
                     double distance = distanceFunction.calculateDistance(record1, record2);
@@ -114,7 +120,7 @@ public class IntrinsicDimensionalityCalculator {
 
         double standardDeviation = Math.sqrt(cumalativeSum);
 
-        double intrinsicDimensionality = (mean*mean) / Math.pow(2*standardDeviation, 2);
+        double intrinsicDimensionality = (mean*mean) / Math.pow(2*standardDeviation, 1);
 
         System.out.println("Sampled Pairs: " + sampledPairs);
         System.out.println("mean of distances: " + mean);
@@ -137,11 +143,11 @@ public class IntrinsicDimensionalityCalculator {
         List<Integer> fields = Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
         String fieldDescriptors = Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS;
 
-//        new IntrinsicDimensionalityCalculator(
-//                args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5]), Integer.valueOf(args[6])
-//        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
-
-        countAll(Paths.get(args[0]), Paths.get(args[1]));
+        new IntrinsicDimensionalityCalculator(
+                args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5]), Integer.valueOf(args[6])
+        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
+//
+//        countAll(Paths.get(args[0]), Paths.get(args[1]));
     }
 
     public static void countAll(Path idCalcsFile, Path recordCountsFile) throws Exception {

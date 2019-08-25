@@ -18,10 +18,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
 public abstract class Linkage {
 
@@ -73,7 +72,31 @@ public abstract class Linkage {
 
     public abstract int numberOfGroundTruthTrueLinks();
 
-    public abstract LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links);
+    public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
+        int tp = 0;
+        int fp = 0;
+
+        try {
+            for (Link link : links) {
+                try {
+
+                    if (isTrueMatch(link.getRole1().getRecordId().getReferend(),
+                            link.getRole2().getRecordId().getReferend())
+                            .equals(TRUE_MATCH)) {
+                        tp++;
+                    } else {
+                        fp++;
+                    }
+
+                } catch (BucketException ignored) {
+                }
+            }
+        } catch (NoSuchElementException ignored) {}
+
+        int fn = numberOfGroundTruthTrueLinks - tp;
+
+        return new LinkageQuality(tp, fp, fn);
+    }
 
     //////////////////////// Private ///////////////////////
 

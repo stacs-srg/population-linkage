@@ -189,15 +189,15 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
                 String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
                 String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
                 String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
-//                String mothersSurname = record.getString(Birth.MOTHER_SURNAME).trim();
+                String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
 
                 String marriageYear = record.getString(Birth.PARENTS_YEAR_OF_MARRIAGE).trim();
                 String marriagePlace = record.getString(Birth.PARENTS_PLACE_OF_MARRIAGE).trim();
 
                 if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
                         fathersSurname.equals("") || fathersSurname.equals("missing") ||
-                        mothersForename.equals("") || mothersForename.equals("missing"))) {
-//                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                        mothersForename.equals("") || mothersForename.equals("missing") ||
+                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
                     // no key info is missing - so we'll consider this record
                     // if it's not missing too much marriage info
                     int numberOfPopulatedMarriageFields = 0;

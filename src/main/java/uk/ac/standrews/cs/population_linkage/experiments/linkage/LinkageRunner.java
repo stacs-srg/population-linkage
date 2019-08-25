@@ -1,16 +1,13 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.MemoryLogger;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class LinkageRunner {
 

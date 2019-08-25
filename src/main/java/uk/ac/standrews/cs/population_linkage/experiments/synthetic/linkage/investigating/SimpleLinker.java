@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.investigating;
 
 import uk.ac.standrews.cs.data.synthetic.SyntheticBirthsDataSet;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;

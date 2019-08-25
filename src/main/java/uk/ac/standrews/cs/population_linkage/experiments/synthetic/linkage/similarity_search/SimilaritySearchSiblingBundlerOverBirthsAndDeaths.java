@@ -1,8 +1,9 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.similarity_search;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.RecordPair;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.SimilaritySearchLinker;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkagePostFilter;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -13,7 +14,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 public class SimilaritySearchSiblingBundlerOverBirthsAndDeaths extends SimilaritySearchLinker {
 
 
-    protected SimilaritySearchSiblingBundlerOverBirthsAndDeaths(SearchStructureFactory<LXP> search_structure_factory, double threshold, Metric<LXP> distance_metric, int number_of_progress_updates) {
+    public SimilaritySearchSiblingBundlerOverBirthsAndDeaths(SearchStructureFactory<LXP> search_structure_factory, double threshold, Metric<LXP> distance_metric, int number_of_progress_updates) {
         super(search_structure_factory, distance_metric, number_of_progress_updates);
         setThreshold(threshold);
     }

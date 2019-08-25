@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
 import java.lang.management.ManagementFactory;
 

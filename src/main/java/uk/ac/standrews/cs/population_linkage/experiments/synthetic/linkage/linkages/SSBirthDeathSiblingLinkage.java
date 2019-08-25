@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkages;
 
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
@@ -130,34 +130,6 @@ public class SSBirthDeathSiblingLinkage extends Linkage {
     }
 
     @Override
-    public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
-        int tp = 0;
-        int fp = 0;
-
-        try {
-            for (Link link : links) {
-                try {
-
-                    if (isTrueMatch(link.getRole1().getRecordId().getReferend(),
-                                    link.getRole2().getRecordId().getReferend())
-                            .equals(TRUE_MATCH)) {
-                        tp++;
-                    } else {
-                        fp++;
-                    }
-
-                } catch (BucketException ignored) {
-                }
-            }
-        } catch (NoSuchElementException ignored) {}
-
-        // divisions by two as links are symetrical
-        int fn = numberOfGroundTruthTrueLinks - tp;
-
-        return new LinkageQuality(tp, fp, fn);
-    }
-
-    @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
         HashSet<LXP> filteredBirthRecords = new HashSet<>();
 
@@ -166,12 +138,12 @@ public class SSBirthDeathSiblingLinkage extends Linkage {
             String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
             String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
             String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
-//                String mothersSurname = record.getString(Birth.MOTHER_SURNAME).trim();
+                String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
 
             if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
                     fathersSurname.equals("") || fathersSurname.equals("missing") ||
-                    mothersForename.equals("") || mothersForename.equals("missing"))) {
-//                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                    mothersForename.equals("") || mothersForename.equals("missing")||
+                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
                 // no key info is missing - so we'll consider this record
 
                 filteredBirthRecords.add(record);
@@ -190,12 +162,12 @@ public class SSBirthDeathSiblingLinkage extends Linkage {
             String fathersForename = record.getString(Death.FATHER_FORENAME).trim();
             String fathersSurname = record.getString(Death.FATHER_SURNAME).trim();
             String mothersForename = record.getString(Death.MOTHER_FORENAME).trim();
-//                String mothersSurname = record.getString(Birth.MOTHER_SURNAME).trim();
+                String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
 
             if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
                     fathersSurname.equals("") || fathersSurname.equals("missing") ||
-                    mothersForename.equals("") || mothersForename.equals("missing"))) {
-//                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                    mothersForename.equals("") || mothersForename.equals("missing") ||
+                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
                 // no key info is missing - so we'll consider this record
 
                 filteredDeathRecords.add(record);

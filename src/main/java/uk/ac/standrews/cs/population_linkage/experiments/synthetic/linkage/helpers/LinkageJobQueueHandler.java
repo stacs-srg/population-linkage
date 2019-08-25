@@ -1,6 +1,8 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
 import com.google.common.collect.Sets;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkage_runners.SSBirthDeathSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkage_runners.SyntheticBirthBirthSiblingLinkageRunner;
 
 import java.io.BufferedReader;
 import java.io.IOException;

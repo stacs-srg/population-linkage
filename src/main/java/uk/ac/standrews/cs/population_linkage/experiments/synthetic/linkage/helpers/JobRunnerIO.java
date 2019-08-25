@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.LinkageQuality;
 import uk.ac.standrews.cs.utilities.FileManipulation;

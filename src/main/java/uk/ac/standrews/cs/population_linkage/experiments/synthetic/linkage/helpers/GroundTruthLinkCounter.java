@@ -1,12 +1,12 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.LinkageRunner;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.FileChannelHandle;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 

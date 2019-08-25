@@ -1,6 +1,8 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkage_runners;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkagePostFilter;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.JobRunnerIO;
 import uk.ac.standrews.cs.population_linkage.experiments.umea.linkage.UmeaBirthBirthSiblingLinkageRunner;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -42,7 +44,7 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
         this.numberOfReferenceObjects = numberOfReferenceObjects;
     }
 
-    static final String linkageApproach = "sibling-birth-bundler";
+    public static final String linkageApproach = "sibling-birth-bundler";
 
     public void link(double threshold, String stringMetric, int numberOfGroundTruthLinks, int maxSiblingGap) {
 

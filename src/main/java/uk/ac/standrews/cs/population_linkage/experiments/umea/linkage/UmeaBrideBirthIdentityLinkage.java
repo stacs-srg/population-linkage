@@ -6,10 +6,13 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
+
+import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
 public class UmeaBrideBirthIdentityLinkage extends Linkage {
 
@@ -143,22 +146,80 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
 
     @Override
     public int numberOfGroundTruthTrueLinks() {
-        return -1;
-    }
 
-    @Override
-    public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
-        return null;
+        int c = 0;
+
+        List<LXP> marriageRecords = new ArrayList<>();
+        for(LXP marriage : record_repository.getMarriages()) {
+            marriageRecords.add(marriage);
+        }
+
+        for(LXP birth : record_repository.getBirths()) {
+            for(LXP marriage : marriageRecords) {
+                if(isTrueMatch(birth, marriage).equals(TRUE_MATCH))
+                    c++;
+            }
+        }
+
+        return c;
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return getSourceRecords1();
+
+        HashSet<LXP> filteredBirthRecords = new HashSet<>();
+
+        for(LXP record : birth_records) {
+
+            String childsForename = record.getString(Birth.FORENAME).trim();
+            String childsSurname = record.getString(Birth.SURNAME).trim();
+            String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
+            String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
+            String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
+            String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
+
+            if(!(childsForename.equals("") || childsForename.equals("missing") ||
+                    childsSurname.equals("") || childsSurname.equals("missing") ||
+                    fathersForename.equals("") || fathersForename.equals("missing") ||
+                    fathersSurname.equals("") || fathersSurname.equals("missing") ||
+                    mothersForename.equals("") || mothersForename.equals("missing")||
+                    mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                // no key info is missing - so we'll consider this record
+
+                filteredBirthRecords.add(record);
+            } // else reject record for linkage - not enough info
+        }
+
+        return filteredBirthRecords;
+
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return getSourceRecords2();
+        HashSet<LXP> filteredMarriageRecords = new HashSet<>();
+
+        for(LXP record : marriage_records) {
+
+            String bridesForename = record.getString(Marriage.BRIDE_FORENAME).trim();
+            String bridesSurname = record.getString(Marriage.BRIDE_SURNAME).trim();
+            String fathersForename = record.getString(Marriage.BRIDE_FATHER_FORENAME).trim();
+            String fathersSurname = record.getString(Marriage.BRIDE_FATHER_SURNAME).trim();
+            String mothersForename = record.getString(Marriage.BRIDE_MOTHER_FORENAME).trim();
+            String mothersSurname = record.getString(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME).trim();
+
+            if(!(bridesForename.equals("") || bridesForename.equals("missing") ||
+                    bridesSurname.equals("") || bridesSurname.equals("missing") ||
+                    fathersForename.equals("") || fathersForename.equals("missing") ||
+                    fathersSurname.equals("") || fathersSurname.equals("missing") ||
+                    mothersForename.equals("") || mothersForename.equals("missing")||
+                    mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                // no key info is missing - so we'll consider this record
+
+                filteredMarriageRecords.add(record);
+            } // else reject record for linkage - not enough info
+        }
+
+        return filteredMarriageRecords;
     }
 
     /////////////////// Private methods ///////////////////

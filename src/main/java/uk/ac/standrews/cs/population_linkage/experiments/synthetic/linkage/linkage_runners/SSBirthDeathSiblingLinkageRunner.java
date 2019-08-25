@@ -1,6 +1,10 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkage_runners;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkagePostFilter;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.JobRunnerIO;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkages.SSBirthDeathSiblingLinkage;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.similarity_search.SimilaritySearchSiblingBundlerOverBirthsAndDeaths;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -44,7 +48,7 @@ public class SSBirthDeathSiblingLinkageRunner extends LinkageRunner {
 
     private String sourceRepoName;
 
-    static final String linkageApproach = "birth-death-sibling";
+    public static final String linkageApproach = "birth-death-sibling";
 
     public SSBirthDeathSiblingLinkageRunner(String populationName, String populationSize, String populationNumber,
                                             boolean corrupted, String corruptionNumber, Path resultsFile,

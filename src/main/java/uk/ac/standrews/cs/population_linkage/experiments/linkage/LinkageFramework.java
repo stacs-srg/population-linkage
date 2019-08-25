@@ -1,20 +1,14 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.MemoryLogger;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class LinkageFramework {
 
