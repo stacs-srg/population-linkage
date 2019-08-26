@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
+import org.apache.commons.math3.distribution.BinomialDistribution;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.RecordPair;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class IntrinsicDimensionalityCalculator {
 
@@ -98,7 +100,7 @@ public class IntrinsicDimensionalityCalculator {
         for(LXP record1 : births) {
             for(LXP record2 : births) {
 
-                if(toSample(consideredPairs, everyNthPair)) {
+                if(toSampleRnd(consideredPairs, everyNthPair)) {
                     double distance = distanceFunction.calculateDistance(record1, record2);
                     pairs.add(new RecordPair(record1, record2, distance));
 
@@ -118,7 +120,7 @@ public class IntrinsicDimensionalityCalculator {
             cumalativeDeviation += Math.pow(pair.distance - mean, 2);
         }
 
-        double standardDeviation = Math.sqrt(cumalativeDeviation / sampledPairs);
+        double standardDeviation = Math.sqrt(cumalativeDeviation / (double) sampledPairs);
 
         double intrinsicDimensionality = (Math.pow(mean, 2)) / Math.pow(2*standardDeviation, 2);
 
@@ -136,6 +138,12 @@ public class IntrinsicDimensionalityCalculator {
     private boolean toSample(long consideredPairs, int everyNthPair) {
         if(everyNthPair <= 1) return true;
         return consideredPairs % everyNthPair == 0;
+    }
+
+
+
+    private boolean toSampleRnd(long consideredPairs, int everyNthPair) {
+        return new Random().nextInt(everyNthPair) == 0;
     }
 
     public static void main(String[] args) throws Exception {
