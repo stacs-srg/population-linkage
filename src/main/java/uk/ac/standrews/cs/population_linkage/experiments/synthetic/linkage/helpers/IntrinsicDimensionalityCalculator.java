@@ -112,15 +112,15 @@ public class IntrinsicDimensionalityCalculator {
 
         double mean = sumOfDistances / sampledPairs;
 
-        double cumalativeSum = 0;
+        double cumalativeDeviation = 0;
 
         for(RecordPair pair : pairs) {
-            cumalativeSum += Math.pow(pair.distance - mean, 2) / sampledPairs;
+            cumalativeDeviation += Math.pow(pair.distance - mean, 2);
         }
 
-        double standardDeviation = Math.sqrt(cumalativeSum);
+        double standardDeviation = Math.sqrt(cumalativeDeviation / sampledPairs);
 
-        double intrinsicDimensionality = (mean*mean) / Math.pow(2*standardDeviation, 1);
+        double intrinsicDimensionality = (Math.pow(mean, 2)) / Math.pow(2*standardDeviation, 2);
 
         System.out.println("Sampled Pairs: " + sampledPairs);
         System.out.println("mean of distances: " + mean);

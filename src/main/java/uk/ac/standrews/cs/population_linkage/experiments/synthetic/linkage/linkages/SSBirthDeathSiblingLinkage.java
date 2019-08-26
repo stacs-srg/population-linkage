@@ -10,6 +10,7 @@ import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
@@ -114,15 +115,29 @@ public class SSBirthDeathSiblingLinkage extends Linkage {
         int c = 0;
 
         // we put the deaths into memory so that we dont have to 'retrieve' them from the storr for every birth
-        List<LXP> deathRecords = new ArrayList<>();
+        Map<String, AtomicInteger> deathRecords = new HashMap<>();
         for(LXP death : record_repository.getDeaths()) {
-            deathRecords.add(death);
+
+            String fID = death.getString(Death.FATHER_IDENTITY).trim();
+            String mID = death.getString(Death.MOTHER_IDENTITY).trim();
+
+            if(!(fID.equals("") || mID.equals(""))) {
+                String key = fID + "|" + mID;
+                deathRecords.computeIfAbsent(key, k -> new AtomicInteger()).incrementAndGet();
+            }
         }
 
         for(LXP birth : record_repository.getBirths()) {
-            for(LXP death : deathRecords) {
-                if(isTrueMatch(birth, death).equals(TRUE_MATCH))
-                    c++;
+
+            String fID = birth.getString(Birth.FATHER_IDENTITY).trim();
+            String mID = birth.getString(Birth.MOTHER_IDENTITY).trim();
+
+            if(!(fID.equals("") || mID.equals(""))) {
+                String key = fID + "|" + mID;
+                AtomicInteger records;
+                if((records = deathRecords.get(key)) != null) {
+                    c += records.get();
+                }
             }
         }
 

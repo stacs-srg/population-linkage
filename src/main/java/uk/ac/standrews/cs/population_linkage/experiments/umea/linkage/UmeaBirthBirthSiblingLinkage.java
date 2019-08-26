@@ -5,6 +5,7 @@ import uk.ac.standrews.cs.population_linkage.experiments.umea.characterisation.G
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
@@ -122,28 +123,27 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
         int c = 0;
 
-        final List<LXP> records = new ArrayList<>();
+        Map<String, AtomicInteger> birthRecords = new HashMap<>();
+        for(LXP birth : record_repository.getBirths()) {
 
-        for (LXP lxp : record_repository.getBirths()) {
-            records.add(lxp);
-        }
+            String fID = birth.getString(Birth.FAMILY).trim();
 
-        final int number_of_records = records.size();
-
-        for (int i = 0; i < number_of_records; i++) {
-            for (int j = i + 1; j < number_of_records; j++) {
-
-                LXP record1 = records.get(i);
-                LXP record2 = records.get(j);
-
-                if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
-                    c++;
-                }
-
+            if(!fID.equals("")) {
+                birthRecords.computeIfAbsent(fID, k -> new AtomicInteger()).incrementAndGet();
             }
         }
 
-        return c;
+        for(LXP birth : record_repository.getBirths()) {
+
+            String fID = birth.getString(Birth.FAMILY).trim();
+
+            if(!fID.equals(""))
+                c += birthRecords.get(fID).get() - 1; // minus one as not a link to link to self - we're linking a dataset to itself!
+
+        }
+
+        return c / 2; // divide by 2 - symetric linkage - making the same link in both directions only counts as one link!
+
     }
 
     @Override
