@@ -22,9 +22,9 @@ public class IntrinsicDimensionalityCalculator {
 
     private String sourceRepoName;
     private String populationName;
-    private String populationSize;
-    private String populationNumber;
-    private String corruptionNumber;
+    private String populationSize = "";
+    private String populationNumber = "";
+    private String corruptionNumber = "";
     private Path resultsFile;
     private int numberOfRecords;
 
@@ -44,6 +44,13 @@ public class IntrinsicDimensionalityCalculator {
         }
 
         this.numberOfRecords = numberOfRecords;
+    }
+
+    public IntrinsicDimensionalityCalculator(String sourceRepoName, Path resultsFile, int numberOfRecords) {
+        this.sourceRepoName = sourceRepoName;
+        this.numberOfRecords = numberOfRecords;
+        this.populationName = sourceRepoName;
+        this.resultsFile = resultsFile;
     }
 
     public void calculate(String stringMetric, int sampleN, String fieldsDescriptor, List<Integer> fields) {
@@ -68,8 +75,6 @@ public class IntrinsicDimensionalityCalculator {
                     corruptionNumber + "," + stringMetric +  "," + instinsicDimensionality + "," + sampleN + "," +
                     timeTakenInSeconds + "," + fieldsDescriptor + System.lineSeparator()));
 
-//            Files.write(resultsFile, .getBytes(),
-//                    StandardOpenOption.APPEND);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -97,20 +102,35 @@ public class IntrinsicDimensionalityCalculator {
             births.add(r);
 
 
-        for(LXP record1 : births) {
-            for(LXP record2 : births) {
+//        for(LXP record1 : births) {
+//            for(LXP record2 : births) {
+//
+//                if(toSampleRnd(consideredPairs, everyNthPair)) {
+//                    double distance = distanceFunction.calculateDistance(record1, record2);
+//                    pairs.add(new RecordPair(record1, record2, distance));
+//
+//                    sampledPairs++;
+//                    sumOfDistances += distance;
+//                }
+//
+//                consideredPairs++;
+//            }
+//        }
 
-                if(toSampleRnd(consideredPairs, everyNthPair)) {
-                    double distance = distanceFunction.calculateDistance(record1, record2);
-                    pairs.add(new RecordPair(record1, record2, distance));
+        Random rng = new Random();
 
-                    sampledPairs++;
-                    sumOfDistances += distance;
-                }
+        while(sampledPairs < sampleN) {
 
-                consideredPairs++;
-            }
+            LXP record1 = births.get(rng.nextInt(births.size()));
+            LXP record2 = births.get(rng.nextInt(births.size()));
+
+            double distance = distanceFunction.calculateDistance(record1, record2);
+            pairs.add(new RecordPair(record1, record2, distance));
+
+            sampledPairs++;
+            sumOfDistances += distance;
         }
+
 
         double mean = sumOfDistances / sampledPairs;
 
@@ -122,7 +142,7 @@ public class IntrinsicDimensionalityCalculator {
 
         double standardDeviation = Math.sqrt(cumalativeDeviation / (double) sampledPairs);
 
-        double intrinsicDimensionality = (Math.pow(mean, 2)) / Math.pow(2*standardDeviation, 2);
+        double intrinsicDimensionality = (Math.pow(mean, 2)) / (2 * Math.pow(standardDeviation, 2));
 
         System.out.println("Sampled Pairs: " + sampledPairs);
         System.out.println("mean of distances: " + mean);
@@ -155,6 +175,10 @@ public class IntrinsicDimensionalityCalculator {
                 args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5]), Integer.valueOf(args[6])
         ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
 //
+//        new IntrinsicDimensionalityCalculator(
+//                args[0], Paths.get(args[5]), Integer.valueOf(args[6])
+//        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
+
 //        countAll(Paths.get(args[0]), Paths.get(args[1]));
     }
 
