@@ -1,32 +1,52 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
+import uk.ac.standrews.cs.storr.impl.JPO;
+import uk.ac.standrews.cs.storr.impl.JPOMetadata;
+import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.storr.types.JPO_FIELD;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class Link {
+public class Link extends JPO {
 
-    private final Role role1;
-    private final Role role2;
-    private float confidence;
+    @JPO_FIELD
+    private IStoreReference<LXP> record1;
+    @JPO_FIELD
+    private String role1;
+    @JPO_FIELD
+    private IStoreReference<LXP>  record2;
+    @JPO_FIELD
+    private String role2;
+    @JPO_FIELD
+    private double confidence;
+    @JPO_FIELD
     private String link_type;
+    @JPO_FIELD
     private List<String> provenance;
 
-    public Link(Role role1, Role role2, float confidence, String link_type, String... provenance) {
+    public Link() {}
 
+    public Link(LXP record1, String role1, LXP record2, String role2, float confidence, String link_type, String... provenance) throws PersistentObjectException {
+
+        this.record1 = record1.getThisRef();
         this.role1 = role1;
-        this.role2 = role2;
+        this.record2 = record2.getThisRef();
+        this.role2 = role1;
         this.confidence = confidence;
         this.link_type = link_type;
         this.provenance = Arrays.asList(provenance);
     }
 
-    public Role getRole1() {
-        return role1;
+    public Role getRole1() {                // TODO Get rid of these!
+        return new Role( record1, role1 );
     }
 
     public Role getRole2() {
-        return role2;
+        return new Role( record2, role2 );
     }
 
     public double getConfidence() { return confidence; }
@@ -53,4 +73,32 @@ public class Link {
     public String toString() {
         return role1 + " - " + role2;
     }
+
+    /* Storr support mechanism - ALL STORR JPO OBJECTS MUST HAVE THIS BOILERPLATE CODE */
+
+    /*
+     * This field is used to store the metadata for the class.
+     */
+    private static final JPOMetadata static_metadata;
+
+    /*
+     * This selector returns the class metadata.
+     */
+    @Override
+    public JPOMetadata getMetaData() {
+        return static_metadata;
+    }
+
+    /*
+     * This static initialiser initialises the static meta data
+     * The two parameters to the JPOMetadata constructor are the name of this class and the name the type is given in the store.
+     */
+    static {
+        try {
+            static_metadata = new JPOMetadata(Link.class,"JPOLink");
+        } catch (Exception var1) {
+            throw new RuntimeException(var1);
+        }
+    }
+
 }

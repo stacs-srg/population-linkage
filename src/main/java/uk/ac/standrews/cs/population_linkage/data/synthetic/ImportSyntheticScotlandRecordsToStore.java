@@ -67,15 +67,15 @@ public class ImportSyntheticScotlandRecordsToStore {
 
         Path store_path = ApplicationProperties.getStorePath();
 
-        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2], args[3].equals("true"), args[4]).run();
-//        addAllToStore(store_path);
+//        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2], args[3].equals("true"), args[4]).run();
+        addAllToStore(store_path);
     }
 
     public static void addAllToStore(Path store_path) throws Exception {
 
         String[] populationNames   = {"synthetic-scotland"};
-        String[] populationSizes   = {"13k","133k","530k"};
-        String[] populationNumbers = {"1","2","3","4","5"};
+        String[] populationSizes   = {"13k"};    // TOM: ,"133k","530k"
+        String[] populationNumbers = {"1"};     // TOM: ,"2","3","4","5"
         String[] corruptionNumbers = {"0","1","2"};
 
         for(String populationName : populationNames)

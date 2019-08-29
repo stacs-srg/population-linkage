@@ -1,8 +1,8 @@
 library("ggplot2")
 library("stringr")
 
-source( "utils.R" )
-source( "dataManipulation.R")
+source( "~/repos/github/population-linkage/src/main/scripts/R/utils.R" )
+source( "~/repos/github/population-linkage/src/main/scripts/R/dataManipulation.R")
 
 # This returns a plot of Umea data with metric Sigma Levenshtein threhold 0.8 with error bars.
 SL0.8AbsError <- function( mydata, measure ) {

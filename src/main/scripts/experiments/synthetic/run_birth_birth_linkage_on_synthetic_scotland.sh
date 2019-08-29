@@ -7,4 +7,4 @@ then
 fi
 
 
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.SyntheticBirthBirthSiblingLinkageRunner" -e -Dexec.args="$2 $3"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.PersistentSyntheticBirthBirthSiblingLinkageRunner" -e -Dexec.args="$2 $3"

@@ -1,12 +1,14 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Role;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
@@ -121,7 +123,8 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
                     for (LXP marriage_record : marriage_records) {
 
                         try {
-                            Link l = new Link(makeRole1(birth_record), makeRole2(marriage_record), 1.0f, "ground truth");
+                            Link l = new Link(birth_record, Birth.ROLE_BABY, marriage_record, Marriage.ROLE_BRIDE, 1.0f, "ground truth");
+
                             links.put(l.toString(), l);
                         } catch (PersistentObjectException e) {
                             ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");

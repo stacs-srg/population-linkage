@@ -2,12 +2,8 @@ package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linker;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.RecordPair;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Sigma;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.Metadata;
+import uk.ac.standrews.cs.storr.impl.LXPMetadata;
 import uk.ac.standrews.cs.storr.impl.StaticLXP;
 import uk.ac.standrews.cs.storr.impl.StoreReference;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
@@ -270,7 +266,7 @@ public abstract class LinkageTest {
         }
 
         @Override
-        public Metadata getMetaData() {
+        public LXPMetadata getMetaData() {
             return null;
         }
 
@@ -281,7 +277,7 @@ public abstract class LinkageTest {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof DummyLXP && ((DummyLXP) o).id == id;
+            return o instanceof DummyLXP && ((DummyLXP) o).getId() == getId();
         }
 
         @Override

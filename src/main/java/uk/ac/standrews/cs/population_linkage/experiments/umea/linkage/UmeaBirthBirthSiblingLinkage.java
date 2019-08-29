@@ -1,11 +1,10 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
+import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_linkage.experiments.umea.characterisation.GroundTruth;
-import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
@@ -105,7 +104,7 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
                 try {
                     if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
 
-                        Link l = new Link(makeRole1(record1), makeRole2(record2), 1.0f, "ground truth");
+                        Link l = new Link(record1, Birth.ROLE_BABY, record2, Birth.ROLE_BABY, 1.0f, "ground truth");
                         String linkKey = toKey(record1, record2);
                         links.put(linkKey.toString(), l);
 
@@ -155,8 +154,8 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
         try {
             for (Link link : links) {
                 try {
-                    String p1FamilyID = link.getRole1().getRecordId().getReferend().getString(Birth.FAMILY);
-                    String p2FamilyID = link.getRole2().getRecordId().getReferend().getString(Birth.FAMILY);
+                    String p1FamilyID = ((LXP) link.getRole1().getRecordId().getReferend()).getString(Birth.FAMILY);
+                    String p2FamilyID = ((LXP) link.getRole2().getRecordId().getReferend()).getString(Birth.FAMILY);
 
                     if (p1FamilyID.equals(p2FamilyID)) {
                         tp++;

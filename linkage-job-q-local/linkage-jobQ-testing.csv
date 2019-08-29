@@ -1,1 +1,2 @@
 population,size,pop#,corruption#,threshold,metric,max-sibling-gap,births-cache-size,marriages-cache-size,deaths-cache-size,#ROs,linkage-type
+synthetic-scotland,13k,1,0,0.67,JENSEN_SHANNON,40,15000,0,0,60,sibling-birth-bundler

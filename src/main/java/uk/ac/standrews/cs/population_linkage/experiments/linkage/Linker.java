@@ -75,10 +75,10 @@ public abstract class Linker {
                     if (pair.distance <= threshold && isViableLink(pair)) {
 
                         try {
-                            Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
-                            Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
+//                            Role role1 = new Role(getIdentifier1(pair.record1), getRoleType1());
+//                            Role role2 = new Role(getIdentifier2(pair.record2), getRoleType2());
 
-                            next = new Link(role1, role2, 1.0f, getLinkType(), getProvenance() + ", distance: " + pair.distance);
+                            next = new Link(pair.record1, getRoleType1(), pair.record2, getRoleType2(), 1.0f, getLinkType(), getProvenance() + ", distance: " + pair.distance);
                         } catch (PersistentObjectException e) {
                             throw new RuntimeException(e);
                         }

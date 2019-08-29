@@ -1,13 +1,20 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
+import uk.ac.standrews.cs.storr.impl.JPO;
+import uk.ac.standrews.cs.storr.impl.JPOMetadata;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.storr.types.JPO_FIELD;
 
 import java.util.Objects;
 
-public class Role {
+public class Role extends JPO {
 
+    @JPO_FIELD
     private IStoreReference record_id;
+    @JPO_FIELD
     private String role_type;
+
+    public Role() {}
 
     public Role(IStoreReference record_id, String role_type) {
 
@@ -42,5 +49,32 @@ public class Role {
     @Override
     public String toString() {
         return record_id.toString();
+    }
+
+    /* Storr support mechanism - ALL STORR JPO OBJECTS MUST HAVE THIS BOILERPLATE CODE */
+
+    /*
+     * This field is used to store the metadata for the class.
+     */
+    private static final JPOMetadata static_metadata;
+
+    /*
+     * This selector returns the class metadata.
+     */
+    @Override
+    public JPOMetadata getMetaData() {
+        return static_metadata;
+    }
+
+    /*
+     * This static initialiser initialises the static meta data
+     * The two parameters to the JPOMetadata constructor are the name of this class and the name the type is given in the store.
+     */
+    static {
+        try {
+            static_metadata = new JPOMetadata(Link.class,"JPOLink");
+        } catch (Exception var1) {
+            throw new RuntimeException(var1);
+        }
     }
 }

@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.storr.impl.Metadata;
+import uk.ac.standrews.cs.storr.impl.LXPMetadata;
 import uk.ac.standrews.cs.storr.impl.StaticLXP;
 import uk.ac.standrews.cs.storr.types.LXPBaseType;
 import uk.ac.standrews.cs.storr.types.LXP_LIST;
@@ -23,11 +23,11 @@ public class LXPLink extends StaticLXP {
     public static int link_type;
     @LXP_LIST(basetype = LXPBaseType.STRING)
     public static int provenance;
-    private static Metadata static_metadata;
+    private static LXPMetadata static_metadata;
 
     static {
         try {
-            static_metadata = new Metadata(LXPLink.class, "LXPLink");
+            static_metadata = new LXPMetadata(LXPLink.class, "LXPLink");
         } catch (Exception var1) {
             throw new RuntimeException(var1);
         }
@@ -49,7 +49,7 @@ public class LXPLink extends StaticLXP {
     }
 
     @Override
-    public Metadata getMetaData() {
+    public LXPMetadata getMetaData() {
         return static_metadata;
     }
 }

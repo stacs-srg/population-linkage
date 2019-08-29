@@ -80,8 +80,8 @@ public abstract class Linkage {
             for (Link link : links) {
                 try {
 
-                    if (isTrueMatch(link.getRole1().getRecordId().getReferend(),
-                            link.getRole2().getRecordId().getReferend())
+                    if (isTrueMatch((LXP) link.getRole1().getRecordId().getReferend(),
+                            (LXP) link.getRole2().getRecordId().getReferend())
                             .equals(TRUE_MATCH)) {
                         tp++;
                     } else {
@@ -116,11 +116,11 @@ public abstract class Linkage {
             try {
                 bucket = results_repository.getBucket(bucket_name);
             } catch (RepositoryException e) {
-                bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, LXPLink.class);
+                bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, Link.class ); // al was LXPLink.class);
             }
 
             for (Link link : links) {
-                bucket.makePersistent(linkToLxp(link));
+                bucket.makePersistent(link); // // al was linkToLxp(link));
             }
         } catch (RepositoryException | BucketException e) {
             throw new RuntimeException(e);
@@ -146,9 +146,10 @@ public abstract class Linkage {
         }
     }
 
-    private LXPLink linkToLxp(Link link) {
-        return new LXPLink(link);
-    }
+    // al was
+//    private LXPLink linkToLxp(Link link) {
+//        return new LXPLink(link);
+//    }
 
     private String combineProvenance(final List<String> provenance) {
 
