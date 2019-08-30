@@ -5,12 +5,11 @@ import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
-public abstract class SimilaritySearchLinker extends Linker {
+public class SimilaritySearchLinker extends Linker {
 
     private SearchStructureFactory<LXP> search_structure_factory;
     private SearchStructure<LXP> search_structure;
@@ -18,9 +17,10 @@ public abstract class SimilaritySearchLinker extends Linker {
     private int smaller_set_size;
     private boolean recordOrderFlipped = false;
 
-    protected SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, int number_of_progress_updates) {
+    public SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
+                                     String link_type, String provenace, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink) {
 
-        super(distance_metric, number_of_progress_updates);
+        super(distance_metric, threshold, number_of_progress_updates, link_type, provenace, role_type_1, role_type_2, isViableLink);
 
         this.search_structure_factory = search_structure_factory;
     }

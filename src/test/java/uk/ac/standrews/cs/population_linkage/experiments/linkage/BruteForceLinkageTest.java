@@ -1,7 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
@@ -29,38 +28,9 @@ public class BruteForceLinkageTest extends LinkageTest {
 
         TestLinker(double threshold, final Metric<LXP> metric) {
 
-            super(metric, 0);
+            super(metric, 0.67, 0, "link type", "provenance", "role1", "role2", (r)-> true);
             setThreshold(threshold);
         }
 
-        @Override
-        protected String getLinkType() {
-            return "link type";
-        }
-
-        @Override
-        protected String getProvenance() {
-            return "provenance";
-        }
-
-        @Override
-        protected String getRoleType1() {
-            return "role1";
-        }
-
-        @Override
-        protected String getRoleType2() {
-            return "role2";
-        }
-
-        @Override
-        public IStoreReference getIdentifier1(LXP record) throws PersistentObjectException {
-            return record.getThisRef();
-        }
-
-        @Override
-        public IStoreReference getIdentifier2(LXP record) throws PersistentObjectException {
-            return record.getThisRef();
-        }
     }
 }

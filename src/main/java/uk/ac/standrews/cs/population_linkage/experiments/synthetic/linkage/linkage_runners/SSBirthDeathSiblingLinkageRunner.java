@@ -4,8 +4,9 @@ import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkagePostFilter;
 import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.JobRunnerIO;
 import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkages.SSBirthDeathSiblingLinkage;
-import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.similarity_search.SimilaritySearchSiblingBundlerOverBirthsAndDeaths;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -23,7 +24,8 @@ public class SSBirthDeathSiblingLinkageRunner extends LinkageRunner {
 
     @Override
     protected Linker getLinker(double match_threshold, Metric<LXP> composite_metric, SearchStructureFactory<LXP> search_factory) {
-        return new SimilaritySearchSiblingBundlerOverBirthsAndDeaths(search_factory, match_threshold, composite_metric, getNumberOfProgressUpdates());
+        return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
+                "birth-death-sibling", "threshold match at " + match_threshold, Birth.ROLE_BABY, Death.ROLE_DECEASED, LinkagePostFilter::isViableBDSiblingLink);
     }
 
     @Override
@@ -61,7 +63,7 @@ public class SSBirthDeathSiblingLinkageRunner extends LinkageRunner {
         this.birthsCacheSize = birthsCacheSize;
         this.deathsCacheSize = deathsCacheSize;
 
-        if(corrupted)
+        if (corrupted)
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
         else {
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_clean";
@@ -115,14 +117,13 @@ public class SSBirthDeathSiblingLinkageRunner extends LinkageRunner {
         int maxSiblingGap = Integer.valueOf(args[9]);
         int birthsCacheSize = Integer.valueOf(args[10]);
         int deathsCacheSize = Integer.valueOf(args[11]);
-        int numROs= Integer.valueOf(args[12]);
+        int numROs = Integer.valueOf(args[12]);
 
         new SSBirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
                 corruptionNumber, resultsFile, birthsCacheSize, deathsCacheSize, numROs)
                 .link(threshold, stringMetric, numberOfGroundTruthLinks, maxSiblingGap);
 
     }
-
 
 
 }

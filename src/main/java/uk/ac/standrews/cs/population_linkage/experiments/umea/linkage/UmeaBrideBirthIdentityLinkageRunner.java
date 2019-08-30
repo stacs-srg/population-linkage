@@ -1,7 +1,9 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkagePostFilter;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
@@ -12,8 +14,8 @@ public class UmeaBrideBirthIdentityLinkageRunner extends LinkageRunner {
     }
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
-        // TODO update - need new Linker implementation.
-        return new SimilaritySearchSiblingBundlerOverBirths(search_factory, match_threshold, composite_metric, getNumberOfProgressUpdates());
+        return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
+                "birth-birth-sibling", "threshold match at " + match_threshold, Birth.ROLE_BABY, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink);
     }
 
     protected Metric<LXP> getCompositeMetric(final Linkage linkage) {
