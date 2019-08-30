@@ -80,8 +80,8 @@ public abstract class Linkage {
             for (Link link : links) {
                 try {
 
-                    if (isTrueMatch((LXP) link.getRole1().getRecordId().getReferend(),
-                            (LXP) link.getRole2().getRecordId().getReferend())
+                    if (isTrueMatch((LXP) link.getRecord1().getReferend(),
+                            (LXP) link.getRecord2().getReferend())
                             .equals(TRUE_MATCH)) {
                         tp++;
                     } else {
@@ -96,6 +96,17 @@ public abstract class Linkage {
         int fn = numberOfGroundTruthTrueLinks - tp;
 
         return new LinkageQuality(tp, fp, fn);
+    }
+
+    public Iterable<Link> getLinksMade() {
+        try {
+            IRepository repo = new Store(store_path).getRepository(results_repository_name);
+            IBucket<Link> bucket = repo.getBucket(links_persistent_name, Link.class);
+            return bucket.getInputStream();
+        } catch (RepositoryException | BucketException e) {
+            throw new RuntimeException("No made links repo found when expected -" +
+                    " make sure your made the repo you're trying to access");
+        }
     }
 
     //////////////////////// Private ///////////////////////
@@ -120,7 +131,7 @@ public abstract class Linkage {
             }
 
             for (Link link : links) {
-                bucket.makePersistent(link); // // al was linkToLxp(link));
+                bucket.makePersistent(link);
             }
         } catch (RepositoryException | BucketException e) {
             throw new RuntimeException(e);
@@ -136,12 +147,14 @@ public abstract class Linkage {
             }
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
             for (Link l : links) {
-                bw.write("Role1:\t" + l.getRole1().getRoleType() + "\tRole2:\t" + l.getRole2().getRoleType() + "\tid1:\t" + l.getRole1().getRecordId() + "\tid2:\t" + l.getRole2().getRecordId() + "\tprovenance:\t" + combineProvenance(l.getProvenance()));
+                bw.write("Role1:\t" + l.getRole1() + "\tRole2:\t" + l.getRole2() + "\tid1:\t" + l.getRecord1().getReferend().getId() + "\tid2:\t" + l.getRecord2().getReferend().getId() + "\tprovenance:\t" + combineProvenance(l.getProvenance()));
                 bw.newLine();
                 bw.flush();
             }
             bw.close();
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (BucketException e) {
             throw new RuntimeException(e);
         }
     }

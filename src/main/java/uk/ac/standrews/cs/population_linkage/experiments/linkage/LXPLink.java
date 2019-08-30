@@ -2,6 +2,7 @@ package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.storr.impl.LXPMetadata;
 import uk.ac.standrews.cs.storr.impl.StaticLXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.types.LXPBaseType;
 import uk.ac.standrews.cs.storr.types.LXP_LIST;
 import uk.ac.standrews.cs.storr.types.LXP_REF;
@@ -37,12 +38,12 @@ public class LXPLink extends StaticLXP {
 
     }
 
-    public LXPLink(Link link) {
+    public LXPLink(Link link) throws BucketException {
 
-        this.put(ref1, link.getRole1().getRecordId());
-        this.put(ROLE1_TYPE, link.getRole1().getRoleType());
-        this.put(ref2, link.getRole2().getRecordId());
-        this.put(ROLE2_TYPE, link.getRole2().getRoleType());
+        this.put(ref1, link.getRecord1().getReferend().getId());
+        this.put(ROLE1_TYPE, link.getRole1());
+        this.put(ref2, link.getRecord2().getReferend().getId());
+        this.put(ROLE2_TYPE, link.getRole2());
         this.put(confidence, link.getConfidence());
         this.put(link_type, link.getLinkType());
         this.put(provenance, link.getProvenance());

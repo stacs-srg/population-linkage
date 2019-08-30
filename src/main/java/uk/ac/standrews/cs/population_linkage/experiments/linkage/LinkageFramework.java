@@ -27,27 +27,24 @@ public class LinkageFramework {
         linker.addRecords(linkage.getSourceRecords1(), linkage.getSourceRecords2());
 
         System.out.println("r5");
-        final Iterable<Link> links = linker.getLinks();
+        Iterable<Link> links = linker.getLinks();
         LocalDateTime time_stamp = LocalDateTime.now();
 
         System.out.println("r5.5");
 
-        linkage.makeLinksPersistent(links);
-
+        linkage.makeLinksPersistent(links); // this eats the iterable stream
+        links = linkage.getLinksMade();     // and this re-establishes it!
 
         System.out.println("r6");
         final Map<String, Link> ground_truth_links = linkage.getGroundTruthLinks();
         time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
 
-        linkage.makeGroundTruthPersistent(ground_truth_links.values());
-
-//        Iterator<Link> linksMade = linkage.getLinksMade(); TOM??
+        // linkage.makeGroundTruthPersistent(ground_truth_links.values());
 
         System.out.println("r7");
-        final LinkageQuality linkage_quality = evaluateLinkage(links, ground_truth_links);
+        final LinkageQuality linkage_quality = evaluateLinkage(links, ground_truth_links); // TODO this evaluates the links again??????
         nextTimeStamp(time_stamp, "perform and evaluate linkage");
 
-        System.out.println("r8");
         linkage_quality.print(System.out);
     }
 
@@ -100,8 +97,6 @@ public class LinkageFramework {
 
     private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Map<String, Link> ground_truth_links) {
 
-        // NB this mutates the passed in ground truth set.
-
         int true_positives = 0;
         int count_gt_links = ground_truth_links.size(); //<<<<<<<<<<<<<<< these have been double counted
         int false_positives = 0;
@@ -114,8 +109,6 @@ public class LinkageFramework {
                 showLink(calculated_link);
                 false_positives++;
             }
-
-//            ground_truth_links.remove(calculated_link.toString());
         }
 
         true_positives = true_positives / 2; //<<<<<<<<<<<<<<< these have been double counted
@@ -132,10 +125,8 @@ public class LinkageFramework {
     private void showLink(Link calculated_link) {
 
         try {
-            LXP person1 = (LXP) calculated_link.getRole1().getRecordId().getReferend();
-            LXP person2 = (LXP) calculated_link.getRole2().getRecordId().getReferend();
-
-
+            LXP person1 = calculated_link.getRecord1().getReferend();
+            LXP person2 = calculated_link.getRecord2().getReferend();
 
             System.out.println("B1: " + person1.getString(Birth.FORENAME) + " " + person1.getString(Birth.SURNAME) + " // "
                     + "B1F: " + person1.getString(Birth.FATHER_FORENAME) + " " + person1.getString(Birth.FATHER_SURNAME) + " " + person1.getString(Birth.FAMILY) + " -> " +
@@ -150,8 +141,8 @@ public class LinkageFramework {
     private String toKey(Link link) {
         String s1 = null;
         try {
-            s1 = ((LXP)link.getRole1().getRecordId().getReferend()).getString(Birth.ORIGINAL_ID);
-            String s2 = ((LXP)link.getRole2().getRecordId().getReferend()).getString(Birth.ORIGINAL_ID);
+            s1 = link.getRecord1().getReferend().getString(Birth.ORIGINAL_ID);
+            String s2 = link.getRecord2().getReferend().getString(Birth.ORIGINAL_ID);
 
             if(s1.compareTo(s2) < 0)
                 return s1 + "-" + s2;

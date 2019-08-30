@@ -154,8 +154,8 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
         try {
             for (Link link : links) {
                 try {
-                    String p1FamilyID = ((LXP) link.getRole1().getRecordId().getReferend()).getString(Birth.FAMILY);
-                    String p2FamilyID = ((LXP) link.getRole2().getRecordId().getReferend()).getString(Birth.FAMILY);
+                    String p1FamilyID = link.getRecord1().getReferend().getString(Birth.FAMILY);
+                    String p2FamilyID = link.getRecord2().getReferend().getString(Birth.FAMILY);
 
                     if (p1FamilyID.equals(p2FamilyID)) {
                         tp++;

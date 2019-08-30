@@ -3,9 +3,12 @@ package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 import uk.ac.standrews.cs.storr.impl.JPO;
 import uk.ac.standrews.cs.storr.impl.JPOMetadata;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.LXPReference;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.storr.types.JPO_FIELD;
+import uk.ac.standrews.cs.utilities.JSONReader;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,11 +17,11 @@ import java.util.Objects;
 public class Link extends JPO {
 
     @JPO_FIELD
-    private IStoreReference<LXP> record1;
+    private LXPReference<LXP> record1;
     @JPO_FIELD
     private String role1;
     @JPO_FIELD
-    private IStoreReference<LXP>  record2;
+    private LXPReference<LXP> record2;
     @JPO_FIELD
     private String role2;
     @JPO_FIELD
@@ -30,23 +33,40 @@ public class Link extends JPO {
 
     public Link() {}
 
+    public Link(long id, JSONReader reader, IBucket bucket ) throws PersistentObjectException {
+        super( id, bucket );
+        readJSON(reader, true);
+    }
+
     public Link(LXP record1, String role1, LXP record2, String role2, float confidence, String link_type, String... provenance) throws PersistentObjectException {
 
-        this.record1 = record1.getThisRef();
+        this.record1 = (LXPReference) record1.getThisRef();
         this.role1 = role1;
-        this.record2 = record2.getThisRef();
+        this.record2 = (LXPReference) record2.getThisRef();
         this.role2 = role1;
         this.confidence = confidence;
         this.link_type = link_type;
         this.provenance = Arrays.asList(provenance);
     }
 
-    public Role getRole1() {                // TODO Get rid of these!
-        return new Role( record1, role1 );
+    public IStoreReference<LXP> getRecord1() {
+        return record1;
     }
 
-    public Role getRole2() {
-        return new Role( record2, role2 );
+    public String getRole1() {
+        return role1;
+    }
+
+    public IStoreReference<LXP> getRecord2() {
+        return record2;
+    }
+
+    public String getRole2() {
+        return role2;
+    }
+
+    public String getLink_type() {
+        return link_type;
     }
 
     public double getConfidence() { return confidence; }
