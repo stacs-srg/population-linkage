@@ -6,7 +6,6 @@ import uk.ac.standrews.cs.population_linkage.experiments.umea.characterisation.G
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
@@ -21,7 +20,7 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
     public UmeaBirthBirthSiblingLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
-        super(results_repository_name, links_persistent_name, ground_truth_persistent_name, source_repository_name, record_repository);
+        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);
     }
 
@@ -143,35 +142,6 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
         return c / 2; // divide by 2 - symetric linkage - making the same link in both directions only counts as one link!
 
-    }
-
-    @Override
-    public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
-
-        int tp = 0;
-        int fp = 0;
-
-        try {
-            for (Link link : links) {
-                try {
-                    String p1FamilyID = link.getRecord1().getReferend().getString(Birth.FAMILY);
-                    String p2FamilyID = link.getRecord2().getReferend().getString(Birth.FAMILY);
-
-                    if (p1FamilyID.equals(p2FamilyID)) {
-                        tp++;
-                    } else {
-                        fp++;
-                    }
-
-                } catch (BucketException ignored) {
-                }
-            }
-        } catch (NoSuchElementException ignored) {}
-
-        // divisions by two as links are symetrical
-        int fn = numberOfGroundTruthTrueLinks - tp/2;
-
-        return new LinkageQuality(tp/2, fp/2, fn);
     }
 
     private Collection<LXP> filteredBirthRecords = null;

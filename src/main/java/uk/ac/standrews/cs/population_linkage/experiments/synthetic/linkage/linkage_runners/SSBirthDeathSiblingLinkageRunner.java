@@ -82,7 +82,7 @@ public class SSBirthDeathSiblingLinkageRunner extends LinkageRunner {
             JobRunnerIO.setupResultsFile(resultsFile);
 
             long startTime = System.currentTimeMillis();
-            LinkageQuality lq = evaluateOnly(sourceRepoName, threshold, metric, numberOfGroundTruthLinks);
+            LinkageQuality lq = run(sourceRepoName, threshold, metric, true, false);
             long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
             JobRunnerIO.appendToResultsFile(threshold, stringMetric, maxSiblingGap, lq, timeTakenInSeconds,

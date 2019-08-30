@@ -21,7 +21,7 @@ public class SSBirthDeathSiblingLinkage extends Linkage {
     private final Iterable<LXP> death_records;
 
     public SSBirthDeathSiblingLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, ground_truth_persistent_name, source_repository_name, record_repository);
+        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);
         death_records = Utilities.getDeathRecords(record_repository);
     }

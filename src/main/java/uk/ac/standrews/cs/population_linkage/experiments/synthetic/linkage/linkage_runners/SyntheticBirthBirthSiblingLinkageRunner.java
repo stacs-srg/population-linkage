@@ -57,7 +57,7 @@ public class SyntheticBirthBirthSiblingLinkageRunner extends UmeaBirthBirthSibli
             JobRunnerIO.setupResultsFile(resultsFile);
 
             long startTime = System.currentTimeMillis();
-            LinkageQuality lq = evaluateOnly(sourceRepoName, threshold, metric, numberOfGroundTruthLinks);
+            LinkageQuality lq = run(sourceRepoName, threshold, metric, true, true);
             long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
             JobRunnerIO.appendToResultsFile(threshold, stringMetric, maxSiblingGap, lq, timeTakenInSeconds,

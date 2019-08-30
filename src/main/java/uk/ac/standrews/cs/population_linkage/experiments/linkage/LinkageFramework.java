@@ -7,7 +7,6 @@ import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
@@ -20,34 +19,6 @@ public class LinkageFramework {
     public LinkageFramework(Linkage linkage, Linker linker) {
         this.linkage = linkage;
         this.linker = linker;
-    }
-
-    public void link() {
-
-        System.out.println("r1r2r3r4");
-
-        linker.addRecords(linkage.getSourceRecords1(), linkage.getSourceRecords2());
-
-        System.out.println("r5");
-        Iterable<Link> links = linker.getLinks();
-        LocalDateTime time_stamp = LocalDateTime.now();
-
-        System.out.println("r5.5");
-
-        linkage.makeLinksPersistent(links); // this eats the iterable stream
-        links = linkage.getLinksMade();     // and this re-establishes it!
-
-        System.out.println("r6");
-        final Map<String, Link> ground_truth_links = linkage.getGroundTruthLinks();
-        time_stamp = nextTimeStamp(time_stamp, "get ground truth links");
-
-        // linkage.makeGroundTruthPersistent(ground_truth_links.values());
-
-        System.out.println("r7");
-        final LinkageQuality linkage_quality = evaluateLinkage(links, ground_truth_links); // TODO this evaluates the links again??????
-        nextTimeStamp(time_stamp, "perform and evaluate linkage");
-
-        linkage_quality.print(System.out);
     }
 
     public LinkageQuality link( boolean pre_filter, boolean persist_links, boolean evaluate_quality, boolean symmetricLinkage, int numberOfGroundTruthTrueLinks ) {
@@ -119,35 +90,6 @@ public class LinkageFramework {
         }
     }
 
-
-    public LinkageQuality linkForEvaluationOnly(int numberOfGroundTruthLinks) {
-
-        System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
-
-        // Adds two datasets into linker - these will be used to contruct the iterator shortly
-        // In the birth sibling bundling case these are both births
-        linker.addRecords(linkage.getPreFilteredSourceRecords1(), linkage.getPreFilteredSourceRecords2());
-
-        MemoryLogger.update();
-
-        System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
-        final Iterable<Link> links = linker.getLinks();
-
-        MemoryLogger.update();
-
-        LocalDateTime time_stamp = LocalDateTime.now();
-
-        System.out.println("Evaluating links @ " + LocalDateTime.now().toString());
-        LinkageQuality quality = linkage.evaluateWithoutPersisting(numberOfGroundTruthLinks, links);
-        nextTimeStamp(time_stamp, "perform and evaluate linkage");
-
-        MemoryLogger.update();
-
-        quality.print(System.out);
-        return quality;
-    }
-
-
     ///////////////////////////// I/O /////////////////////////////
 
     private static String prettyPrint(Duration duration) {
@@ -167,32 +109,6 @@ public class LinkageFramework {
         return next;
     }
 
-    private LinkageQuality evaluateLinkage(Iterable<Link> calculated_links, Map<String, Link> ground_truth_links) {
-
-        int true_positives = 0;
-        int count_gt_links = ground_truth_links.size(); //<<<<<<<<<<<<<<< these have been double counted
-        int false_positives = 0;
-
-        for (Link calculated_link : calculated_links) {
-
-            if (ground_truth_links.get(toKey(calculated_link)) != null) {
-                true_positives++;
-            } else {
-                showLink(calculated_link);
-                false_positives++;
-            }
-        }
-
-        true_positives = true_positives / 2; //<<<<<<<<<<<<<<< these have been double counted
-        false_positives = false_positives / 2; //<<<<<<<<<<<<<<< these have been double counted
-
-        int false_negatives = count_gt_links - true_positives;
-
-
-        System.out.println("GT Links: " + count_gt_links);
-
-        return new LinkageQuality(true_positives, false_positives, false_negatives);
-    }
 
     private void showLink(Link calculated_link) {
 
@@ -206,25 +122,6 @@ public class LinkageFramework {
                     "B2F: " + person2.getString(Birth.FATHER_FORENAME) + " " + person2.getString(Birth.FATHER_SURNAME) + " " + person2.getString(Birth.FAMILY));
 
         } catch (Exception e) {}
-
-
     }
 
-    private String toKey(Link link) {
-        String s1 = null;
-        try {
-            s1 = link.getRecord1().getReferend().getString(Birth.ORIGINAL_ID);
-            String s2 = link.getRecord2().getReferend().getString(Birth.ORIGINAL_ID);
-
-            if(s1.compareTo(s2) < 0)
-                return s1 + "-" + s2;
-            else
-                return s2 + "-" + s1;
-
-        } catch (BucketException e) {
-            e.printStackTrace();
-            throw new Error(e);
-        }
-
-    }
 }

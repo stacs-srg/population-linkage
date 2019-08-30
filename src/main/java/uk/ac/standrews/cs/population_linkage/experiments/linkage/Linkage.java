@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.BucketKind;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -18,24 +18,22 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
-
-import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class Linkage {
 
     protected final String results_repository_name;
     protected final String links_persistent_name;
-    protected final String ground_truth_persistent_name;
     protected final String source_repository_name;
     protected final RecordRepository record_repository;
     protected Path store_path;
 
-    public Linkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public Linkage(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         this.results_repository_name = results_repository_name;
         this.links_persistent_name = links_persistent_name;
-        this.ground_truth_persistent_name = ground_truth_persistent_name;
         this.source_repository_name = source_repository_name;
         this.record_repository = record_repository;
 
@@ -74,37 +72,7 @@ public abstract class Linkage {
         makePersistentUsingStorr(store_path, results_repository_name, links_persistent_name, link);
     }
 
-    public void makeGroundTruthPersistent(Iterable<Link> links) {
-        makePersistentUsingStorr(store_path, results_repository_name, ground_truth_persistent_name, links); // use makePersistentUsingStor or makePersistentUsingFile
-    }
-
     public abstract int numberOfGroundTruthTrueLinks();
-
-    public LinkageQuality evaluateWithoutPersisting(int numberOfGroundTruthTrueLinks, Iterable<Link> links) {
-        int tp = 0;
-        int fp = 0;
-
-        try {
-            for (Link link : links) {
-                try {
-
-                    if (isTrueMatch((LXP) link.getRecord1().getReferend(),
-                            (LXP) link.getRecord2().getReferend())
-                            .equals(TRUE_MATCH)) {
-                        tp++;
-                    } else {
-                        fp++;
-                    }
-
-                } catch (BucketException ignored) {
-                }
-            }
-        } catch (NoSuchElementException ignored) {}
-
-        int fn = numberOfGroundTruthTrueLinks - tp;
-
-        return new LinkageQuality(tp, fp, fn);
-    }
 
     public Iterable<Link> getLinksMade() {
         try {
@@ -139,7 +107,7 @@ public abstract class Linkage {
                 try {
                     bucket = results_repository.getBucket(bucket_name);
                 } catch (RepositoryException e) {
-                    bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, Link.class ); // al was LXPLink.class);
+                    bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, Link.class );
                 }
 
                 storeRepoBucketLookUp.put(getSRBString(store_path, results_repo_name, bucket_name), bucket);
@@ -171,29 +139,9 @@ public abstract class Linkage {
 
     protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
 
-        try {
-            IStore store = new Store(store_path);
+        for (Link link : links)
+            makePersistentUsingStorr(store_path, results_repo_name, bucket_name, link);
 
-            IRepository results_repository;
-            try {
-                results_repository = store.getRepository(results_repo_name);
-            } catch (RepositoryException e) {
-                results_repository = store.makeRepository(results_repo_name);
-            }
-
-            IBucket bucket;
-            try {
-                bucket = results_repository.getBucket(bucket_name);
-            } catch (RepositoryException e) {
-                bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, Link.class ); // al was LXPLink.class);
-            }
-
-            for (Link link : links) {
-                bucket.makePersistent(link);
-            }
-        } catch (RepositoryException | BucketException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     protected void makePersistentUsingFile(String name, Iterable<Link> links) {
@@ -216,11 +164,6 @@ public abstract class Linkage {
             throw new RuntimeException(e);
         }
     }
-
-    // al was
-//    private LXPLink linkToLxp(Link link) {
-//        return new LXPLink(link);
-//    }
 
     private String combineProvenance(final List<String> provenance) {
 
