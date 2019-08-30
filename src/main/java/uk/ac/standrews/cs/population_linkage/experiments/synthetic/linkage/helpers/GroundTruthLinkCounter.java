@@ -1,9 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.LinkageRunner;
-import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.FileChannelHandle;
 import uk.ac.standrews.cs.utilities.FileManipulation;
-
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,21 +12,19 @@ public class GroundTruthLinkCounter {
 
     private String sourceRepoName;
     private String populationName;
-    private String populationSize;
-    private String populationNumber;
-    private String corruptionNumber;
-    private Path resultsFile;
+    private String populationSize = "";
+    private String populationNumber = "";
+    private String corruptionNumber = "";
+    private Path gtCountsFile;
 
     public GroundTruthLinkCounter(String populationName, String populationSize, String populationNumber,
-                                  boolean corrupted, String corruptionNumber, Path resultsFile) {
-
-//        super(populationName, populationSize, populationNumber, corrupted, corruptionNumber, resultsFile, 10000, 70);
+                                  boolean corrupted, String corruptionNumber, Path gtCountsFile) {
 
         this.populationName = populationName;
         this.populationSize = populationSize;
         this.populationNumber = populationNumber;
         this.corruptionNumber = corruptionNumber;
-        this.resultsFile = resultsFile;
+        this.gtCountsFile = gtCountsFile;
 
         if(corrupted)
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
@@ -39,19 +35,27 @@ public class GroundTruthLinkCounter {
 
     }
 
-    public int count(LinkageRunner linkageRunner, String linkageApproach) {
+    public GroundTruthLinkCounter(String sourceRepoName, Path gtCountsFile) {
+        this.sourceRepoName = sourceRepoName;
+        this.populationName = sourceRepoName;
+        this.gtCountsFile = gtCountsFile;
+    }
+
+    public int count(LinkageRunner linkageRunner) { //, String linkageApproach) {
         System.out.println("Count ground truth links in population: " + sourceRepoName);
 
+        String linkageApproach = linkageRunner.getClass().getName();
+
         try {
-            FileManipulation.createFileIfDoesNotExist(resultsFile);
-            if(FileManipulation.countLines(resultsFile) == 0) {
-                new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
+            FileManipulation.createFileIfDoesNotExist(gtCountsFile);
+            if(FileManipulation.countLines(gtCountsFile) == 0) {
+                new FileChannelHandle(gtCountsFile, FileChannelHandle.optionsWA)
                         .appendToFile("population,size,pop#,corruption#,linkage-approach,#gtLinks,count-time-seconds" +
                                 System.lineSeparator());
             }
 
             // check if count in file
-            int numberOfGTLinks = getCountFromLog(resultsFile, populationName, populationSize, populationNumber,
+            int numberOfGTLinks = getCountFromLog(gtCountsFile, populationName, populationSize, populationNumber,
                     corruptionNumber, linkageApproach);
 
             if(numberOfGTLinks == -1) { // if count not already done then do count
@@ -60,7 +64,7 @@ public class GroundTruthLinkCounter {
                 numberOfGTLinks = linkageRunner.countNumberOfGroundTruthLinks(sourceRepoName);
                 long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
-                new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
+                new FileChannelHandle(gtCountsFile, FileChannelHandle.optionsWA)
                         .appendToFile(populationName + "," + populationSize + "," + populationNumber + "," +
                                 corruptionNumber + "," + linkageApproach + "," + numberOfGTLinks + "," +
                                 timeTakenInSeconds + System.lineSeparator());
@@ -107,7 +111,7 @@ public class GroundTruthLinkCounter {
     }
 
 
-//    public static void countAll(Path resultsFile) {
+//    public static void countAll(Path gtCountsFile) {
 //
 //        String[] populationNames   = {"synthetic-scotland"};
 //        String[] populationSizes   = {"13k","133k","530k"};
@@ -119,7 +123,7 @@ public class GroundTruthLinkCounter {
 //                for(String populationNumber : populationNumbers)
 //                    for(String corruptionNumber : corruptionNumbers)
 //                        new GroundTruthLinkCounter(populationName, populationSize,
-//                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber, resultsFile).count();
+//                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber, gtCountsFile).count();
 //
 //
 //    }

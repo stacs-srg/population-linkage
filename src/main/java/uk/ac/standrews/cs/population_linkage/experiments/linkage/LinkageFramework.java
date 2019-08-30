@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
+
 public class LinkageFramework {
 
     private final Linker linker;
@@ -47,6 +49,76 @@ public class LinkageFramework {
 
         linkage_quality.print(System.out);
     }
+
+    public LinkageQuality link( boolean pre_filter, boolean persist_links, boolean evaluate_quality, boolean symmetricLinkage, int numberOfGroundTruthTrueLinks ) {
+
+        System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
+
+        if( pre_filter ) {
+            linker.addRecords(linkage.getPreFilteredSourceRecords1(), linkage.getPreFilteredSourceRecords2());
+        } else {
+            linker.addRecords(linkage.getSourceRecords1(), linkage.getSourceRecords2());
+        }
+
+        MemoryLogger.update();
+        System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
+
+        Iterable<Link> links = linker.getLinks();
+        LocalDateTime time_stamp = LocalDateTime.now();
+
+        MemoryLogger.update();
+        int tp = 0; // these are counters with which we use if evaluating
+        int fp = 0;
+
+        System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now().toString());
+
+        for (Link linkage_says_true_link : links) {
+            if( persist_links ) {
+                linkage.makeLinkPersistent(linkage_says_true_link);
+            }
+            if( evaluate_quality ) {
+                if (doesGTSayIsTrue(linkage_says_true_link)) {
+                    tp++;
+                } else {
+                    fp++;
+                }
+            }
+        }
+
+        System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now().toString());
+
+        MemoryLogger.update();
+        nextTimeStamp(time_stamp, "perform and evaluate linkage");
+
+        if(evaluate_quality) {
+
+            if(symmetricLinkage) {
+                // if the linkage is a dataset to itself (i.e birth-birth) we should be rewarded for making the
+                // link in both direction - thus divide by two
+                tp = tp/2;
+                fp = fp/2;
+            }
+
+            int fn = numberOfGroundTruthTrueLinks - tp;
+            LinkageQuality lq = new LinkageQuality(tp, fp, fn);
+            lq.print(System.out);
+            return lq;
+        } else
+            return new LinkageQuality("Evaluation not requested");
+    }
+
+
+    private boolean doesGTSayIsTrue(Link linkage_says_true_link) {
+        try {
+            return linkage.isTrueMatch(
+                    linkage_says_true_link.getRecord1().getReferend(),
+                    linkage_says_true_link.getRecord2().getReferend())
+                    .equals(TRUE_MATCH);
+        } catch (BucketException e) {
+            throw new RuntimeException("Bucket exception from accessing referend - bucket no longer contains expected records (TD)", e);
+        }
+    }
+
 
     public LinkageQuality linkForEvaluationOnly(int numberOfGroundTruthLinks) {
 

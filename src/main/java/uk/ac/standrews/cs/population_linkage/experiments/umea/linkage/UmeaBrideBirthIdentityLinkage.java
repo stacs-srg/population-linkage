@@ -138,16 +138,6 @@ public class UmeaBrideBirthIdentityLinkage extends Linkage {
     }
 
     @Override
-    public void makeLinksPersistent(Iterable<Link> links) {
-        makePersistentUsingStorr( store_path, results_repository_name, links_persistent_name, links );  // use makePersistentUsingStor or makePersistentUsingFile
-    }
-
-    @Override
-    public void makeGroundTruthPersistent(Iterable<Link> links) {
-        makePersistentUsingStorr( store_path, results_repository_name, ground_truth_persistent_name, links ); // use makePersistentUsingStor or makePersistentUsingFile
-    }
-
-    @Override
     public int numberOfGroundTruthTrueLinks() {
 
         int c = 0;

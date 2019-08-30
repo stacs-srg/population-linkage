@@ -6,13 +6,13 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
 public class SSBirthDeathSiblingLinkage extends Linkage {
 
@@ -96,16 +96,6 @@ public class SSBirthDeathSiblingLinkage extends Linkage {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void makeLinksPersistent(Iterable<Link> links) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void makeGroundTruthPersistent(Iterable<Link> links) {
         throw new UnsupportedOperationException();
     }
 

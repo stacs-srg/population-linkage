@@ -14,12 +14,7 @@ public class LinkageQuality {
     private int fp;
     private int fn;
 
-    public LinkageQuality(double precision, double recall, double f_measure) {
-
-        this.precision = precision;
-        this.recall = recall;
-        this.f_measure = f_measure;
-    }
+    private String message = null;
 
     public LinkageQuality(int tp, int fp, int fn) {
         this.tp = tp;
@@ -31,19 +26,31 @@ public class LinkageQuality {
         f_measure = ClassificationMetrics.F1(tp, fp, fn);
     }
 
+    public LinkageQuality(String message) {
+        this.message = message;
+    }
+
     public void print(PrintStream out) {
 
-        out.println("TP: " + tp);
-        out.println("FN: " + fn);
-        out.println("FP: " + fp);
+        if(message == null) {
+            out.println("TP: " + tp);
+            out.println("FN: " + fn);
+            out.println("FP: " + fp);
 
-        out.printf("precision: %.2f%n", precision);
-        out.printf("recall: %.2f%n", recall);
-        out.printf("f measure: %.2f%n", f_measure);
+            out.printf("precision: %.2f%n", precision);
+            out.printf("recall: %.2f%n", recall);
+            out.printf("f measure: %.2f%n", f_measure);
+        } else {
+            out.println(message);
+        }
     }
 
     public String toCSV() {
-        return tp +"," + fp + "," + fn + "," + String.format("%.4f", precision) + ","
+        if(message == null)
+            return tp +"," + fp + "," + fn + "," + String.format("%.4f", precision) + ","
                 + String.format("%.4f", recall) + "," + String.format("%.4f", f_measure);
+        else {
+            return message + ",,,,";
+        }
     }
 }

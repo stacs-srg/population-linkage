@@ -89,7 +89,7 @@ public class Constants {
     }
 
     public static StringMetric get(String stringMetric) {
-        return get(stringMetric, 512);
+        return get(stringMetric, 2048);
     }
 
     public static StringMetric get(String stringMetric, int CHAR_VAL_UPPER_BOUND) {

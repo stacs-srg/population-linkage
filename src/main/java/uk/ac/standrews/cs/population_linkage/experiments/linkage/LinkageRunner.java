@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.GroundTruthLinkCounter;
 import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -8,14 +9,22 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public abstract class LinkageRunner {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
-    private static final StringMetric DEFAULT_BASE_METRIC = Constants.JACCARD;
-    private StringMetric baseMetric = DEFAULT_BASE_METRIC;
+    private StringMetric baseMetric;
 
-    public void run(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name, final String results_repository_name, double match_threshold) {
+    private Path gtLinksCountFile = Paths.get("gt-link-counts.csv"); // TODO put this in the application properties?
+
+    public LinkageQuality run(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name,
+                    final String results_repository_name, double match_threshold, StringMetric baseMetric,
+                    boolean prefilter, boolean persistLinks, boolean evaluateQuality, boolean symmetricLinkage) {
+
+        this.baseMetric = baseMetric;
+
+        MemoryLogger.update();
 
         final Path store_path = ApplicationProperties.getStorePath();
         final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
@@ -24,9 +33,20 @@ public abstract class LinkageRunner {
         final SearchStructureFactory<LXP> search_factory = getSearchFactory(composite_metric);
         final Linker linker = getLinker(match_threshold, composite_metric, search_factory);
 
-        new LinkageFramework(linkage, linker).link();
+        setCacheSizes(record_repository);
 
+        int numberOGroundTruthLinks = 0;
+        if(evaluateQuality)
+            numberOGroundTruthLinks= new GroundTruthLinkCounter(source_repository_name, gtLinksCountFile).count(this);
+
+        MemoryLogger.update();
+
+        LinkageQuality lq = new LinkageFramework(linkage, linker).link(prefilter, persistLinks, evaluateQuality, symmetricLinkage, numberOGroundTruthLinks);
+
+        record_repository.stopStoreWatcher();
         linker.terminate();
+
+        return lq;
 
     }
 
@@ -48,7 +68,7 @@ public abstract class LinkageRunner {
 
         MemoryLogger.update();
 
-        LinkageQuality lq = new LinkageFramework(linkage, linker).linkForEvaluationOnly(numberOfGroundTruthLinks);
+        LinkageQuality lq = new LinkageFramework(linkage, linker).link(true, false, true, true, numberOfGroundTruthLinks);
         record_repository.stopStoreWatcher();
         linker.terminate();
 
@@ -56,8 +76,10 @@ public abstract class LinkageRunner {
         return lq;
     }
 
+
+
     public void setCacheSizes(RecordRepository record_repository) {
-        record_repository.setBirthsCacheSize(10000);
+        record_repository.setBirthsCacheSize(15000);
         record_repository.setDeathsCacheSize(10000);
         record_repository.setMarriagesCacheSize(10000);
     }

@@ -66,9 +66,17 @@ public abstract class Linkage {
 
     public abstract Map<String, Link> getGroundTruthLinks();
 
-    public abstract void makeLinksPersistent(Iterable<Link> links);
+    public void makeLinksPersistent(Iterable<Link> links) {
+        makePersistentUsingStorr(store_path, results_repository_name, links_persistent_name, links);
+    }
 
-    public abstract void makeGroundTruthPersistent(Iterable<Link> links);
+    public void makeLinkPersistent(Link link) {
+        makePersistentUsingStorr(store_path, results_repository_name, links_persistent_name, link);
+    }
+
+    public void makeGroundTruthPersistent(Iterable<Link> links) {
+        makePersistentUsingStorr(store_path, results_repository_name, ground_truth_persistent_name, links); // use makePersistentUsingStor or makePersistentUsingFile
+    }
 
     public abstract int numberOfGroundTruthTrueLinks();
 
@@ -110,6 +118,56 @@ public abstract class Linkage {
     }
 
     //////////////////////// Private ///////////////////////
+
+    private Map<String, IBucket> storeRepoBucketLookUp = new HashMap<>();
+
+    private IBucket getBucket(Path store_path, String results_repo_name, String bucket_name) {
+
+        IBucket bucket = storeRepoBucketLookUp.get(getSRBString(store_path, results_repo_name, bucket_name));
+        if(bucket == null) {
+
+            try {
+                IStore store = new Store(store_path);
+
+                IRepository results_repository;
+                try {
+                    results_repository = store.getRepository(results_repo_name);
+                } catch (RepositoryException e) {
+                    results_repository = store.makeRepository(results_repo_name);
+                }
+
+                try {
+                    bucket = results_repository.getBucket(bucket_name);
+                } catch (RepositoryException e) {
+                    bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, Link.class ); // al was LXPLink.class);
+                }
+
+                storeRepoBucketLookUp.put(getSRBString(store_path, results_repo_name, bucket_name), bucket);
+
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        return bucket;
+
+
+    }
+
+    private String getSRBString(Path store_path, String results_repo_name, String bucket_name) {
+        return store_path.toString() + "|" + results_repo_name + "|" + bucket_name;
+    }
+
+    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Link link) {
+
+        try {
+            getBucket(store_path, results_repo_name, bucket_name).makePersistent(link);
+        } catch (BucketException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
 

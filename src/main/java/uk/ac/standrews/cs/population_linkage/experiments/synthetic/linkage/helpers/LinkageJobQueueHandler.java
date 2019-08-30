@@ -71,7 +71,7 @@ public class LinkageJobQueueHandler {
                                 corruptionNumber, linkageResultsFile, birthsCacheSize, numROs);
 
                         int numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                                corrupted, corruptionNumber, gtCountsFile).count(sbbslr, SyntheticBirthBirthSiblingLinkageRunner.linkageApproach);
+                                corrupted, corruptionNumber, gtCountsFile).count(sbbslr); //, SyntheticBirthBirthSiblingLinkageRunner.linkageApproach);
 
                         sbbslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
                         break;
@@ -80,7 +80,7 @@ public class LinkageJobQueueHandler {
                                 corruptionNumber, linkageResultsFile, birthsCacheSize, deathsCacheSize, numROs);
 
                         numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr, SSBirthDeathSiblingLinkageRunner.linkageApproach);
+                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr); //, SSBirthDeathSiblingLinkageRunner.linkageApproach);
 
                         ssbdslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
                 }

@@ -1,12 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.BitBlasterSearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.LinkageRunner;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.SearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.SimilaritySearchSiblingBundlerOverBirths;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Sigma2;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linker;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -34,6 +28,9 @@ public class UmeaBrideBirthIdentityLinkageRunner extends LinkageRunner {
 
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
-        new UmeaBrideBirthIdentityLinkageRunner().run("BrideBirthIdentityLinks", "BirthBirthIdentityGroundTruth", "umea", "umea_results", match_threshold);
+        new UmeaBrideBirthIdentityLinkageRunner().run("BrideBirthIdentityLinks",
+                "BirthBirthIdentityGroundTruth", "umea",
+                "umea_results", match_threshold, Constants.JENSEN_SHANNON,
+                true, true, true, false);
     }
 }

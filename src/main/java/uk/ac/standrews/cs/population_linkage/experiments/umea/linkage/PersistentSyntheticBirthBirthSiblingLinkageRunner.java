@@ -3,6 +3,7 @@ package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class PersistentSyntheticBirthBirthSiblingLinkageRunner extends LinkageRunner {
@@ -20,14 +21,17 @@ public class PersistentSyntheticBirthBirthSiblingLinkageRunner extends LinkageRu
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
-        return new BitBlasterSearchStructureFactory<>(composite_metric, 70);
+        return new BitBlasterSearchStructureFactory<>(composite_metric, 50);
     }
 
     public static void main(String[] args) {
 
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
-        new PersistentSyntheticBirthBirthSiblingLinkageRunner().run("BirthBirthSiblingLinks", "BirthBirthSiblingGroundTruth", "synthetic-scotland_13k_1_clean", "synth_results", match_threshold);
+        new PersistentSyntheticBirthBirthSiblingLinkageRunner()
+                .run("BirthBirthSiblingLinks", "BirthBirthSiblingGroundTruth",
+                        "synthetic-scotland_13k_1_clean", "synth_results",
+                        match_threshold, new JensenShannon(2048),true, true, true, true);
 
     }
 }
