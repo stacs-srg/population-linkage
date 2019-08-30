@@ -1,8 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.helpers;
 
 import com.google.common.collect.Sets;
-import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkage_runners.SSBirthDeathSiblingLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkage_runners.SyntheticBirthBirthSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.experiments.linkageRunners.BirthDeathSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.experiments.linkageRunners.SyntheticBirthBirthSiblingLinkageRunner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -75,12 +75,12 @@ public class LinkageJobQueueHandler {
 
                         sbbslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
                         break;
-                    case SSBirthDeathSiblingLinkageRunner.linkageApproach:
-                        SSBirthDeathSiblingLinkageRunner ssbdslr = new SSBirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
+                    case BirthDeathSiblingLinkageRunner.linkageApproach:
+                        BirthDeathSiblingLinkageRunner ssbdslr = new BirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
                                 corruptionNumber, linkageResultsFile, birthsCacheSize, deathsCacheSize, numROs);
 
                         numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr); //, SSBirthDeathSiblingLinkageRunner.linkageApproach);
+                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr); //, BirthDeathSiblingLinkageRunner.linkageApproach);
 
                         ssbdslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
                 }

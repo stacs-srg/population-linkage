@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.SearchStructures;
 
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 

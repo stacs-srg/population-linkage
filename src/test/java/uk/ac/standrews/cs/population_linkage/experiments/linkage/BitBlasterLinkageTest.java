@@ -1,5 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.experiments.linkage;
 
+import uk.ac.standrews.cs.population_linkage.experiments.SearchStructures.BitBlasterSearchStructure;
+import uk.ac.standrews.cs.population_linkage.experiments.SearchStructures.SearchStructure;
+import uk.ac.standrews.cs.population_linkage.experiments.SearchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 public class BitBlasterLinkageTest extends SimilaritySearchLinkageTest {

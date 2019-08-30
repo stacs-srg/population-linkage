@@ -1,7 +1,9 @@
-package uk.ac.standrews.cs.population_linkage.experiments.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.LinkageRecipies;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
+import uk.ac.standrews.cs.population_linkage.experiments.linkage.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.BucketKind;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -22,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Linkage {
+public abstract class LinkageRecipe {
 
     protected final String results_repository_name;
     protected final String links_persistent_name;
@@ -30,7 +32,7 @@ public abstract class Linkage {
     protected final RecordRepository record_repository;
     protected Path store_path;
 
-    public Linkage(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public LinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         this.results_repository_name = results_repository_name;
         this.links_persistent_name = links_persistent_name;

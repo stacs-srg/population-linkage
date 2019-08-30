@@ -1,8 +1,7 @@
-package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.LinkageRecipies;
 
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Link;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Linkage;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Role;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -16,12 +15,12 @@ import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
-public class UmeaBrideBirthIdentityLinkage extends Linkage {
+public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     private final Iterable<LXP> birth_records;
     private final Iterable<LXP> marriage_records;
 
-    public  UmeaBrideBirthIdentityLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public BrideBirthIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);

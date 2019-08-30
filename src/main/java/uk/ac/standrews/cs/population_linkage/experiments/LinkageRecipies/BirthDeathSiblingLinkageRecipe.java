@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.linkages;
+package uk.ac.standrews.cs.population_linkage.experiments.LinkageRecipies;
 
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SSBirthDeathSiblingLinkage extends Linkage {
+public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
 
     private final Iterable<LXP> birth_records;
     private final Iterable<LXP> death_records;
 
-    public SSBirthDeathSiblingLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public BirthDeathSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);
         death_records = Utilities.getDeathRecords(record_repository);

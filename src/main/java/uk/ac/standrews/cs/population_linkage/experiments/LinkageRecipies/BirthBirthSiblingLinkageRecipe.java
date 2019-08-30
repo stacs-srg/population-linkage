@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.LinkageRecipies;
 
 import uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
@@ -14,11 +14,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static uk.ac.standrews.cs.population_linkage.experiments.characterisation.LinkStatus.TRUE_MATCH;
 
-public class UmeaBirthBirthSiblingLinkage extends Linkage {
+public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     private final Iterable<LXP> birth_records;
 
-    public UmeaBirthBirthSiblingLinkage(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public BirthBirthSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);
@@ -41,8 +41,8 @@ public class UmeaBirthBirthSiblingLinkage extends Linkage {
 
     @Override
     public String getDatasetName() {
-        return "Umea";
-    }
+        return "Rubbish this is";
+    } // TODO delete or clean this up
 
     @Override
     public String getLinkageType() {

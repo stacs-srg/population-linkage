@@ -1,5 +1,9 @@
-package uk.ac.standrews.cs.population_linkage.experiments.umea.linkage;
+package uk.ac.standrews.cs.population_linkage.experiments.linkageRunners;
 
+import uk.ac.standrews.cs.population_linkage.experiments.LinkageRecipies.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.experiments.LinkageRecipies.BirthBirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.experiments.SearchStructures.BitBlasterSearchStructureFactory;
+import uk.ac.standrews.cs.population_linkage.experiments.SearchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.*;
 import uk.ac.standrews.cs.population_linkage.experiments.synthetic.linkage.LinkagePostFilter;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -8,13 +12,13 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-public class PersistentSyntheticBirthBirthSiblingLinkageRunner extends LinkageRunner {
+public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
 
-    protected Linkage getLinkage(final String links_persistent_name, final String gt_persistent_name,
-                                 final String source_repository_name, final String results_repository_name,
-                                 final RecordRepository record_repository) {
+    protected LinkageRecipe getLinkage(final String links_persistent_name, final String gt_persistent_name,
+                                       final String source_repository_name, final String results_repository_name,
+                                       final RecordRepository record_repository) {
 
-        return new UmeaBirthBirthSiblingLinkage(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
+        return new BirthBirthSiblingLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
     }
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
@@ -22,8 +26,8 @@ public class PersistentSyntheticBirthBirthSiblingLinkageRunner extends LinkageRu
                 "birth-birth-sibling", "threshold match at " + match_threshold, Birth.ROLE_BABY, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink);
     }
 
-    protected Metric<LXP> getCompositeMetric(final Linkage linkage) {
-        return new Sigma(getBaseMetric(), linkage.getLinkageFields1());
+    protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
+        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields1());
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
@@ -32,11 +36,14 @@ public class PersistentSyntheticBirthBirthSiblingLinkageRunner extends LinkageRu
 
     public static void main(String[] args) {
 
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
-        new PersistentSyntheticBirthBirthSiblingLinkageRunner()
+        new BirthBirthSiblingLinkageRunner()
                 .run("BirthBirthSiblingLinks", "BirthBirthSiblingGroundTruth",
-                        "synthetic-scotland_13k_1_clean", "synth_results",
+                        sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
                         true, true, true, true);
 
