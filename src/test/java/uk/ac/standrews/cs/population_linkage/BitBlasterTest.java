@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.BitBlasterSearchStructure;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.SearchStructure;
+import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
+import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.ArrayList;

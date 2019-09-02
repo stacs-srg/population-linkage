@@ -1,8 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Sigma2;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma2;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -83,14 +83,14 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
         linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
         linkage_results_metadata_writer.println("Dataset: " + getDatasetName());
-        linkage_results_metadata_writer.println("Linkage type: " + getLinkageType());
+        linkage_results_metadata_writer.println("LinkageRecipe type: " + getLinkageType());
         linkage_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         linkage_results_metadata_writer.flush();
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
         distance_results_metadata_writer.println("Dataset: " + getDatasetName());
-        distance_results_metadata_writer.println("Linkage type: " + getLinkageType());
+        distance_results_metadata_writer.println("LinkageRecipe type: " + getLinkageType());
         distance_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         distance_results_metadata_writer.flush();
     }

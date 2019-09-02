@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -214,7 +214,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking quality of linkage for machine learning processing: cross products of metrics and field distances");
         distance_results_metadata_writer.println("Dataset: Umea");
-        distance_results_metadata_writer.println("Linkage type: sibling bundling");
+        distance_results_metadata_writer.println("LinkageRecipe type: sibling bundling");
         distance_results_metadata_writer.println("Records: " + getSourceType());
         distance_results_metadata_writer.flush();
     }
