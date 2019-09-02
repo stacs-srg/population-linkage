@@ -7,6 +7,7 @@ import uk.ac.standrews.cs.population_linkage.experiments.linkage.RecordPair;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Sigma;
 import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -102,34 +103,36 @@ public class IntrinsicDimensionalityCalculator {
             births.add(r);
 
 
-//        for(LXP record1 : births) {
-//            for(LXP record2 : births) {
+        for(LXP record1 : births) {
+            for(LXP record2 : births) {
+
+                if(record1.getString(Birth.FAMILY).trim().equals(record2.getString(Birth.FAMILY).trim())) {
+                    double distance = distanceFunction.calculateDistance(record1, record2);
+                    pairs.add(new RecordPair(record1, record2, distance));
+
+                    sampledPairs++;
+                    sumOfDistances += distance;
+                }
+
+                consideredPairs++;
+            }
+        }
+
+//        Random rng = new Random();
+
+//        while(sampledPairs < sampleN) {
 //
-//                if(toSampleRnd(consideredPairs, everyNthPair)) {
-//                    double distance = distanceFunction.calculateDistance(record1, record2);
-//                    pairs.add(new RecordPair(record1, record2, distance));
+//            LXP record1 = births.get(rng.nextInt(births.size()));
+//            LXP record2 = births.get(rng.nextInt(births.size()));
 //
-//                    sampledPairs++;
-//                    sumOfDistances += distance;
-//                }
+//            if(record1.getString(Birth.FAMILY).trim().equals(record2.getString(Birth.FAMILY).trim())) {
+//                double distance = distanceFunction.calculateDistance(record1, record2);
+//                pairs.add(new RecordPair(record1, record2, distance));
 //
-//                consideredPairs++;
+//                sampledPairs++;
+//                sumOfDistances += distance;
 //            }
 //        }
-
-        Random rng = new Random();
-
-        while(sampledPairs < sampleN) {
-
-            LXP record1 = births.get(rng.nextInt(births.size()));
-            LXP record2 = births.get(rng.nextInt(births.size()));
-
-            double distance = distanceFunction.calculateDistance(record1, record2);
-            pairs.add(new RecordPair(record1, record2, distance));
-
-            sampledPairs++;
-            sumOfDistances += distance;
-        }
 
 
         double mean = sumOfDistances / sampledPairs;
