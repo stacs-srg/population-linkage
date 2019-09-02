@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.util.ArrayList;

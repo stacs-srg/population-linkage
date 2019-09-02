@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Constants;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Sigma2;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma2;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;

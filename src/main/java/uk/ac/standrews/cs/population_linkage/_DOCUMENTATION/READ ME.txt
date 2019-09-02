@@ -1,0 +1,66 @@
+
+New structure is as follows:
+
+Runners in package linkageRunners:
+
+
+    These contain the main methods and actually perform linkage.
+    Each runner specifies a particular form of linkage e.g. BirthBirth etc.
+    Each runner provides as run method which performs the lkinkage.
+    All runners return LinkageQuality as a result
+        This either contains the linkage quality retsults if requested
+        or a message saying that it was not.
+    Run methods take a number of parameters:
+
+        Some of these are passed into a recipe (see below):
+
+        links_persistent_name - the name for the results (if requested)
+        gt_persistent_name - the name  for ground truth links (if persistent) - DELETE THIS SHOULD BE SEPARATE?
+        String source_repository_name - the name of the repo containing the source data.
+        results_repository_name - the repo for the results
+        double match_threshold - the threshold for similarity matching
+        baseMetric - the stringXstring metric to be used for matching e.g. Jaccard
+        boolean prefilter - whether the results should be prefiltered to eliminate scantily populated records
+        boolean persistLinks - whether to make the Link results persistent
+        boolean evaluateQuality - whether to perform ground truth linkage quality evaluation
+        boolean symmetricLinkage - if the linkage is symmetric or not e.g. Birth-birth
+
+
+Recipies in package LinkageRecipies specify:
+
+    1. Where to put the results of a linkage: a repo name and a bucket name.
+    2. Where to put the gound truth - a String (?)
+    3. The repo containing the source records.
+    4. A record repository - why this and above?
+
+    Recipies contain methods that:
+
+    1. return the source records to be linked.
+    2. return a string describing the types of records being linked
+    3. return the fields being used for linkage from the record pairs (one for each)
+    4. determine if two records are a true match from the ground truth.
+    5. return a string describing what kind of linbkage is being performed
+    6. return the roles being linked from each linked record e.g. Birth.ROLE_BABY
+    7. return a map of all the ground truth links (using a synthesised key based on the linbked records
+    8. return the number of ground truth links
+    9. return filtered source records (those with 'enough fields' filled in from each input set
+    10. return a key based on two records to use in the map (in 7)
+
+Search Structures in package Search Structures:
+
+    Search Structures contain the machinery being used for the search.
+    Examples are Bitblaster, Brute force and MTree.
+
+    They are intiialised with (for example):
+        1. a distance metric (compound over records)
+        2. A set of data encoded as an interable - this is one of the data sets in the search
+           and may be thought of as the data to be searched.
+
+        Search structures provide at least two methods:
+
+        1. findWithinThreshold which takes a record and a threshold
+           and returns a list of data which the threshold along with the distance of each result
+
+        2. Terminate, which shuts the search structure down (some may contain threads).
+
+

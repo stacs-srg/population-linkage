@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.data.skye;
 
 import uk.ac.standrews.cs.data.skye.SkyeBirthsDataSet;
-import uk.ac.standrews.cs.population_linkage.experiments.linkage.Utilities;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 
 public class PrintSkyeBirthRecordsSample {
 
