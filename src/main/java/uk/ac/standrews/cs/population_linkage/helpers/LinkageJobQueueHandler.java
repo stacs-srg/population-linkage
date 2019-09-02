@@ -1,8 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BirthDeathSiblingLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.SyntheticBirthBirthSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.JobRunner_BirthDeathSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.JobRunner_SyntheticBirthBirthSiblingLinkageRunner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -66,21 +66,21 @@ public class LinkageJobQueueHandler {
                         .validate(recordCountsFile);
 
                 switch (linkageType) {
-                    case SyntheticBirthBirthSiblingLinkageRunner.linkageApproach:
-                        SyntheticBirthBirthSiblingLinkageRunner sbbslr = new SyntheticBirthBirthSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
+                    case JobRunner_SyntheticBirthBirthSiblingLinkageRunner.linkageApproach:
+                        JobRunner_SyntheticBirthBirthSiblingLinkageRunner sbbslr = new JobRunner_SyntheticBirthBirthSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
                                 corruptionNumber, linkageResultsFile, birthsCacheSize, numROs);
 
                         int numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                                corrupted, corruptionNumber, gtCountsFile).count(sbbslr); //, SyntheticBirthBirthSiblingLinkageRunner.linkageApproach);
+                                corrupted, corruptionNumber, gtCountsFile).count(sbbslr); //, JobRunner_SyntheticBirthBirthSiblingLinkageRunner.linkageApproach);
 
                         sbbslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
                         break;
-                    case BirthDeathSiblingLinkageRunner.linkageApproach:
-                        BirthDeathSiblingLinkageRunner ssbdslr = new BirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
+                    case JobRunner_BirthDeathSiblingLinkageRunner.linkageApproach:
+                        JobRunner_BirthDeathSiblingLinkageRunner ssbdslr = new JobRunner_BirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
                                 corruptionNumber, linkageResultsFile, birthsCacheSize, deathsCacheSize, numROs);
 
                         numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr); //, BirthDeathSiblingLinkageRunner.linkageApproach);
+                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr); //, JobRunner_BirthDeathSiblingLinkageRunner.linkageApproach);
 
                         ssbdslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
                 }
