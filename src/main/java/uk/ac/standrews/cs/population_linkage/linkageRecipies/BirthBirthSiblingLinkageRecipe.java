@@ -1,6 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 
-import uk.ac.standrews.cs.population_linkage.characterisation.GroundTruth;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -39,7 +38,7 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return GroundTruth.isTrueMatchBirthSiblingUmea(record1, record2);
+        return BirthBirthSiblingLinkageRecipe.trueMatch(record1, record2);
     }
 
     @Override
@@ -120,7 +119,36 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
         return links;
     }
 
-    public int numberOfGroundTruthTrueLinks() {
+    /*
+     * This is an efficient way of counting the number of true links without having an n^2 comparison space.
+     * The number of true links when performing sibling bundling is equal to the (sum of (each person's family size - 1)) divided by 2
+     * If we consider each person in turn and find how many family members they have this is the number of true links going out from them.
+     * If we do this for each person then we get a total. However, at this point we will have counted each link in both directions - therefore we need to divide by two.
+     *
+     * The first loop gets the size of family for each ID.
+     *
+     * The second loop goes through each person, looks up the family size and adds it to the total -
+     * we take away one as we don't want to count every link as the currently considered person is in the family count and so it's not really a link.
+     *
+     * Finally, we divide by two on the return.
+     *
+     * We could actually make this more efficient by replacing the second loop with a loop that iterates over the map values
+     * and calculating (where s is the family size): the sum of (s * (s-1)) - I think this would work, but test the outcome if you implement it.
+     *
+     * This optimisation can only be used for sibling bundling and not for identity linkage.
+     *
+     * To calculate it for others - e.g. BrideBrideSibling, you'd take a similar approach using a map with the key
+     * being the unique identifier for the family group. Marriage and death records don't have a FAMILY id in the
+     * same way as births - we could add them into the synthetic data but that would lead to divergence from the Umea data.
+     *
+     * A way that works with Umea in mind would be to make a key from the information that uniquely identifies the family grouping
+     * I'd go with concatenated parent IDs with a dash in the middle (as concatenated parents names can't be guaranteed to be
+     * unique to the family). So repeating the process with none birth records it is just a matter of choosing a suitable key for the map.
+     *
+     * Also - the compute if absent line returns the value if the key is already present and the newly created value if not.
+     * The use of atomic integer is to enable incrementation of a value in the map in a single line.
+     */
+    public int numberOfGroundTruthTrueLinks() { // See comment above
 
         int c = 0;
 
@@ -143,7 +171,7 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
         }
 
-        return c / 2; // divide by 2 - symetric linkage - making the same link in both directions only counts as one link!
+        return c / 2; // divide by 2 - symmetric linkage - making the same link in both directions only counts as one link!
 
     }
 
@@ -215,5 +243,37 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     public static void showLXP(LXP lxp) {
         System.out.println(lxp.getString(Birth.FORENAME) + " " + lxp.getString(Birth.SURNAME) + " // "
                 + lxp.getString(Birth.FATHER_FORENAME) + " " + lxp.getString(Birth.FATHER_SURNAME) + " " + lxp.getString(Birth.FAMILY));
+    }
+
+    public static LinkStatus trueMatch(LXP record1, LXP record2) {
+
+        final String b1_parent_marriage_id = record1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+        final String b2_parent_marriage_id = record2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+
+        final String b1_mother_id = record1.getString(Birth.MOTHER_IDENTITY);
+        final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY);
+
+        final String b1_father_id = record1.getString(Birth.FATHER_IDENTITY);
+        final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY);
+
+        final String b1_mother_birth_id = record1.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
+        final String b2_mother_birth_id = record2.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
+
+        final String b1_father_birth_id = record1.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
+        final String b2_father_birth_id = record2.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
+
+        if (!b1_parent_marriage_id.isEmpty() && b1_parent_marriage_id.equals(b2_parent_marriage_id)) return LinkStatus.TRUE_MATCH;
+
+        if (!b1_mother_id.isEmpty() && b1_mother_id.equals(b2_mother_id) && !b1_father_id.isEmpty() && b1_father_id.equals(b2_father_id)) return LinkStatus.TRUE_MATCH;
+
+        if (!b1_mother_birth_id.isEmpty() && b1_mother_birth_id.equals(b2_mother_birth_id) && !b1_father_birth_id.isEmpty() && b1_father_birth_id.equals(b2_father_birth_id)) return LinkStatus.TRUE_MATCH;
+
+        if (b1_parent_marriage_id.isEmpty() && b2_parent_marriage_id.isEmpty() &&
+                b1_mother_id.isEmpty() && b2_mother_id.isEmpty() &&
+                b1_father_id.isEmpty() && b2_father_id.isEmpty() &&
+                b1_mother_birth_id.isEmpty() && b2_mother_birth_id.isEmpty() &&
+                b1_father_birth_id.isEmpty() && b2_father_birth_id.isEmpty()) return LinkStatus.UNKNOWN;
+
+        return LinkStatus.NOT_TRUE_MATCH;
     }
 }

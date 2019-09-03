@@ -1,10 +1,10 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRecipies.BirthBirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
-import uk.ac.standrews.cs.population_linkage.characterisation.GroundTruth;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
@@ -32,7 +32,7 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
     @Override
     protected LinkStatus isTrueMatch(LXP record1, LXP record2) {
 
-        return GroundTruth.isTrueMatchBirthSiblingUmea(record1, record2);
+        return BirthBirthSiblingLinkageRecipe.trueMatch(record1, record2);
     }
 
     @Override

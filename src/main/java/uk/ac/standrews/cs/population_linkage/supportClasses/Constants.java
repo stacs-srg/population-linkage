@@ -2,6 +2,7 @@ package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
@@ -53,6 +54,14 @@ public class Constants {
             Birth.PARENTS_DAY_OF_MARRIAGE,
             Birth.PARENTS_MONTH_OF_MARRIAGE,
             Birth.PARENTS_YEAR_OF_MARRIAGE
+    );
+
+    public static final List<Integer> SIBLING_BUNDLING_BRIDE_MARRIAGE_LINKAGE_FIELDS = Arrays.asList(
+
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME,
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME
     );
 
     public static final List<Integer> SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS = Arrays.asList(
