@@ -88,6 +88,23 @@ public class Constants {
             Death.MOTHER_MAIDEN_SURNAME
     );
 
+
+    public static final List<Integer> BIRTH_FATHER_BABY_LINKAGE_FIELDS = Arrays.asList(
+            Birth.FORENAME,
+            Birth.SURNAME
+    );
+
+    public static final List<Integer> BIRTH_FATHER_FATHER_LINKAGE_FIELDS = Arrays.asList(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME
+    );
+
+    public static final List<Integer> BIRTH_MOTHER_MOTHER_LINKAGE_FIELDS = Arrays.asList(
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_SURNAME
+    );
+
+    // TODO get rid of these and make them look like the rest - TOM!!!
     public static final String SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"FATHER_FORENAME, FATHER_SURNAME, MOTHER_FORENAME, MOTHER_MAIDEN_SURNAME, PARENTS_PLACE_OF_MARRIAGE, PARENTS_DAY_OF_MARRIAGE, PARENTS_MONTH_OF_MARRIAGE, PARENTS_YEAR_OF_MARRIAGE\"";
     public static final String SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS_AS_STRINGS = "\"Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME\"";
     public static final String SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"Death.FATHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME\"";
