@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.BrideBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipies.GroomGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
@@ -14,18 +14,18 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-public class BrideBrideSiblingLinkageRunner extends LinkageRunner {
+public class GroomGroomSiblingLinkageRunner extends LinkageRunner {
 
     protected LinkageRecipe getLinkage(final String links_persistent_name, final String gt_persistent_name,
                                        final String source_repository_name, final String results_repository_name,
                                        final RecordRepository record_repository) {
 
-        return new BrideBrideSiblingLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
+        return new GroomGroomSiblingLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
     }
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "bride-bride-sibling", "threshold match at " + match_threshold, Marriage.ROLE_BRIDE, Marriage.ROLE_BRIDE, LinkagePostFilter::isViableBBSiblingLink);
+                "groom-groom-sibling", "threshold match at " + match_threshold, Marriage.ROLE_GROOM, Marriage.ROLE_GROOM, LinkagePostFilter::isViableBBSiblingLink);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
@@ -43,8 +43,8 @@ public class BrideBrideSiblingLinkageRunner extends LinkageRunner {
 
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
-        new BrideBrideSiblingLinkageRunner()
-                .run("BrideBrideSiblingLinks", "BrideBrideSiblingGroundTruth",
+        new GroomGroomSiblingLinkageRunner()
+                .run("GroomGroomSiblingLinks", "GroomGroomSiblingGroundTruth",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
                         true, true, true, true);

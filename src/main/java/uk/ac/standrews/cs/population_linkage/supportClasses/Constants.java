@@ -64,6 +64,14 @@ public class Constants {
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME
     );
 
+    public static final List<Integer> SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS = Arrays.asList(
+
+    Marriage.GROOM_FATHER_FORENAME,
+    Marriage.GROOM_FATHER_SURNAME,
+    Marriage.GROOM_MOTHER_FORENAME,
+    Marriage.GROOM_MOTHER_MAIDEN_SURNAME
+    );
+
     public static final List<Integer> SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS = Arrays.asList(
 
             Birth.FATHER_FORENAME,

@@ -15,11 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
 
-public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
+public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     private final Iterable<LXP> marriage_records;
 
-    public BrideBrideSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public GroomBrideSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         marriage_records = Utilities.getMarriageRecords(record_repository);
@@ -47,7 +47,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "sibling bundling between brides on marriage records";
+        return "sibling bundling between groom and bride on marriage records";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getRole1() {
-        return Marriage.ROLE_BRIDE;
+        return Marriage.ROLE_GROOM;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields1() {
-        return Constants.SIBLING_BUNDLING_BRIDE_MARRIAGE_LINKAGE_FIELDS;
+        return Constants.SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS;
     }
 
     @Override
@@ -104,7 +104,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
                 try {
                     if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
 
-                        Link l = new Link(record1, Marriage.ROLE_BRIDE, record2, Marriage.ROLE_BRIDE, 1.0f, "ground truth");
+                        Link l = new Link(record1, Marriage.ROLE_GROOM, record2, Marriage.ROLE_BRIDE, 1.0f, "ground truth");
                         String linkKey = toKey(record1, record2);
                         links.put(linkKey.toString(), l);
 
@@ -122,15 +122,15 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
         int count = 0;
 
-        Map<String, AtomicInteger> married_sister_count_per_family = new HashMap<>();
+        Map<String, AtomicInteger> married_brother_count_per_family = new HashMap<>();
         for(LXP marriage : record_repository.getMarriages()) {
 
-            String fID = marriage.getString(Marriage.BRIDE_FATHER_IDENTITY).trim();
-            String mID = marriage.getString(Marriage.BRIDE_MOTHER_IDENTITY).trim();
+            String fID = marriage.getString(Marriage.GROOM_FATHER_IDENTITY).trim();
+            String mID = marriage.getString(Marriage.GROOM_MOTHER_IDENTITY).trim();
 
             if(!(fID.equals("") || mID.equals(""))) {
-                String key = fID + "|" + mID;     // This is a unique key for the bride's mother and father
-                married_sister_count_per_family.computeIfAbsent(key, k -> new AtomicInteger()).incrementAndGet();
+                String key = fID + "|" + mID;     // This is a unique key for the groom's mother and father
+                married_brother_count_per_family.computeIfAbsent(key, k -> new AtomicInteger()).incrementAndGet();
             }
         }
 
@@ -142,8 +142,8 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
             if(!(fID.equals("") || mID.equals(""))) {
                 String key = fID + "|" + mID;
                 AtomicInteger marriages_count;
-                if((marriages_count = married_sister_count_per_family.get(key)) != null) { //
-                    count += marriages_count.get() - 1; // counting links, so this number is the links from this sister to the other sisters' marriages (one less than family size)
+                if((marriages_count = married_brother_count_per_family.get(key)) != null) { //
+                    count += marriages_count.get() - 1; // counting links, so this number is the links from this brother to the other brothers marriages (one less than family size)
                 }
             }
         }
@@ -162,10 +162,10 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
             for(LXP record : marriage_records) {
 
-                String fathersForename = record.getString(Marriage.BRIDE_FATHER_FORENAME).trim();
-                String fathersSurname = record.getString(Marriage.BRIDE_FATHER_SURNAME).trim();
-                String mothersForename = record.getString(Marriage.BRIDE_MOTHER_FORENAME).trim();
-                String mothersSurname = record.getString(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME).trim();
+                String fathersForename = record.getString(Marriage.GROOM_FATHER_FORENAME).trim();
+                String fathersSurname = record.getString(Marriage.GROOM_FATHER_SURNAME).trim();
+                String mothersForename = record.getString(Marriage.GROOM_MOTHER_FORENAME).trim();
+                String mothersSurname = record.getString(Marriage.GROOM_MOTHER_MAIDEN_SURNAME).trim();
 
                 if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
                         fathersSurname.equals("") || fathersSurname.equals("missing") ||
@@ -190,10 +190,35 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return getPreFilteredSourceRecords1();
+        if (filteredMarriageRecords == null) {
+
+            filteredMarriageRecords = new HashSet<>();
+
+            for (LXP record : marriage_records) {
+
+                String fathersForename = record.getString(Marriage.BRIDE_FATHER_FORENAME).trim();
+                String fathersSurname = record.getString(Marriage.BRIDE_FATHER_SURNAME).trim();
+                String mothersForename = record.getString(Marriage.BRIDE_MOTHER_FORENAME).trim();
+                String mothersSurname = record.getString(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME).trim();
+
+                if (!(fathersForename.equals("") || fathersForename.equals("missing") ||
+                        fathersSurname.equals("") || fathersSurname.equals("missing") ||
+                        mothersForename.equals("") || mothersForename.equals("missing") ||
+                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                    // no key info is missing - so we'll consider this record
+                    // if it's not missing too much marriage info
+                    int numberOfPopulatedMarriageFields = 0;
+
+                    if (numberOfPopulatedMarriageFields >= requiredNumberOfMarriageFields()) {
+                        filteredMarriageRecords.add(record);
+                    } // else reject record for linkage - not enough info
+                } // else reject record for linkage - not enough info
+            }
+        }
+        return filteredMarriageRecords;
     }
 
-    private String toKey(LXP record1, LXP record2) {
+        private String toKey(LXP record1, LXP record2) {
         String s1 = record1.getString(Marriage.ORIGINAL_ID);
         String s2 = record2.getString(Marriage.ORIGINAL_ID);
 
@@ -207,8 +232,8 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
-        final String m1_mother_id = record1.getString(Marriage.BRIDE_MOTHER_IDENTITY);
-        final String m2_mother_id = record2.getString(Marriage.BRIDE_MOTHER_IDENTITY);
+        final String m1_mother_id = record1.getString(Marriage.GROOM_MOTHER_IDENTITY);
+        final String m2_mother_id = record2.getString(Marriage.GROOM_MOTHER_IDENTITY);
 
         final String m1_father_id = record1.getString(Marriage.BRIDE_FATHER_IDENTITY);
         final String m2_father_id = record2.getString(Marriage.BRIDE_FATHER_IDENTITY);

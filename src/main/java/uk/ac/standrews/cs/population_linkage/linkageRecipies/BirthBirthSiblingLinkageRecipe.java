@@ -3,7 +3,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Role;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -62,6 +61,16 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
+    public String getRole1() {
+        return Birth.ROLE_BABY;
+    }
+
+    @Override
+    public String getRole2() {
+        return Birth.ROLE_BABY;
+    }
+
+    @Override
     public List<Integer> getLinkageFields1() {
         return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
     }
@@ -69,16 +78,6 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public List<Integer> getLinkageFields2() {
         return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
-    }
-
-    @Override
-    public Role makeRole1(LXP lxp) throws PersistentObjectException {
-        return new Role(lxp.getThisRef(), Birth.ROLE_BABY);
-    }
-
-    @Override
-    public Role makeRole2(LXP lxp) throws PersistentObjectException {
-        return new Role(lxp.getThisRef(), Birth.ROLE_BABY);
     }
 
     @Override

@@ -2,7 +2,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Role;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -68,6 +67,16 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
+    public String getRole1() {
+        return Birth.ROLE_BABY;
+    }
+
+    @Override
+    public String getRole2() {
+        return Marriage.ROLE_BRIDE;
+    }
+
+    @Override
     public List<Integer> getLinkageFields1() {
         return Arrays.asList(
                 Birth.FORENAME,
@@ -87,16 +96,6 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
                 Marriage.BRIDE_FATHER_SURNAME,
                 Marriage.BRIDE_MOTHER_FORENAME,
                 Marriage.BRIDE_MOTHER_MAIDEN_SURNAME);
-    }
-
-    @Override
-    public Role makeRole1(LXP lxp) throws PersistentObjectException {
-        return new Role(lxp.getThisRef(), Birth.ROLE_BABY);
-    }
-
-    @Override
-    public Role makeRole2(LXP lxp) throws PersistentObjectException {
-        return new Role(lxp.getThisRef(), Marriage.ROLE_BRIDE);
     }
 
     @Override
