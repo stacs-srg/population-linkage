@@ -167,21 +167,30 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
                 String mothersForename = record.getString(Marriage.GROOM_MOTHER_FORENAME).trim();
                 String mothersSurname = record.getString(Marriage.GROOM_MOTHER_MAIDEN_SURNAME).trim();
 
-                if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
-                        fathersSurname.equals("") || fathersSurname.equals("missing") ||
-                        mothersForename.equals("") || mothersForename.equals("missing") ||
-                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
-                    // no key info is missing - so we'll consider this record
-                    // if it's not missing too much marriage info
-                    int numberOfPopulatedMarriageFields = 0;
+                int populatedFields = 0;
 
-                    if(numberOfPopulatedMarriageFields >= requiredNumberOfMarriageFields()) {
-                        filteredMarriageRecords.add(record);
-                    } // else reject record for linkage - not enough info
+                if(!(fathersForename.equals("") || fathersForename.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if(!(fathersSurname.equals("") || fathersSurname.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if(!( mothersForename.equals("") || mothersForename.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if(!( mothersSurname.equals("") || mothersSurname.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if( populatedFields >= requiredNumberOfPreFilterFields() ) {
+                    filteredMarriageRecords.add(record);
                 } // else reject record for linkage - not enough info
             }
         }
         return filteredMarriageRecords;
+    }
+
+    private int requiredNumberOfPreFilterFields() {
+        return 3;
     }
 
     private int requiredNumberOfMarriageFields() {
@@ -201,24 +210,29 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
                 String mothersForename = record.getString(Marriage.BRIDE_MOTHER_FORENAME).trim();
                 String mothersSurname = record.getString(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME).trim();
 
-                if (!(fathersForename.equals("") || fathersForename.equals("missing") ||
-                        fathersSurname.equals("") || fathersSurname.equals("missing") ||
-                        mothersForename.equals("") || mothersForename.equals("missing") ||
-                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
-                    // no key info is missing - so we'll consider this record
-                    // if it's not missing too much marriage info
-                    int numberOfPopulatedMarriageFields = 0;
+                int populatedFields = 0;
 
-                    if (numberOfPopulatedMarriageFields >= requiredNumberOfMarriageFields()) {
-                        filteredMarriageRecords.add(record);
-                    } // else reject record for linkage - not enough info
+                if(!(fathersForename.equals("") || fathersForename.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if(!(fathersSurname.equals("") || fathersSurname.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if(!( mothersForename.equals("") || mothersForename.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if(!( mothersSurname.equals("") || mothersSurname.equals("missing") ) ) {
+                    populatedFields++;
+                }
+                if( populatedFields >= requiredNumberOfPreFilterFields() ) {
+                    filteredMarriageRecords.add(record);
                 } // else reject record for linkage - not enough info
             }
         }
         return filteredMarriageRecords;
     }
 
-        private String toKey(LXP record1, LXP record2) {
+    private String toKey(LXP record1, LXP record2) {
         String s1 = record1.getString(Marriage.ORIGINAL_ID);
         String s2 = record2.getString(Marriage.ORIGINAL_ID);
 
@@ -226,7 +240,6 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
             return s1 + "-" + s2;
         else
             return s2 + "-" + s1;
-
     }
 
 

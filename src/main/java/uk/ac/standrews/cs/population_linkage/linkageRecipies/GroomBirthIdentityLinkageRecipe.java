@@ -13,14 +13,12 @@ import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
 
-import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
-
-public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
+public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     private final Iterable<LXP> birth_records;
     private final Iterable<LXP> marriage_records;
 
-    public BrideBirthIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public GroomBirthIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);
@@ -28,9 +26,7 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords1() {
-        return marriage_records;
-    }
+    public Iterable<LXP> getSourceRecords1() { return marriage_records; }
 
     @Override
     public Iterable<LXP> getSourceRecords2() {
@@ -39,22 +35,17 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        final String bride_id = record1.getString(Marriage.BRIDE_IDENTITY);
-        final String child_id = record2.getString(Birth.CHILD_IDENTITY);
-
-        if (child_id.isEmpty() || bride_id.isEmpty()) return LinkStatus.UNKNOWN;
-
-        return child_id.equals(bride_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
+        return GroomBirthIdentityLinkageRecipe.trueMatch(record1, record2);
     }
 
     @Override
     public String getDatasetName() {
-        return  "Rubbish this is"; // TODO delete or clean this up
-    }
+        return "Rubbish this is";
+    } // TODO delete or clean this up
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between a bride and her birth record";
+        return "identity bundling between grooms on marriage records and babies on birth records - same person in roles of groom and baby";
     }
 
     @Override
@@ -69,7 +60,7 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getRole1() {
-        return Marriage.ROLE_BRIDE;
+        return Marriage.ROLE_GROOM;
     }
 
     @Override
@@ -77,11 +68,8 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
         return Birth.ROLE_BABY;
     }
 
-
     @Override
-    public List<Integer> getLinkageFields1() {
-        return Constants.BRIDE_IDENTITY_LIKAGE_FIELDS;
-    }
+    public List<Integer> getLinkageFields1() { return Constants.GROOM_IDENTITY_LINKAGE_FIELDS ;}
 
     @Override
     public List<Integer> getLinkageFields2() { return Constants.BABY_IDENTITY_LINKAGE_FIELDS; }
@@ -91,30 +79,18 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
         final Map<String, Link> links = new HashMap<>();
 
-        // NOTE by TOM - I've changed stuff in this method (set to maps) this may change the context of your todos
-        // TODO GRAHAM created a temp map in memory
-        // TODO GRAHAM do we want to create persistent maps in store, or index the bucket fields.
+        for (LXP marriage_record : record_repository.getMarriages()) {
 
-        Map<String, List<LXP>> child_bride_map = createMap(record_repository.getMarriages());
+            String groom_id = marriage_record.getString(Marriage.GROOM_IDENTITY);  // TODO was wrong - check all
 
-        for (LXP birth_record : record_repository.getBirths()) {
+            for (LXP birth_record : birth_records) {
 
-            String child_id = birth_record.getString(Birth.CHILD_IDENTITY);
-            if (is_legal(child_id)) {
-
-                final List<LXP> marriage_records = child_bride_map.get(child_id);
-
-                if (marriage_records != null) {
-
-                    for (LXP marriage_record : marriage_records) {
-
-                        try {
-                            Link l = new Link(birth_record, Birth.ROLE_BABY, marriage_record, Marriage.ROLE_BRIDE, 1.0f, "ground truth");
-
-                            links.put(l.toString(), l);
-                        } catch (PersistentObjectException e) {
-                            ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
-                        }
+                if( groom_id.equals( birth_record.getString(Birth.FATHER_IDENTITY) ) ) {
+                    try {
+                        Link l = new Link(marriage_record, Marriage.ROLE_GROOM, birth_record, Birth.ROLE_BABY, 1.0f, "ground truth");
+                        links.put(l.toString(), l);
+                    } catch (PersistentObjectException e) {
+                        ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
                     }
                 }
             }
@@ -123,45 +99,42 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
         return links;
     }
 
-    @Override
     public int numberOfGroundTruthTrueLinks() {
 
-        int c = 0;
+        int count = 0;
 
-        List<LXP> marriageRecords = new ArrayList<>();
         for(LXP marriage : record_repository.getMarriages()) {
-            marriageRecords.add(marriage);
-        }
 
-        for(LXP birth : record_repository.getBirths()) {
-            for(LXP marriage : marriageRecords) {
-                if(isTrueMatch(birth, marriage).equals(TRUE_MATCH))
-                    c++;
+            for (LXP birth2 : record_repository.getBirths()) {
+
+                if( marriage.getString(Marriage.GROOM_IDENTITY).equals(birth2.getString(Birth.CHILD_IDENTITY) ) ) {
+                    count++;
+                }
             }
         }
-
-        return c;
+        return count;
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-        HashSet<LXP> filteredMarriageRecords = new HashSet<>();
+
+        Collection<LXP> filteredMarriageRecords = new HashSet<>();
 
         for(LXP record : marriage_records) {
 
-            String bridesForename = record.getString(Marriage.BRIDE_FORENAME).trim();
-            String bridesSurname = record.getString(Marriage.BRIDE_SURNAME).trim();
-            String fathersForename = record.getString(Marriage.BRIDE_FATHER_FORENAME).trim();
-            String fathersSurname = record.getString(Marriage.BRIDE_FATHER_SURNAME).trim();
-            String mothersForename = record.getString(Marriage.BRIDE_MOTHER_FORENAME).trim();
-            String mothersSurname = record.getString(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME).trim();
+            String groomForename = record.getString(Marriage.GROOM_FORENAME).trim();
+            String groomSurname = record.getString(Marriage.GROOM_SURNAME).trim();
+            String fathersForename = record.getString(Marriage.GROOM_FATHER_FORENAME).trim();
+            String fathersSurname = record.getString(Marriage.GROOM_FATHER_SURNAME).trim();
+            String mothersForename = record.getString(Marriage.GROOM_MOTHER_FORENAME).trim();
+            String mothersSurname = record.getString(Marriage.GROOM_MOTHER_MAIDEN_SURNAME).trim();
 
             int populatedFields = 0;
 
-            if (!(bridesForename.equals("") || bridesForename.equals("missing"))) {
+            if (!(groomForename.equals("") || groomForename.equals("missing"))) {
                 populatedFields++;
             }
-            if (!(bridesSurname.equals("") || bridesSurname.equals("missing"))) {
+            if (!(groomSurname.equals("") || groomSurname.equals("missing"))) {
                 populatedFields++;
             }
             if (!(fathersForename.equals("") || fathersForename.equals("missing"))) {
@@ -183,6 +156,11 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
         }
         return filteredMarriageRecords;
     }
+
+    private int requiredNumberOfPreFilterFields() {
+        return 3;
+    }
+
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
@@ -226,36 +204,28 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
         return filteredBirthRecords;
     }
 
-    private int requiredNumberOfPreFilterFields() {
-        return 3;
+    private String toKey(LXP record1, LXP record2) {
+        String s1 = record1.getString(Marriage.ORIGINAL_ID);
+        String s2 = record2.getString(Birth.ORIGINAL_ID);
+
+        if(s1.compareTo(s2) < 0)
+            return s1 + "-" + s2;
+        else
+            return s2 + "-" + s1;
+
     }
 
-    /////////////////// Private methods ///////////////////
+    public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
-    private boolean is_legal(String person_id) {
-        try {
-            return person_id != null && person_id.length() > 0 && Integer.valueOf(person_id) > 0;
-        } catch( RuntimeException e ) { // if the string is not an int encoding - TODO GRAHAM - is this OK?
-            return false;
+        final String groom_id = record1.getString(Marriage.GROOM_IDENTITY);
+        final String baby_id = record2.getString(Birth.CHILD_IDENTITY);
+
+        if (groom_id.isEmpty() || baby_id.isEmpty() ) {
+            return LinkStatus.UNKNOWN;
+        } else if (groom_id.equals( baby_id ) ) {
+            return LinkStatus.TRUE_MATCH;
+        } else {
+            return LinkStatus.NOT_TRUE_MATCH;
         }
-    }
-
-    private Map <String, List<LXP>> createMap(Iterable<Marriage> marriages) {
-        Map<String, List<LXP>> map = new HashMap<>(); // Maps from child id to marriages for that child as a bride
-
-        for( Marriage marriage : marriages ) {
-            String bride_identity = marriage.getString( Marriage.BRIDE_IDENTITY );
-            if( is_legal(bride_identity) ) {
-
-                List<LXP> list_marriages = map.get(bride_identity);
-                if( list_marriages == null ) {
-                    list_marriages = new ArrayList<>();
-                }
-                list_marriages.add(marriage);
-                map.put(bride_identity,list_marriages);
-            }
-        }
-
-        return map;
     }
 }

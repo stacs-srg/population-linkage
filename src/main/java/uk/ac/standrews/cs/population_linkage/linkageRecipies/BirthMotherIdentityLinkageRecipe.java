@@ -14,11 +14,11 @@ import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
 
-public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
+public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     private final Iterable<LXP> birth_records;
 
-    public BirthFatherIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public BirthMotherIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);
@@ -36,7 +36,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return BirthFatherIdentityLinkageRecipe.trueMatch(record1, record2);
+        return BirthMotherIdentityLinkageRecipe.trueMatch(record1, record2);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between babies on birth records and fathers on birth records - same person in roles of baby and father";
+        return "identity bundling between babies on birth records and mothers on birth records - same person in roles of baby and mother";
     }
 
     @Override
@@ -66,7 +66,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getRole2() {
-        return Birth.ROLE_FATHER;
+        return Birth.ROLE_MOTHER;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getLinkageFields2() { return Constants.BIRTH_FATHER_FATHER_LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields2() { return Constants.BIRTH_MOTHER_MOTHER_LINKAGE_FIELDS; }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -101,7 +101,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
                 try {
                     if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
 
-                        Link l = new Link(record1, Birth.ROLE_BABY, record2, Birth.ROLE_FATHER, 1.0f, "ground truth");
+                        Link l = new Link(record1, Birth.ROLE_BABY, record2, Birth.ROLE_MOTHER, 1.0f, "ground truth");
                         String linkKey = toKey(record1, record2);
                         links.put(linkKey.toString(), l);
 
@@ -123,7 +123,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
             for (LXP birth2 : record_repository.getBirths()) {
 
-                if( birth1.getString(Birth.CHILD_IDENTITY).equals(birth2.getString(Birth.FATHER_IDENTITY) ) ) {
+                if( birth1.getString(Birth.CHILD_IDENTITY).equals(birth2.getString(Birth.MOTHER_IDENTITY) ) ) {
                     count++;
                 }
             }
@@ -158,12 +158,11 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
         for(LXP record : birth_records) {
 
-            String fatherForename = record.getString(Birth.FATHER_FORENAME).trim();
-            String fatherSurname = record.getString(Birth.FATHER_SURNAME).trim();
+            String fatherForename = record.getString(Birth.MOTHER_FORENAME).trim();
+            String fatherSurname = record.getString(Birth.MOTHER_SURNAME).trim();
 
             if( ! ( fatherForename.equals("") || fatherForename.equals("missing") ||
                     fatherSurname.equals("") || fatherSurname.equals("missing") ) ) {
-
 
                 filteredBirthRecords.add(record);
             }
@@ -185,7 +184,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
         final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY);
-        final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY);
+        final String b2_father_id = record2.getString(Birth.MOTHER_IDENTITY);
 
         if (b1_baby_id.isEmpty() || b2_father_id.isEmpty() ) {
             return LinkStatus.UNKNOWN;

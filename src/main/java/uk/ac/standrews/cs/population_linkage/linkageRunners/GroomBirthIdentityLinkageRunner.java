@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.BirthFatherIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipies.GroomBirthIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
@@ -10,22 +10,23 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkagePostFilter;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-public class BirthFatherIdentityLinkageRunner extends LinkageRunner {
+public class GroomBirthIdentityLinkageRunner extends LinkageRunner {
 
     protected LinkageRecipe getLinkage(final String links_persistent_name, final String gt_persistent_name,
                                        final String source_repository_name, final String results_repository_name,
                                        final RecordRepository record_repository) {
 
-        return new BirthFatherIdentityLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
+        return new GroomBirthIdentityLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
     }
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "birth-father-id", "threshold match at " + match_threshold, Birth.ROLE_BABY, Birth.ROLE_FATHER, LinkagePostFilter::isViableBBSiblingLink);
+                "groom-birth-id", "threshold match at " + match_threshold, Marriage.ROLE_GROOM, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
@@ -43,8 +44,8 @@ public class BirthFatherIdentityLinkageRunner extends LinkageRunner {
 
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
-        new BirthFatherIdentityLinkageRunner()
-                .run("BirthFatherIdentityLinks", "BirthFatherIdentityGroundTruth",
+        new GroomBirthIdentityLinkageRunner()
+                .run("GroomBirthIdentityLinks", "GroomBirthIdentityGroundTruth",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
                         true, true, true, true);

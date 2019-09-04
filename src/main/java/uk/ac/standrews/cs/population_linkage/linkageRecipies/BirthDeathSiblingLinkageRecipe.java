@@ -144,19 +144,32 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
             String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
             String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
             String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
-                String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
+            String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
 
-            if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
-                    fathersSurname.equals("") || fathersSurname.equals("missing") ||
-                    mothersForename.equals("") || mothersForename.equals("missing")||
-                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
-                // no key info is missing - so we'll consider this record
+            int populatedFields = 0;
 
+            if(!(fathersForename.equals("") || fathersForename.equals("missing") ) ) {
+                populatedFields++;
+            }
+            if(!(fathersSurname.equals("") || fathersSurname.equals("missing") ) ) {
+                populatedFields++;
+            }
+            if(!( mothersForename.equals("") || mothersForename.equals("missing") ) ) {
+                populatedFields++;
+            }
+            if(!( mothersSurname.equals("") || mothersSurname.equals("missing") ) ) {
+                populatedFields++;
+            }
+
+            if( populatedFields >= requiredNumberOfPreFilterFields() ) {
                 filteredBirthRecords.add(record);
             } // else reject record for linkage - not enough info
         }
-
         return filteredBirthRecords;
+    }
+
+    private int requiredNumberOfPreFilterFields() {
+        return 3;
     }
 
     @Override
