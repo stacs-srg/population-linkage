@@ -2,6 +2,7 @@ package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
@@ -55,6 +56,67 @@ public class Constants {
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
 
+    public static final List<Integer> SIBLING_BUNDLING_DEATH_LINKAGE_FIELDS = Arrays.asList(
+
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME
+    );
+
+    public static final List<Integer> SIBLING_BUNDLING_BRIDE_MARRIAGE_LINKAGE_FIELDS = Arrays.asList(
+
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME,
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME
+    );
+
+    public static final List<Integer> SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS = Arrays.asList(
+
+        Marriage.GROOM_FATHER_FORENAME,
+        Marriage.GROOM_FATHER_SURNAME,
+        Marriage.GROOM_MOTHER_FORENAME,
+        Marriage.GROOM_MOTHER_MAIDEN_SURNAME
+    );
+
+    public static final List<Integer> DEATH_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME,
+            Death.FORENAME,
+            Death.SURNAME
+            // TODO Should be able to use Death.SPOUSE_NAMES - encoding????
+    );
+
+    public static final List<Integer> BRIDE_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME,
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME
+    );
+
+    public static final List<Integer> GROOM_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
+        Marriage.GROOM_FATHER_FORENAME,
+        Marriage.GROOM_FATHER_SURNAME,
+        Marriage.GROOM_MOTHER_FORENAME,
+        Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+        Marriage.GROOM_FORENAME,
+        Marriage.GROOM_SURNAME
+    );
+
+    public static final List<Integer> BRIDE_IDENTITY_LIKAGE_FIELDS = Arrays.asList(
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME,
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME
+    );
+
     public static final List<Integer> SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS = Arrays.asList(
 
             Birth.FATHER_FORENAME,
@@ -71,6 +133,54 @@ public class Constants {
             Death.MOTHER_MAIDEN_SURNAME
     );
 
+    public static final List<Integer> BABY_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
+        Birth.FATHER_FORENAME,
+        Birth.FATHER_SURNAME,
+        Birth.MOTHER_FORENAME,
+        Birth.MOTHER_MAIDEN_SURNAME,
+        Birth.FORENAME,
+        Birth.SURNAME
+    );
+
+    public static final List<Integer> BABY_PARENTS_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE
+    );
+
+    public static final List<Integer> BRIDE_GROOM_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME,
+            Marriage.PLACE_OF_MARRIAGE,
+            Marriage.MARRIAGE_DAY,
+            Marriage.MARRIAGE_MONTH,
+            Marriage.MARRIAGE_YEAR
+    );
+
+
+    public static final List<Integer> BIRTH_FATHER_BABY_LINKAGE_FIELDS = Arrays.asList(
+            Birth.FORENAME,
+            Birth.SURNAME
+    );
+
+    public static final List<Integer> BIRTH_FATHER_FATHER_LINKAGE_FIELDS = Arrays.asList(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME
+    );
+
+    public static final List<Integer> BIRTH_MOTHER_MOTHER_LINKAGE_FIELDS = Arrays.asList(
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_SURNAME
+    );
+
+    // TODO get rid of these and make them look like the rest - TOM!!!
     public static final String SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"FATHER_FORENAME, FATHER_SURNAME, MOTHER_FORENAME, MOTHER_MAIDEN_SURNAME, PARENTS_PLACE_OF_MARRIAGE, PARENTS_DAY_OF_MARRIAGE, PARENTS_MONTH_OF_MARRIAGE, PARENTS_YEAR_OF_MARRIAGE\"";
     public static final String SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS_AS_STRINGS = "\"Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME\"";
     public static final String SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"Death.FATHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME\"";

@@ -1,12 +1,13 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.supportClasses.*;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,6 +76,16 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
+    public String getRole1() {
+        return Birth.ROLE_BABY;
+    }
+
+    @Override
+    public String getRole2() {
+        return Death.ROLE_DECEASED;
+    }
+
+    @Override
     public List<Integer> getLinkageFields1() {
         return Constants.SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS;
     }
@@ -82,16 +93,6 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public List<Integer> getLinkageFields2() {
         return Constants.SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS;
-    }
-
-    @Override
-    public Role makeRole1(LXP lxp) throws PersistentObjectException {
-        return new Role(lxp.getThisRef(), Birth.ROLE_BABY);
-    }
-
-    @Override
-    public Role makeRole2(LXP lxp) throws PersistentObjectException {
-        return new Role(lxp.getThisRef(), Death.ROLE_DECEASED);
     }
 
     @Override
@@ -143,19 +144,32 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
             String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
             String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
             String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
-                String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
+            String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
 
-            if(!(fathersForename.equals("") || fathersForename.equals("missing") ||
-                    fathersSurname.equals("") || fathersSurname.equals("missing") ||
-                    mothersForename.equals("") || mothersForename.equals("missing")||
-                        mothersSurname.equals("") || mothersSurname.equals("missing"))) {
-                // no key info is missing - so we'll consider this record
+            int populatedFields = 0;
 
+            if(!(fathersForename.equals("") || fathersForename.equals("missing") ) ) {
+                populatedFields++;
+            }
+            if(!(fathersSurname.equals("") || fathersSurname.equals("missing") ) ) {
+                populatedFields++;
+            }
+            if(!( mothersForename.equals("") || mothersForename.equals("missing") ) ) {
+                populatedFields++;
+            }
+            if(!( mothersSurname.equals("") || mothersSurname.equals("missing") ) ) {
+                populatedFields++;
+            }
+
+            if( populatedFields >= requiredNumberOfPreFilterFields() ) {
                 filteredBirthRecords.add(record);
             } // else reject record for linkage - not enough info
         }
-
         return filteredBirthRecords;
+    }
+
+    private int requiredNumberOfPreFilterFields() {
+        return 3;
     }
 
     @Override

@@ -3,13 +3,11 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Role;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.BucketKind;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.Store;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import uk.ac.standrews.cs.storr.interfaces.IRepository;
@@ -56,13 +54,13 @@ public abstract class LinkageRecipe {
 
     public abstract String getSourceType2();
 
+    public abstract String getRole1();
+
+    public abstract String getRole2();
+
     public abstract List<Integer> getLinkageFields1();
 
     public abstract List<Integer> getLinkageFields2();
-
-    public abstract Role makeRole1(LXP lxp) throws PersistentObjectException;
-
-    public abstract Role makeRole2(LXP lxp) throws PersistentObjectException;
 
     public abstract Map<String, Link> getGroundTruthLinks();
 

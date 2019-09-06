@@ -6,6 +6,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
@@ -15,29 +16,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
 
-public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
+public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    private final Iterable<LXP> birth_records;
+    private final Iterable<LXP> death_records;
 
-    public BirthBirthSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public DeathDeathSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
-        birth_records = Utilities.getBirthRecords(record_repository);
+        death_records = Utilities.getDeathRecords(record_repository);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords1() {
-        return birth_records;
+        return death_records;
     }
 
     @Override
     public Iterable<LXP> getSourceRecords2() {
-        return birth_records;
+        return death_records;
     }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return BirthBirthSiblingLinkageRecipe.trueMatch(record1, record2);
+        return DeathDeathSiblingLinkageRecipe.trueMatch(record1, record2);
     }
 
     @Override
@@ -47,37 +48,37 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "sibling bundling between babies on birth records";
+        return "sibling bundling between deceased on death records";
     }
 
     @Override
     public String getSourceType1() {
-        return "births";
+        return "deaths";
     }
 
     @Override
     public String getSourceType2() {
-        return "births";
+        return "deaths";
     }
 
     @Override
     public String getRole1() {
-        return Birth.ROLE_BABY;
+        return Death.ROLE_DECEASED;
     }
 
     @Override
     public String getRole2() {
-        return Birth.ROLE_BABY;
+        return Death.ROLE_DECEASED;
     }
 
     @Override
     public List<Integer> getLinkageFields1() {
-        return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
+        return Constants.SIBLING_BUNDLING_DEATH_LINKAGE_FIELDS;
     }
 
     @Override
     public List<Integer> getLinkageFields2() {
-        return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
+        return Constants.SIBLING_BUNDLING_DEATH_LINKAGE_FIELDS;
     }
 
     @Override
@@ -87,7 +88,7 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
         final List<LXP> records = new ArrayList<>();
 
-        for (LXP lxp : record_repository.getBirths()) {
+        for (LXP lxp : record_repository.getDeaths()) {
             records.add(lxp);
         }
 
@@ -104,7 +105,7 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
                 try {
                     if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
 
-                        Link l = new Link(record1, Birth.ROLE_BABY, record2, Birth.ROLE_BABY, 1.0f, "ground truth");
+                        Link l = new Link(record1, Death.ROLE_DECEASED, record2, Death.ROLE_DECEASED, 1.0f, "ground truth");
                         String linkKey = toKey(record1, record2);
                         links.put(linkKey.toString(), l);
 
@@ -149,71 +150,78 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
      */
     public int numberOfGroundTruthTrueLinks() { // See comment above
 
-        int c = 0;
+        int count = 0;
 
-        Map<String, AtomicInteger> birthRecords = new HashMap<>();
+        Map<String, AtomicInteger> deathRecords = new HashMap<>();
         for(LXP birth : record_repository.getBirths()) {
 
-            String fID = birth.getString(Birth.FAMILY).trim();
+            String fID = toKey( birth );
 
             if(!fID.equals("")) {
-                birthRecords.computeIfAbsent(fID, k -> new AtomicInteger()).incrementAndGet();
+                deathRecords.computeIfAbsent(fID, k -> new AtomicInteger()).incrementAndGet();
             }
         }
 
         for(LXP birth : record_repository.getBirths()) {
 
-            String fID = birth.getString(Birth.FAMILY).trim();
+            String fID = toKey( birth );
 
             if(!fID.equals(""))
-                c += birthRecords.get(fID).get() - 1; // minus one as not a link to link to self - we're linking a dataset to itself!
+                count += deathRecords.get(fID).get() - 1; // minus one as not a link to link to self - we're linking a dataset to itself!
 
         }
 
-        return c / 2; // divide by 2 - symmetric linkage - making the same link in both directions only counts as one link!
+        return count / 2; // divide by 2 - symmetric linkage - making the same link in both directions only counts as one link!
 
     }
 
-    private Collection<LXP> filteredBirthRecords = null;
+    private String toKey(LXP birth) {
+        String s1 = birth.getString(Birth.FATHER_IDENTITY);
+        String s2 = birth.getString(Birth.MOTHER_IDENTITY);
+
+        if( s1.equals("") || s2.equals("") ) {
+            return "";
+        }  else {
+            return s1 + "-" + s2;
+        }
+    }
+
+    private Collection<LXP> filteredDeathRecords = null;
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
 
-        if(filteredBirthRecords == null) {
+        if(filteredDeathRecords == null) {
 
-            filteredBirthRecords = new HashSet<>();
+            filteredDeathRecords = new HashSet<>();
 
-            for(LXP record : birth_records) {
+            for(LXP record : death_records) {
 
-                String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
-                String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
-                String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
-                String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
-
-                String marriageYear = record.getString(Birth.PARENTS_YEAR_OF_MARRIAGE).trim();
-                String marriagePlace = record.getString(Birth.PARENTS_PLACE_OF_MARRIAGE).trim();
+                String fathersForename = record.getString(Death.FATHER_FORENAME).trim();
+                String fathersSurname = record.getString(Death.FATHER_SURNAME).trim();
+                String mothersForename = record.getString(Death.MOTHER_FORENAME).trim();
+                String mothersSurname = record.getString(Death.MOTHER_MAIDEN_SURNAME).trim();
 
                 int populatedFields = 0;
 
-                if (!(fathersForename.equals("") || fathersForename.equals("missing"))) {
+                if(!(fathersForename.equals("") || fathersForename.equals("missing") ) ) {
                     populatedFields++;
                 }
-                if (!(fathersSurname.equals("") || fathersSurname.equals("missing"))) {
+                if(!(fathersSurname.equals("") || fathersSurname.equals("missing") ) ) {
                     populatedFields++;
                 }
-                if (!(mothersForename.equals("") || mothersForename.equals("missing"))) {
+                if(!( mothersForename.equals("") || mothersForename.equals("missing") ) ) {
                     populatedFields++;
                 }
-                if (!(mothersSurname.equals("") || mothersSurname.equals("missing"))) {
+                if(!( mothersSurname.equals("") || mothersSurname.equals("missing") ) ) {
                     populatedFields++;
                 }
-
-                if (populatedFields >= requiredNumberOfPreFilterFields()) {
-                    filteredBirthRecords.add(record);
+                if( populatedFields >= requiredNumberOfPreFilterFields() ) {
+                        filteredDeathRecords.add(record);
                 } // else reject record for linkage - not enough info
             }
         }
-        return filteredBirthRecords;
+        return filteredDeathRecords;
     }
 
     private int requiredNumberOfPreFilterFields() {
@@ -226,8 +234,8 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     private String toKey(LXP record1, LXP record2) {
-        String s1 = record1.getString(Birth.ORIGINAL_ID);
-        String s2 = record2.getString(Birth.ORIGINAL_ID);
+        String s1 = record1.getString(Death.ORIGINAL_ID);
+        String s2 = record2.getString(Death.ORIGINAL_ID);
 
         if(s1.compareTo(s2) < 0)
             return s1 + "-" + s2;
@@ -238,38 +246,22 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
 
     public static void showLXP(LXP lxp) {
-        System.out.println(lxp.getString(Birth.FORENAME) + " " + lxp.getString(Birth.SURNAME) + " // "
-                + lxp.getString(Birth.FATHER_FORENAME) + " " + lxp.getString(Birth.FATHER_SURNAME) + " " + lxp.getString(Birth.FAMILY));
+        System.out.println(lxp.getString(Death.FORENAME) + " " + lxp.getString(Death.SURNAME) + " // "
+                + lxp.getString(Death.FATHER_FORENAME) + " " + lxp.getString(Death.FATHER_SURNAME) );
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
-        final String b1_parent_marriage_id = record1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-        final String b2_parent_marriage_id = record2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+        final String b1_mother_id = record1.getString(Death.MOTHER_IDENTITY);
+        final String b2_mother_id = record2.getString(Death.MOTHER_IDENTITY);
 
-        final String b1_mother_id = record1.getString(Birth.MOTHER_IDENTITY);
-        final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY);
-
-        final String b1_father_id = record1.getString(Birth.FATHER_IDENTITY);
-        final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY);
-
-        final String b1_mother_birth_id = record1.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
-        final String b2_mother_birth_id = record2.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
-
-        final String b1_father_birth_id = record1.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
-        final String b2_father_birth_id = record2.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
-
-        if (!b1_parent_marriage_id.isEmpty() && b1_parent_marriage_id.equals(b2_parent_marriage_id)) return LinkStatus.TRUE_MATCH;
+        final String b1_father_id = record1.getString(Death.FATHER_IDENTITY);
+        final String b2_father_id = record2.getString(Death.FATHER_IDENTITY);
 
         if (!b1_mother_id.isEmpty() && b1_mother_id.equals(b2_mother_id) && !b1_father_id.isEmpty() && b1_father_id.equals(b2_father_id)) return LinkStatus.TRUE_MATCH;
 
-        if (!b1_mother_birth_id.isEmpty() && b1_mother_birth_id.equals(b2_mother_birth_id) && !b1_father_birth_id.isEmpty() && b1_father_birth_id.equals(b2_father_birth_id)) return LinkStatus.TRUE_MATCH;
-
-        if (b1_parent_marriage_id.isEmpty() && b2_parent_marriage_id.isEmpty() &&
-                b1_mother_id.isEmpty() && b2_mother_id.isEmpty() &&
-                b1_father_id.isEmpty() && b2_father_id.isEmpty() &&
-                b1_mother_birth_id.isEmpty() && b2_mother_birth_id.isEmpty() &&
-                b1_father_birth_id.isEmpty() && b2_father_birth_id.isEmpty()) return LinkStatus.UNKNOWN;
+        if ( b1_mother_id.isEmpty() && b2_mother_id.isEmpty() &&
+                b1_father_id.isEmpty() && b2_father_id.isEmpty() ) return LinkStatus.UNKNOWN;
 
         return LinkStatus.NOT_TRUE_MATCH;
     }
