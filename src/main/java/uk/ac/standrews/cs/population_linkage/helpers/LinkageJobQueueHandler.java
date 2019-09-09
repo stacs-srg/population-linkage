@@ -1,8 +1,13 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.JobRunner_BirthDeathSiblingLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.JobRunner_SyntheticBirthBirthSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BirthBirthSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkagePostFilter;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,12 +23,21 @@ import java.util.*;
 
 public class LinkageJobQueueHandler {
 
+    // to use the linkage job queue handler define a csv job file with the following headings
+    // population,size,pop_number,corruption_number,linkage-type,metric,threshold,preFilter,max-sibling-gap,evaluate_quality,ROs,births-cache-size,marriages-cache-size,deaths-cache-size,persist_links,results-repo,links_persistent_name,gt_persistent_name
+    //
+    // Empty fields should contain a - (i.e. a single dash)
+    // The job queue can be used for both synthetic populations and the umea data
+    // in the case of umea specify the population as 'umea' and put a dash in each of size,pop_number,corruption_number
+    //
+    // Linkage type defines the 'type' of linkage to be performed - the provided string should be the same as the
+    // linkageType field in the relevant linkage runner class
+
     public static void main(String[] args) throws Exception {
         Path jobQ = Paths.get(args[0]);
         Path linkageResultsFile = Paths.get(args[1]);
         Path recordCountsFile = Paths.get(args[2]);
-        Path gtCountsFile = Paths.get(args[3]);
-        Path statusFile = Paths.get(args[4]);
+        Path statusFile = Paths.get(args[3]);
 
         while(getStatus(statusFile)) {
 
@@ -49,41 +63,72 @@ public class LinkageJobQueueHandler {
 
                 String populationName = job.get(columnLabels.indexOf("population")).trim();
                 String populationSize = job.get(columnLabels.indexOf("size")).trim();
-                String populationNumber = job.get(columnLabels.indexOf("pop#")).trim();
-                String corruptionNumber = job.get(columnLabels.indexOf("corruption#")).trim();
+                String populationNumber = job.get(columnLabels.indexOf("pop_number")).trim();
+                String corruptionNumber = job.get(columnLabels.indexOf("corruption_number")).trim();
                 boolean corrupted = !corruptionNumber.equals("0");
                 double threshold = Double.valueOf(job.get(columnLabels.indexOf("threshold")).trim());
                 String metric = job.get(columnLabels.indexOf("metric")).trim();
-                int maxSiblingGap = Integer.valueOf(job.get(columnLabels.indexOf("max-sibling-gap")).trim());
+                String maxSiblingGapString = job.get(columnLabels.indexOf("max-sibling-gap")).trim();
+                Integer maxSiblingGap = (maxSiblingGapString.equals("")) ? null : Integer.valueOf(maxSiblingGapString);
                 int birthsCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("births-cache-size")).trim());
                 int marriagesCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
                 int deathsCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
-                int numROs = Integer.valueOf(job.get(columnLabels.indexOf("#ROs")).trim());
+                int numROs = Integer.valueOf(job.get(columnLabels.indexOf("ROs")).trim());
                 String linkageType = job.get(columnLabels.indexOf("linkage-type")).trim();
+
+                String resultsRepo = job.get(columnLabels.indexOf("results-repo")).trim();
+                String links_persistent_name = job.get(columnLabels.indexOf("links_persistent_name")).trim();
+                String gt_persistent_name = job.get(columnLabels.indexOf("gt_persistent_name")).trim();
+
+                boolean preFilter = job.get(columnLabels.indexOf("preFilter")).trim().toLowerCase().equals("true");
+                boolean persist_links = job.get(columnLabels.indexOf("persist_links")).trim().toLowerCase().equals("true");
+                boolean evaluate_quality = job.get(columnLabels.indexOf("evaluate_quality")).trim().toLowerCase().equals("true");
+
+                String sourceRepo = toRepoName(populationName, populationSize, populationNumber, corruptionNumber, corrupted);
+
+                LinkageConfig.birthCacheSize = birthsCacheSize;
+                LinkageConfig.marriageCacheSize = marriagesCacheSize;
+                LinkageConfig.deathCacheSize = deathsCacheSize;
+                LinkageConfig.numberOfROs = numROs;
+
+                LinkagePostFilter.setMaxSiblingGap(maxSiblingGap);
 
                 // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
                 new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber)
                         .validate(recordCountsFile);
 
+                LinkageQuality lq = new LinkageQuality("No Experiment Run");
+                String linkageApproach = "";
+                StringMetric chosenMetric = Constants.get(metric, 4096);
+
+                JobRunnerIO.setupResultsFile(linkageResultsFile);
+
+                long startTime = System.currentTimeMillis();
+
+                String fieldsUsed1 = "";
+                String fieldsUsed2 = "";
+
                 switch (linkageType) {
-                    case JobRunner_SyntheticBirthBirthSiblingLinkageRunner.linkageApproach:
-                        JobRunner_SyntheticBirthBirthSiblingLinkageRunner sbbslr = new JobRunner_SyntheticBirthBirthSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
-                                corruptionNumber, linkageResultsFile, birthsCacheSize, numROs);
 
-                        int numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                                corrupted, corruptionNumber, gtCountsFile).count(sbbslr); //, JobRunner_SyntheticBirthBirthSiblingLinkageRunner.linkageApproach);
-
-                        sbbslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
+                    case BirthBirthSiblingLinkageRunner.linkageType:
+                        linkageApproach = BirthBirthSiblingLinkageRunner.linkageType;
+                        lq = new BirthBirthSiblingLinkageRunner()
+                                .run(links_persistent_name, gt_persistent_name, sourceRepo, resultsRepo, threshold,
+                                        chosenMetric, preFilter, persist_links, evaluate_quality, true);
+                        fieldsUsed1 = Constants.stringRepresentationOf(
+                                Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, "BIRTH", Birth.getLabels());
+                        fieldsUsed2 = fieldsUsed1; // the same because symmetric linkage
                         break;
-                    case JobRunner_BirthDeathSiblingLinkageRunner.linkageApproach:
-                        JobRunner_BirthDeathSiblingLinkageRunner ssbdslr = new JobRunner_BirthDeathSiblingLinkageRunner(populationName, populationSize, populationNumber, corrupted,
-                                corruptionNumber, linkageResultsFile, birthsCacheSize, deathsCacheSize, numROs);
 
-                        numberOfGTLinks = new GroundTruthLinkCounter(populationName, populationSize, populationNumber,
-                                corrupted, corruptionNumber, gtCountsFile).count(ssbdslr); //, JobRunner_BirthDeathSiblingLinkageRunner.linkageApproach);
 
-                        ssbdslr.link(threshold, metric, numberOfGTLinks, maxSiblingGap);
                 }
+
+                long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
+
+                JobRunnerIO.appendToResultsFile(threshold, metric, maxSiblingGap, lq, timeTakenInSeconds,
+                        linkageResultsFile, populationName, populationSize, populationNumber, corruptionNumber,
+                        linkageApproach, numROs, fieldsUsed1, fieldsUsed2, preFilter,
+                        birthsCacheSize, marriagesCacheSize, deathsCacheSize);
 
             } else {
                 fileChannel.close();
@@ -98,6 +143,20 @@ public class LinkageJobQueueHandler {
     private static FileChannel getFileChannel(Path jobFile) throws IOException {
         HashSet<StandardOpenOption> options = new HashSet<>(Sets.newHashSet(StandardOpenOption.READ, StandardOpenOption.WRITE));
         return FileChannel.open(jobFile, options);
+    }
+
+    private static String toRepoName(String populationName, String populationSize, String populationNumber, String corruptionNumber, boolean corrupted) {
+
+        if(populationSize.equals("-") && populationNumber.equals("-") && corruptionNumber.equals("-"))
+            return populationName;
+
+        String sourceRepoName;
+        if(corrupted)
+            sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
+        else {
+            sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_clean";
+        }
+        return sourceRepoName;
     }
 
     private static List<List<String>> readInJobFile(FileChannel jobFile) throws IOException, InterruptedException {

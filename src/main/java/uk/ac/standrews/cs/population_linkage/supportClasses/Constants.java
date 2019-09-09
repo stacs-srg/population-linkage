@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
+import org.glassfish.jersey.message.internal.StringBuilderUtils;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -179,6 +180,17 @@ public class Constants {
             Birth.MOTHER_FORENAME,
             Birth.MOTHER_SURNAME
     );
+
+    public static String stringRepresentationOf(List<Integer> fields, String record, List<String> labels) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(record).append("[ ");
+
+        for(Integer field : fields)
+            sb.append(labels.get(field)).append(" ");
+
+        sb.append("]");
+        return sb.toString();
+    }
 
     // TODO get rid of these and make them look like the rest - TOM!!!
     public static final String SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"FATHER_FORENAME, FATHER_SURNAME, MOTHER_FORENAME, MOTHER_MAIDEN_SURNAME, PARENTS_PLACE_OF_MARRIAGE, PARENTS_DAY_OF_MARRIAGE, PARENTS_MONTH_OF_MARRIAGE, PARENTS_YEAR_OF_MARRIAGE\"";

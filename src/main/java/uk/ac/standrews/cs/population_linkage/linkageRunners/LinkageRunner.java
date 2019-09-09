@@ -3,6 +3,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRunners;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
@@ -75,9 +76,9 @@ public abstract class LinkageRunner {
 
 
     public void setCacheSizes(RecordRepository record_repository) {
-        record_repository.setBirthsCacheSize(15000);
-        record_repository.setDeathsCacheSize(10000);
-        record_repository.setMarriagesCacheSize(10000);
+        record_repository.setBirthsCacheSize(LinkageConfig.birthCacheSize);
+        record_repository.setDeathsCacheSize(LinkageConfig.deathCacheSize);
+        record_repository.setMarriagesCacheSize(LinkageConfig.marriageCacheSize);
     }
 
     public int countNumberOfGroundTruthLinks(final String source_repository_name) {
@@ -135,8 +136,8 @@ public abstract class LinkageRunner {
         if(evaluate_quality) {
 
             if(symmetricLinkage) {
-                // if the linkageRecipe is a dataset to itself (i.e birth-birth) we should be rewarded for making the
-                // link in both direction - thus divide by two
+                // if the linkageRecipe is a dataset to itself (i.e birth-birth) we should not be rewarded or penalised
+                // for making the link in both direction - thus divide by two
                 tp = tp/2;
                 fp = fp/2;
             }

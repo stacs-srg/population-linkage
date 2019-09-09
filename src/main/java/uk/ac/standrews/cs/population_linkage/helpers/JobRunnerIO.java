@@ -12,25 +12,29 @@ public class JobRunnerIO {
         FileManipulation.createFileIfDoesNotExist(resultsFile);
         if(FileManipulation.countLines(resultsFile) == 0) {
             new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
-                    .appendToFile("population,size,pop#,corruption#,linkage-approach,threshold,metric," +
-                            "max-sibling-gap,tp,fp,fn,precision,recall,f-measure,link-time-seconds," +
-                            "max-memory-usage,#ROs,code-version,hostname,linkage-fields-1,linkage-fields-2" +
+                    .appendToFile(
+                            "population,size,pop_number,corruption_number,linkage-type,metric,threshold," +
+                            "preFilter,max-sibling-gap,tp,fp,fn,precision,recall,f-measure,link-time-seconds," +
+                            "max-memory-usage,ROs,births-cache-size,marriages-cache-size,deaths-cache-size," +
+                            "code-version,hostname,linkage-fields-1,linkage-fields-2" +
                             System.lineSeparator());
         }
     }
 
-    public static void appendToResultsFile(double threshold, String stringMetric, int maxSiblingGap, LinkageQuality lq,
+    public static void appendToResultsFile(double threshold, String stringMetric, Integer maxSiblingGap, LinkageQuality lq,
                                            long timeTakenInSeconds, Path resultsFile, String populationName,
                                            String populationSize, String populationNumber, String corruptionNumber,
                                            String linkageApproach, int numberOfReferenceObjects,
-                                           String fields1, String fields2) throws IOException {
+                                           String fields1, String fields2, boolean preFilter, int birthsCacheSize,
+                                           int marriagesCacheSize, int deathsCacheSize) throws IOException {
 
         new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
                 .appendToFile(populationName + "," + populationSize + "," + populationNumber + "," +
-                        corruptionNumber + "," + linkageApproach + "," + threshold + "," + stringMetric + "," +
-                        maxSiblingGap + "," + lq.toCSV() + "," + timeTakenInSeconds + "," + MemoryLogger.getMax() +
-                        "," + numberOfReferenceObjects + "," + getGitVersion() + ","  + getHostname() + "," +
-                        fields1  + "," + fields2 + System.lineSeparator());
+                        corruptionNumber + "," + linkageApproach + "," + stringMetric + "," + threshold + "," +
+                        preFilter + "," + maxSiblingGap + "," + lq.toCSV() + "," + timeTakenInSeconds + "," +
+                        MemoryLogger.getMax()/1000000 + "," + numberOfReferenceObjects + "," + birthsCacheSize + "," +
+                        marriagesCacheSize + "," + deathsCacheSize + "," + getGitVersion() + ","  +
+                        getHostname() + "," + fields1  + "," + fields2 + System.lineSeparator());
     }
 
     public static String getGitVersion() {

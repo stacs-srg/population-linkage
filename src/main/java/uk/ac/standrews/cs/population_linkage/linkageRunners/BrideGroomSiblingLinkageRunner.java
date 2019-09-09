@@ -25,7 +25,7 @@ public class BrideGroomSiblingLinkageRunner extends LinkageRunner {
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "bride-groom-sibling", "threshold match at " + match_threshold, Marriage.ROLE_BRIDE, Marriage.ROLE_GROOM, LinkagePostFilter::isViableBBSiblingLink);
+                "bride-groom-sibling", "threshold match at " + match_threshold, Marriage.ROLE_BRIDE, Marriage.ROLE_GROOM, LinkagePostFilter::noViabilityCheck);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {

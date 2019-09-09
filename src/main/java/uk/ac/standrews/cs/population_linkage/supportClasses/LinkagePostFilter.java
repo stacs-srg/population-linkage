@@ -35,8 +35,12 @@ public class LinkagePostFilter {
         }
     }
 
+    public static boolean noViabilityCheck(RecordPair pair) {
+        return true; // returns true as all pairs are valid as no validility criteria is specified
+    }
 
-    public static void setMaxSiblingGap(int maxSiblingGap) {
+
+    public static void setMaxSiblingGap(Integer maxSiblingGap) {
         SIBLINGS_MAX_AGE_DIFF = maxSiblingGap;
     }
 }

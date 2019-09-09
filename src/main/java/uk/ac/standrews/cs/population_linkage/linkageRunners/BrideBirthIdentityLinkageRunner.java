@@ -26,7 +26,7 @@ public class BrideBirthIdentityLinkageRunner extends LinkageRunner {
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "bride-birth-id", "threshold match at " + match_threshold, Marriage.ROLE_BRIDE, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink);
+                "bride-birth-id", "threshold match at " + match_threshold, Marriage.ROLE_BRIDE, Birth.ROLE_BABY, LinkagePostFilter::noViabilityCheck);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {

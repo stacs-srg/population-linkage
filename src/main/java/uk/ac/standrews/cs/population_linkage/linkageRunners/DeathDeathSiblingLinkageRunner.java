@@ -25,7 +25,7 @@ public class DeathDeathSiblingLinkageRunner extends LinkageRunner {
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "death-death-sibling", "threshold match at " + match_threshold, Death.ROLE_DECEASED, Death.ROLE_DECEASED, LinkagePostFilter::isViableBBSiblingLink);
+                "death-death-sibling", "threshold match at " + match_threshold, Death.ROLE_DECEASED, Death.ROLE_DECEASED, LinkagePostFilter::noViabilityCheck);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {

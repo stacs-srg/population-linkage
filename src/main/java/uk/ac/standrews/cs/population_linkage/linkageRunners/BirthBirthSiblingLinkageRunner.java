@@ -16,6 +16,8 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
 
+    public static final String linkageType = "birth-birth-sibling";
+
     protected LinkageRecipe getLinkage(final String links_persistent_name, final String gt_persistent_name,
                                        final String source_repository_name, final String results_repository_name,
                                        final RecordRepository record_repository) {
@@ -25,7 +27,7 @@ public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "birth-birth-sibling", "threshold match at " + match_threshold, Birth.ROLE_BABY, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink);
+                linkageType, "threshold match at " + match_threshold, Birth.ROLE_BABY, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {

@@ -1,4 +1,4 @@
-setwd("OneDrive/cs/PhD/repos/population-linkage/src/main/scripts/R")
+setwd("~/OneDrive/cs/PhD/repos/population-linkage/src/main/scripts/R")
 
 linkageResults <- read.csv("linkage-results-td/data/linkage-results.csv", header=TRUE)
 summary(linkageResults)

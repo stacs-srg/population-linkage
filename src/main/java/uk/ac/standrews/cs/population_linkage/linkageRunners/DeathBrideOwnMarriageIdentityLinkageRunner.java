@@ -26,7 +26,7 @@ public class DeathBrideOwnMarriageIdentityLinkageRunner extends LinkageRunner {
 
     protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "death=bride-marriage-id", "threshold match at " + match_threshold, Death.ROLE_DECEASED, Marriage.ROLE_BRIDE,  LinkagePostFilter::isViableBBSiblingLink);
+                "death=bride-marriage-id", "threshold match at " + match_threshold, Death.ROLE_DECEASED, Marriage.ROLE_BRIDE,  LinkagePostFilter::noViabilityCheck);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
