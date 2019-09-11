@@ -1,12 +1,17 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BirthBirthSiblingLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkagePostFilter;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
+import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.BufferedReader;
@@ -108,20 +113,93 @@ public class LinkageJobQueueHandler {
                 String fieldsUsed1 = "";
                 String fieldsUsed2 = "";
 
+                LinkageRunner lr;
+
+                boolean symmetric;
+
                 switch (linkageType) {
 
                     case BirthBirthSiblingLinkageRunner.linkageType:
-                        linkageApproach = BirthBirthSiblingLinkageRunner.linkageType;
-                        lq = new BirthBirthSiblingLinkageRunner()
-                                .run(links_persistent_name, gt_persistent_name, sourceRepo, resultsRepo, threshold,
-                                        chosenMetric, preFilter, persist_links, evaluate_quality, true);
-                        fieldsUsed1 = Constants.stringRepresentationOf(
-                                Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, "BIRTH", Birth.getLabels());
-                        fieldsUsed2 = fieldsUsed1; // the same because symmetric linkage
+                        lr = new BirthBirthSiblingLinkageRunner();
+                        symmetric = true;
                         break;
 
+                    case BirthDeathSiblingLinkageRunner.linkageType:
+                        lr = new BirthDeathSiblingLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case BirthFatherIdentityLinkageRunner.linkageType:
+                        lr = new BirthFatherIdentityLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case BirthMotherIdentityLinkageRunner.linkageType:
+                        lr = new BirthMotherIdentityLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case BirthParentsMarriageIdentityLinkageRunner.linkageType:
+                        lr = new BirthParentsMarriageIdentityLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case BrideBirthIdentityLinkageRunner.linkageType:
+                        lr = new BrideBirthIdentityLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case BrideBrideSiblingLinkageRunner.linkageType:
+                        lr = new BrideBrideSiblingLinkageRunner();
+                        symmetric = true;
+                        break;
+
+                    case BrideGroomSiblingLinkageRunner.linkageType:
+                        lr = new BrideGroomSiblingLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case DeathBrideOwnMarriageIdentityLinkageRunner.linkageType:
+                        lr = new DeathBrideOwnMarriageIdentityLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case DeathDeathSiblingLinkageRunner.linkageType:
+                        lr = new DeathDeathSiblingLinkageRunner();
+                        symmetric = true;
+                        break;
+
+                    case DeathGroomOwnMarriageIdentityLinkageRunner.linkageType:
+                        lr = new DeathGroomOwnMarriageIdentityLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case GroomBirthIdentityLinkageRunner.linkageType:
+                        lr = new GroomBirthIdentityLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case GroomBrideSiblingLinkageRunner.linkageType:
+                        lr = new GroomBrideSiblingLinkageRunner();
+                        symmetric = false;
+                        break;
+
+                    case GroomGroomSiblingLinkageRunner.linkageType:
+                        lr = new GroomGroomSiblingLinkageRunner();
+                        symmetric = true;
+                        break;
+
+                    default:
+                        throw new RuntimeException("LinkageType not found");
 
                 }
+
+                linkageApproach = lr.getLinkageType();
+                lq = lr.run(links_persistent_name, gt_persistent_name, sourceRepo, resultsRepo, threshold,
+                        chosenMetric, preFilter, persist_links, evaluate_quality, symmetric);
+                fieldsUsed1 = getLinkageFields(1, lr, sourceRepo);
+                fieldsUsed2 = getLinkageFields(2, lr, sourceRepo);
+
 
                 long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
@@ -136,8 +214,45 @@ public class LinkageJobQueueHandler {
                 Thread.sleep(60000);
             }
         }
+    }
 
+    private static String getLinkageFields(int n, LinkageRunner lr, String sourceRepo) { //String links_persistent_name, String gt_persistent_name, String sourceRepo, String resultsRepo) {
 
+        LinkageRecipe linkageRecipe = lr.getLinkageRecipe(null, null, null, null, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
+//        LinkageRecipe linkageRecipe = lr.getLinkageRecipe(links_persistent_name, gt_persistent_name, sourceRepo, resultsRepo, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
+
+        String record;
+        List<Integer> fields;
+
+        if(n == 1) {
+            record = linkageRecipe.getSourceType1();
+            fields = linkageRecipe.getLinkageFields1();
+        } else {
+            record = linkageRecipe.getSourceType2();
+            fields = linkageRecipe.getLinkageFields2();
+        }
+
+        List<String> recordLabels = getRecordLabels(record);
+
+        return Constants.stringRepresentationOf(fields, record.toUpperCase(), recordLabels);
+
+    }
+
+    private static List<String> getRecordLabels(String record) {
+
+        switch (record.toLowerCase()) {
+            case "birth":
+            case "births":
+                return Birth.getLabels();
+            case "death":
+            case "deaths":
+                return Death.getLabels();
+            case "marriage":
+            case "marriages":
+                return Marriage.getLabels();
+        }
+
+        throw new RuntimeException("Record type not resolved:" + record);
     }
 
     private static FileChannel getFileChannel(Path jobFile) throws IOException {

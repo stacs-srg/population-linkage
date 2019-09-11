@@ -16,16 +16,23 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public class BrideGroomSiblingLinkageRunner extends LinkageRunner {
 
-    protected LinkageRecipe getLinkage(final String links_persistent_name, final String gt_persistent_name,
-                                       final String source_repository_name, final String results_repository_name,
-                                       final RecordRepository record_repository) {
+    public static final String linkageType = "bride-groom-sibling";
+
+    @Override
+    public String getLinkageType() {
+        return linkageType;
+    }
+
+    public LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String gt_persistent_name,
+                                          final String source_repository_name, final String results_repository_name,
+                                          final RecordRepository record_repository) {
 
         return new BrideGroomSiblingLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
     }
 
-    protected Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
+    public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                "bride-groom-sibling", "threshold match at " + match_threshold, Marriage.ROLE_BRIDE, Marriage.ROLE_GROOM, LinkagePostFilter::noViabilityCheck);
+                linkageType, "threshold match at " + match_threshold, Marriage.ROLE_BRIDE, Marriage.ROLE_GROOM, LinkagePostFilter::noViabilityCheck);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
