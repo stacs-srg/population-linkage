@@ -37,13 +37,8 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return BirthBirthSiblingLinkageRecipe.trueMatch(record1, record2);
+        return trueMatch(record1, record2);
     }
-
-    @Override
-    public String getDatasetName() {
-        return "Rubbish this is";
-    } // TODO delete or clean this up
 
     @Override
     public String getLinkageType() {
@@ -82,164 +77,25 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-
-        final Map<String, Link> links = new HashMap<>();
-
-        final List<LXP> records = new ArrayList<>();
-
-        for (LXP lxp : record_repository.getBirths()) {
-            records.add(lxp);
-        }
-
-        final int number_of_records = records.size();
-
-        for (int i = 0; i < number_of_records; i++) {
-
-            for (int j = i + 1; j < number_of_records; j++) {
-
-                LXP record1 = records.get(i);
-                LXP record2 = records.get(j);
-
-
-                try {
-                    if (isTrueMatch(record1, record2).equals(TRUE_MATCH)) {
-
-                        Link l = new Link(record1, Birth.ROLE_BABY, record2, Birth.ROLE_BABY, 1.0f, "ground truth");
-                        String linkKey = toKey(record1, record2);
-                        links.put(linkKey.toString(), l);
-
-                    }
-                } catch (PersistentObjectException e) {
-                    ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
-                }
-            }
-        }
-
-        return links;
+        return getGroundTruthLinksOnSymmetric(Birth.FAMILY);
     }
 
-    /*
-     * This is an efficient way of counting the number of true links without having an n^2 comparison space.
-     * The number of true links when performing sibling bundling is equal to the (sum of (each person's family size - 1)) divided by 2
-     * If we consider each person in turn and find how many family members they have this is the number of true links going out from them.
-     * If we do this for each person then we get a total. However, at this point we will have counted each link in both directions - therefore we need to divide by two.
-     *
-     * The first loop gets the size of family for each ID.
-     *
-     * The second loop goes through each person, looks up the family size and adds it to the total -
-     * we take away one as we don't want to count every link as the currently considered person is in the family count and so it's not really a link.
-     *
-     * Finally, we divide by two on the return.
-     *
-     * We could actually make this more efficient by replacing the second loop with a loop that iterates over the map values
-     * and calculating (where s is the family size): the sum of (s * (s-1)) - I think this would work, but test the outcome if you implement it.
-     *
-     * This optimisation can only be used for sibling bundling and not for identity linkage.
-     *
-     * To calculate it for others - e.g. BrideBrideSibling, you'd take a similar approach using a map with the key
-     * being the unique identifier for the family group. Marriage and death records don't have a FAMILY id in the
-     * same way as births - we could add them into the synthetic data but that would lead to divergence from the Umea data.
-     *
-     * A way that works with Umea in mind would be to make a key from the information that uniquely identifies the family grouping
-     * I'd go with concatenated parent IDs with a dash in the middle (as concatenated parents names can't be guaranteed to be
-     * unique to the family). So repeating the process with none birth records it is just a matter of choosing a suitable key for the map.
-     *
-     * Also - the compute if absent line returns the value if the key is already present and the newly created value if not.
-     * The use of atomic integer is to enable incrementation of a value in the map in a single line.
-     */
-    public int numberOfGroundTruthTrueLinks() { // See comment above
-
-        int c = 0;
-
-        Map<String, AtomicInteger> birthRecords = new HashMap<>();
-        for(LXP birth : record_repository.getBirths()) {
-
-            String fID = birth.getString(Birth.FAMILY).trim();
-
-            if(!fID.equals("")) {
-                birthRecords.computeIfAbsent(fID, k -> new AtomicInteger()).incrementAndGet();
-            }
-        }
-
-        for(LXP birth : record_repository.getBirths()) {
-
-            String fID = birth.getString(Birth.FAMILY).trim();
-
-            if(!fID.equals(""))
-                c += birthRecords.get(fID).get() - 1; // minus one as not a link to link to self - we're linking a dataset to itself!
-
-        }
-
-        return c / 2; // divide by 2 - symmetric linkage - making the same link in both directions only counts as one link!
-
+    @Override
+    public int numberOfGroundTruthTrueLinks() {
+        return getNumberOfGroundTruthLinksOnSymmetric(Birth.FAMILY);
     }
-
-    private Collection<LXP> filteredBirthRecords = null;
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-
-        if(filteredBirthRecords == null) {
-
-            filteredBirthRecords = new HashSet<>();
-
-            for(LXP record : birth_records) {
-
-                String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
-                String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
-                String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
-                String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
-
-                String marriageYear = record.getString(Birth.PARENTS_YEAR_OF_MARRIAGE).trim();
-                String marriagePlace = record.getString(Birth.PARENTS_PLACE_OF_MARRIAGE).trim();
-
-                int populatedFields = 0;
-
-                if (!(fathersForename.equals("") || fathersForename.equals("missing"))) {
-                    populatedFields++;
-                }
-                if (!(fathersSurname.equals("") || fathersSurname.equals("missing"))) {
-                    populatedFields++;
-                }
-                if (!(mothersForename.equals("") || mothersForename.equals("missing"))) {
-                    populatedFields++;
-                }
-                if (!(mothersSurname.equals("") || mothersSurname.equals("missing"))) {
-                    populatedFields++;
-                }
-
-                if (populatedFields >= requiredNumberOfPreFilterFields()) {
-                    filteredBirthRecords.add(record);
-                } // else reject record for linkage - not enough info
-            }
-        }
-        return filteredBirthRecords;
-    }
-
-    private int requiredNumberOfPreFilterFields() {
-        return 3;
+        return filterSourceRecords(getSourceRecords1(), new int[]{
+                Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
+                Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME},
+                3);
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
         return getPreFilteredSourceRecords1();
-    }
-
-    private String toKey(LXP record1, LXP record2) {
-        String s1 = record1.getString(Birth.ORIGINAL_ID);
-        String s2 = record2.getString(Birth.ORIGINAL_ID);
-
-        if(s1.compareTo(s2) < 0)
-            return s1 + "-" + s2;
-        else
-            return s2 + "-" + s1;
-
-    }
-
-
-    public static void showLXP(LXP lxp) {
-        System.out.println(lxp.getString(Birth.FORENAME) + " " + lxp.getString(Birth.SURNAME) + " // "
-                + lxp.getString(Birth.FATHER_FORENAME) + " " + lxp.getString(Birth.FATHER_SURNAME) + " " + lxp.getString(Birth.FAMILY));
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {

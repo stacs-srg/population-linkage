@@ -48,11 +48,6 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return  "Rubbish this is"; // TODO delete or clean this up
-    }
-
-    @Override
     public String getLinkageType() {
         return "identity bundling between a bride and her birth record";
     }
@@ -103,14 +98,10 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
             if (is_legal(child_id)) {
 
                 final List<LXP> marriage_records = child_bride_map.get(child_id);
-
                 if (marriage_records != null) {
-
                     for (LXP marriage_record : marriage_records) {
-
                         try {
-                            Link l = new Link(birth_record, Birth.ROLE_BABY, marriage_record, Marriage.ROLE_BRIDE, 1.0f, "ground truth");
-
+                            Link l = new Link(marriage_record, Marriage.ROLE_BRIDE, birth_record, Birth.ROLE_BABY, 1.0f, "ground truth");
                             links.put(l.toString(), l);
                         } catch (PersistentObjectException e) {
                             ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
@@ -145,85 +136,22 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-        HashSet<LXP> filteredMarriageRecords = new HashSet<>();
 
-        for(LXP record : marriage_records) {
-
-            String bridesForename = record.getString(Marriage.BRIDE_FORENAME).trim();
-            String bridesSurname = record.getString(Marriage.BRIDE_SURNAME).trim();
-            String fathersForename = record.getString(Marriage.BRIDE_FATHER_FORENAME).trim();
-            String fathersSurname = record.getString(Marriage.BRIDE_FATHER_SURNAME).trim();
-            String mothersForename = record.getString(Marriage.BRIDE_MOTHER_FORENAME).trim();
-            String mothersSurname = record.getString(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME).trim();
-
-            int populatedFields = 0;
-
-            if (!(bridesForename.equals("") || bridesForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(bridesSurname.equals("") || bridesSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(fathersForename.equals("") || fathersForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(fathersSurname.equals("") || fathersSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(mothersForename.equals("") || mothersForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(mothersSurname.equals("") || mothersSurname.equals("missing"))) {
-                populatedFields++;
-            }
-
-            if (populatedFields >= requiredNumberOfPreFilterFields()) {
-                filteredMarriageRecords.add(record);
-            } // else reject record for linkage - not enough info
-        }
-        return filteredMarriageRecords;
+        return filterSourceRecords(marriage_records, new int[]{
+                        Marriage.BRIDE_FORENAME, Marriage.BRIDE_SURNAME,
+                        Marriage.BRIDE_FATHER_FORENAME, Marriage.BRIDE_FATHER_SURNAME,
+                        Marriage.BRIDE_MOTHER_FORENAME, Marriage.BRIDE_MOTHER_MAIDEN_SURNAME},
+                        requiredNumberOfPreFilterFields());
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
 
-        HashSet<LXP> filteredBirthRecords = new HashSet<>();
-
-        for (LXP record : birth_records) {
-
-            String childsForename = record.getString(Birth.FORENAME).trim();
-            String childsSurname = record.getString(Birth.SURNAME).trim();
-            String fathersForename = record.getString(Birth.FATHER_FORENAME).trim();
-            String fathersSurname = record.getString(Birth.FATHER_SURNAME).trim();
-            String mothersForename = record.getString(Birth.MOTHER_FORENAME).trim();
-            String mothersSurname = record.getString(Birth.MOTHER_MAIDEN_SURNAME).trim();
-
-            int populatedFields = 0;
-
-            if (!(childsForename.equals("") || childsForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(childsSurname.equals("") || childsSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(fathersForename.equals("") || fathersForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(fathersSurname.equals("") || fathersSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(mothersForename.equals("") || mothersForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(mothersSurname.equals("") || mothersSurname.equals("missing"))) {
-                populatedFields++;
-            }
-
-            if (populatedFields >= requiredNumberOfPreFilterFields()) {
-                filteredBirthRecords.add(record);
-            } // else reject record for linkage - not enough info
-        }
-        return filteredBirthRecords;
+        return filterSourceRecords(marriage_records, new int[]{
+                        Birth.FORENAME, Birth.SURNAME,
+                        Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
+                        Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME},
+                        requiredNumberOfPreFilterFields());
     }
 
     private int requiredNumberOfPreFilterFields() {

@@ -88,7 +88,17 @@ public class Constants {
             Death.MOTHER_MAIDEN_SURNAME,
             Death.FORENAME,
             Death.SURNAME
-            // TODO Should be able to use Death.SPOUSE_NAMES - encoding????
+    );
+
+    public static final List<Integer> DEATH_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS = Arrays.asList(
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME,
+            Death.FORENAME,
+            Death.SURNAME,
+            Death.SPOUSE_NAMES
+            // TODO Should be able to use Death.SPOUSE_NAMES - encoding???? How to compare to other records when info in two fields?
     );
 
     public static final List<Integer> BRIDE_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
@@ -101,12 +111,12 @@ public class Constants {
     );
 
     public static final List<Integer> GROOM_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
-        Marriage.GROOM_FATHER_FORENAME,
-        Marriage.GROOM_FATHER_SURNAME,
-        Marriage.GROOM_MOTHER_FORENAME,
-        Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
-        Marriage.GROOM_FORENAME,
-        Marriage.GROOM_SURNAME
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME
     );
 
     public static final List<Integer> BRIDE_IDENTITY_LIKAGE_FIELDS = Arrays.asList(
@@ -119,7 +129,6 @@ public class Constants {
     );
 
     public static final List<Integer> SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS = Arrays.asList(
-
             Birth.FATHER_FORENAME,
             Birth.FATHER_SURNAME,
             Birth.MOTHER_FORENAME,
@@ -127,7 +136,6 @@ public class Constants {
     );
 
     public static final List<Integer> SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS = Arrays.asList(
-
             Death.FATHER_FORENAME,
             Death.FATHER_SURNAME,
             Death.MOTHER_FORENAME,
@@ -135,12 +143,12 @@ public class Constants {
     );
 
     public static final List<Integer> BABY_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
-        Birth.FATHER_FORENAME,
-        Birth.FATHER_SURNAME,
-        Birth.MOTHER_FORENAME,
-        Birth.MOTHER_MAIDEN_SURNAME,
-        Birth.FORENAME,
-        Birth.SURNAME
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FORENAME,
+            Birth.SURNAME
     );
 
     public static final List<Integer> BABY_PARENTS_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
@@ -191,12 +199,6 @@ public class Constants {
         sb.append("]");
         return sb.toString();
     }
-
-    // TODO get rid of these and make them look like the rest - TOM!!!
-    public static final String SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"FATHER_FORENAME, FATHER_SURNAME, MOTHER_FORENAME, MOTHER_MAIDEN_SURNAME, PARENTS_PLACE_OF_MARRIAGE, PARENTS_DAY_OF_MARRIAGE, PARENTS_MONTH_OF_MARRIAGE, PARENTS_YEAR_OF_MARRIAGE\"";
-    public static final String SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS_AS_STRINGS = "\"Birth.FATHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME\"";
-    public static final String SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS_AS_STRINGS = "\"Death.FATHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME\"";
-
 
     @SafeVarargs
     private static List<StringMetric> concatenate(final List<StringMetric>... lists) {

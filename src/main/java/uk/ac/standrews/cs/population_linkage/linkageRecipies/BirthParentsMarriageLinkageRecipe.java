@@ -40,11 +40,6 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return "Rubbish this is";
-    } // TODO delete or clean this up
-
-    @Override
     public String getLinkageType() {
         return "identity bundling between births and parents marriages: bride=mother,groom=father";
     }

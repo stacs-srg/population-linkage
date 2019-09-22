@@ -40,11 +40,6 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return "Rubbish this is";
-    } // TODO delete or clean this up
-
-    @Override
     public String getLinkageType() {
         return "identity bundling between babies on birth records and mothers on birth records - same person in roles of baby and mother";
     }

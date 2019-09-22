@@ -39,11 +39,6 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return "Rubbish this is";
-    } // TODO delete or clean this up
-
-    @Override
     public String getLinkageType() {
         return "identity bundling between grooms on marriage records and babies on birth records - same person in roles of groom and baby";
     }
@@ -78,22 +73,23 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
     public Map<String, Link> getGroundTruthLinks() {
 
         final Map<String, Link> links = new HashMap<>();
+        Map<String, LXP> marriageRecords = new HashMap<>();
 
         for (LXP marriage_record : record_repository.getMarriages()) {
+            marriageRecords.put(marriage_record.getString(Marriage.GROOM_IDENTITY), marriage_record);
+        }
 
-            String groom_id = marriage_record.getString(Marriage.GROOM_IDENTITY);  // TODO was wrong - check all
-
-            for (LXP birth_record : birth_records) {
-
-                if( groom_id.equals( birth_record.getString(Birth.FATHER_IDENTITY) ) ) {
-                    try {
-                        Link l = new Link(marriage_record, Marriage.ROLE_GROOM, birth_record, Birth.ROLE_BABY, 1.0f, "ground truth");
-                        links.put(l.toString(), l);
-                    } catch (PersistentObjectException e) {
-                        ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
-                    }
+        for (LXP birthRecord : birth_records) {
+            marriageRecords.computeIfPresent(birthRecord.getString(Birth.CHILD_IDENTITY), (k, marriageRecord) -> {
+                try {
+                    Link l = new Link(birthRecord, Marriage.ROLE_GROOM, marriageRecord, Birth.ROLE_BABY, 1.0f, "ground truth");
+                    String linkKey = toKey(birthRecord, marriageRecord);
+                    links.put(linkKey, l);
+                } catch (PersistentObjectException e) {
+                    ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
                 }
-            }
+                return marriageRecord;
+            });
         }
 
         return links;

@@ -110,93 +110,47 @@ public class LinkageJobQueueHandler {
 
                 long startTime = System.currentTimeMillis();
 
-                String fieldsUsed1 = "";
-                String fieldsUsed2 = "";
+                String fieldsUsed1;
+                String fieldsUsed2;
 
                 LinkageRunner lr;
 
-                boolean symmetric;
-
                 switch (linkageType) {
-
                     case BirthBirthSiblingLinkageRunner.linkageType:
-                        lr = new BirthBirthSiblingLinkageRunner();
-                        symmetric = true;
-                        break;
-
+                        lr = new BirthBirthSiblingLinkageRunner();              break;
                     case BirthDeathSiblingLinkageRunner.linkageType:
-                        lr = new BirthDeathSiblingLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new BirthDeathSiblingLinkageRunner();              break;
                     case BirthFatherIdentityLinkageRunner.linkageType:
-                        lr = new BirthFatherIdentityLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new BirthFatherIdentityLinkageRunner();            break;
                     case BirthMotherIdentityLinkageRunner.linkageType:
-                        lr = new BirthMotherIdentityLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new BirthMotherIdentityLinkageRunner();            break;
                     case BirthParentsMarriageIdentityLinkageRunner.linkageType:
-                        lr = new BirthParentsMarriageIdentityLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new BirthParentsMarriageIdentityLinkageRunner();   break;
                     case BrideBirthIdentityLinkageRunner.linkageType:
-                        lr = new BrideBirthIdentityLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new BrideBirthIdentityLinkageRunner();             break;
                     case BrideBrideSiblingLinkageRunner.linkageType:
-                        lr = new BrideBrideSiblingLinkageRunner();
-                        symmetric = true;
-                        break;
-
+                        lr = new BrideBrideSiblingLinkageRunner();              break;
                     case BrideGroomSiblingLinkageRunner.linkageType:
-                        lr = new BrideGroomSiblingLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new BrideGroomSiblingLinkageRunner();              break;
                     case DeathBrideOwnMarriageIdentityLinkageRunner.linkageType:
-                        lr = new DeathBrideOwnMarriageIdentityLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new DeathBrideOwnMarriageIdentityLinkageRunner();  break;
                     case DeathDeathSiblingLinkageRunner.linkageType:
-                        lr = new DeathDeathSiblingLinkageRunner();
-                        symmetric = true;
-                        break;
-
+                        lr = new DeathDeathSiblingLinkageRunner();              break;
                     case DeathGroomOwnMarriageIdentityLinkageRunner.linkageType:
-                        lr = new DeathGroomOwnMarriageIdentityLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new DeathGroomOwnMarriageIdentityLinkageRunner();  break;
                     case GroomBirthIdentityLinkageRunner.linkageType:
-                        lr = new GroomBirthIdentityLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new GroomBirthIdentityLinkageRunner();             break;
                     case GroomBrideSiblingLinkageRunner.linkageType:
-                        lr = new GroomBrideSiblingLinkageRunner();
-                        symmetric = false;
-                        break;
-
+                        lr = new GroomBrideSiblingLinkageRunner();              break;
                     case GroomGroomSiblingLinkageRunner.linkageType:
-                        lr = new GroomGroomSiblingLinkageRunner();
-                        symmetric = true;
-                        break;
-
+                        lr = new GroomGroomSiblingLinkageRunner();              break;
                     default:
                         throw new RuntimeException("LinkageType not found");
-
                 }
 
                 linkageApproach = lr.getLinkageType();
                 lq = lr.run(links_persistent_name, gt_persistent_name, sourceRepo, resultsRepo, threshold,
-                        chosenMetric, preFilter, persist_links, evaluate_quality, symmetric);
+                        chosenMetric, preFilter, persist_links, evaluate_quality);
                 fieldsUsed1 = getLinkageFields(1, lr, sourceRepo);
                 fieldsUsed2 = getLinkageFields(2, lr, sourceRepo);
 
@@ -219,7 +173,6 @@ public class LinkageJobQueueHandler {
     private static String getLinkageFields(int n, LinkageRunner lr, String sourceRepo) { //String links_persistent_name, String gt_persistent_name, String sourceRepo, String resultsRepo) {
 
         LinkageRecipe linkageRecipe = lr.getLinkageRecipe(null, null, null, null, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
-//        LinkageRecipe linkageRecipe = lr.getLinkageRecipe(links_persistent_name, gt_persistent_name, sourceRepo, resultsRepo, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
 
         String record;
         List<Integer> fields;
@@ -235,7 +188,6 @@ public class LinkageJobQueueHandler {
         List<String> recordLabels = getRecordLabels(record);
 
         return Constants.stringRepresentationOf(fields, record.toUpperCase(), recordLabels);
-
     }
 
     private static List<String> getRecordLabels(String record) {

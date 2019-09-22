@@ -56,11 +56,6 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return "synthetic-scotland";
-    }
-
-    @Override
     public String getLinkageType() {
         return "birth-death-sibling";
     }

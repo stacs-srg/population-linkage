@@ -6,6 +6,7 @@ import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkagePostFilter;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -40,7 +41,7 @@ public class BirthFatherIdentityLinkageRunner extends LinkageRunner {
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
-        return new BitBlasterSearchStructureFactory<>(composite_metric, 50);
+        return new BitBlasterSearchStructureFactory<>(composite_metric, LinkageConfig.numberOfROs);
     }
 
     public static void main(String[] args) {
@@ -54,7 +55,7 @@ public class BirthFatherIdentityLinkageRunner extends LinkageRunner {
                 .run("BirthFatherIdentityLinks", "BirthFatherIdentityGroundTruth",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true, true);
+                        true, true, true);
 
     }
 }

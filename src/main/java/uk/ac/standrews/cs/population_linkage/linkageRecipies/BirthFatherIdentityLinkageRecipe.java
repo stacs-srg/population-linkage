@@ -40,11 +40,6 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return "Rubbish this is";
-    } // TODO delete or clean this up
-
-    @Override
     public String getLinkageType() {
         return "identity bundling between babies on birth records and fathers on birth records - same person in roles of baby and father";
     }

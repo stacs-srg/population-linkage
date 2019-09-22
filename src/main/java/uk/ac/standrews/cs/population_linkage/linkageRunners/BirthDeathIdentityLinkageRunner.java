@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.BirthDeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipies.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
@@ -16,9 +16,9 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-public class BirthDeathSiblingLinkageRunner extends LinkageRunner {
+public class BirthDeathIdentityLinkageRunner extends LinkageRunner {
 
-    public static final String linkageType = "birth-death-sibling";
+    public static final String linkageType = "birth-death-id";
 
     @Override
     public String getLinkageType() {
@@ -29,12 +29,12 @@ public class BirthDeathSiblingLinkageRunner extends LinkageRunner {
                                           final String source_repository_name, final String results_repository_name,
                                           final RecordRepository record_repository) {
 
-        return new BirthDeathSiblingLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
+        return new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
     }
 
     public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                linkageType, "threshold match at " + match_threshold, Birth.ROLE_BABY, Death.ROLE_DECEASED, LinkagePostFilter::isViableBDSiblingLink);
+                linkageType, "threshold match at " + match_threshold, Birth.ROLE_BABY, Death.ROLE_DECEASED, LinkagePostFilter::isViableBDIdentityLink);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
@@ -52,8 +52,8 @@ public class BirthDeathSiblingLinkageRunner extends LinkageRunner {
 
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
-        new BirthDeathSiblingLinkageRunner()
-                .run("BirthDeathSiblingLinks", "BirthDeathSiblingGroundTruth",
+        new BirthDeathIdentityLinkageRunner()
+                .run("BirthDeathIdentityLinks", "BirthDeathIdentityGroundTruth",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
                         true, true, true);

@@ -41,11 +41,6 @@ public class DeathGroomOwnMarriageLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return "Rubbish this is";
-    } // TODO delete or clean this up
-
-    @Override
     public String getLinkageType() {
         return "identity bundling between deaths and grooms own marriage";
     }

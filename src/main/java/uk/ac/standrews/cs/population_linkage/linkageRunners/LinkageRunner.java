@@ -37,7 +37,7 @@ public abstract class LinkageRunner {
 
     public LinkageQuality run(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name,
                               final String results_repository_name, double match_threshold, StringMetric baseMetric,
-                              boolean prefilter, boolean persistLinks, boolean evaluateQuality, boolean symmetricLinkage) {
+                              boolean prefilter, boolean persistLinks, boolean evaluateQuality) {
 
         this.baseMetric = baseMetric;
 
@@ -55,11 +55,11 @@ public abstract class LinkageRunner {
 
         int numberOGroundTruthLinks = 0;
         if(evaluateQuality)
-            numberOGroundTruthLinks= new GroundTruthLinkCounter(source_repository_name, gtLinksCountFile).count(this);
+            numberOGroundTruthLinks = new GroundTruthLinkCounter(source_repository_name, gtLinksCountFile).count(this);
 
         MemoryLogger.update();
 
-        LinkageQuality lq = link(prefilter, persistLinks, evaluateQuality, symmetricLinkage, numberOGroundTruthLinks);
+        LinkageQuality lq = link(prefilter, persistLinks, evaluateQuality, numberOGroundTruthLinks);
 
         record_repository.stopStoreWatcher();
         linker.terminate();
@@ -72,7 +72,7 @@ public abstract class LinkageRunner {
     public LinkageQuality run(final String source_repository_name, double match_threshold, StringMetric baseMetric, boolean preFilter, boolean symmeticLinkage) {
 
         return run("","",source_repository_name, "",
-                match_threshold, baseMetric, preFilter, false, true, symmeticLinkage);
+                match_threshold, baseMetric, preFilter, false, true);
     }
 
 
@@ -95,7 +95,7 @@ public abstract class LinkageRunner {
         return numberOfGroundTruthLinks;
     }
 
-    public LinkageQuality link( boolean pre_filter, boolean persist_links, boolean evaluate_quality, boolean symmetricLinkage, int numberOfGroundTruthTrueLinks ) {
+    public LinkageQuality link(boolean pre_filter, boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks) {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
 
@@ -137,7 +137,7 @@ public abstract class LinkageRunner {
 
         if(evaluate_quality) {
 
-            if(symmetricLinkage) {
+            if(linkageRecipe.isSymmetric()) {
                 // if the linkageRecipe is a dataset to itself (i.e birth-birth) we should not be rewarded or penalised
                 // for making the link in both direction - thus divide by two
                 tp = tp/2;

@@ -41,11 +41,6 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getDatasetName() {
-        return "Rubbish this is";
-    } // TODO delete or clean this up
-
-    @Override
     public String getLinkageType() {
         return "sibling bundling between grooms on marriage records";
     }

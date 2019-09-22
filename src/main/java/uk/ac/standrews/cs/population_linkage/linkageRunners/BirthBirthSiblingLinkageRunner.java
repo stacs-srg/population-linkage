@@ -40,7 +40,7 @@ public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
-        return new BitBlasterSearchStructureFactory<>(composite_metric, 50);
+        return new BitBlasterSearchStructureFactory<>(composite_metric, LinkageConfig.numberOfROs);
     }
 
     public static void main(String[] args) {
@@ -54,7 +54,7 @@ public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
                 .run("BirthBirthSiblingLinks", "BirthBirthSiblingGroundTruth",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true, true);
+                        true, true, true);
 
     }
 }
