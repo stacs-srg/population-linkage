@@ -7,20 +7,14 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
 
 public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     private final Iterable<LXP> birth_records;
 
-    public BirthBirthSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
-
+    public BirthBirthSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
         birth_records = Utilities.getBirthRecords(record_repository);
     }
@@ -37,7 +31,18 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return trueMatch(record1, record2);
+
+        final String b1_mother_id = record1.getString(Birth.MOTHER_IDENTITY).trim();
+        final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY).trim();
+
+        final String b1_father_id = record1.getString(Birth.FATHER_IDENTITY).trim();
+        final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY).trim();
+
+        if (b1_mother_id.isEmpty() || b1_father_id.isEmpty() || b2_mother_id.isEmpty() || b2_father_id.isEmpty()) return LinkStatus.UNKNOWN;
+
+        if (b1_mother_id.equals(b2_mother_id) && b1_father_id.equals(b2_father_id)) return LinkStatus.TRUE_MATCH;
+
+        return LinkStatus.NOT_TRUE_MATCH;
     }
 
     @Override
@@ -77,20 +82,27 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOnSymmetric(Birth.FAMILY);
+        return getGroundTruthLinksOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY);
     }
 
     @Override
     public int numberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthLinksOnSymmetric(Birth.FAMILY);
+        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY);
     }
+
+    private Iterable<LXP> prefilteredRecords = null;
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{
-                Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
-                Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME},
-                3);
+        if(prefilteredRecords == null) { // we do this for symmetric linkage recipes as it ensures the iterables
+            // returned by this method and the one for records 2 is the same object - this is required by the
+            // implementation of similarity search - otherwise we link to people to themselves
+            prefilteredRecords = filterSourceRecords(getSourceRecords1(), new int[]{
+                            Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
+                            Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME},
+                    3);
+        }
+        return prefilteredRecords;
     }
 
     @Override
@@ -98,6 +110,7 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
         return getPreFilteredSourceRecords1();
     }
 
+    // This has been left as it's called by the groun truth classes - however it seems overly complicated, the above isTrueMatch method should always return the same as this for synthetic and for umea
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
         final String b1_parent_marriage_id = record1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);

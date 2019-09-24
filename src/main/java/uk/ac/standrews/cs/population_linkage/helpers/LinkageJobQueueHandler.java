@@ -144,6 +144,8 @@ public class LinkageJobQueueHandler {
                         lr = new GroomBrideSiblingLinkageRunner();              break;
                     case GroomGroomSiblingLinkageRunner.linkageType:
                         lr = new GroomGroomSiblingLinkageRunner();              break;
+                    case BirthDeathIdentityLinkageRunner.linkageType:
+                        lr = new BirthDeathIdentityLinkageRunner();             break;
                     default:
                         throw new RuntimeException("LinkageType not found");
                 }

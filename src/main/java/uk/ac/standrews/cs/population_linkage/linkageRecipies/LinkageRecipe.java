@@ -3,6 +3,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -34,6 +35,10 @@ public abstract class LinkageRecipe {
     protected final RecordRepository record_repository;
     protected Path store_path;
 
+    protected Iterable<LXP> birth_records;
+    protected Iterable<LXP> marriage_records;
+    protected Iterable<LXP> death_records;
+
     public LinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
 
         this.results_repository_name = results_repository_name;
@@ -42,11 +47,58 @@ public abstract class LinkageRecipe {
         this.record_repository = record_repository;
 
         store_path = ApplicationProperties.getStorePath();
+
+        createRecordIterables();
     }
 
-    public abstract Iterable<LXP> getSourceRecords1();
+    private void createRecordIterables() {
 
-    public abstract Iterable<LXP> getSourceRecords2();
+        initIterable(getSourceType1());
+
+        if(!isSymmetric()) // if symmetric linkage then source type two will be same as source type 1 - thus waste of time to init it twice!
+            initIterable(getSourceType2());
+
+    }
+
+    private void initIterable(String sourceType) {
+        switch(sourceType.toLowerCase()) {
+            case "birth":
+            case "births":
+                birth_records = Utilities.getBirthRecords(record_repository);
+                break;
+            case "marriage":
+            case "marriages":
+                marriage_records = Utilities.getMarriageRecords(record_repository);
+                break;
+            case "death":
+            case "deaths":
+                death_records = Utilities.getDeathRecords(record_repository);
+                break;
+        }
+    }
+
+    private Iterable<LXP> getIterable(String sourceType) {
+        switch(sourceType.toLowerCase()) {
+            case "birth":
+            case "births":
+                return birth_records;
+            case "marriage":
+            case "marriages":
+                return marriage_records;
+            case "death":
+            case "deaths":
+                return death_records;
+        }
+        throw new Error("Invalid source type");
+    }
+
+    public Iterable<LXP> getSourceRecords1() {
+        return getIterable(getSourceType1());
+    }
+
+    public Iterable<LXP> getSourceRecords2() {
+        return getIterable(getSourceType2());
+    }
 
     public abstract Iterable<LXP> getPreFilteredSourceRecords1();
 
@@ -145,17 +197,18 @@ public abstract class LinkageRecipe {
      *  - The toKey(a,b) method created a key where the record IDs are ordered and then concatonated
      *      - the ordering ensures that each link is only recorded in one direction (i.e. a link A->B is not also added as B->A)
      *
-     * @param recordLinkageID the ground truth field (same for both records as symmetric linkage)
+     * @param fatherID the father ID field to be used as ground truth (same for both records as symmetric linkage)
+     * @param motherID the mother ID field to be used as ground truth (same for both records as symmetric linkage)
      * @return A map of all ground truth links
      */
-    protected Map<String, Link> getGroundTruthLinksOnSymmetric(int recordLinkageID) {
+    protected Map<String, Link> getGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID) {
 
         Map<String, ArrayList<LXP>> records1GroupedByLinkageID = new HashMap<>();
         for(LXP record1 : getSourceRecords1()) {
 
-            String fID = record1.getString(recordLinkageID).trim();
-            if(!fID.equals(""))
-                records1GroupedByLinkageID.computeIfAbsent(fID, k -> new ArrayList<>()).add(record1);
+            String famID = record1.getString(fatherID).trim() + "-" + record1.getString(motherID).trim();
+            if(!famID.equals(""))
+                records1GroupedByLinkageID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record1);
         }
 
         final Map<String, Link> links = new HashMap<>();
@@ -181,17 +234,18 @@ public abstract class LinkageRecipe {
      * The second loop calculates the number of links for each ground and sums these together.
      *  - The links among a set are equal to the triangle number (this accounts for not linking to self or in two directions)
      *
-     * @param recordLinkageID the ground truth field (same for both records as symmetric linkage)
+     * @param fatherID the father ID field to be used as ground truth (same for both records as symmetric linkage)
+     * @param motherID the mother ID field to be used as ground truth (same for both records as symmetric linkage)
      * @return A count of all ground truth links
      */
-    protected int getNumberOfGroundTruthLinksOnSymmetric(int recordLinkageID) {
+    protected int getNumberOfGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID) {
 
         Map<String, AtomicInteger> groupCounts = new HashMap<>();
         for(LXP record1 : getSourceRecords1()) {
-            String fID = record1.getString(recordLinkageID).trim();
 
-            if(!fID.equals(""))
-                groupCounts.computeIfAbsent(fID, k -> new AtomicInteger()).incrementAndGet();
+            String famID = record1.getString(fatherID).trim() + "-" + record1.getString(motherID).trim();
+            if(!famID.equals(""))
+                groupCounts.computeIfAbsent(famID, k -> new AtomicInteger()).incrementAndGet();
         }
 
         AtomicInteger c = new AtomicInteger();
@@ -201,6 +255,76 @@ public abstract class LinkageRecipe {
         });
 
         return c.get();
+    }
+
+    protected Map<String, Link> getGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
+
+        Map<String, ArrayList<LXP>> records1GroupedByFamilyID = new HashMap<>();
+        for(LXP record1 : getSourceRecords1()) {
+
+            String famID = record1.getString(r1FatherID).trim() + "-" + record1.getString(r1MotherID).trim();
+            if(!famID.equals(""))
+                records1GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record1);
+        }
+
+        Map<String, ArrayList<LXP>> records2GroupedByFamilyID = new HashMap<>();
+        for(LXP record2 : getSourceRecords1()) {
+
+            String famID = record2.getString(r2FatherID).trim() + "-" + record2.getString(r2MotherID).trim();
+            if(!famID.equals(""))
+                records2GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record2);
+        }
+
+        final Map<String, Link> links = new HashMap<>();
+
+        for(String famID : records1GroupedByFamilyID.keySet()) {
+
+            ArrayList<LXP> records2 = records2GroupedByFamilyID.get(famID);
+
+            if(records2 != null) {
+                for(LXP a : records1GroupedByFamilyID.get(famID))
+                    for(LXP b : records2GroupedByFamilyID.get(famID)) {
+                        try {
+                            links.put(toKey(a,b), new Link(a, getRole1(), b, getRole2(), 1.0f, "ground truth"));
+                        } catch (PersistentObjectException e) {
+                            ErrorHandling.error("PersistentObjectException adding getGroundTruthLinksOnSymmetric");
+                        }
+                    }
+            }
+        }
+        return links;
+    }
+
+    protected int getNumberOfGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
+
+        Map<String, ArrayList<LXP>> records1GroupedByFamilyID = new HashMap<>();
+        for(LXP record1 : getSourceRecords1()) {
+
+            String famID = record1.getString(r1FatherID).trim() + "-" + record1.getString(r1MotherID).trim();
+            if(!famID.equals(""))
+                records1GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record1);
+        }
+
+        Map<String, ArrayList<LXP>> records2GroupedByFamilyID = new HashMap<>();
+        for(LXP record2 : getSourceRecords1()) {
+
+            String famID = record2.getString(r2FatherID).trim() + "-" + record2.getString(r2MotherID).trim();
+            if(!famID.equals(""))
+                records2GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record2);
+        }
+
+        int numberOfLinks = 0;
+
+        for(String famID : records1GroupedByFamilyID.keySet()) {
+
+            ArrayList<LXP> records1 = records1GroupedByFamilyID.get(famID);
+            ArrayList<LXP> records2 = records2GroupedByFamilyID.get(famID);
+
+            if(records2 != null) {
+                numberOfLinks += records1.size() * records2.size();
+            }
+        }
+        return numberOfLinks;
     }
 
     public abstract Map<String, Link> getGroundTruthLinks();
@@ -281,12 +405,8 @@ public abstract class LinkageRecipe {
             } catch (RepositoryException e) {
                 throw new RuntimeException(e);
             }
-
         }
-
         return bucket;
-
-
     }
 
     private String getSRBString(Path store_path, String results_repo_name, String bucket_name) {

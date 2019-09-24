@@ -27,7 +27,7 @@ public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
                                           final String source_repository_name, final String results_repository_name,
                                           final RecordRepository record_repository) {
 
-        return new BirthBirthSiblingLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
+        return new BirthBirthSiblingLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
     public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
