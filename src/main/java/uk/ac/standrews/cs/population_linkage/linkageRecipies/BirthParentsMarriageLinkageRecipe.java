@@ -3,7 +3,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -15,24 +14,9 @@ import java.util.*;
 
 public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
-    private final Iterable<LXP> birth_records;
-    private final Iterable<LXP> marriage_records;
-
-    public BirthParentsMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
-
+    public BirthParentsMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
-        birth_records = Utilities.getBirthRecords(record_repository);
-        marriage_records = Utilities.getMarriageRecords(record_repository);
     }
-
-    @Override
-    public Iterable<LXP> getSourceRecords1() {
-        return birth_records;
-    }
-
-    @Override
-    public Iterable<LXP> getSourceRecords2() { return marriage_records; }
-
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {

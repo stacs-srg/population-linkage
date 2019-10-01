@@ -186,7 +186,7 @@ public class Constants {
 
     public static final List<Integer> BIRTH_MOTHER_MOTHER_LINKAGE_FIELDS = Arrays.asList(
             Birth.MOTHER_FORENAME,
-            Birth.MOTHER_SURNAME
+            Birth.MOTHER_MAIDEN_SURNAME
     );
 
     public static String stringRepresentationOf(List<Integer> fields, String record, List<String> labels) {
