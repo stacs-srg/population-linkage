@@ -10,9 +10,9 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
 
-public class DeathBrideOwnMarriageLinkageRecipe extends LinkageRecipe {
+public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public DeathBrideOwnMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public DeathBrideOwnMarriageIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 

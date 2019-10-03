@@ -11,9 +11,9 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
 
-public class DeathGroomOwnMarriageLinkageRecipe extends LinkageRecipe {
+public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public DeathGroomOwnMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public DeathGroomOwnMarriageIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
@@ -67,19 +67,7 @@ public class DeathGroomOwnMarriageLinkageRecipe extends LinkageRecipe {
         return getGroundTruthLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
-    private static String toKeyFromDeath(LXP birth_record) {
-        return  birth_record.getString(Birth.FATHER_IDENTITY ) +
-                "-" + birth_record.getString(Birth.MOTHER_IDENTITY ) +
-                "-" + birth_record.getString(Birth.CHILD_IDENTITY );
-    }
-
-    private static String toKeyFromMarriage(LXP marriage_record) {   //TODO is this OK?
-        return  marriage_record.getString(Marriage.GROOM_FATHER_IDENTITY ) +
-                "-" + marriage_record.getString(Marriage.GROOM_MOTHER_IDENTITY ) +
-                "-" + marriage_record.getString(Marriage.GROOM_IDENTITY );
-    }
-
-    public int numberOfGroundTruthTrueLinks() {  // TODO can we do a hashmap to avoid double nexted loop?
+    public int numberOfGroundTruthTrueLinks() {
         return numberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 

@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.DeathGroomOwnMarriageLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipies.DeathGroomOwnMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
@@ -29,12 +29,12 @@ public class DeathGroomOwnMarriageIdentityLinkageRunner extends LinkageRunner {
                                           final String source_repository_name, final String results_repository_name,
                                           final RecordRepository record_repository) {
 
-        return new DeathGroomOwnMarriageLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+        return new DeathGroomOwnMarriageIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
     public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
         return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
-                linkageType, "threshold match at " + match_threshold, Death.ROLE_DECEASED, Marriage.ROLE_GROOM,  LinkagePostFilter::noViabilityCheck);
+                linkageType, "threshold match at " + match_threshold, Death.ROLE_DECEASED, Marriage.ROLE_GROOM,  LinkagePostFilter::isViableDeathGroomIdentityLink);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
