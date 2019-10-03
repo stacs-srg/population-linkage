@@ -73,11 +73,13 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{
-                Death.FATHER_FORENAME, Death.FATHER_SURNAME,
-                Death.MOTHER_FORENAME,Death.MOTHER_MAIDEN_SURNAME,
-                Death.FORENAME,Death.SURNAME
-        }, 3);
+        return filterBySex(
+                filterSourceRecords(getSourceRecords1(), new int[]{
+                                Death.FATHER_FORENAME, Death.FATHER_SURNAME,
+                                Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME,
+                                Death.FORENAME, Death.SURNAME},
+                        3),
+                Birth.SEX, "f");
     }
 
 

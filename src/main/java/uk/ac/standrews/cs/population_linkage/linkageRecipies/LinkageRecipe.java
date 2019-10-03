@@ -464,7 +464,7 @@ public abstract class LinkageRecipe {
     }
 
     protected Iterable<LXP> filterSourceRecords(Iterable<LXP> records, int[] filterOn, int reqPopulatedFields) {
-        Collection<LXP> filteredDeathRecords = new HashSet<>();
+        Collection<LXP> filteredRecords = new HashSet<>();
 
         records.forEach(record -> {
             int allowedEmptyFieldsRemaining = filterOn.length - reqPopulatedFields;
@@ -474,10 +474,23 @@ public abstract class LinkageRecipe {
                     if(--allowedEmptyFieldsRemaining <= 0)
                         return;
             }
-            filteredDeathRecords.add(record);
+            filteredRecords.add(record);
         });
 
-        return filteredDeathRecords;
+        return filteredRecords;
+    }
+
+    protected Iterable<LXP> filterBySex(Iterable<LXP> records, int sexField, String keepSex) {
+
+        Collection<LXP> filteredRecords = new HashSet<>();
+
+        records.forEach(record -> {
+            if(record.getString(sexField).toLowerCase().equals(keepSex.toLowerCase()))
+                filteredRecords.add(record);
+        });
+
+        return filteredRecords;
+
     }
 
     protected Iterable<LXP> filterSourceRecords(Iterable<LXP> records, int[] filterOn) {

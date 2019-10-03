@@ -4,6 +4,7 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -73,11 +74,13 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{
+        return filterBySex(
+                filterSourceRecords(getSourceRecords1(), new int[]{
                         Death.FATHER_FORENAME, Death.FATHER_SURNAME,
                         Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME,
                         Death.FORENAME, Death.SURNAME},
-                3);
+                3),
+                Birth.SEX, "f");
     }
 
 

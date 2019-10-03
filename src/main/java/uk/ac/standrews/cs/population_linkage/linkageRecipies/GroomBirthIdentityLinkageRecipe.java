@@ -84,10 +84,12 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords2(), new int[]{
-                Birth.FORENAME, Birth.SURNAME,
-                Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
-                Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME
-        }, 3);
+        return filterBySex(
+                filterSourceRecords(getSourceRecords2(), new int[]{
+                        Birth.FORENAME, Birth.SURNAME,
+                        Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
+                        Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME
+                }, 3)
+                ,Birth.SEX, "m");
     }
 }
