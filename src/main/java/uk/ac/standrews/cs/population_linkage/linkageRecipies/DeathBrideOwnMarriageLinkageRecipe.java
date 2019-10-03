@@ -83,7 +83,7 @@ public class DeathBrideOwnMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{
+        return filterSourceRecords(getSourceRecords2(), new int[]{
                         Marriage.BRIDE_FATHER_FORENAME, Marriage.BRIDE_FATHER_SURNAME,
                         Marriage.BRIDE_MOTHER_FORENAME, Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
                         Marriage.BRIDE_FORENAME, Marriage.BRIDE_SURNAME},

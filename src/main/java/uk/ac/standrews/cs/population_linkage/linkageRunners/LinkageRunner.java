@@ -35,7 +35,7 @@ public abstract class LinkageRunner {
 
     private Path gtLinksCountFile = Paths.get("gt-link-counts.csv"); // TODO put this in the application properties?
 
-    public LinkageQuality run(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name,
+    public LinkageQuality run(final String links_persistent_name, final String source_repository_name,
                               final String results_repository_name, double match_threshold, StringMetric baseMetric,
                               boolean prefilter, boolean persistLinks, boolean evaluateQuality) {
 
@@ -45,7 +45,7 @@ public abstract class LinkageRunner {
 
         final Path store_path = ApplicationProperties.getStorePath();
         final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
-        linkageRecipe = getLinkageRecipe(links_persistent_name, gt_persistent_name, source_repository_name, results_repository_name, record_repository);
+        linkageRecipe = getLinkageRecipe(links_persistent_name, source_repository_name, results_repository_name, record_repository);
 
         final Metric<LXP> composite_metric = getCompositeMetric(linkageRecipe);
         final SearchStructureFactory<LXP> search_factory = getSearchFactory(composite_metric);
@@ -71,7 +71,7 @@ public abstract class LinkageRunner {
     // This method is used when we are not going to persist the links made - i.e. we will always and only evaluate the linkageRecipe quality
     public LinkageQuality run(final String source_repository_name, double match_threshold, StringMetric baseMetric, boolean preFilter, boolean symmeticLinkage) {
 
-        return run("","",source_repository_name, "",
+        return run("", source_repository_name, "",
                 match_threshold, baseMetric, preFilter, false, true);
     }
 
@@ -87,7 +87,7 @@ public abstract class LinkageRunner {
 
         final Path store_path = ApplicationProperties.getStorePath();
         final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
-        final LinkageRecipe linkageRecipe = getLinkageRecipe(null, null, source_repository_name, null, record_repository);
+        final LinkageRecipe linkageRecipe = getLinkageRecipe(null, source_repository_name, null, record_repository);
 
         int numberOfGroundTruthLinks = linkageRecipe.numberOfGroundTruthTrueLinks();
         record_repository.stopStoreWatcher();
@@ -199,7 +199,7 @@ public abstract class LinkageRunner {
     }
 
 
-    public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String gt_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
+    public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
     protected abstract Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory);
 

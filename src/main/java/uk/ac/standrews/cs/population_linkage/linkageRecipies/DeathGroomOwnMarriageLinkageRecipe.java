@@ -3,41 +3,34 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
 
 public class DeathGroomOwnMarriageLinkageRecipe extends LinkageRecipe {
 
-    private final Iterable<LXP> death_records;
-    private final Iterable<LXP> marriage_records;
-
-    public DeathGroomOwnMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String ground_truth_persistent_name, String source_repository_name, RecordRepository record_repository) {
-
+    public DeathGroomOwnMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
-        death_records = Utilities.getDeathRecords(record_repository);
-        marriage_records = Utilities.getMarriageRecords(record_repository);
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords1() {
-        return death_records;
-    }
+    public LinkStatus isTrueMatch(LXP death, LXP marriage) {
+        String deceasedID = death.getString(Death.DECEASED_IDENTITY).trim();
+        String groomID = marriage.getString(Marriage.GROOM_IDENTITY).trim();
 
-    @Override
-    public Iterable<LXP> getSourceRecords2() { return marriage_records; }
+        if(deceasedID.isEmpty() || groomID.isEmpty()) {
+            return LinkStatus.UNKNOWN;
+        }
 
-
-    @Override
-    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return DeathGroomOwnMarriageLinkageRecipe.trueMatch(record1, record2);
+        if (deceasedID.equals(groomID) ) {
+            return LinkStatus.TRUE_MATCH;
+        } else {
+            return LinkStatus.NOT_TRUE_MATCH;
+        }
     }
 
     @Override
@@ -71,29 +64,7 @@ public class DeathGroomOwnMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-
-        final Map<String, Link> links = new HashMap<>();
-
-        for (LXP marriage_record : record_repository.getMarriages()) {
-
-            String marriage_key_from_marriage = toKeyFromMarriage( marriage_record );
-
-            for (LXP birth_record : death_records) {
-
-                String birth_key_from_marriage = toKeyFromDeath( birth_record );
-
-                if( birth_key_from_marriage.equals( marriage_key_from_marriage ) ) {
-                    try {
-                        Link l = new Link(marriage_record, Death.ROLE_DECEASED, birth_record, Marriage.ROLE_GROOM, 1.0f, "ground truth");
-                        links.put(l.toString(), l);
-                    } catch (PersistentObjectException e) {
-                        ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
-                    }
-                }
-            }
-        }
-
-        return links;
+        return getGroundTruthLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     private static String toKeyFromDeath(LXP birth_record) {
@@ -109,134 +80,25 @@ public class DeathGroomOwnMarriageLinkageRecipe extends LinkageRecipe {
     }
 
     public int numberOfGroundTruthTrueLinks() {  // TODO can we do a hashmap to avoid double nexted loop?
-
-        int count = 0;
-
-        for(LXP marriage : record_repository.getMarriages()) {
-
-            String marriage_key_from_marriage = toKeyFromMarriage( marriage );
-
-            for (LXP death : record_repository.getBirths()) {
-
-                String birth_key_from_marriage = toKeyFromDeath( death );
-
-                if( birth_key_from_marriage.equals( marriage_key_from_marriage ) ) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        return numberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-
-        HashSet<LXP> filteredBirthRecords = new HashSet<>();
-
-        for (LXP record : death_records) {
-
-            String fatherForename = record.getString(Death.FATHER_FORENAME).trim();
-            String fatherSurname = record.getString(Death.FATHER_SURNAME).trim();
-            String motherForename = record.getString(Death.MOTHER_FORENAME).trim();
-            String motherSurname = record.getString(Death.MOTHER_MAIDEN_SURNAME).trim();
-            String forename  = record.getString(Death.FORENAME).trim();
-            String surname  = record.getString(Death.SURNAME).trim();
-
-            int populatedFields = 0;
-
-            if (!(fatherForename.equals("") || fatherForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(fatherSurname.equals("") || fatherSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(motherForename.equals("") || motherForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(motherSurname.equals("") || motherSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(forename.equals("") || forename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(surname.equals("") || surname.equals("missing"))) {
-                populatedFields++;
-            }
-
-            if (populatedFields >= requiredNumberOfPreFilterFields()) {
-                filteredBirthRecords.add(record);
-            } // else reject record for linkage - not enough info
-        }
-        return filteredBirthRecords;
+        return filterSourceRecords(getSourceRecords1(), new int[]{
+                Death.FATHER_FORENAME, Death.FATHER_SURNAME,
+                Death.MOTHER_FORENAME,Death.MOTHER_MAIDEN_SURNAME,
+                Death.FORENAME,Death.SURNAME
+        }, 3);
     }
 
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
-
-        Collection<LXP> filteredMarriageRecords = new HashSet<>();
-
-        for(LXP record :  marriage_records) {
-
-            String groomFForename = record.getString(Marriage.GROOM_FATHER_FORENAME).trim();
-            String groomFSurname = record.getString(Marriage.GROOM_FATHER_SURNAME).trim();
-            String groomMForename = record.getString(Marriage.GROOM_MOTHER_FORENAME).trim();
-            String groomMSurname = record.getString(Marriage.GROOM_MOTHER_MAIDEN_SURNAME).trim();
-            String forename  = record.getString(Marriage.GROOM_FORENAME).trim();
-            String surname  = record.getString(Marriage.GROOM_SURNAME).trim();
-
-            int populatedFields = 0;
-
-            if (!(groomFForename.equals("") || groomFForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(groomFSurname.equals("") || groomFSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(groomMForename.equals("") || groomMForename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(groomMSurname.equals("") || groomMSurname.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(forename.equals("") || forename.equals("missing"))) {
-                populatedFields++;
-            }
-            if (!(surname.equals("") || surname.equals("missing"))) {
-                populatedFields++;
-            }
-
-            if (populatedFields >= requiredNumberOfPreFilterFields()) {
-                filteredMarriageRecords.add(record);
-            } // else reject record for linkage - not enough info
-        }
-        return filteredMarriageRecords;
-    }
-
-    private int requiredNumberOfPreFilterFields() {
-        return 3;
-    }
-
-    public static LinkStatus trueMatch(LXP death, LXP marriage) {
-
-        if(     death.getString( Death.FATHER_IDENTITY ).isEmpty()  ||
-                death.getString( Death.MOTHER_IDENTITY ).isEmpty()  ||
-                death.getString( Death.DECEASED_IDENTITY ).isEmpty()  ||
-                marriage.getString(Marriage.GROOM_FATHER_IDENTITY ).isEmpty() ||
-                marriage.getString(Marriage.GROOM_MOTHER_IDENTITY ).isEmpty() ||
-                marriage.getString(Marriage.GROOM_IDENTITY ).isEmpty() ) {
-
-                    return LinkStatus.UNKNOWN;
-
-        }
-
-        String key_from_death = toKeyFromDeath( death );
-        String key_from_marriage = toKeyFromMarriage( marriage );
-
-        if (key_from_death.equals( key_from_marriage ) ) {
-            return LinkStatus.TRUE_MATCH;
-        } else {
-            return LinkStatus.NOT_TRUE_MATCH;
-        }
+        return filterSourceRecords(getSourceRecords2(), new int[]{
+                Marriage.GROOM_FATHER_FORENAME, Marriage.GROOM_FATHER_SURNAME,
+                Marriage.GROOM_MOTHER_FORENAME, Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+                Marriage.GROOM_FORENAME, Marriage.GROOM_SURNAME
+        }, 3);
     }
 }

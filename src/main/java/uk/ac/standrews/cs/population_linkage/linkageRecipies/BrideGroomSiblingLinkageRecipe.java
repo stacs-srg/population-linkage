@@ -82,7 +82,7 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{
+        return filterSourceRecords(getSourceRecords2(), new int[]{
                 Marriage.GROOM_FATHER_FORENAME, Marriage.GROOM_FATHER_SURNAME,
                 Marriage.GROOM_MOTHER_FORENAME, Marriage.GROOM_MOTHER_MAIDEN_SURNAME
         }, 3);

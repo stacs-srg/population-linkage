@@ -24,11 +24,11 @@ public class GroomBrideSiblingLinkageRunner extends LinkageRunner {
         return linkageType;
     }
 
-    public LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String gt_persistent_name,
+    public LinkageRecipe getLinkageRecipe(final String links_persistent_name,
                                           final String source_repository_name, final String results_repository_name,
                                           final RecordRepository record_repository) {
 
-        return new GroomBrideSiblingLinkageRecipe(results_repository_name, links_persistent_name, gt_persistent_name, source_repository_name, record_repository);
+        return new GroomBrideSiblingLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
     public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
@@ -52,7 +52,7 @@ public class GroomBrideSiblingLinkageRunner extends LinkageRunner {
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
         new GroomBrideSiblingLinkageRunner()
-                .run("GroomBrideSiblingLinks", "GroomBrideSiblingGroundTruth",
+                .run("GroomBrideSiblingLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
                         true, true, true);

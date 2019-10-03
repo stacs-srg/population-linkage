@@ -76,12 +76,12 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(birth_records, new int[]{Birth.FORENAME, Birth.SURNAME});
+        return filterSourceRecords(getSourceRecords1(), new int[]{Birth.FORENAME, Birth.SURNAME});
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(death_records, new int[]{Death.FORENAME, Death.SURNAME});
+        return filterSourceRecords(getSourceRecords2(), new int[]{Death.FORENAME, Death.SURNAME});
     }
 
 }

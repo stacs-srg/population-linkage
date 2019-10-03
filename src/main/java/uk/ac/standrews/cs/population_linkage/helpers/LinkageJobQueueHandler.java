@@ -83,7 +83,6 @@ public class LinkageJobQueueHandler {
 
                 String resultsRepo = job.get(columnLabels.indexOf("results-repo")).trim();
                 String links_persistent_name = job.get(columnLabels.indexOf("links_persistent_name")).trim();
-                String gt_persistent_name = job.get(columnLabels.indexOf("gt_persistent_name")).trim();
 
                 boolean preFilter = job.get(columnLabels.indexOf("preFilter")).trim().toLowerCase().equals("true");
                 boolean persist_links = job.get(columnLabels.indexOf("persist_links")).trim().toLowerCase().equals("true");
@@ -151,7 +150,7 @@ public class LinkageJobQueueHandler {
                 }
 
                 linkageApproach = lr.getLinkageType();
-                lq = lr.run(links_persistent_name, gt_persistent_name, sourceRepo, resultsRepo, threshold,
+                lq = lr.run(links_persistent_name, sourceRepo, resultsRepo, threshold,
                         chosenMetric, preFilter, persist_links, evaluate_quality);
                 fieldsUsed1 = getLinkageFields(1, lr, sourceRepo);
                 fieldsUsed2 = getLinkageFields(2, lr, sourceRepo);
@@ -174,7 +173,7 @@ public class LinkageJobQueueHandler {
 
     private static String getLinkageFields(int n, LinkageRunner lr, String sourceRepo) { //String links_persistent_name, String gt_persistent_name, String sourceRepo, String resultsRepo) {
 
-        LinkageRecipe linkageRecipe = lr.getLinkageRecipe(null, null, null, null, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
+        LinkageRecipe linkageRecipe = lr.getLinkageRecipe(null, null, null, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
 
         String record;
         List<Integer> fields;

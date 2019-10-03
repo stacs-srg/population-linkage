@@ -25,7 +25,7 @@ public class BirthParentsMarriageIdentityLinkageRunner extends LinkageRunner {
         return linkageType;
     }
 
-    public LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String gt_persistent_name,
+    public LinkageRecipe getLinkageRecipe(final String links_persistent_name,
                                           final String source_repository_name, final String results_repository_name,
                                           final RecordRepository record_repository) {
 
@@ -56,7 +56,7 @@ public class BirthParentsMarriageIdentityLinkageRunner extends LinkageRunner {
         double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
         new BirthParentsMarriageIdentityLinkageRunner()
-                .run("BirthParentsMarriageIdentityLinks", "BirthParentsMarriageGroundTruth",
+                .run("BirthParentsMarriageIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
                         true, true, true);
