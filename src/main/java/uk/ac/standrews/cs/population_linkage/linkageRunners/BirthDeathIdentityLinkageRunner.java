@@ -28,12 +28,12 @@ public class BirthDeathIdentityLinkageRunner extends LinkageRunner {
     public LinkageRecipe getLinkageRecipe(final String links_persistent_name,
                                           final String source_repository_name, final String results_repository_name,
                                           final RecordRepository record_repository) {
-
         return new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
-    public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
-        return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
+    public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
+        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
                 linkageType, "threshold match at " + match_threshold, Birth.ROLE_BABY, Death.ROLE_DECEASED, LinkagePostFilter::isViableBDIdentityLink);
     }
 

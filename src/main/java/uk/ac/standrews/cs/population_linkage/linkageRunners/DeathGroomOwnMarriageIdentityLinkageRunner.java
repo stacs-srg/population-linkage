@@ -32,8 +32,9 @@ public class DeathGroomOwnMarriageIdentityLinkageRunner extends LinkageRunner {
         return new DeathGroomOwnMarriageIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
-    public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
-        return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
+    public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
+        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
                 linkageType, "threshold match at " + match_threshold, Death.ROLE_DECEASED, Marriage.ROLE_GROOM,  LinkagePostFilter::isViableDeathGroomIdentityLink);
     }
 
@@ -50,13 +51,13 @@ public class DeathGroomOwnMarriageIdentityLinkageRunner extends LinkageRunner {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
+        double match_threshold = 0.80;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
         new DeathGroomOwnMarriageIdentityLinkageRunner()
                 .run("DeathGroomOwnMarriageIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true);
+                        true, false, true);
 
     }
 }

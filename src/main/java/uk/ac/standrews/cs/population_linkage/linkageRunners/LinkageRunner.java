@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
@@ -47,9 +48,7 @@ public abstract class LinkageRunner {
         final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
         linkageRecipe = getLinkageRecipe(links_persistent_name, source_repository_name, results_repository_name, record_repository);
 
-        final Metric<LXP> composite_metric = getCompositeMetric(linkageRecipe);
-        final SearchStructureFactory<LXP> search_factory = getSearchFactory(composite_metric);
-        linker = getLinker(match_threshold, composite_metric, search_factory);
+        linker = getLinker(match_threshold, linkageRecipe);
 
         setCacheSizes(record_repository);
 
@@ -69,7 +68,7 @@ public abstract class LinkageRunner {
     }
 
     // This method is used when we are not going to persist the links made - i.e. we will always and only evaluate the linkageRecipe quality
-    public LinkageQuality run(final String source_repository_name, double match_threshold, StringMetric baseMetric, boolean preFilter, boolean symmeticLinkage) {
+    public LinkageQuality run(final String source_repository_name, double match_threshold, StringMetric baseMetric, boolean preFilter) {
 
         return run("", source_repository_name, "",
                 match_threshold, baseMetric, preFilter, false, true);
@@ -117,18 +116,20 @@ public abstract class LinkageRunner {
 
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now().toString());
 
-        for (Link linkage_says_true_link : links) {
-            if( persist_links ) {
-                linkageRecipe.makeLinkPersistent(linkage_says_true_link);
-            }
-            if( evaluate_quality ) {
-                if (doesGTSayIsTrue(linkage_says_true_link)) {
-                    tp++;
-                } else {
-                    fp++;
+        try {
+            for (Link linkage_says_true_link : links) {
+                if (persist_links) {
+                    linkageRecipe.makeLinkPersistent(linkage_says_true_link);
+                }
+                if (evaluate_quality) {
+                    if (doesGTSayIsTrue(linkage_says_true_link)) {
+                        tp++;
+                    } else {
+                        fp++;
+                    }
                 }
             }
-        }
+        } catch(NoSuchElementException ignore) {}
 
         System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now().toString());
 
@@ -199,9 +200,9 @@ public abstract class LinkageRunner {
     }
 
 
-    public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
+    public abstract Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe);
 
-    protected abstract Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory);
+    public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
     protected abstract Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe);
 
@@ -214,4 +215,9 @@ public abstract class LinkageRunner {
     protected StringMetric getBaseMetric() {
         return baseMetric;
     }
+
+    public void setBaseMetric(StringMetric baseMetric) {
+        this.baseMetric = baseMetric;
+    }
+
 }

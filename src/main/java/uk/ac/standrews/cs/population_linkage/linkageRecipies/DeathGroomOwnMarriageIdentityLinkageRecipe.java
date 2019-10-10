@@ -79,7 +79,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
                                 Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME,
                                 Death.FORENAME, Death.SURNAME},
                         3),
-                Birth.SEX, "f");
+                Birth.SEX, "m");
     }
 
 

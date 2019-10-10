@@ -32,8 +32,9 @@ public class DeathBrideOwnMarriageIdentityLinkageRunner extends LinkageRunner {
         return new DeathBrideOwnMarriageIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
-    public Linker getLinker(final double match_threshold, final Metric<LXP> composite_metric, final SearchStructureFactory<LXP> search_factory) {
-        return new SimilaritySearchLinker(search_factory, composite_metric, match_threshold, getNumberOfProgressUpdates(),
+    public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
+        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
                 linkageType, "threshold match at " + match_threshold, Death.ROLE_DECEASED, Marriage.ROLE_BRIDE,  LinkagePostFilter::isViableDeathBrideIdentityLink);
     }
 

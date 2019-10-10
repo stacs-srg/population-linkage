@@ -56,7 +56,7 @@ public class LinkagePostFilter {
             int yom = Integer.parseInt(pair.record1.getString(Marriage.MARRIAGE_YEAR));
             int yob = Integer.parseInt(pair.record2.getString(Birth.BIRTH_YEAR));
 
-            return yob + MIN_AGE_AT_MARRIAGE >= yom; // is person at least 15 on marriage date
+            return yob + MIN_AGE_AT_MARRIAGE <= yom; // is person at least 15 on marriage date
 
         } catch(NumberFormatException e) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR is invalid
             return true;

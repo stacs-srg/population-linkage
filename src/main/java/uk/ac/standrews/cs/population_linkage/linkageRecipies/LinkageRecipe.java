@@ -217,7 +217,7 @@ public abstract class LinkageRecipe {
 
             for(LXP a : grouping)
                 for(LXP b : grouping)
-                    if(originalIdField(a) != originalIdField(b)) {
+                    if(Utilities.originalIdField(a) != Utilities.originalIdField(b)) {
                         try {
                             links.put(toKey(a,b), new Link(a, getRole1(), b, getRole2(), 1.0f, "ground truth")); // role 1 and role 2 should be the same
                         } catch (PersistentObjectException e) {
@@ -353,8 +353,8 @@ public abstract class LinkageRecipe {
     //////////////////////// Private ///////////////////////
 
     private String toKey(LXP record1, LXP record2) {
-        String s1 = record1.getString(originalIdField(record1));
-        String s2 = record2.getString(originalIdField(record2));
+        String s1 = record1.getString(Utilities.originalIdField(record1));
+        String s2 = record2.getString(Utilities.originalIdField(record2));
 
         if(isSymmetric() && s1.compareTo(s2) == 0)
             return null;
@@ -364,17 +364,6 @@ public abstract class LinkageRecipe {
         } else {
             return s1 + "-" + s2;
         }
-    }
-
-    private int originalIdField(LXP record) {
-        if(record instanceof Birth)
-            return Birth.ORIGINAL_ID;
-        if(record instanceof Marriage)
-            return Marriage.ORIGINAL_ID;
-        if(record instanceof Death)
-            return Death.ORIGINAL_ID;
-
-        throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());
     }
 
     private Map<String, IBucket> storeRepoBucketLookUp = new HashMap<>();

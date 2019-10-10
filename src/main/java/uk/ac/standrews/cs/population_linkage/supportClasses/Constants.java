@@ -83,9 +83,9 @@ public class Constants {
 
     public static final List<Integer> DEATH_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
             Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
+//            Death.FATHER_SURNAME,
             Death.MOTHER_FORENAME,
-            Death.MOTHER_MAIDEN_SURNAME,
+//            Death.MOTHER_MAIDEN_SURNAME,
             Death.FORENAME,
             Death.SURNAME
     );
@@ -103,9 +103,9 @@ public class Constants {
 
     public static final List<Integer> BRIDE_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
             Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
+//            Marriage.BRIDE_FATHER_SURNAME,
             Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+//            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
             Marriage.BRIDE_FORENAME,
             Marriage.BRIDE_SURNAME
     );
