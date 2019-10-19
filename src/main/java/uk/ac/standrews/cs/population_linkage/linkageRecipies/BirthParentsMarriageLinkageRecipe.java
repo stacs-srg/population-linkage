@@ -12,6 +12,7 @@ import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
 
+// This class is a confusion to me (Tom)
 public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     public BirthParentsMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
@@ -92,7 +93,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
                 "-" + marriage_record.getString(Marriage.BRIDE_IDENTITY );
     }
 
-    public int numberOfGroundTruthTrueLinks() {
+    public int getNumberOfGroundTruthTrueLinks() {
 
         int count = 0;
 
@@ -110,6 +111,11 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
             }
         }
         return count;
+    }
+
+    @Override
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return 0;
     }
 
     ////// AL HERE

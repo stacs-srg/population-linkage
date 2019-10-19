@@ -56,7 +56,7 @@ public class DeathDeathSiblingLinkageRunner extends LinkageRunner {
                 .run("DeathDeathSiblingLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true);
+                        true, true, true, 0);
 
     }
 }

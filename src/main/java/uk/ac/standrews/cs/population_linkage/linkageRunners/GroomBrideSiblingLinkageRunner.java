@@ -56,7 +56,7 @@ public class GroomBrideSiblingLinkageRunner extends LinkageRunner {
                 .run("GroomBrideSiblingLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true);
+                        true, true, true, 0);
 
     }
 }

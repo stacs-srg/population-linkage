@@ -3,7 +3,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -70,18 +69,13 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int numberOfGroundTruthTrueLinks() {
-        return numberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+    public int getNumberOfGroundTruthTrueLinks() {
+        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{Birth.FORENAME, Birth.SURNAME});
-    }
-
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords2(), new int[]{Death.FORENAME, Death.SURNAME});
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 
 }

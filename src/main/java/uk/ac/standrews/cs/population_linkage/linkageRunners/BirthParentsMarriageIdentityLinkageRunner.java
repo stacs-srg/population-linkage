@@ -60,7 +60,7 @@ public class BirthParentsMarriageIdentityLinkageRunner extends LinkageRunner {
                 .run("BirthParentsMarriageIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true);
+                        true, true, true, 0);
 
     }
 }

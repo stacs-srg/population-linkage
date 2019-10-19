@@ -75,25 +75,17 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
                 Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY);
     }
 
-    public int numberOfGroundTruthTrueLinks() {
+    public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(
                 Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY,
                 Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY);
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{
-                Marriage.GROOM_FATHER_FORENAME, Marriage.GROOM_FATHER_SURNAME,
-                Marriage.GROOM_MOTHER_FORENAME, Marriage.GROOM_MOTHER_MAIDEN_SURNAME
-        }, 3);
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthLinksPostFilterOnSiblingNonSymmetric(
+                Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY,
+                Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY);
     }
 
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords2(), new int[]{
-                Marriage.BRIDE_FATHER_FORENAME, Marriage.BRIDE_FATHER_SURNAME,
-                Marriage.BRIDE_MOTHER_FORENAME, Marriage.BRIDE_MOTHER_MAIDEN_SURNAME
-        }, 3);
-    }
 }

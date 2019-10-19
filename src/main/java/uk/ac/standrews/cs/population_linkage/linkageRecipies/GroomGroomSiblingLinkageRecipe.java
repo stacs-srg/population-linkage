@@ -74,28 +74,14 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
         return getGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 
-    public int numberOfGroundTruthTrueLinks() {
+    @Override
+    public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 
-    private Iterable<LXP> prefilteredRecords = null;
-
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
-        if(prefilteredRecords == null) { // we do this for symmetric linkage recipes as it ensures the iterables
-            // returned by this method and the one for records 2 is the same object - this is required by the
-            // implementation of similarity search - otherwise we link to people to themselves
-            prefilteredRecords = filterSourceRecords(getSourceRecords1(), new int[]{
-                    Marriage.GROOM_FATHER_FORENAME, Marriage.GROOM_FATHER_SURNAME,
-                    Marriage.GROOM_MOTHER_FORENAME, Marriage.GROOM_MOTHER_MAIDEN_SURNAME
-            }, 3);
-        }
-        return prefilteredRecords;
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return getPreFilteredSourceRecords1();
-    }
-    
 }

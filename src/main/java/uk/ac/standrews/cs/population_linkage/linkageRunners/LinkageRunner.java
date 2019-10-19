@@ -38,7 +38,7 @@ public abstract class LinkageRunner {
 
     public LinkageQuality run(final String links_persistent_name, final String source_repository_name,
                               final String results_repository_name, double match_threshold, StringMetric baseMetric,
-                              boolean prefilter, boolean persistLinks, boolean evaluateQuality) {
+                              boolean prefilter, boolean persistLinks, boolean evaluateQuality, int prefilterRequiredFields) {
 
         this.baseMetric = baseMetric;
 
@@ -58,7 +58,7 @@ public abstract class LinkageRunner {
 
         MemoryLogger.update();
 
-        LinkageQuality lq = link(prefilter, persistLinks, evaluateQuality, numberOGroundTruthLinks);
+        LinkageQuality lq = link(prefilter, persistLinks, evaluateQuality, numberOGroundTruthLinks, prefilterRequiredFields);
 
         record_repository.stopStoreWatcher();
         linker.terminate();
@@ -71,7 +71,7 @@ public abstract class LinkageRunner {
     public LinkageQuality run(final String source_repository_name, double match_threshold, StringMetric baseMetric, boolean preFilter) {
 
         return run("", source_repository_name, "",
-                match_threshold, baseMetric, preFilter, false, true);
+                match_threshold, baseMetric, preFilter, false, true, 0);
     }
 
 
@@ -88,18 +88,22 @@ public abstract class LinkageRunner {
         final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
         final LinkageRecipe linkageRecipe = getLinkageRecipe(null, source_repository_name, null, record_repository);
 
-        int numberOfGroundTruthLinks = linkageRecipe.numberOfGroundTruthTrueLinks();
+        int numberOfGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
         record_repository.stopStoreWatcher();
 
         return numberOfGroundTruthLinks;
     }
 
-    public LinkageQuality link(boolean pre_filter, boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks) {
+    public LinkageQuality link(boolean pre_filter, boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, int prefilterRequiredFields) {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
 
+        int missedLinks = 0;
+
         if( pre_filter ) {
+            linkageRecipe.setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
             linker.addRecords(linkageRecipe.getPreFilteredSourceRecords1(), linkageRecipe.getPreFilteredSourceRecords2());
+            missedLinks = numberOfGroundTruthTrueLinks - linkageRecipe.getNumberOfGroundTruthTrueLinksPostFilter();
         } else {
             linker.addRecords(linkageRecipe.getSourceRecords1(), linkageRecipe.getSourceRecords2());
         }
@@ -135,6 +139,8 @@ public abstract class LinkageRunner {
 
         MemoryLogger.update();
         nextTimeStamp(time_stamp, "perform and evaluate linkageRecipe");
+
+        System.out.printf("%d links lost due to pre-filtering\n", missedLinks);
 
         if(evaluate_quality) {
 

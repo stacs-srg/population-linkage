@@ -65,29 +65,13 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int numberOfGroundTruthTrueLinks() {
-        return numberOfGroundTruthTrueLinksOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
+    public int getNumberOfGroundTruthTrueLinks() {
+        return getNumberOfGroundTruthTrueLinksOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
-
-        return filterSourceRecords(getSourceRecords1(), new int[]{
-                        Marriage.BRIDE_FORENAME, Marriage.BRIDE_SURNAME,
-                        Marriage.BRIDE_FATHER_FORENAME, Marriage.BRIDE_FATHER_SURNAME,
-                        Marriage.BRIDE_MOTHER_FORENAME, Marriage.BRIDE_MOTHER_MAIDEN_SURNAME},
-                        3);
-    }
-
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterBySex(
-                filterSourceRecords(getSourceRecords2(), new int[]{
-                        Birth.FORENAME, Birth.SURNAME,
-                        Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
-                        Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME
-                }, 3)
-                ,Birth.SEX, "f");
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
     }
 
 }

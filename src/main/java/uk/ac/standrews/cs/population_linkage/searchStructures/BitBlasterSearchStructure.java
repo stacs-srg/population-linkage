@@ -35,12 +35,12 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
             } catch (Exception e) {
                 tries++;
                 SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
-                System.out.println("Initilisation exception - trying again with diferent reference points - new seed: " + SEED);
+                System.out.println("Initilisation exception - trying again with different reference points - new seed: " + SEED);
             }
         }
 
         if(tries == maxTries)
-            throw new RuntimeException("Failed to init");
+            throw new RuntimeException("Failed to init - Try reducing number of reference objects");
 
     }
 

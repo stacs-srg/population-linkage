@@ -43,7 +43,7 @@ public class Link extends JPO {
         this.record1 = (LXPReference) record1.getThisRef();
         this.role1 = role1;
         this.record2 = (LXPReference) record2.getThisRef();
-        this.role2 = role1;
+        this.role2 = role2;
         this.confidence = confidence;
         this.link_type = link_type;
         this.provenance = Arrays.asList(provenance);

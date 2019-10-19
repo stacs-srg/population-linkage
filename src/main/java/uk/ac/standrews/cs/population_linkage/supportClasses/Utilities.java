@@ -99,13 +99,13 @@ public class Utilities {
         return record_list;
     }
 
-    public static int originalIdField(LXP record) {
+    public static String originalId(LXP record) {
         if(record instanceof Birth)
-            return Birth.ORIGINAL_ID;
+            return record.getString(Birth.ORIGINAL_ID);
         if(record instanceof Marriage)
-            return Marriage.ORIGINAL_ID;
+            return record.getString(Marriage.ORIGINAL_ID);
         if(record instanceof Death)
-            return Death.ORIGINAL_ID;
+            return record.getString(Death.ORIGINAL_ID);
 
         throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());
     }

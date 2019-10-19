@@ -7,8 +7,6 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
 
@@ -69,27 +67,19 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int numberOfGroundTruthTrueLinks() {
-        return numberOfGroundTruthTrueLinksOn(Marriage.GROOM_IDENTITY, Birth.CHILD_IDENTITY);
+    public int getNumberOfGroundTruthTrueLinks() {
+        return getNumberOfGroundTruthTrueLinksOn(Marriage.GROOM_IDENTITY, Birth.CHILD_IDENTITY);
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(getSourceRecords1(), new int[]{
-                Marriage.GROOM_FORENAME, Marriage.GROOM_SURNAME,
-                Marriage.GROOM_FATHER_FORENAME, Marriage.GROOM_FATHER_SURNAME,
-                Marriage.GROOM_MOTHER_FORENAME, Marriage.GROOM_MOTHER_MAIDEN_SURNAME
-        }, 3);
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Marriage.GROOM_IDENTITY, Birth.CHILD_IDENTITY);
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords2() {
         return filterBySex(
-                filterSourceRecords(getSourceRecords2(), new int[]{
-                        Birth.FORENAME, Birth.SURNAME,
-                        Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
-                        Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME
-                }, 3)
-                ,Birth.SEX, "m");
+                super.getPreFilteredSourceRecords2(),
+                Birth.SEX, "m");
     }
 }

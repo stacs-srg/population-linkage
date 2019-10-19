@@ -86,28 +86,13 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int numberOfGroundTruthTrueLinks() {
+    public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY);
     }
 
-    private Iterable<LXP> prefilteredRecords = null;
-
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
-        if(prefilteredRecords == null) { // we do this for symmetric linkage recipes as it ensures the iterables
-            // returned by this method and the one for records 2 is the same object - this is required by the
-            // implementation of similarity search - otherwise we link to people to themselves
-            prefilteredRecords = filterSourceRecords(getSourceRecords1(), new int[]{
-                            Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
-                            Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME},
-                    3);
-        }
-        return prefilteredRecords;
-    }
-
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return getPreFilteredSourceRecords1();
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY);
     }
 
     // This has been left as it's called by the groun truth classes - however it seems overly complicated, the above isTrueMatch method should always return the same as this for synthetic and for umea

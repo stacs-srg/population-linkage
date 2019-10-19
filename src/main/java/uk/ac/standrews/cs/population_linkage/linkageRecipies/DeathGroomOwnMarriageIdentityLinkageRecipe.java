@@ -57,38 +57,36 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public String getRole2() { return Marriage.ROLE_GROOM; }
 
     @Override
-    public List<Integer> getLinkageFields1() { return Constants.DEATH_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields1() {
+        return Constants.DEATH_IDENTITY_LINKAGE_FIELDS;
+//        return Constants.DEATH_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
+    }
 
     @Override
-    public List<Integer> getLinkageFields2() { return Constants.GROOM_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields2() {
+        return Constants.GROOM_IDENTITY_LINKAGE_FIELDS;
+//        return Constants.GROOM_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
         return getGroundTruthLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
-    public int numberOfGroundTruthTrueLinks() {
-        return numberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
+    public int getNumberOfGroundTruthTrueLinks() {
+        return getNumberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
+    }
+
+    @Override
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
         return filterBySex(
-                filterSourceRecords(getSourceRecords1(), new int[]{
-                                Death.FATHER_FORENAME, Death.FATHER_SURNAME,
-                                Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME,
-                                Death.FORENAME, Death.SURNAME},
-                        3),
+                super.getPreFilteredSourceRecords1(),
                 Birth.SEX, "m");
     }
 
-
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords2(), new int[]{
-                Marriage.GROOM_FATHER_FORENAME, Marriage.GROOM_FATHER_SURNAME,
-                Marriage.GROOM_MOTHER_FORENAME, Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
-                Marriage.GROOM_FORENAME, Marriage.GROOM_SURNAME
-        }, 3);
-    }
 }

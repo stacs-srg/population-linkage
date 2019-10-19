@@ -9,6 +9,7 @@ import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFac
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkagePostFilter;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma2;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -33,13 +34,13 @@ public class DeathGroomOwnMarriageIdentityLinkageRunner extends LinkageRunner {
     }
 
     public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
-        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
-        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
+        Metric<LXP> compositeMetric1 = getCompositeMetric(linkageRecipe);
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric1), compositeMetric1, match_threshold, getNumberOfProgressUpdates(),
                 linkageType, "threshold match at " + match_threshold, Death.ROLE_DECEASED, Marriage.ROLE_GROOM,  LinkagePostFilter::isViableDeathGroomIdentityLink);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields1());
+        return new Sigma2(getBaseMetric(), linkageRecipe.getLinkageFields1(), linkageRecipe.getLinkageFields2());
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
@@ -51,13 +52,15 @@ public class DeathGroomOwnMarriageIdentityLinkageRunner extends LinkageRunner {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        double match_threshold = 0.80;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
+        double match_threshold = 0.9;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
+
+        LinkageConfig.numberOfROs = 10;
 
         new DeathGroomOwnMarriageIdentityLinkageRunner()
                 .run("DeathGroomOwnMarriageIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, false, true);
+                        true, false, true, 5);
 
     }
 }

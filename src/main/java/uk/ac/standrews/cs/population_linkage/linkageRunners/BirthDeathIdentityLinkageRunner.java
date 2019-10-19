@@ -56,7 +56,7 @@ public class BirthDeathIdentityLinkageRunner extends LinkageRunner {
                 .run("BirthDeathIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true);
+                        true, true, true, 0);
 
     }
 }

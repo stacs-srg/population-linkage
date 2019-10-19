@@ -68,28 +68,20 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int numberOfGroundTruthTrueLinks() {
-        return numberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY);
+    public int getNumberOfGroundTruthTrueLinks() {
+        return getNumberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY);
+    }
+
+    @Override
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY);
     }
 
     @Override
     public Iterable<LXP> getPreFilteredSourceRecords1() {
         return filterBySex(
-                filterSourceRecords(getSourceRecords1(), new int[]{
-                        Death.FATHER_FORENAME, Death.FATHER_SURNAME,
-                        Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME,
-                        Death.FORENAME, Death.SURNAME},
-                3),
+                super.getPreFilteredSourceRecords1(),
                 Birth.SEX, "f");
     }
 
-
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords2(), new int[]{
-                        Marriage.BRIDE_FATHER_FORENAME, Marriage.BRIDE_FATHER_SURNAME,
-                        Marriage.BRIDE_MOTHER_FORENAME, Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
-                        Marriage.BRIDE_FORENAME, Marriage.BRIDE_SURNAME},
-                3);
-    }
 }

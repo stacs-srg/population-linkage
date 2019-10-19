@@ -83,29 +83,29 @@ public class Constants {
 
     public static final List<Integer> DEATH_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
             Death.FATHER_FORENAME,
-//            Death.FATHER_SURNAME,
+            Death.FATHER_SURNAME,
             Death.MOTHER_FORENAME,
-//            Death.MOTHER_MAIDEN_SURNAME,
+            Death.MOTHER_MAIDEN_SURNAME,
             Death.FORENAME,
             Death.SURNAME
     );
 
     public static final List<Integer> DEATH_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS = Arrays.asList(
+            Death.FORENAME,
+            Death.SURNAME,
+            Death.SPOUSE_NAMES,
             Death.FATHER_FORENAME,
             Death.FATHER_SURNAME,
             Death.MOTHER_FORENAME,
-            Death.MOTHER_MAIDEN_SURNAME,
-            Death.FORENAME,
-            Death.SURNAME,
-            Death.SPOUSE_NAMES
+            Death.MOTHER_MAIDEN_SURNAME
             // TODO Should be able to use Death.SPOUSE_NAMES - encoding???? How to compare to other records when info in two fields?
     );
 
     public static final List<Integer> BRIDE_IDENTITY_LINKAGE_FIELDS = Arrays.asList(
             Marriage.BRIDE_FATHER_FORENAME,
-//            Marriage.BRIDE_FATHER_SURNAME,
+            Marriage.BRIDE_FATHER_SURNAME,
             Marriage.BRIDE_MOTHER_FORENAME,
-//            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
             Marriage.BRIDE_FORENAME,
             Marriage.BRIDE_SURNAME
     );
@@ -117,6 +117,16 @@ public class Constants {
             Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
             Marriage.GROOM_FORENAME,
             Marriage.GROOM_SURNAME
+    );
+
+    public static final List<Integer> GROOM_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS = Arrays.asList(
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.BRIDE_FULL_NAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME
     );
 
     public static final List<Integer> BRIDE_IDENTITY_LIKAGE_FIELDS = Arrays.asList(

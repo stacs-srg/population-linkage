@@ -80,23 +80,13 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int numberOfGroundTruthTrueLinks() {
+    public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
-        return filterSourceRecords(getSourceRecords1(),
-                new int[]{Birth.FATHER_FORENAME, Birth.FATHER_SURNAME,
-                        Birth.MOTHER_FORENAME, Birth.MOTHER_MAIDEN_SURNAME},
-                3);
+    public int getNumberOfGroundTruthTrueLinksPostFilter() {
+        return getNumberOfGroundTruthLinksPostFilterOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
     }
 
-    @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterSourceRecords(getSourceRecords2(),
-                new int[]{Death.FATHER_FORENAME, Death.FATHER_SURNAME,
-                        Death.MOTHER_FORENAME, Death.MOTHER_MAIDEN_SURNAME},
-                3);
-    }
 }
