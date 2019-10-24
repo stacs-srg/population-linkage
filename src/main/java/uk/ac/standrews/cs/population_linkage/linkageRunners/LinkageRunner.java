@@ -102,10 +102,10 @@ public abstract class LinkageRunner {
 
         if( pre_filter ) {
             linkageRecipe.setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
-            linker.addRecords(linkageRecipe.getPreFilteredSourceRecords1(), linkageRecipe.getPreFilteredSourceRecords2());
+            linker.addRecords(linkageRecipe.getPreFilteredStoredRecords(), linkageRecipe.getPreFilteredSearchRecords());
             missedLinks = numberOfGroundTruthTrueLinks - linkageRecipe.getNumberOfGroundTruthTrueLinksPostFilter();
         } else {
-            linker.addRecords(linkageRecipe.getSourceRecords1(), linkageRecipe.getSourceRecords2());
+            linker.addRecords(linkageRecipe.getStoredRecords(), linkageRecipe.getSearchRecords());
         }
 
         MemoryLogger.update();

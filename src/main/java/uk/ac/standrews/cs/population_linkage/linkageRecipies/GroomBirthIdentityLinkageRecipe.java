@@ -8,7 +8,8 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -36,30 +37,30 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "marriages";
+    public Class getStoredType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "births";
+    public Class getSearchType() {
+        return Birth.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Marriage.ROLE_GROOM;
     }
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Birth.ROLE_BABY;
     }
 
     @Override
-    public List<Integer> getLinkageFields1() { return Constants.GROOM_IDENTITY_LINKAGE_FIELDS ;}
+    public List<Integer> getLinkageFields() { return Constants.GROOM_IDENTITY_LINKAGE_FIELDS ;}
 
     @Override
-    public List<Integer> getLinkageFields2() { return Constants.BABY_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getSearchMappingFields() { return Constants.BABY_IDENTITY_LINKAGE_FIELDS; }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -77,9 +78,11 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
-        return filterBySex(
-                super.getPreFilteredSourceRecords2(),
-                Birth.SEX, "m");
+    public Iterable<LXP> getPreFilteredSearchRecords() {
+        return
+//                filterBySex(
+                super.getPreFilteredSearchRecords()
+//        ,Birth.SEX, "m")
+        ;
     }
 }

@@ -24,7 +24,7 @@ public abstract class SimilaritySearchLinkageTest extends LinkageTest {
 
         TestLinker(SearchStructureFactory<LXP> search_structure_factory, double threshold, Metric<LXP> metric, int number_of_progress_updates) {
 
-            super(search_structure_factory, metric, 0.67, number_of_progress_updates, "link type", "provenance", "role1", "role2", (r)-> true);
+            super(search_structure_factory, metric, 0.67, number_of_progress_updates, "link type", "provenance", "role1", "role2", (r)-> true, null);
             setThreshold(threshold);
         }
 

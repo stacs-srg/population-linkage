@@ -30,30 +30,30 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "births";
+    public Class getStoredType() {
+        return Birth.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "marriages";
+    public Class getSearchType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Birth.ROLE_MOTHER; //return Birth.ROLE_PARENTS;
     } // mother and father
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Marriage.ROLE_BRIDES_MOTHER;  // return Marriage.ROLE_PARENTS;  // bride and groom
     }
 
     @Override
-    public List<Integer> getLinkageFields1() { return Constants.BABY_PARENTS_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() { return Constants.BABY_PARENTS_IDENTITY_LINKAGE_FIELDS; }
 
     @Override
-    public List<Integer> getLinkageFields2() { return Constants.BRIDE_GROOM_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getSearchMappingFields() { return Constants.BRIDE_GROOM_IDENTITY_LINKAGE_FIELDS; }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -121,7 +121,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
     ////// AL HERE
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
+    public Iterable<LXP> getPreFilteredStoredRecords() {
 
         Collection<LXP> filteredMarriageRecords = new HashSet<>();
 
@@ -179,7 +179,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords2() {
+    public Iterable<LXP> getPreFilteredSearchRecords() {
 
         HashSet<LXP> filteredBirthRecords = new HashSet<>();
 

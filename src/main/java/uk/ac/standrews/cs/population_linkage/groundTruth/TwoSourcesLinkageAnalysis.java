@@ -18,9 +18,9 @@ import java.util.List;
  * This class performs linkage analysis on data pulled from two different data sources, for example births and deaths.
  * Classes extending this class are required to implement the following methods:
  *     getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
- *     <getSourceRecords2(RecordRepository record_repository), which provides the records from the second data source
+ *     <getSearchRecords(RecordRepository record_repository), which provides the records from the second data source
  *     getSourceType(), which provides a textual description of the first data source, for example, "births"
- *     getSourceType2(), which provides a textual description of the first data source, for example, "deaths"
+ *     getSearchType(), which provides a textual description of the first data source, for example, "deaths"
  *     LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of datum's from source 1 and source 2
  *     getComparisonFields(), returns the set of fields to be used for distance comparison from data source 1 (note the name)
  *     getComparisonFields2(), returns the set of fields to be used for distance comparison from data source 2

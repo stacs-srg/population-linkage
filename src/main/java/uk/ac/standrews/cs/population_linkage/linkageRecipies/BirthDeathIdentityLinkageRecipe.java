@@ -36,32 +36,32 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "births";
+    public Class getStoredType() {
+        return Birth.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "deaths";
+    public Class getSearchType() {
+        return Death.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Birth.ROLE_BABY;
     }
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Death.ROLE_DECEASED;
     }
 
     @Override
-    public List<Integer> getLinkageFields1() {
+    public List<Integer> getLinkageFields() {
         return Constants.BABY_IDENTITY_LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() { return Constants.DEATH_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getSearchMappingFields() { return Constants.DEATH_IDENTITY_LINKAGE_FIELDS; }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

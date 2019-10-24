@@ -4,16 +4,11 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
+import java.util.List;
+import java.util.Map;
 
 public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
@@ -40,32 +35,32 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "marriages";
+    public Class getStoredType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "marriages";
+    public Class getSearchType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Marriage.ROLE_GROOM;
     }
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Marriage.ROLE_GROOM;
     }
 
     @Override
-    public List<Integer> getLinkageFields1() {
+    public List<Integer> getLinkageFields() {
         return Constants.SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() {
+    public List<Integer> getSearchMappingFields() {
         return Constants.SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS;
     }
 

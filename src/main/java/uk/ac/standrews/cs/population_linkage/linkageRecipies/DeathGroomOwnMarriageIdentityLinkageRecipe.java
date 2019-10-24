@@ -39,33 +39,33 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "deaths";
+    public Class getStoredType() {
+        return Death.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "marriages";
+    public Class getSearchType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Death.ROLE_DECEASED;
     }
 
     @Override
-    public String getRole2() { return Marriage.ROLE_GROOM; }
+    public String getSearchRole() { return Marriage.ROLE_GROOM; }
 
     @Override
-    public List<Integer> getLinkageFields1() {
-        return Constants.DEATH_IDENTITY_LINKAGE_FIELDS;
-//        return Constants.DEATH_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
+    public List<Integer> getLinkageFields() {
+//        return Constants.DEATH_IDENTITY_LINKAGE_FIELDS;
+        return Constants.DEATH_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() {
-        return Constants.GROOM_IDENTITY_LINKAGE_FIELDS;
-//        return Constants.GROOM_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
+    public List<Integer> getSearchMappingFields() {
+//        return Constants.GROOM_IDENTITY_LINKAGE_FIELDS;
+        return Constants.GROOM_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
     }
 
     @Override
@@ -83,9 +83,9 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredSourceRecords1() {
+    public Iterable<LXP> getPreFilteredStoredRecords() {
         return filterBySex(
-                super.getPreFilteredSourceRecords1(),
+                super.getPreFilteredStoredRecords(),
                 Birth.SEX, "m");
     }
 

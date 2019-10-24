@@ -3,17 +3,13 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipies;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
@@ -45,32 +41,32 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "births";
+    public Class getStoredType() {
+        return Birth.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "deaths";
+    public Class getSearchType() {
+        return Death.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Birth.ROLE_BABY;
     }
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Death.ROLE_DECEASED;
     }
 
     @Override
-    public List<Integer> getLinkageFields1() {
+    public List<Integer> getLinkageFields() {
         return Constants.SIBLING_BUNDLING_BIRTH_TO_DEATH_LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() {
+    public List<Integer> getSearchMappingFields() {
         return Constants.SIBLING_BUNDLING_DEATH_TO_BIRTH_LINKAGE_FIELDS;
     }
 

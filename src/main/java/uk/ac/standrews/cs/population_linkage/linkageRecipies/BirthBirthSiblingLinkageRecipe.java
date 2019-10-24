@@ -20,12 +20,12 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords1() {
+    public Iterable<LXP> getStoredRecords() {
         return birth_records;
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords2() {
+    public Iterable<LXP> getSearchRecords() {
         return birth_records;
     }
 
@@ -51,32 +51,32 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "births";
+    public Class getStoredType() {
+        return Birth.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "births";
+    public Class getSearchType() {
+        return Birth.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Birth.ROLE_BABY;
     }
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Birth.ROLE_BABY;
     }
 
     @Override
-    public List<Integer> getLinkageFields1() {
+    public List<Integer> getLinkageFields() {
         return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() {
+    public List<Integer> getSearchMappingFields() {
         return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
     }
 

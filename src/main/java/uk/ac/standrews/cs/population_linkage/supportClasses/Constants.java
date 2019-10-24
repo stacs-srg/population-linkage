@@ -1,6 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
-import org.glassfish.jersey.message.internal.StringBuilderUtils;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -199,9 +198,9 @@ public class Constants {
             Birth.MOTHER_MAIDEN_SURNAME
     );
 
-    public static String stringRepresentationOf(List<Integer> fields, String record, List<String> labels) {
+    public static String stringRepresentationOf(List<Integer> fields, Class record, List<String> labels) {
         StringBuilder sb = new StringBuilder();
-        sb.append(record).append("[ ");
+        sb.append(record.getSimpleName()).append("[ ");
 
         for(Integer field : fields)
             sb.append(labels.get(field)).append(" ");

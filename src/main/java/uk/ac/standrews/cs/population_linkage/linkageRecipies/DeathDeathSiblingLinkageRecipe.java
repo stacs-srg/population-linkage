@@ -37,32 +37,32 @@ public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "deaths";
+    public Class getStoredType() {
+        return Death.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "deaths";
+    public Class getSearchType() {
+        return Death.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Death.ROLE_DECEASED;
     }
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Death.ROLE_DECEASED;
     }
 
     @Override
-    public List<Integer> getLinkageFields1() {
+    public List<Integer> getLinkageFields() {
         return Constants.SIBLING_BUNDLING_DEATH_LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() {
+    public List<Integer> getSearchMappingFields() {
         return Constants.SIBLING_BUNDLING_DEATH_LINKAGE_FIELDS;
     }
 

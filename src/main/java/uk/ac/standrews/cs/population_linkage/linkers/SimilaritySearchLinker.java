@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkers;
 
+import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
@@ -16,40 +17,25 @@ public class SimilaritySearchLinker extends Linker {
 
     private SearchStructureFactory<LXP> search_structure_factory;
     private SearchStructure<LXP> search_structure;
-    private Iterable<LXP> smaller_set;
+    private Iterable<LXP> searchSet;
     private int smaller_set_size;
-    private boolean recordOrderFlipped = false;
+//    private boolean recordOrderFlipped = false;
+    private LinkageRecipe linkageRecipe;
 
     public SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
-                                     String link_type, String provenace, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink) {
+                                  String link_type, String provenace, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink, LinkageRecipe linkageRecipe) {
 
         super(distance_metric, threshold, number_of_progress_updates, link_type, provenace, role_type_1, role_type_2, isViableLink);
 
         this.search_structure_factory = search_structure_factory;
+        this.linkageRecipe = linkageRecipe;
     }
 
-    public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
+    public void addRecords(Iterable<LXP> storedSet, Iterable<LXP> searchSet) {
+        super.addRecords(storedSet, searchSet);
+        this.searchSet = searchSet;
 
-        super.addRecords(records1, records2);
-
-        int records1_size = count(records1);
-        int records2_size = records1 == records2 ? records1_size : count(records2);
-
-        Iterable<LXP> larger_set;
-
-        if (records1_size < records2_size) {
-            smaller_set = records1;
-            smaller_set_size = records1_size;
-            larger_set = records2;
-            recordOrderFlipped = false;
-        } else {
-            smaller_set = records2;
-            smaller_set_size = records2_size;
-            larger_set = records1;
-            recordOrderFlipped = true;
-        }
-
-        search_structure = search_structure_factory.newSearchStructure(larger_set);
+        search_structure = search_structure_factory.newSearchStructure(storedSet);
     }
 
     public void terminate() {
@@ -63,24 +49,34 @@ public class SimilaritySearchLinker extends Linker {
 
             class RecordPairIterator extends AbstractRecordPairIterator {
 
-                private int neighbours_index;
-                private List<DataDistance<LXP>> nearest_records;
-                private LXP next_record_from_smaller_set;
-                private Iterator<LXP> smaller_set_iterator;
+                private int result_index; // this is the index into the result_records
+                private List<DataDistance<LXP>> result_records; // these are the results we get back from doing a search from findWithInThreshold
+
+                private LXP next_record_from_search_set; // this is the current record from the search set being processed
+                private Iterator<LXP> search_set_iterator; // these are the records we are using as key to search (i.e. we're searching for the nearest thing to these in the stored records)
+
+                private LXP converted_record; // the next_record_from_search_set converted into the same type as the stored records
+
 
                 RecordPairIterator(final Iterable<LXP> records1, final Iterable<LXP> records2, ProgressIndicator progress_indicator) {
 
                     super(records1, records2, progress_indicator);
 
-                    smaller_set_iterator = smaller_set.iterator();
-                    next_record_from_smaller_set = smaller_set_iterator.next();
+                    search_set_iterator = searchSet.iterator();
 
-                    neighbours_index = 0;
+                    loadNextSearchResults();
 
-                    progress_indicator.setTotalSteps(smaller_set_size);
+                    progress_indicator.setTotalSteps(linkageRecipe.getSearchSetSize());
 
-                    getNextRecordBatch();
                     getNextPair();
+                }
+
+                private void loadNextSearchResults() {
+                    next_record_from_search_set = search_set_iterator.next();
+                    converted_record = linkageRecipe.convertToOtherRecordType(next_record_from_search_set);
+
+                    result_index = 0;
+                    result_records = search_structure.findWithinThreshold(converted_record, threshold);
                 }
 
                 @Override
@@ -90,8 +86,8 @@ public class SimilaritySearchLinker extends Linker {
 
                 void getNextPair() {
 
-                    while (smaller_set_iterator.hasNext() && !moreLinksAvailableFromCurrentRecordFromSmallerSet()) {
-                        getNextRecordFromSmallerSet();
+                    while (search_set_iterator.hasNext() && !moreResultsAvailiable()) {
+                        getNextRecordFromSearchSet();
                     }
 
                     loadPair();
@@ -104,32 +100,29 @@ public class SimilaritySearchLinker extends Linker {
                 private void loadPair() {
 
                     do {
-                        if (moreLinksAvailable()) {
+                        if (moreLinksToConsider()) {
 
-                            DataDistance<LXP> data_distance = nearest_records.get(neighbours_index++);
-                            // this can potentionally flip the records round what what was specified - okay for symetric linkage but messes up asymetric linkage...
-                            if(recordOrderFlipped)
-                                next_pair = new RecordPair(data_distance.value, next_record_from_smaller_set, data_distance.distance);
-                            else
-                                next_pair = new RecordPair(next_record_from_smaller_set, data_distance.value, data_distance.distance);
+                            DataDistance<LXP> data_distance = result_records.get(result_index++);
+                            next_pair = new RecordPair(data_distance.value, next_record_from_search_set, data_distance.distance);
 
-                            if (!moreLinksAvailableFromCurrentRecordFromSmallerSet()) getNextRecordFromSmallerSet();
+                            if (!moreResultsAvailiable())
+                                getNextRecordFromSearchSet();
 
                         } else {
                             next_pair = null;
                         }
                     }
-                    while (moreLinksAvailable() && pairShouldBeSkipped());
+                    while (moreLinksToConsider() && pairShouldBeSkipped());
                 }
 
-                private boolean moreLinksAvailable() {
+                private boolean moreLinksToConsider() {
 
-                    return smaller_set_iterator.hasNext() || moreLinksAvailableFromCurrentRecordFromSmallerSet();
+                    return search_set_iterator.hasNext() || moreResultsAvailiable();
                 }
 
-                private boolean moreLinksAvailableFromCurrentRecordFromSmallerSet() {
+                private boolean moreResultsAvailiable() {
 
-                    return neighbours_index < nearest_records.size();
+                    return result_index < result_records.size();
                 }
 
                 private boolean pairShouldBeSkipped() {
@@ -137,22 +130,17 @@ public class SimilaritySearchLinker extends Linker {
                     return next_pair == null || (datasets_same && next_pair.record1.getId() == next_pair.record2.getId());
                 }
 
-                private void getNextRecordFromSmallerSet() {
+                private void getNextRecordFromSearchSet() {
 
-                    if (smaller_set_iterator.hasNext()) {
+                    if (search_set_iterator.hasNext()) {
 
                         progress_indicator.progressStep();
-                        next_record_from_smaller_set = smaller_set_iterator.next();
-                        neighbours_index = 0;
+                        loadNextSearchResults();
 
-                        getNextRecordBatch();
                     }
                 }
 
-                private void getNextRecordBatch() {
 
-                    nearest_records = search_structure.findWithinThreshold(next_record_from_smaller_set, threshold);
-                }
             }
 
             @Override

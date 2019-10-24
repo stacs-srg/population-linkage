@@ -133,7 +133,7 @@ public class CompositeLinkageRecipe {
         linkageRunner.setBaseMetric(baseMetric);
 
         Linker linker = linkageRunner.getLinker(match_threshold, linkageRecipe);
-        linker.addRecords(linkageRecipe.getPreFilteredSourceRecords1(), linkageRecipe.getPreFilteredSourceRecords2());
+        linker.addRecords(linkageRecipe.getPreFilteredStoredRecords(), linkageRecipe.getPreFilteredSearchRecords());
 
         Map<String, Collection<Link>> linksByRecord1ID = new HashMap<>();
 

@@ -35,11 +35,11 @@ public class GroomBirthIdentityLinkageRunner extends LinkageRunner {
     public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
         Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
         return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
-                linkageType, "threshold match at " + match_threshold, Marriage.ROLE_GROOM, Birth.ROLE_BABY, LinkagePostFilter::isViableGroomBirthIdentityLink);
+                linkageType, "threshold match at " + match_threshold, Marriage.ROLE_GROOM, Birth.ROLE_BABY, LinkagePostFilter::isViableGroomBirthIdentityLink, linkageRecipe);
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields1());
+        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields());
     }
 
     protected SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {
@@ -57,7 +57,7 @@ public class GroomBirthIdentityLinkageRunner extends LinkageRunner {
                 .run("GroomBirthIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, true, true, 0);
+                        true, false, true, 0);
 
     }
 }

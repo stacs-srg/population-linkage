@@ -32,32 +32,32 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "marriages";
+    public Class getStoredType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "births";
+    public Class getSearchType() {
+        return Birth.class;
     }
 
     @Override
-    public String getRole1() {
+    public String getStoredRole() {
         return Marriage.ROLE_BRIDE;
     }
 
     @Override
-    public String getRole2() {
+    public String getSearchRole() {
         return Birth.ROLE_BABY;
     }
 
     @Override
-    public List<Integer> getLinkageFields1() {
+    public List<Integer> getLinkageFields() {
         return Constants.BRIDE_IDENTITY_LIKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() { return Constants.BABY_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getSearchMappingFields() { return Constants.BABY_IDENTITY_LINKAGE_FIELDS; }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

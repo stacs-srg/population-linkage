@@ -34,28 +34,28 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSourceType1() {
-        return "marriages";
+    public Class getStoredType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getSourceType2() {
-        return "marriages";
+    public Class getSearchType() {
+        return Marriage.class;
     }
 
     @Override
-    public String getRole1() { return Marriage.ROLE_BRIDE; }
+    public String getStoredRole() { return Marriage.ROLE_BRIDE; }
 
     @Override
-    public String getRole2() { return Marriage.ROLE_GROOM; }
+    public String getSearchRole() { return Marriage.ROLE_GROOM; }
 
     @Override
-    public List<Integer> getLinkageFields1() {
+    public List<Integer> getLinkageFields() {
         return Constants.SIBLING_BUNDLING_BRIDE_MARRIAGE_LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getLinkageFields2() {
+    public List<Integer> getSearchMappingFields() {
         return Constants.SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS;
     }
 

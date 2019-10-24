@@ -171,7 +171,7 @@ public class IntrinsicDimensionalityCalculator {
     public static void main(String[] args) throws Exception {
 
         List<Integer> fields = Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
-        String fieldDescriptors = Constants.stringRepresentationOf(Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, "BIRTH", Birth.getLabels());
+        String fieldDescriptors = Constants.stringRepresentationOf(Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, Birth.class, Birth.getLabels());
 
 
         new IntrinsicDimensionalityCalculator(
@@ -206,7 +206,7 @@ public class IntrinsicDimensionalityCalculator {
                         new IntrinsicDimensionalityCalculator(populationName, populationSize,
                                 populationNumber, !corruptionNumber.equals("0"), corruptionNumber,
                                 idCalcsFile, recordCount).calculate("JENSEN_SHANNON", 100000,
-                                                Constants.stringRepresentationOf(Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, "BIRTH", Birth.getLabels()),
+                                                Constants.stringRepresentationOf(Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, Birth.class, Birth.getLabels()),
                                                 Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS);
                     }
 

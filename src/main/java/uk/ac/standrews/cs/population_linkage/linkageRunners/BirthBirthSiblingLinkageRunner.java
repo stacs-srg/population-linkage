@@ -27,7 +27,7 @@ public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
     public Linker getLinker(double match_threshold, LinkageRecipe linkageRecipe) {
         Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
         return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
-                linkageType, "threshold match at " + match_threshold, Birth.ROLE_BABY, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink);
+                linkageType, "threshold match at " + match_threshold, Birth.ROLE_BABY, Birth.ROLE_BABY, LinkagePostFilter::isViableBBSiblingLink, linkageRecipe);
     }
 
     public LinkageRecipe getLinkageRecipe(final String links_persistent_name,
@@ -38,7 +38,7 @@ public class BirthBirthSiblingLinkageRunner extends LinkageRunner {
     }
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields1());
+        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields());
     }
 
     public  SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric) {

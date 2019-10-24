@@ -175,34 +175,34 @@ public class LinkageJobQueueHandler {
 
         LinkageRecipe linkageRecipe = lr.getLinkageRecipe(null, null, null, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
 
-        String record;
+        Class record;
         List<Integer> fields;
 
         if(n == 1) {
-            record = linkageRecipe.getSourceType1();
-            fields = linkageRecipe.getLinkageFields1();
+            record = linkageRecipe.getStoredType();
+            fields = linkageRecipe.getLinkageFields();
         } else {
-            record = linkageRecipe.getSourceType2();
-            fields = linkageRecipe.getLinkageFields2();
+            record = linkageRecipe.getSearchType();
+            fields = linkageRecipe.getSearchMappingFields();
         }
 
         List<String> recordLabels = getRecordLabels(record);
 
-        return Constants.stringRepresentationOf(fields, record.toUpperCase(), recordLabels);
+        return Constants.stringRepresentationOf(fields, record, recordLabels);
     }
 
-    private static List<String> getRecordLabels(String record) {
+    private static List<String> getRecordLabels(Class record) {
 
-        switch (record.toLowerCase()) {
-            case "birth":
-            case "births":
-                return Birth.getLabels();
-            case "death":
-            case "deaths":
-                return Death.getLabels();
-            case "marriage":
-            case "marriages":
-                return Marriage.getLabels();
+        if(record.equals(Birth.class)) {
+            return Birth.getLabels();
+        }
+
+        if(record.equals(Marriage.class)) {
+            return Marriage.getLabels();
+        }
+
+        if(record.equals(Death.class)) {
+            return Death.getLabels();
         }
 
         throw new RuntimeException("Record type not resolved:" + record);
