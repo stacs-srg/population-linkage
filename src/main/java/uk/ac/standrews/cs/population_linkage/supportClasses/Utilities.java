@@ -109,4 +109,15 @@ public class Utilities {
 
         throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());
     }
+
+    public static List<String> getLabels(LXP record) {
+        if(record instanceof Birth)
+            return Birth.getLabels();
+        if(record instanceof Marriage)
+            return Marriage.getLabels();
+        if(record instanceof Death)
+            return Death.getLabels();
+
+        throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());
+    }
 }

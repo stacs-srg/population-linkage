@@ -4,6 +4,8 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.time.LocalDate;
+
 public class LinkagePostFilter {
 
     private static Integer SIBLINGS_MAX_AGE_DIFF = null;
@@ -53,12 +55,27 @@ public class LinkagePostFilter {
     public static boolean isViableGroomBirthIdentityLink(RecordPair pair) {
 
         try {
+            int dom = Integer.parseInt(pair.record1.getString(Marriage.MARRIAGE_DAY));
+            int mom = Integer.parseInt(pair.record1.getString(Marriage.MARRIAGE_MONTH));
             int yom = Integer.parseInt(pair.record1.getString(Marriage.MARRIAGE_YEAR));
+
+            int dob = Integer.parseInt(pair.record2.getString(Birth.BIRTH_DAY));
+            int mob = Integer.parseInt(pair.record2.getString(Birth.BIRTH_MONTH));
             int yob = Integer.parseInt(pair.record2.getString(Birth.BIRTH_YEAR));
 
-            return yob + MIN_AGE_AT_MARRIAGE <= yom; // is person at least 15 on marriage date
+            boolean personAgedOver15AtMarriage = yob + MIN_AGE_AT_MARRIAGE <= yom;
 
-        } catch(NumberFormatException e) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR is invalid
+            LocalDate birthDate = LocalDate.of(yob, mob, dob);
+            LocalDate marriageDate = LocalDate.of(yom, mom, dom);
+
+            int groomsExpectedAge = birthDate.until(marriageDate).getYears();
+            int groomAge = Integer.parseInt(pair.record1.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH));
+
+            boolean groomOfExpectedAge = Math.abs(groomAge - groomsExpectedAge) < 10;
+
+            return personAgedOver15AtMarriage && groomOfExpectedAge; // is person at least 15 on marriage date
+
+        } catch(NumberFormatException e) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR or GROOM_AGE_OR_DATE_OF_BIRTH is invalid
             return true;
         }
     }

@@ -51,13 +51,13 @@ public class GroomBirthIdentityLinkageRunner extends LinkageRunner {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        double match_threshold = 0.67;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
+        double match_threshold = 0.05;                          // from R metric power table [FRobustness2] - original 2.03 remapped to 0.67 by normalisation.
 
         new GroomBirthIdentityLinkageRunner()
                 .run("GroomBirthIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, false, true, 0);
+                        true, false, true, 5);
 
     }
 }

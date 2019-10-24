@@ -168,23 +168,28 @@ public abstract class LinkageRecipe {
      */
     private Map<String, Link> getGroundTruthLinksOn(int record1LinkageID, int record2LinkageID, Iterable<LXP> sourceRecords1, Iterable<LXP> sourceRecords2) {
         final Map<String, Link> links = new HashMap<>();
-        Map<String, LXP> records1 = new HashMap<>();
+        Map<String, Collection<LXP>> records1 = new HashMap<>();
 
-        sourceRecords1.forEach(record1 -> records1.put(record1.getString(record1LinkageID), record1));
+        sourceRecords1.forEach(record1 -> {
+            records1.putIfAbsent(record1.getString(record1LinkageID), new ArrayList<>());
+            records1.get(record1.getString(record1LinkageID)).add(record1);
+        });
 
         for (LXP record2 : sourceRecords2) {
-            records1.computeIfPresent(record2.getString(record2LinkageID), (k, record1) -> {
+            records1.computeIfPresent(record2.getString(record2LinkageID), (k, recordSet1) -> {
                 try {
-                    Link l = new Link(record1, getStoredRole(), record2, getSearchRole(), 1.0f, "ground truth");
-                    String linkKey = toKey(record1, record2);
+                    for(LXP record1 : recordSet1) {
+                        Link l = new Link(record1, getStoredRole(), record2, getSearchRole(), 1.0f, "ground truth");
+                        String linkKey = toKey(record1, record2);
 
-                    if(linkKey != null) // link key will be null if recipe is symmetric and record IDs are identical - shouldn't happen if this method is called
-                        links.put(linkKey, l);
+                        if (linkKey != null) // link key will be null if recipe is symmetric and record IDs are identical - shouldn't happen if this method is called
+                            links.put(linkKey, l);
+                    }
 
                 } catch (PersistentObjectException e) {
                     ErrorHandling.error("PersistentObjectException adding getGroundTruthLinksOn");
                 }
-                return record1;
+                return null;
             });
         }
         return links;
@@ -206,14 +211,17 @@ public abstract class LinkageRecipe {
      */
     private int getNumberOfGroundTruthTrueLinksOn(int record1LinkageID, int record2LinkageID, Iterable<LXP> sourceRecords1, Iterable<LXP> sourceRecords2) {
 
-        Map<String, LXP> records1 = new HashMap<>();
-        sourceRecords1.forEach(record1 -> records1.put(record1.getString(record1LinkageID), record1));
+        Map<String, Collection<LXP>> records1 = new HashMap<>();
+        sourceRecords1.forEach(record1 -> {
+            records1.putIfAbsent(record1.getString(record1LinkageID), new ArrayList<>());
+            records1.get(record1.getString(record1LinkageID)).add(record1);
+        });
 
         int c = 0;
 
         for (LXP record2 : sourceRecords2)
             if(records1.containsKey(record2.getString(record2LinkageID)))
-                c++;
+                c += records1.get(record2.getString(record2LinkageID)).size();
 
         return c;
     }

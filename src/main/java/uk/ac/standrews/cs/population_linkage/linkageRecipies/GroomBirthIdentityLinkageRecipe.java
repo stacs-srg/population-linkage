@@ -79,10 +79,9 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredSearchRecords() {
-        return
-//                filterBySex(
-                super.getPreFilteredSearchRecords()
-//        ,Birth.SEX, "m")
+        return filterBySex(
+                super.getPreFilteredSearchRecords(),
+                Birth.SEX, "m")
         ;
     }
 }

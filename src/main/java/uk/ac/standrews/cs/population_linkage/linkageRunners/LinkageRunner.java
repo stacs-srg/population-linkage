@@ -9,9 +9,11 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.helpers.GroundTruthLinkCounter;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.StaticLXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -129,6 +131,7 @@ public abstract class LinkageRunner {
                     if (doesGTSayIsTrue(linkage_says_true_link)) {
                         tp++;
                     } else {
+                        printLink(linkage_says_true_link);
                         fp++;
                     }
                 }
@@ -203,6 +206,33 @@ public abstract class LinkageRunner {
                     "B2F: " + person2.getString(Birth.FATHER_FORENAME) + " " + person2.getString(Birth.FATHER_SURNAME) + " " + person2.getString(Birth.FAMILY));
 
         } catch (Exception e) {}
+    }
+
+    private void printLink(Link link) {
+
+        try {
+            LXP person1 = link.getRecord1().getReferend();
+            LXP person2 = link.getRecord2().getReferend();
+
+            System.out.println("---------------------------------------------------------------------------------------------------------------");
+
+            for(int i = 0 ; i < linkageRecipe.getLinkageFields().size(); i++) {
+                String r1FieldName = Utilities.getLabels(person1).get(linkageRecipe.getLinkageFields().get(i));
+                String r2FieldName = Utilities.getLabels(person2).get(linkageRecipe.getSearchMappingFields().get(i));
+
+                String r1FieldContent = person1.getString(linkageRecipe.getLinkageFields().get(i));
+                String r2FieldContent = person2.getString(linkageRecipe.getSearchMappingFields().get(i));
+
+                String isEquals = "≠";
+                if(r1FieldContent.equals(r2FieldContent)) isEquals = "=";
+
+                System.out.printf("%30s | %20s |%s| %-20s | %-30s \n", r1FieldName, r1FieldContent, isEquals, r2FieldContent, r2FieldName);
+            }
+
+            System.out.println("---------------------------------------------------------------------------------------------------------------");
+
+        } catch (Exception ignored) { }
+
     }
 
 
