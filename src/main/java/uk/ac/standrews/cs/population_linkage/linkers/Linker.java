@@ -68,14 +68,30 @@ public abstract class Linker {
                     @Override
                     public boolean hasNext() {
 
-                        return matching_pairs.hasNext();
+                        if(next == null) {
+                            try {
+                                getNextLink();
+                            } catch (NoSuchElementException e) {
+                                return false;
+                            }
+                        }
+
+                        return true;
+
+//                        return matching_pairs.hasNext();
                     }
 
                     @Override
                     public Link next() {
 
-                        getNextLink();
-                        return next;
+                        if(next == null) {
+                            getNextLink();
+                        }
+
+                        Link toReturn = next;
+                        next = null;
+
+                        return toReturn;
                     }
                 };
             }
@@ -87,8 +103,7 @@ public abstract class Linker {
                     RecordPair pair;
                     do {
                         pair = matching_pairs.next();
-                    }
-                    while ((pair.distance > threshold || !isViableLink.apply(pair)) && matching_pairs.hasNext());
+                    } while ((pair.distance > threshold || !isViableLink.apply(pair)) && matching_pairs.hasNext());
 
                     if (pair.distance <= threshold && isViableLink.apply(pair)) {
 

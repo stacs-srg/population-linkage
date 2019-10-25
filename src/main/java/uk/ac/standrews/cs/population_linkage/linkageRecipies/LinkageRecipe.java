@@ -493,7 +493,7 @@ public abstract class LinkageRecipe {
 
         for(LXP record: records) {
 
-            int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
+            int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields + 1;
 
             for(int attribute : filterOn) {
                 String value = record.getString(attribute).toLowerCase().trim();

@@ -29,7 +29,7 @@ public class CompositeLinkageRecipe {
         String results_repository_name = "";
 
         String source_repository_name = "synthetic-scotland_13k_1_clean";
-        double match_threshold = 0.8;
+        double match_threshold = 0.75;
 
         LinkageConfig.birthCacheSize = 15000;
         LinkageConfig.marriageCacheSize = 15000;
@@ -46,7 +46,7 @@ public class CompositeLinkageRecipe {
 
         Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks);
         Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, brideBirthLinks);
-        deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no classes on combining maps (remember the prefilter checks for sex in the used linkers)
+        deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)
 
         LinkageQuality lq = selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(links_persistent_name, source_repository_name, results_repository_name, recordRepository), true);
 
@@ -111,9 +111,11 @@ public class CompositeLinkageRecipe {
             for(Link link1 : firstLinksByID) {
 
                 String record2ID = Utilities.originalId(link1.getRecord2().getReferend());
-                for(Link link2 : secondLinks.get(record2ID)) {
-                    doubleLinksByFirstRecordID.computeIfAbsent(record1ID, o ->
-                            new ArrayList<>()).add(new DoubleLink(link1, link2, "death-birth-via-groom-id"));
+                if(secondLinks.get(record2ID) != null) {
+                    for (Link link2 : secondLinks.get(record2ID)) {
+                        doubleLinksByFirstRecordID.computeIfAbsent(record1ID, o ->
+                                new ArrayList<>()).add(new DoubleLink(link1, link2, "death-birth-via-groom-id"));
+                    }
                 }
             }
         }
