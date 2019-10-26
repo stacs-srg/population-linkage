@@ -109,7 +109,7 @@ public abstract class Linker {
 
                         try {
                             next = new Link(pair.record1, getRole_type_1(), pair.record2, getRole_type_2(), 1.0f,
-                                    getLink_type(), getProvenance() + ", distance: " + pair.distance);
+                                    getLink_type(), pair.distance, getProvenance() + ", distance: " + pair.distance);
                         } catch (PersistentObjectException e) {
                             throw new RuntimeException(e);
                         }

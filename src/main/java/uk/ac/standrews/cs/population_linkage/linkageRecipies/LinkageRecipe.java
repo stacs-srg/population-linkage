@@ -179,7 +179,7 @@ public abstract class LinkageRecipe {
             records1.computeIfPresent(record2.getString(record2LinkageID), (k, recordSet1) -> {
                 try {
                     for(LXP record1 : recordSet1) {
-                        Link l = new Link(record1, getStoredRole(), record2, getSearchRole(), 1.0f, "ground truth");
+                        Link l = new Link(record1, getStoredRole(), record2, getSearchRole(), 1.0f, "ground truth", -1);
                         String linkKey = toKey(record1, record2);
 
                         if (linkKey != null) // link key will be null if recipe is symmetric and record IDs are identical - shouldn't happen if this method is called
@@ -266,7 +266,7 @@ public abstract class LinkageRecipe {
                 for(LXP b : grouping)
                     if(!Utilities.originalId(a).equals(Utilities.originalId(b))) {
                         try {
-                            links.put(toKey(a,b), new Link(a, getStoredRole(), b, getSearchRole(), 1.0f, "ground truth")); // role 1 and role 2 should be the same
+                            links.put(toKey(a,b), new Link(a, getStoredRole(), b, getSearchRole(), 1.0f, "ground truth", -1)); // role 1 and role 2 should be the same
                         } catch (PersistentObjectException e) {
                             ErrorHandling.error("PersistentObjectException adding getGroundTruthLinksOnSymmetric");
                         }
@@ -344,7 +344,7 @@ public abstract class LinkageRecipe {
                 for(LXP a : records1GroupedByFamilyID.get(famID))
                     for(LXP b : records2GroupedByFamilyID.get(famID)) {
                         try {
-                            links.put(toKey(a,b), new Link(a, getStoredRole(), b, getSearchRole(), 1.0f, "ground truth"));
+                            links.put(toKey(a,b), new Link(a, getStoredRole(), b, getSearchRole(), 1.0f, "ground truth", -1));
                         } catch (PersistentObjectException e) {
                             ErrorHandling.error("PersistentObjectException adding getGroundTruthLinksOnSymmetric");
                         }

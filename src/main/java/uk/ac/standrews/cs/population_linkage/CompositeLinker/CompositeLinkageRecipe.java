@@ -4,7 +4,6 @@ import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkageRecipies.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
-import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -28,9 +27,25 @@ public class CompositeLinkageRecipe {
         String links_persistent_name = "";
         String results_repository_name = "";
 
-        String source_repository_name = "synthetic-scotland_13k_1_clean";
-        double match_threshold = 0.75;
+        String source_repository_name = "synthetic-scotland_13k_1_corrupted_A";
+        double match_threshold = 0.6;
 
+        runIndirectDeathBirthLinkage(metric, links_persistent_name, results_repository_name, source_repository_name, match_threshold);
+
+//        TreeMap<Double, LinkageQuality> thresholdResults = new BirthDeathIdentityLinkageRunner().evaluateThresholds(source_repository_name, metric, true, 5, 0.0, 0.1, 1.0);
+
+//        print(thresholdResults);
+
+    }
+
+    private static void print(TreeMap<Double, LinkageQuality> thresholdResults) {
+
+        for(Map.Entry<Double, LinkageQuality> thresholdResult : thresholdResults.entrySet()) {
+            System.out.println(thresholdResult.getKey() + "," + thresholdResult.getValue().toCSV());
+        }
+    }
+
+    private static LinkageQuality runIndirectDeathBirthLinkage(StringMetric metric, String links_persistent_name, String results_repository_name, String source_repository_name, double match_threshold) throws BucketException, PersistentObjectException {
         LinkageConfig.birthCacheSize = 15000;
         LinkageConfig.marriageCacheSize = 15000;
         LinkageConfig.deathCacheSize = 15000;
@@ -38,18 +53,17 @@ public class CompositeLinkageRecipe {
 
         RecordRepository recordRepository = new RecordRepository(ApplicationProperties.getStorePath(), source_repository_name);
 
-        Map<String, Collection<Link>> deathGroomLinks = getLinks(new DeathGroomOwnMarriageIdentityLinkageRunner(), links_persistent_name, source_repository_name, results_repository_name, match_threshold, metric, recordRepository, 5);
-        Map<String, Collection<Link>> groomBirthLinks = getLinks(new GroomBirthIdentityLinkageRunner(), links_persistent_name, source_repository_name, results_repository_name, match_threshold, metric, recordRepository, Integer.MAX_VALUE);
+        Map<String, Collection<Link>> deathGroomLinks = new DeathGroomOwnMarriageIdentityLinkageRunner().run(source_repository_name, 0.575, metric, true, 5, true, false).getMapOfLinks();
+        Map<String, Collection<Link>> groomBirthLinks = new GroomBirthIdentityLinkageRunner().run(source_repository_name, 0.4, metric, true, 3, true, false).getMapOfLinks();
 
-        Map<String, Collection<Link>> deathBrideLinks = getLinks(new DeathBrideOwnMarriageIdentityLinkageRunner(), links_persistent_name, source_repository_name, results_repository_name, match_threshold, metric, recordRepository, Integer.MAX_VALUE);
-        Map<String, Collection<Link>> brideBirthLinks = getLinks(new BrideBirthIdentityLinkageRunner(), links_persistent_name, source_repository_name, results_repository_name, match_threshold, metric, recordRepository, Integer.MAX_VALUE);
+        Map<String, Collection<Link>> deathBrideLinks = new DeathBrideOwnMarriageIdentityLinkageRunner().run(source_repository_name, 0.375, metric, true, 3, true, false).getMapOfLinks();
+        Map<String, Collection<Link>> brideBirthLinks = new BrideBirthIdentityLinkageRunner().run(source_repository_name, 0.4, metric, true, 5, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks);
         Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, brideBirthLinks);
         deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)
 
-        LinkageQuality lq = selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(links_persistent_name, source_repository_name, results_repository_name, recordRepository), true);
-
+        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(links_persistent_name, source_repository_name, results_repository_name, recordRepository), true);
     }
 
     private static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, PersistentObjectException {
@@ -92,7 +106,7 @@ public class CompositeLinkageRecipe {
             if(bestLink == null) {
                 bestLink = link.directLink();
             } else {
-                if(bestLink.getConfidence() < link.directLink().getConfidence())
+                if(bestLink.getDistance() > link.directLink().getDistance())
                     bestLink = link.directLink();
             }
         }
@@ -122,35 +136,5 @@ public class CompositeLinkageRecipe {
 
         return doubleLinksByFirstRecordID;
     }
-
-    public static Map<String, Collection<Link>> getLinks(LinkageRunner linkageRunner, final String links_persistent_name, final String source_repository_name,
-                                                          final String results_repository_name, double match_threshold, StringMetric baseMetric, RecordRepository recordRepository, int prefilterRequiredFields) throws BucketException {
-
-        LinkageRecipe linkageRecipe = linkageRunner.getLinkageRecipe(
-                links_persistent_name, source_repository_name, results_repository_name,
-                recordRepository);
-
-        linkageRecipe.setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
-
-        linkageRunner.setBaseMetric(baseMetric);
-
-        Linker linker = linkageRunner.getLinker(match_threshold, linkageRecipe);
-        linker.addRecords(linkageRecipe.getPreFilteredStoredRecords(), linkageRecipe.getPreFilteredSearchRecords());
-
-        Map<String, Collection<Link>> linksByRecord1ID = new HashMap<>();
-
-        for(Link link : linker.getLinks()) {
-            String origonalID = Utilities.originalId(link.getRecord1().getReferend());
-            linksByRecord1ID.computeIfAbsent(origonalID, k -> new LinkedList<>());
-            linksByRecord1ID.get(origonalID).add(link);
-
-//            linksByRecord1ID.computeIfAbsent(Utilities.originalId(link.getRecord1().getReferend()),
-//                    o -> new HashSet<>()).add(link);
-        }
-
-        return linksByRecord1ID;
-    }
-
-
 
 }

@@ -70,7 +70,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
                 if( birth_key_from_marriage.equals( marriage_key_from_marriage ) ) {
                     try {
-                        Link l = new Link(marriage_record, Marriage.ROLE_BRIDES_MOTHER, birth_record, Birth.ROLE_MOTHER, 1.0f, "ground truth");
+                        Link l = new Link(marriage_record, Marriage.ROLE_BRIDES_MOTHER, birth_record, Birth.ROLE_MOTHER, 1.0f, "ground truth", -1);
                         // Link l = new Link(marriage_record, Marriage.ROLE_PARENTS, birth_record, Birth.ROLE_PARENTS, 1.0f, "ground truth");
                         links.put(l.toString(), l);
                     } catch (PersistentObjectException e) {

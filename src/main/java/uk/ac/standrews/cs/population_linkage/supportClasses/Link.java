@@ -30,6 +30,8 @@ public class Link extends JPO {
     private String link_type;
     @JPO_FIELD
     private List<String> provenance;
+    @JPO_FIELD
+    private double distance;
 
     public Link() {}
 
@@ -38,7 +40,7 @@ public class Link extends JPO {
         readJSON(reader, true);
     }
 
-    public Link(LXP record1, String role1, LXP record2, String role2, float confidence, String link_type, String... provenance) throws PersistentObjectException {
+    public Link(LXP record1, String role1, LXP record2, String role2, float confidence, String link_type, double distance, String... provenance) throws PersistentObjectException {
 
         this.record1 = (LXPReference) record1.getThisRef();
         this.role1 = role1;
@@ -47,6 +49,7 @@ public class Link extends JPO {
         this.confidence = confidence;
         this.link_type = link_type;
         this.provenance = Arrays.asList(provenance);
+        this.distance = distance;
     }
 
     public IStoreReference<LXP> getRecord1() {
@@ -74,6 +77,10 @@ public class Link extends JPO {
     public String getLinkType() { return link_type; }
 
     public List<String> getProvenance() { return provenance; }
+
+    public double getDistance() { return distance; }
+
+    public void setDistance(double distance) { this.distance = distance; }
 
     @Override
     public boolean equals(Object o) {

@@ -18,7 +18,7 @@ public class DoubleLink {
 
     public Link directLink() throws BucketException, PersistentObjectException {
             return new Link(a.getRecord1().getReferend(), a.getRole1(), b.getRecord2().getReferend(), b.getRole2(),
-                    (float) (a.getConfidence() * b.getConfidence()), linkType,
+                    (float) (a.getConfidence() * b.getConfidence()), linkType, a.getDistance() * b.getDistance(),
                     a.getProvenance().toString() + " | " + b.getProvenance().toString());
     }
 

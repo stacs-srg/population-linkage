@@ -53,4 +53,16 @@ public class LinkageQuality {
             return message + ",,,,";
         }
     }
+
+    public double getPrecision() {
+        return precision;
+    }
+
+    public double getRecall() {
+        return recall;
+    }
+
+    public double getF_measure() {
+        return f_measure;
+    }
 }

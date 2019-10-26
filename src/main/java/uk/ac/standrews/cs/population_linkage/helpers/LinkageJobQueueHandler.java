@@ -151,7 +151,7 @@ public class LinkageJobQueueHandler {
 
                 linkageApproach = lr.getLinkageType();
                 lq = lr.run(links_persistent_name, sourceRepo, resultsRepo, threshold,
-                        chosenMetric, preFilter, persist_links, evaluate_quality, 0);
+                        chosenMetric, preFilter, persist_links, evaluate_quality, 0, false, false).getLinkageQuality();
                 fieldsUsed1 = getLinkageFields(1, lr, sourceRepo);
                 fieldsUsed2 = getLinkageFields(2, lr, sourceRepo);
 

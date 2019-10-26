@@ -13,6 +13,7 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
@@ -46,7 +47,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRunner extends LinkageRunner {
         return new BitBlasterSearchStructureFactory<>(composite_metric, LinkageConfig.numberOfROs);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
@@ -59,7 +60,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRunner extends LinkageRunner {
                 .run("DeathGroomOwnMarriageIdentityLinks",
                         sourceRepo, resultsRepo,
                         match_threshold, new JensenShannon(2048),
-                        true, false, true, 5);
+                        true, false, true, 5, false, false);
 
     }
 }
