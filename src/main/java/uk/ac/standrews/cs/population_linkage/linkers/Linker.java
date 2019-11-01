@@ -15,33 +15,29 @@ import java.util.function.Function;
 
 public abstract class Linker {
 
-    private final Function<RecordPair, Boolean> isViableLink;
-    protected double threshold;
     protected final Metric<LXP> distance_metric;
+    protected final ProgressIndicator linkage_progress_indicator;
+    private final Function<RecordPair, Boolean> is_viable_link;
+    protected double threshold;
     private Iterable<LXP> records1;
     private Iterable<LXP> records2;
-
     private String link_type;
     private String provenance;
     private String role_type_1;
     private String role_type_2;
 
-
-    protected final ProgressIndicator linkage_progress_indicator;
-
     public Linker(Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
-                  String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink) {
+                  String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> is_viable_link) {
 
         this.link_type = link_type;
         this.provenance = provenance;
         this.role_type_1 = role_type_1;
         this.role_type_2 = role_type_2;
-        this.isViableLink = isViableLink;
+        this.is_viable_link = is_viable_link;
 
         this.distance_metric = distance_metric;
         this.threshold = threshold;
         linkage_progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
-
     }
 
     public void addRecords(Iterable<LXP> records1, Iterable<LXP> records2) {
@@ -50,7 +46,8 @@ public abstract class Linker {
         this.records2 = records2;
     }
 
-    public void terminate() {}
+    public void terminate() {
+    }
 
     public Iterable<Link> getLinks() {
 
@@ -68,7 +65,7 @@ public abstract class Linker {
                     @Override
                     public boolean hasNext() {
 
-                        if(next == null) {
+                        if (next == null) {
                             try {
                                 getNextLink();
                             } catch (NoSuchElementException e) {
@@ -77,21 +74,19 @@ public abstract class Linker {
                         }
 
                         return true;
-
-//                        return matching_pairs.hasNext();
                     }
 
                     @Override
                     public Link next() {
 
-                        if(next == null) {
+                        if (next == null) {
                             getNextLink();
                         }
 
-                        Link toReturn = next;
+                        Link next_link = next;
                         next = null;
 
-                        return toReturn;
+                        return next_link;
                     }
                 };
             }
@@ -103,20 +98,18 @@ public abstract class Linker {
                     RecordPair pair;
                     do {
                         pair = matching_pairs.next();
-                    } while ((pair.distance > threshold || !isViableLink.apply(pair)) && matching_pairs.hasNext());
+                    } while ((pair.distance > threshold || !is_viable_link.apply(pair)) && matching_pairs.hasNext());
 
-                    if (pair.distance <= threshold && isViableLink.apply(pair)) {
+                    if (pair.distance <= threshold && is_viable_link.apply(pair)) {
 
                         try {
-                            next = new Link(pair.record1, getRole_type_1(), pair.record2, getRole_type_2(), 1.0f,
-                                    getLink_type(), pair.distance, getProvenance() + ", distance: " + pair.distance);
+                            next = new Link(pair.record1, getRoleType1(), pair.record2, getRoleType2(), 1.0f,
+                                    getLinkType(), pair.distance, getProvenance() + ", distance: " + pair.distance);
                         } catch (PersistentObjectException e) {
                             throw new RuntimeException(e);
                         }
-                    }
-                    else throw new NoSuchElementException();
-                }
-                else throw new NoSuchElementException();
+                    } else throw new NoSuchElementException();
+                } else throw new NoSuchElementException();
             }
         };
     }
@@ -132,7 +125,7 @@ public abstract class Linker {
 
     protected abstract Iterable<RecordPair> getMatchingRecordPairs(final Iterable<LXP> records1, final Iterable<LXP> records2);
 
-    public String getLink_type() {
+    public String getLinkType() {
         return link_type;
     }
 
@@ -140,11 +133,11 @@ public abstract class Linker {
         return provenance;
     }
 
-    public String getRole_type_1() {
+    public String getRoleType1() {
         return role_type_1;
     }
 
-    public String getRole_type_2() {
+    public String getRoleType2() {
         return role_type_2;
     }
 

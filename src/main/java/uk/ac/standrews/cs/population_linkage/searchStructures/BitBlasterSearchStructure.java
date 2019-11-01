@@ -11,7 +11,6 @@ import java.util.Random;
 
 public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
-    // TOM - was 20
     private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 70;
     private static long SEED = 34258723425L;
     private ParallelBitBlaster2<T> bit_blaster;
@@ -20,67 +19,31 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         this(distance_metric, data, DEFAULT_NUMBER_OF_REFERENCE_POINTS);
     }
 
-    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data, int numberOfReferenceObjects) {
+    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data, int number_of_reference_objects) {
+
         List<T> copy_of_data = copyData(data);
 
-        boolean initiliased = false;
-        int tries = 0;
-
         int maxTries = 5;
+        Exception cause = null;
 
-        while(!initiliased && tries < maxTries) {
+        for (int tries = 0; tries < maxTries; tries++) {
             try {
-                init(distance_metric, chooseRandomReferencePoints(copy_of_data, numberOfReferenceObjects), copy_of_data);
-                initiliased = true;
+                init(distance_metric, chooseRandomReferencePoints(copy_of_data, number_of_reference_objects), copy_of_data);
+                return;
+
             } catch (Exception e) {
-                tries++;
+                cause = e;
                 SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
-                System.out.println("Initilisation exception - trying again with different reference points - new seed: " + SEED);
             }
         }
 
-        if(tries == maxTries)
-            throw new RuntimeException("Failed to init - Try reducing number of reference objects");
-
+        throw new RuntimeException("Failed to initialise BitBlaster - try reducing number of reference objects: " + cause.getMessage());
     }
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, List<T> reference_points, Iterable<T> data) {
 
-        boolean initiliased = false;
-        int tries = 0;
-
-        while(!initiliased && tries < 4) {
-            try {
-                init(distance_metric, reference_points, copyData(data));
-                initiliased = true;
-            } catch (Exception e) {
-                System.out.println("Initilisation exception - trying again with diferent reference points");
-                tries++;
-                SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
-            }
-        }
-
-    }
-
-    public void terminate() {
-        bit_blaster.terminate();
-    }
-
-    private void init(final Metric<T> distance_metric, final List<T> reference_points, final List<T> data) throws Exception {
-
-        boolean fourPoint = distance_metric.getMetricName().equals(JensenShannon.metricName);
-
-        bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2,
-                Runtime.getRuntime().availableProcessors(), fourPoint, true);
-
-
-    }
-
-    @Override
-    public List<DataDistance<T>> findWithinThreshold(final T record, final double threshold) {
-
         try {
-            return bit_blaster.rangeSearch(record, threshold);
+            init(distance_metric, reference_points, copyData(data));
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -114,5 +77,28 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         }
 
         return reference_points;
+    }
+
+    public void terminate() {
+        bit_blaster.terminate();
+    }
+
+    private void init(final Metric<T> distance_metric, final List<T> reference_points, final List<T> data) throws Exception {
+
+        boolean fourPoint = distance_metric.getMetricName().equals(JensenShannon.metricName);
+
+        bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2,
+                Runtime.getRuntime().availableProcessors(), fourPoint, true);
+    }
+
+    @Override
+    public List<DataDistance<T>> findWithinThreshold(final T record, final double threshold) {
+
+        try {
+            return bit_blaster.rangeSearch(record, threshold);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

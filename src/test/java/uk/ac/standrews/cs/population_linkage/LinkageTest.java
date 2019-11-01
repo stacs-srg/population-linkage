@@ -1,8 +1,11 @@
-package uk.ac.standrews.cs.population_linkage.supportClasses;
+package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.LXPMetadata;
 import uk.ac.standrews.cs.storr.impl.LXPReference;

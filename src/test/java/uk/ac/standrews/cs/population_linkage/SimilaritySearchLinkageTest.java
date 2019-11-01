@@ -1,7 +1,8 @@
-package uk.ac.standrews.cs.population_linkage.supportClasses;
+package uk.ac.standrews.cs.population_linkage;
 
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -27,6 +28,5 @@ public abstract class SimilaritySearchLinkageTest extends LinkageTest {
             super(search_structure_factory, metric, 0.67, number_of_progress_updates, "link type", "provenance", "role1", "role2", (r)-> true, null);
             setThreshold(threshold);
         }
-
     }
 }

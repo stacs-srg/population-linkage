@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.supportClasses;
+package uk.ac.standrews.cs.population_linkage;
 
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.MTreeSearchStructure;

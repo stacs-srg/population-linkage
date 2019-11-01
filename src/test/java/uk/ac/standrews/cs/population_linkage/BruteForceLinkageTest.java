@@ -1,7 +1,8 @@
-package uk.ac.standrews.cs.population_linkage.supportClasses;
+package uk.ac.standrews.cs.population_linkage;
 
 import uk.ac.standrews.cs.population_linkage.linkers.BruteForceLinker;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
