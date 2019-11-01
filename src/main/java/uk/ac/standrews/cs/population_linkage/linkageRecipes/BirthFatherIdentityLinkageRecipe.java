@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.linkageRecipies;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -9,16 +9,16 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
 
-public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
+public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
-    public BirthMotherIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public BirthFatherIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
         final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY);
-        final String b2_father_id = record2.getString(Birth.MOTHER_IDENTITY);
+        final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY);
 
         if (b1_baby_id.isEmpty() || b2_father_id.isEmpty() ) {
             return LinkStatus.UNKNOWN;
@@ -31,7 +31,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between babies on birth records and mothers on birth records - same person in roles of baby and mother";
+        return "identity bundling between babies on birth records and fathers on birth records - same person in roles of baby and father";
     }
 
     @Override
@@ -51,7 +51,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getSearchRole() {
-        return Birth.ROLE_MOTHER;
+        return Birth.ROLE_FATHER;
     }
 
     @Override
@@ -60,27 +60,28 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Constants.BIRTH_MOTHER_MOTHER_LINKAGE_FIELDS; }
+    public List<Integer> getSearchMappingFields() { return Constants.BIRTH_FATHER_FATHER_LINKAGE_FIELDS; }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
+        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
     }
 
     @Override
     public Iterable<LXP> getPreFilteredStoredRecords() {
         return filterBySex(
                 super.getPreFilteredStoredRecords(),
-                Birth.SEX, "f");
+                Birth.SEX, "m");
     }
+
 }

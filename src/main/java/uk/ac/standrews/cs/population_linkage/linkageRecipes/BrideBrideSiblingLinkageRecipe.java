@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.linkageRecipies;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -9,19 +9,19 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
 
-public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
+public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
-    public BrideGroomSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public BrideBrideSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        final String m1_father_id = record1.getString(Marriage.BRIDE_FATHER_IDENTITY);
         final String m1_mother_id = record1.getString(Marriage.BRIDE_MOTHER_IDENTITY);
+        final String m2_mother_id = record2.getString(Marriage.BRIDE_MOTHER_IDENTITY);
 
-        final String m2_father_id = record2.getString(Marriage.GROOM_FATHER_IDENTITY);
-        final String m2_mother_id = record2.getString(Marriage.GROOM_MOTHER_IDENTITY);
+        final String m1_father_id = record1.getString(Marriage.BRIDE_FATHER_IDENTITY);
+        final String m2_father_id = record2.getString(Marriage.BRIDE_FATHER_IDENTITY);
 
         if (!m1_mother_id.isEmpty() && m1_mother_id.equals(m2_mother_id) && !m1_father_id.isEmpty() && m1_father_id.equals(m2_father_id)) return LinkStatus.TRUE_MATCH;
 
@@ -30,7 +30,7 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "sibling bundling between groom and bride on marriage records";
+        return "sibling bundling between brides on marriage records";
     }
 
     @Override
@@ -44,10 +44,14 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getStoredRole() { return Marriage.ROLE_BRIDE; }
+    public String getStoredRole() {
+        return Marriage.ROLE_BRIDE;
+    }
 
     @Override
-    public String getSearchRole() { return Marriage.ROLE_GROOM; }
+    public String getSearchRole() {
+        return Marriage.ROLE_BRIDE;
+    }
 
     @Override
     public List<Integer> getLinkageFields() {
@@ -56,27 +60,20 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getSearchMappingFields() {
-        return Constants.SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS;
+        return Constants.SIBLING_BUNDLING_BRIDE_MARRIAGE_LINKAGE_FIELDS;
     }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOnSiblingNonSymmetric(
-                Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY,
-                Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+        return getGroundTruthLinksOnSiblingSymmetric(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY);
     }
 
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(
-                Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY,
-                Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthLinksPostFilterOnSiblingNonSymmetric(
-                Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY,
-                Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY);
     }
-
 }

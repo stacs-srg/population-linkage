@@ -1,8 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.CompositeLinker;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.BirthDeathIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;

@@ -1,7 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.GroomBirthIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBirthIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructureFactory;

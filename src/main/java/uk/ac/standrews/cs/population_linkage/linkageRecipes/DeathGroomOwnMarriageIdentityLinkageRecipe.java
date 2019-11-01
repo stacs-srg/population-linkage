@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.linkageRecipies;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -11,22 +11,22 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
 
-public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
+public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public DeathBrideOwnMarriageIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public DeathGroomOwnMarriageIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
         super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
     }
 
     @Override
     public LinkStatus isTrueMatch(LXP death, LXP marriage) {
         String deceasedID = death.getString(Death.DECEASED_IDENTITY).trim();
-        String brideID = marriage.getString(Marriage.BRIDE_IDENTITY).trim();
+        String groomID = marriage.getString(Marriage.GROOM_IDENTITY).trim();
 
-        if(deceasedID.isEmpty() || brideID.isEmpty() ) {
+        if(deceasedID.isEmpty() || groomID.isEmpty()) {
             return LinkStatus.UNKNOWN;
         }
 
-        if (deceasedID.equals(brideID) ) {
+        if (deceasedID.equals(groomID) ) {
             return LinkStatus.TRUE_MATCH;
         } else {
             return LinkStatus.NOT_TRUE_MATCH;
@@ -35,7 +35,7 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between deaths and brides own marriage";
+        return "identity bundling between deaths and grooms own marriage";
     }
 
     @Override
@@ -54,34 +54,39 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSearchRole() { return Marriage.ROLE_BRIDE; }
+    public String getSearchRole() { return Marriage.ROLE_GROOM; }
 
     @Override
-    public List<Integer> getLinkageFields() { return Constants.DEATH_IDENTITY_LINKAGE_FIELDS; }
-
-    @Override
-    public List<Integer> getSearchMappingFields() { return Constants.BRIDE_IDENTITY_LINKAGE_FIELDS; }
-
-    @Override
-    public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY);
+    public List<Integer> getLinkageFields() {
+//        return Constants.DEATH_IDENTITY_LINKAGE_FIELDS;
+        return Constants.DEATH_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
     }
 
     @Override
+    public List<Integer> getSearchMappingFields() {
+//        return Constants.GROOM_IDENTITY_LINKAGE_FIELDS;
+        return Constants.GROOM_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
+    }
+
+    @Override
+    public Map<String, Link> getGroundTruthLinks() {
+        return getGroundTruthLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
+    }
+
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public Iterable<LXP> getPreFilteredStoredRecords() {
         return filterBySex(
                 super.getPreFilteredStoredRecords(),
-                Birth.SEX, "f");
+                Birth.SEX, "m");
     }
 
 }

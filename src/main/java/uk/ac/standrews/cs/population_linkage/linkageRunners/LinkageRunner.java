@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFac
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.helpers.GroundTruthLinkCounter;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;

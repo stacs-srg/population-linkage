@@ -5,8 +5,8 @@ import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.LXPMetadata;
+import uk.ac.standrews.cs.storr.impl.LXPReference;
 import uk.ac.standrews.cs.storr.impl.StaticLXP;
-import uk.ac.standrews.cs.storr.impl.StoreReference;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
@@ -253,7 +253,7 @@ public abstract class LinkageTest {
 
         String rep = "";
         int number_of_fields;
-        IStoreReference store_reference = new StoreReference(null, "dummy-repo", "dummy-bucket", lxp_id++);
+        IStoreReference store_reference = new LXPReference(null, "dummy-repo", "dummy-bucket", lxp_id++);
 
         DummyLXP(String... values) {
 

@@ -2,7 +2,7 @@ package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;

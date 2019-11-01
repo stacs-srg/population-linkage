@@ -1,6 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.linkers;
 
-import uk.ac.standrews.cs.population_linkage.linkageRecipies.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;

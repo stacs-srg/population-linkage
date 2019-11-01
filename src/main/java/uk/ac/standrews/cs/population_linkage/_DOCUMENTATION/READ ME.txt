@@ -6,7 +6,7 @@ Runners in package linkageRunners:
 
     These contain the main methods and actually perform linkage.
     Each runner specifies a particular form of linkage e.g. BirthBirth etc.
-    Each runner provides as run method which performs the lkinkage.
+    Each runner provides as run method which performs the linkage.
     All runners return LinkageQuality as a result
         This either contains the linkage quality results if requested
         or a message saying that it was not.
@@ -26,14 +26,14 @@ Runners in package linkageRunners:
         boolean symmetricLinkage - if the linkage is symmetric or not e.g. Birth-birth
 
 
-Recipies in package LinkageRecipies specify:
+Recipes in package LinkageRecipes specify:
 
     1. Where to put the results of a linkage: a repo name and a bucket name.
     2. Where to put the ground truth - a String (?)
     3. The repo containing the source records.
     4. A record repository - why this and above?
 
-    Recipies contain methods that:
+    Recipes contain methods that:
 
     1. return the source records to be linked.
     2. return a string describing the types of records being linked

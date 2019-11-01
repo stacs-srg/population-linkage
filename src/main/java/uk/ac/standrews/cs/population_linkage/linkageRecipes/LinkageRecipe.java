@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.linkageRecipies;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
