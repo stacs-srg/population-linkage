@@ -8,12 +8,12 @@
         <version>3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>population-linkageRecipe</artifactId>
+    <artifactId>population-linkage</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>population-linkageRecipe</name>
 
-    <description>Population linkageRecipe</description>
+    <description>Population linkage</description>
     <inceptionYear>2018</inceptionYear>
 
     <dependencies>
