@@ -1,20 +1,38 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public DeathGroomOwnMarriageIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo,
+                linkageType + "-links");
+
+        new BitBlasterLinkageRunner()
+                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
+                );
+    }
+
+    public static final String linkageType = "death-groom-identity";
+
+    public DeathGroomOwnMarriageIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -35,7 +53,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between deaths and grooms own marriage";
+        return linkageType;
     }
 
     @Override
@@ -58,14 +76,41 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-//        return Constants.DEATH_IDENTITY_LINKAGE_FIELDS;
-        return Constants.DEATH_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
+        return Arrays.asList(
+                Death.FORENAME,
+                Death.SURNAME,
+                Death.SPOUSE_NAMES,
+                Death.FATHER_FORENAME,
+                Death.FATHER_SURNAME,
+                Death.MOTHER_FORENAME,
+                Death.MOTHER_MAIDEN_SURNAME
+        );
+    }
+
+    @Override
+    public boolean isViableLink(RecordPair proposedLink) {
+        try {
+            int yod = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
+            int yom = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
+
+            return yod >= yom; // is death after marriage
+
+        } catch(NumberFormatException e) { // in this case a DEATH_YEAR or MARRIAGE_YEAR is invalid
+            return true;
+        }
     }
 
     @Override
     public List<Integer> getSearchMappingFields() {
-//        return Constants.GROOM_IDENTITY_LINKAGE_FIELDS;
-        return Constants.GROOM_IDENTITY_WITH_SPOUSE_LINKAGE_FIELDS;
+        return Arrays.asList(
+                Marriage.GROOM_FORENAME,
+                Marriage.GROOM_SURNAME,
+                Marriage.BRIDE_FULL_NAME,
+                Marriage.GROOM_FATHER_FORENAME,
+                Marriage.GROOM_FATHER_SURNAME,
+                Marriage.GROOM_MOTHER_FORENAME,
+                Marriage.GROOM_MOTHER_MAIDEN_SURNAME
+        );
     }
 
     @Override

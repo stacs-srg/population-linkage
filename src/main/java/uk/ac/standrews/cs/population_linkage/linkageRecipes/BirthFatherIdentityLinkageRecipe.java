@@ -1,18 +1,40 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
-    public BirthFatherIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new BirthFatherIdentityLinkageRecipe(sourceRepo,
+                resultsRepo, linkageType + "-links");
+
+        LinkageConfig.numberOfROs = 20;
+
+        new BitBlasterLinkageRunner()
+                .run(linkageRecipe, new JensenShannon(2048), 0.2, true,
+                        2, false, false, true, false
+                );
+    }
+
+    public static final String linkageType = "birth-father-identity";
+
+    public BirthFatherIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -31,7 +53,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between babies on birth records and fathers on birth records - same person in roles of baby and father";
+        return linkageType;
     }
 
     @Override
@@ -56,11 +78,31 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Constants.BIRTH_FATHER_BABY_LINKAGE_FIELDS;
+        return Arrays.asList(
+            Birth.FORENAME,
+            Birth.SURNAME
+        );
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Constants.BIRTH_FATHER_FATHER_LINKAGE_FIELDS; }
+    public boolean isViableLink(RecordPair proposedLink) {
+
+        try {
+            int fathersYOB = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
+            int childsYOB = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
+
+            return fathersYOB + LinkageConfig.MIN_AGE_AT_BIRTH <= childsYOB && childsYOB <= fathersYOB + LinkageConfig.MALE_MAX_AGE_AT_BIRTH;
+        } catch (NumberFormatException e) {
+            return true; // a YOB is missing or in an unexpected format
+        }
+    }
+
+    @Override
+    public List<Integer> getSearchMappingFields() { return Arrays.asList(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME
+        );
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

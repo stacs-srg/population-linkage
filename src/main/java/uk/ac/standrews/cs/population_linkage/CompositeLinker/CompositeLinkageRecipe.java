@@ -1,14 +1,18 @@
 package uk.ac.standrews.cs.population_linkage.CompositeLinker;
 
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBirthIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBirthIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
-import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
@@ -30,7 +34,7 @@ public class CompositeLinkageRecipe {
         String source_repository_name = "synthetic-scotland_13k_1_corrupted_A";
         double match_threshold = 0.6;
 
-        runIndirectDeathBirthLinkage(metric, links_persistent_name, results_repository_name, source_repository_name, match_threshold);
+        runIndirectBirthFatherLinkage(metric, links_persistent_name, results_repository_name, source_repository_name, match_threshold);
 
 //        TreeMap<Double, LinkageQuality> thresholdResults = new BirthDeathIdentityLinkageRunner().evaluateThresholds(source_repository_name, metric, true, 5, 0.0, 0.1, 1.0);
 
@@ -45,25 +49,54 @@ public class CompositeLinkageRecipe {
         }
     }
 
+    private static LinkageQuality runIndirectBirthFatherLinkage(StringMetric metric, String links_persistent_name, String results_repository_name, String source_repository_name, double match_threshold) throws BucketException, PersistentObjectException {
+        LinkageConfig.birthCacheSize = 15000;
+        LinkageConfig.marriageCacheSize = 15000;
+        LinkageConfig.deathCacheSize = 15000;
+        LinkageConfig.numberOfROs = 70;
+
+        Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
+                new GroomBirthIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                metric, 0.2, true, 6, true, false, true, false).getMapOfLinks();
+
+        Map<String, Collection<Link>> fatherGroomLinks = new BitBlasterLinkageRunner().run(
+                new FatherGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                metric, 0.75, true, 5, true, false, true, false).getMapOfLinks();
+
+        Map<String, Collection<DoubleLink>> fatherBirthLinksViaGroom = combineLinks(fatherGroomLinks, groomBirthLinks, "father-birth-via-groom-id");
+
+        return selectAndAssessIndirectLinks(fatherBirthLinksViaGroom,
+                new BirthFatherIdentityLinkageRecipe(source_repository_name, results_repository_name, links_persistent_name),
+                true);
+    }
+
     private static LinkageQuality runIndirectDeathBirthLinkage(StringMetric metric, String links_persistent_name, String results_repository_name, String source_repository_name, double match_threshold) throws BucketException, PersistentObjectException {
         LinkageConfig.birthCacheSize = 15000;
         LinkageConfig.marriageCacheSize = 15000;
         LinkageConfig.deathCacheSize = 15000;
         LinkageConfig.numberOfROs = 60;
 
-        RecordRepository recordRepository = new RecordRepository(ApplicationProperties.getStorePath(), source_repository_name);
+        Map<String, Collection<Link>> deathGroomLinks = new BitBlasterLinkageRunner().run(
+                new DeathGroomOwnMarriageIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                metric, 0.67, true, 5, true, false, true, false).getMapOfLinks();
 
-        Map<String, Collection<Link>> deathGroomLinks = new DeathGroomOwnMarriageIdentityLinkageRunner().run(source_repository_name, 0.575, metric, true, 5, true, false).getMapOfLinks();
-        Map<String, Collection<Link>> groomBirthLinks = new GroomBirthIdentityLinkageRunner().run(source_repository_name, 0.4, metric, true, 3, true, false).getMapOfLinks();
+        Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
+                new GroomBirthIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                metric, 0.67, true, 3, true, false, true, false).getMapOfLinks();
 
-        Map<String, Collection<Link>> deathBrideLinks = new DeathBrideOwnMarriageIdentityLinkageRunner().run(source_repository_name, 0.375, metric, true, 3, true, false).getMapOfLinks();
-        Map<String, Collection<Link>> brideBirthLinks = new BrideBirthIdentityLinkageRunner().run(source_repository_name, 0.4, metric, true, 5, true, false).getMapOfLinks();
+        Map<String, Collection<Link>> deathBrideLinks = new BitBlasterLinkageRunner().run(
+                new DeathBrideOwnMarriageIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                metric, 0.67, true, 3, true, false, true, false).getMapOfLinks();
 
-        Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks);
-        Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, brideBirthLinks);
+        Map<String, Collection<Link>> brideBirthLinks = new BitBlasterLinkageRunner().run(
+                new BrideBirthIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                metric, 0.67, true, 5, true, false, true, false).getMapOfLinks();
+
+        Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks, "death-birth-via-groom-id");
+        Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, brideBirthLinks, "death-birth-via-bride-id");
         deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)
 
-        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(links_persistent_name, source_repository_name, results_repository_name, recordRepository), true);
+        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name), true);
     }
 
     private static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, PersistentObjectException {
@@ -115,7 +148,7 @@ public class CompositeLinkageRecipe {
 
 
 
-    private static Map<String, Collection<DoubleLink>> combineLinks(Map<String, Collection<Link>> firstLinks, Map<String, Collection<Link>> secondLinks) throws BucketException {
+    private static Map<String, Collection<DoubleLink>> combineLinks(Map<String, Collection<Link>> firstLinks, Map<String, Collection<Link>> secondLinks, String linkType) throws BucketException {
 
         Map<String, Collection<DoubleLink>> doubleLinksByFirstRecordID = new HashMap<>();
 
@@ -128,7 +161,7 @@ public class CompositeLinkageRecipe {
                 if(secondLinks.get(record2ID) != null) {
                     for (Link link2 : secondLinks.get(record2ID)) {
                         doubleLinksByFirstRecordID.computeIfAbsent(record1ID, o ->
-                                new ArrayList<>()).add(new DoubleLink(link1, link2, "death-birth-via-groom-id"));
+                                new ArrayList<>()).add(new DoubleLink(link1, link2, linkType));
                     }
                 }
             }

@@ -1,22 +1,41 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.util.*;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 // This class is a confusion to me (Tom)
 public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
-    public BirthParentsMarriageLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new BirthParentsMarriageLinkageRecipe(sourceRepo, resultsRepo,
+                linkageType + "-links");
+
+        new BitBlasterLinkageRunner()
+                .run(linkageRecipe, new JensenShannon(2048),
+                        0.67, true, 5, false, false, true, false
+                );
+    }
+
+    public static final String linkageType = "birth-parents-marriage-identity";
+
+    public BirthParentsMarriageLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -26,7 +45,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between births and parents marriages: bride=mother,groom=father";
+        return linkageType;
     }
 
     @Override
@@ -50,10 +69,37 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getLinkageFields() { return Constants.BABY_PARENTS_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return Arrays.asList(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE
+        );
+    }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Constants.BRIDE_GROOM_IDENTITY_LINKAGE_FIELDS; }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return true;
+    }
+
+    @Override
+    public List<Integer> getSearchMappingFields() {
+        return Arrays.asList(
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME,
+            Marriage.PLACE_OF_MARRIAGE,
+            Marriage.MARRIAGE_DAY,
+            Marriage.MARRIAGE_MONTH,
+            Marriage.MARRIAGE_YEAR
+        );
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -229,7 +275,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
         return filteredBirthRecords;
     }
 
-    private String toKey(LXP record1, LXP record2) {
+    public String toKey(LXP record1, LXP record2) {
         String s1= record1.getString(Birth.ORIGINAL_ID);
         String s2 = record2.getString(Marriage.ORIGINAL_ID);
 

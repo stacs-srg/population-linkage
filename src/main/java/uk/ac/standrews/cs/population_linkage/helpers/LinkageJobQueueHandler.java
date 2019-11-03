@@ -1,14 +1,27 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthMotherIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBirthIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideGroomSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathDeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBirthIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkagePostFilter;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
-import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -71,20 +84,21 @@ public class LinkageJobQueueHandler {
                 String populationNumber = job.get(columnLabels.indexOf("pop_number")).trim();
                 String corruptionNumber = job.get(columnLabels.indexOf("corruption_number")).trim();
                 boolean corrupted = !corruptionNumber.equals("0");
-                double threshold = Double.valueOf(job.get(columnLabels.indexOf("threshold")).trim());
+                double threshold = Double.parseDouble(job.get(columnLabels.indexOf("threshold")).trim());
                 String metric = job.get(columnLabels.indexOf("metric")).trim();
                 String maxSiblingGapString = job.get(columnLabels.indexOf("max-sibling-gap")).trim();
                 Integer maxSiblingGap = (maxSiblingGapString.equals("")) ? null : Integer.valueOf(maxSiblingGapString);
-                int birthsCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("births-cache-size")).trim());
-                int marriagesCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
-                int deathsCacheSize = Integer.valueOf(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
-                int numROs = Integer.valueOf(job.get(columnLabels.indexOf("ROs")).trim());
+                int birthsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("births-cache-size")).trim());
+                int marriagesCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
+                int deathsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
+                int numROs = Integer.parseInt(job.get(columnLabels.indexOf("ROs")).trim());
                 String linkageType = job.get(columnLabels.indexOf("linkage-type")).trim();
 
                 String resultsRepo = job.get(columnLabels.indexOf("results-repo")).trim();
                 String links_persistent_name = job.get(columnLabels.indexOf("links_persistent_name")).trim();
 
                 boolean preFilter = job.get(columnLabels.indexOf("preFilter")).trim().toLowerCase().equals("true");
+                int preFilterRequiredFields = Integer.parseInt(job.get(columnLabels.indexOf("preFilterRequiredFields")).trim());
                 boolean persist_links = job.get(columnLabels.indexOf("persist_links")).trim().toLowerCase().equals("true");
                 boolean evaluate_quality = job.get(columnLabels.indexOf("evaluate_quality")).trim().toLowerCase().equals("true");
 
@@ -94,8 +108,7 @@ public class LinkageJobQueueHandler {
                 LinkageConfig.marriageCacheSize = marriagesCacheSize;
                 LinkageConfig.deathCacheSize = deathsCacheSize;
                 LinkageConfig.numberOfROs = numROs;
-
-                LinkagePostFilter.setMaxSiblingGap(maxSiblingGap);
+                LinkageConfig.SIBLINGS_MAX_AGE_DIFF = maxSiblingGap;
 
                 // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
                 new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber)
@@ -112,53 +125,55 @@ public class LinkageJobQueueHandler {
                 String fieldsUsed1;
                 String fieldsUsed2;
 
-                LinkageRunner lr;
+                LinkageRecipe lr;
 
                 switch (linkageType) {
-                    case BirthBirthSiblingLinkageRunner.linkageType:
-                        lr = new BirthBirthSiblingLinkageRunner();              break;
-                    case BirthDeathSiblingLinkageRunner.linkageType:
-                        lr = new BirthDeathSiblingLinkageRunner();              break;
-                    case BirthFatherIdentityLinkageRunner.linkageType:
-                        lr = new BirthFatherIdentityLinkageRunner();            break;
-                    case BirthMotherIdentityLinkageRunner.linkageType:
-                        lr = new BirthMotherIdentityLinkageRunner();            break;
-                    case BirthParentsMarriageIdentityLinkageRunner.linkageType:
-                        lr = new BirthParentsMarriageIdentityLinkageRunner();   break;
-                    case BrideBirthIdentityLinkageRunner.linkageType:
-                        lr = new BrideBirthIdentityLinkageRunner();             break;
-                    case BrideBrideSiblingLinkageRunner.linkageType:
-                        lr = new BrideBrideSiblingLinkageRunner();              break;
-                    case BrideGroomSiblingLinkageRunner.linkageType:
-                        lr = new BrideGroomSiblingLinkageRunner();              break;
-                    case DeathBrideOwnMarriageIdentityLinkageRunner.linkageType:
-                        lr = new DeathBrideOwnMarriageIdentityLinkageRunner();  break;
-                    case DeathDeathSiblingLinkageRunner.linkageType:
-                        lr = new DeathDeathSiblingLinkageRunner();              break;
-                    case DeathGroomOwnMarriageIdentityLinkageRunner.linkageType:
-                        lr = new DeathGroomOwnMarriageIdentityLinkageRunner();  break;
-                    case GroomBirthIdentityLinkageRunner.linkageType:
-                        lr = new GroomBirthIdentityLinkageRunner();             break;
-                    case GroomBrideSiblingLinkageRunner.linkageType:
-                        lr = new GroomBrideSiblingLinkageRunner();              break;
-                    case GroomGroomSiblingLinkageRunner.linkageType:
-                        lr = new GroomGroomSiblingLinkageRunner();              break;
-                    case BirthDeathIdentityLinkageRunner.linkageType:
-                        lr = new BirthDeathIdentityLinkageRunner();             break;
+                    case BirthBirthSiblingLinkageRecipe.linkageType:
+                        lr = new BirthBirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);              break;
+                    case BirthDeathIdentityLinkageRecipe.linkageType:
+                        lr = new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);             break;
+                    case BirthDeathSiblingLinkageRecipe.linkageType:
+                        lr = new BirthDeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);              break;
+                    case BirthFatherIdentityLinkageRecipe.linkageType:
+                        lr = new BirthFatherIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);            break;
+                    case BirthMotherIdentityLinkageRecipe.linkageType:
+                        lr = new BirthMotherIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);            break;
+                    case BirthParentsMarriageLinkageRecipe.linkageType:
+                        lr = new BirthParentsMarriageLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);           break;
+                    case BrideBirthIdentityLinkageRecipe.linkageType:
+                        lr = new BrideBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);             break;
+                    case BrideBrideSiblingLinkageRecipe.linkageType:
+                        lr = new BrideBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);              break;
+                    case BrideGroomSiblingLinkageRecipe.linkageType:
+                        lr = new BrideGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);              break;
+                    case DeathBrideOwnMarriageIdentityLinkageRecipe.linkageType:
+                        lr = new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);  break;
+                    case DeathDeathSiblingLinkageRecipe.linkageType:
+                        lr = new DeathDeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);              break;
+                    case DeathGroomOwnMarriageIdentityLinkageRecipe.linkageType:
+                        lr = new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);  break;
+                    case FatherGroomIdentityLinkageRecipe.linkageType:
+                        lr = new FatherGroomIdentityLinkageRecipe(links_persistent_name, sourceRepo, resultsRepo);             break;
+                    case GroomBirthIdentityLinkageRecipe.linkageType:
+                        lr = new GroomBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);             break;
+                    case GroomBrideSiblingLinkageRecipe.linkageType:
+                        lr = new GroomBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);              break;
+                    case GroomGroomSiblingLinkageRecipe.linkageType:
+                        lr = new GroomGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);              break;
                     default:
                         throw new RuntimeException("LinkageType not found");
                 }
 
                 linkageApproach = lr.getLinkageType();
-                lq = lr.run(links_persistent_name, sourceRepo, resultsRepo, threshold,
-                        chosenMetric, preFilter, persist_links, evaluate_quality, 0, false, false).getLinkageQuality();
+                lq = new BitBlasterLinkageRunner().run(lr, chosenMetric, threshold, preFilter, preFilterRequiredFields,
+                        false, false, evaluate_quality, persist_links).getLinkageQuality();
+
                 fieldsUsed1 = getLinkageFields(1, lr, sourceRepo);
                 fieldsUsed2 = getLinkageFields(2, lr, sourceRepo);
 
-
                 long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
-                JobRunnerIO.appendToResultsFile(threshold, metric, maxSiblingGap, lq, timeTakenInSeconds,
+                JobRunnerIO.appendToResultsFile(threshold, metric, LinkageConfig.SIBLINGS_MAX_AGE_DIFF, lq, timeTakenInSeconds,
                         linkageResultsFile, populationName, populationSize, populationNumber, corruptionNumber,
                         linkageApproach, numROs, fieldsUsed1, fieldsUsed2, preFilter,
                         birthsCacheSize, marriagesCacheSize, deathsCacheSize);
@@ -171,9 +186,7 @@ public class LinkageJobQueueHandler {
         }
     }
 
-    private static String getLinkageFields(int n, LinkageRunner lr, String sourceRepo) { //String links_persistent_name, String gt_persistent_name, String sourceRepo, String resultsRepo) {
-
-        LinkageRecipe linkageRecipe = lr.getLinkageRecipe(null, null, null, new RecordRepository(ApplicationProperties.getStorePath(), sourceRepo));
+    private static String getLinkageFields(int n, LinkageRecipe linkageRecipe, String sourceRepo) { //String links_persistent_name, String gt_persistent_name, String sourceRepo, String resultsRepo) {
 
         Class record;
         List<Integer> fields;

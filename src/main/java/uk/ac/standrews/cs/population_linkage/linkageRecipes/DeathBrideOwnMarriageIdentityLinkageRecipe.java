@@ -1,20 +1,38 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public DeathBrideOwnMarriageIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo,
+                linkageType + "-links");
+
+        new BitBlasterLinkageRunner()
+                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
+                );
+    }
+
+    public static final String linkageType = "death-bride-identity";
+
+    public DeathBrideOwnMarriageIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -35,7 +53,7 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between deaths and brides own marriage";
+        return linkageType;
     }
 
     @Override
@@ -57,10 +75,41 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public String getSearchRole() { return Marriage.ROLE_BRIDE; }
 
     @Override
-    public List<Integer> getLinkageFields() { return Constants.DEATH_IDENTITY_LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return Arrays.asList(
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME,
+            Death.FORENAME,
+            Death.SURNAME
+        );
+    }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Constants.BRIDE_IDENTITY_LINKAGE_FIELDS; }
+    public boolean isViableLink(RecordPair proposedLink) {
+        try {
+            int yod = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
+            int yom = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
+
+            return yod >= yom; // is death after marriage
+
+        } catch(NumberFormatException e) { // in this case a DEATH_YEAR or MARRIAGE_YEAR is invalid
+            return true;
+        }
+    }
+
+    @Override
+    public List<Integer> getSearchMappingFields() {
+        return Arrays.asList(
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME,
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME
+        );
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

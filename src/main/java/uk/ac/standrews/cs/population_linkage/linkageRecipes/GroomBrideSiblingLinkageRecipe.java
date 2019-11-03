@@ -1,19 +1,38 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
+import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.List;
 import java.util.Map;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
 
-    public GroomBrideSiblingLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new GroomBrideSiblingLinkageRecipe(sourceRepo, resultsRepo,
+                linkageType + "-links");
+
+        new BitBlasterLinkageRunner()
+                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
+                );
+    }
+
+    public static final String linkageType = "groom-bride-sibling";
+
+    public GroomBrideSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -31,7 +50,7 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "sibling bundling between groom and bride on marriage records";
+        return linkageType;
     }
 
     @Override
@@ -56,12 +75,27 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Constants.SIBLING_BUNDLING_GROOM_MARRIAGE_LINKAGE_FIELDS;
+        return Arrays.asList(
+                Marriage.GROOM_FATHER_FORENAME,
+                Marriage.GROOM_FATHER_SURNAME,
+                Marriage.GROOM_MOTHER_FORENAME,
+                Marriage.GROOM_MOTHER_MAIDEN_SURNAME
+        );
+    }
+
+    @Override
+    public boolean isViableLink(RecordPair proposedLink) {
+        return true;
     }
 
     @Override
     public List<Integer> getSearchMappingFields() {
-        return Constants.SIBLING_BUNDLING_BRIDE_MARRIAGE_LINKAGE_FIELDS;
+        return Arrays.asList(
+                Marriage.BRIDE_FATHER_FORENAME,
+                Marriage.BRIDE_FATHER_SURNAME,
+                Marriage.BRIDE_MOTHER_FORENAME,
+                Marriage.BRIDE_MOTHER_MAIDEN_SURNAME
+        );
     }
 
     @Override

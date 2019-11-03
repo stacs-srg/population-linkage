@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -16,6 +16,7 @@ import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.helpers.GroundTruthLinkCounter;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -40,47 +41,37 @@ public abstract class LinkageRunner {
     private Linker linker;
     private LinkageRecipe linkageRecipe;
 
-    public abstract String getLinkageType();
-
+    private boolean printFPs = false;
     private boolean printFNs = false;
     private Path gtLinksCountFile = Paths.get("gt-link-counts.csv"); // TODO put this in the application properties?
 
-    public LinkageResult run(final String links_persistent_name, final String source_repository_name,
-                              final String results_repository_name, double match_threshold, StringMetric baseMetric,
-                              boolean prefilter, boolean persistLinks, boolean evaluateQuality, int prefilterRequiredFields, boolean generateMapOfLinks, boolean reverseMap) throws BucketException {
-
-        this.baseMetric = baseMetric;
+    public LinkageResult run(LinkageRecipe linkageRecipe, StringMetric baseMetric, double threshold,
+                             boolean prefilter, int prefilterRequiredFields,
+                             boolean generateMapOfLinks, boolean reverseMap,
+                             boolean evaluateQuality, boolean persistLinks) throws BucketException {
 
         MemoryLogger.update();
+        this.baseMetric = baseMetric;
+        this.linkageRecipe = linkageRecipe;
 
-        final Path store_path = ApplicationProperties.getStorePath();
-        final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
-        linkageRecipe = getLinkageRecipe(links_persistent_name, source_repository_name, results_repository_name, record_repository);
+        linker = getLinker(threshold, this.linkageRecipe);
 
-        linker = getLinker(match_threshold, linkageRecipe);
-
-        setCacheSizes(record_repository);
+        setCacheSizes(linkageRecipe.getRecord_repository());
 
         int numberOGroundTruthLinks = 0;
-        if(evaluateQuality)
-            numberOGroundTruthLinks = new GroundTruthLinkCounter(source_repository_name, gtLinksCountFile).count(this);
+        if(evaluateQuality) {
+            numberOGroundTruthLinks = new GroundTruthLinkCounter(linkageRecipe.getSource_repository_name(), gtLinksCountFile).count(linkageRecipe);
+        }
 
         MemoryLogger.update();
 
         LinkageResult lr = link(prefilter, persistLinks, evaluateQuality, numberOGroundTruthLinks, prefilterRequiredFields, generateMapOfLinks, reverseMap);
 
-        record_repository.stopStoreWatcher();
+        linkageRecipe.getRecord_repository().stopStoreWatcher();
         linker.terminate();
 
         return lr;
 
-    }
-
-    // This method is used when we are not going to persist the links made - i.e. we will always and only evaluate the linkageRecipe quality
-    public LinkageResult run(final String source_repository_name, double match_threshold, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, boolean generateMapOfLinks, boolean reverseMap) throws BucketException {
-
-        return run("", source_repository_name, "",
-                match_threshold, baseMetric, preFilter, false, true, preFilterRequiredFields, generateMapOfLinks, reverseMap);
     }
 
     public TreeMap<Double, LinkageQuality> evaluateThresholds(String source_repository_name, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, double minThreshold, double step, double maxThreshold) throws BucketException {
@@ -88,7 +79,7 @@ public abstract class LinkageRunner {
         TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
 
         for(double threshold = minThreshold; threshold < maxThreshold; threshold += step) {
-            LinkageQuality lq = run(source_repository_name, threshold, baseMetric, preFilter, preFilterRequiredFields, false, false).getLinkageQuality();
+            LinkageQuality lq = run(linkageRecipe, baseMetric, 0.67, preFilter, preFilterRequiredFields, false, false, true, false).getLinkageQuality();
             thresholdToLinkageQuality.put(threshold, lq);
         }
         return thresholdToLinkageQuality;
@@ -99,8 +90,8 @@ public abstract class LinkageRunner {
         TreeMap<Double, LinkageQuality> thresholdToLinkageQualityAll = new TreeMap<>();
         double current_threshold = starting_threshold_estimate;
 
-        LinkageQuality t_0 = run(source_repository_name, 0, baseMetric, preFilter, preFilterRequiredFields, false, false).getLinkageQuality();
-        LinkageQuality t_1 = run(source_repository_name, 1, baseMetric, preFilter, preFilterRequiredFields, false, false).getLinkageQuality();
+        LinkageQuality t_0 = run(linkageRecipe, baseMetric, 0.67, preFilter, preFilterRequiredFields, false, false, true, false).getLinkageQuality();
+        LinkageQuality t_1 = run(linkageRecipe, baseMetric, 0.67, preFilter, preFilterRequiredFields, false, false, true, false).getLinkageQuality();
 
         for(int n = 0 ; n < nRandomRestarts; n++) {
             double bestF = 0;
@@ -112,7 +103,7 @@ public abstract class LinkageRunner {
 
             while (bestF < 0.99 && count < maxAttempts) {
 
-                LinkageQuality lq = run(source_repository_name, current_threshold, baseMetric, preFilter, preFilterRequiredFields, false, false).getLinkageQuality();
+                LinkageQuality lq = run(linkageRecipe, baseMetric, 0.67, preFilter, preFilterRequiredFields, false, false, true, false).getLinkageQuality();
                 thresholdToLinkageQuality.put(current_threshold, lq);
 
                 if (lq.getF_measure() > bestF) {
@@ -186,12 +177,12 @@ public abstract class LinkageRunner {
 
     public int countNumberOfGroundTruthLinks(final String source_repository_name) {
 
-        final Path store_path = ApplicationProperties.getStorePath();
-        final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
-        final LinkageRecipe linkageRecipe = getLinkageRecipe(null, source_repository_name, null, record_repository);
+//        final Path store_path = ApplicationProperties.getStorePath();
+//        final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
+//        final LinkageRecipe linkageRecipe = getLinkageRecipe(null, source_repository_name, null, record_repository);
 
         int numberOfGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
-        record_repository.stopStoreWatcher();
+//        record_repository.stopStoreWatcher();
 
         return numberOfGroundTruthLinks;
     }
@@ -224,8 +215,13 @@ public abstract class LinkageRunner {
 
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now().toString());
 
+        Map<String, Link> groundTruthLinks = linkageRecipe.getGroundTruthLinks();
+
         try {
             for (Link linkage_says_true_link : links) {
+
+                groundTruthLinks.remove(linkageRecipe.toKey(linkage_says_true_link.getRecord1().getReferend(), linkage_says_true_link.getRecord2().getReferend()));
+
                 if (persist_links) {
                     linkageRecipe.makeLinkPersistent(linkage_says_true_link);
                 }
@@ -243,7 +239,7 @@ public abstract class LinkageRunner {
                     if (doesGTSayIsTrue(linkage_says_true_link)) {
                         tp++;
                     } else {
-                        if(printFNs) printLink(linkage_says_true_link);
+                        if(printFPs) printLink(linkage_says_true_link, "FP");
                         fp++;
                     }
                 }
@@ -273,6 +269,12 @@ public abstract class LinkageRunner {
             lq.print(System.out);
         } else {
             lq = new LinkageQuality("Evaluation not requested");
+        }
+
+        if(printFNs) {
+            for (Link missingLinks : groundTruthLinks.values()) {
+                printLink(missingLinks, "FN");
+            }
         }
 
         if(generateMapOfLinks) {
@@ -328,13 +330,13 @@ public abstract class LinkageRunner {
         } catch (Exception e) {}
     }
 
-    private void printLink(Link link) {
+    private void printLink(Link link, String classification) {
 
         try {
             LXP person1 = link.getRecord1().getReferend();
             LXP person2 = link.getRecord2().getReferend();
 
-            System.out.println("---------------------------------------------------------------------------------------------------------------");
+            System.out.printf("-%s------------------------------------------------------------------------------------------------------------\n", classification);
 
             for(int i = 0 ; i < linkageRecipe.getLinkageFields().size(); i++) {
                 String r1FieldName = Utilities.getLabels(person1).get(linkageRecipe.getLinkageFields().get(i));
@@ -356,13 +358,19 @@ public abstract class LinkageRunner {
     }
 
 
-    public abstract Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe);
+    public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
+        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
+                linkageRecipe.getLinkageType(), "threshold match at " + match_threshold, linkageRecipe.getStoredRole(), linkageRecipe.getSearchRole(), linkageRecipe::isViableLink, linkageRecipe);
+    }
 
     public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
-    protected abstract Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe);
+    protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
+        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields());
+    }
 
-    protected abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric);
+    abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric);
 
     protected int getNumberOfProgressUpdates() {
         return DEFAULT_NUMBER_OF_PROGRESS_UPDATES;

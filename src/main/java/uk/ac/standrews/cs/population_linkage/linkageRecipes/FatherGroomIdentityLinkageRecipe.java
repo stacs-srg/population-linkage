@@ -1,47 +1,47 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
-public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
+public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        LinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo,
+        LinkageRecipe linkageRecipe = new FatherGroomIdentityLinkageRecipe(sourceRepo, resultsRepo,
                 linkageType + "-links");
 
         new BitBlasterLinkageRunner()
                 .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
-                );
+        );
     }
 
-    public static final String linkageType = "birth-death-identity";
+    public static final String linkageType = "father-groom-identity";
 
-    public BirthDeathIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+    public FatherGroomIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY).trim();
-        final String d2_deceased_id = record2.getString(Death.DECEASED_IDENTITY).trim();
+        final String father_id = record1.getString(Birth.FATHER_IDENTITY);
+        final String groom_id = record2.getString(Marriage.GROOM_IDENTITY);
 
-        if (b1_baby_id.isEmpty() || d2_deceased_id.isEmpty() ) {
+        if (father_id.isEmpty() || groom_id.isEmpty() ) {
             return LinkStatus.UNKNOWN;
-        } else if (b1_baby_id.equals( d2_deceased_id ) ) {
+        } else if (father_id.equals( groom_id ) ) {
             return LinkStatus.TRUE_MATCH;
         } else {
             return LinkStatus.NOT_TRUE_MATCH;
@@ -60,17 +60,17 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Class getSearchType() {
-        return Death.class;
+        return Marriage.class;
     }
 
     @Override
     public String getStoredRole() {
-        return Birth.ROLE_BABY;
+        return Birth.ROLE_FATHER;
     }
 
     @Override
     public String getSearchRole() {
-        return Death.ROLE_DECEASED;
+        return Marriage.ROLE_GROOM;
     }
 
     @Override
@@ -80,48 +80,44 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
                 Birth.FATHER_SURNAME,
                 Birth.MOTHER_FORENAME,
                 Birth.MOTHER_MAIDEN_SURNAME,
-                Birth.FORENAME,
-                Birth.SURNAME
+                Birth.PARENTS_PLACE_OF_MARRIAGE,
+                Birth.PARENTS_DAY_OF_MARRIAGE,
+                Birth.PARENTS_MONTH_OF_MARRIAGE,
+                Birth.PARENTS_YEAR_OF_MARRIAGE
         );
     }
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        try {
-            int yob = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int yod = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR));
-
-            return yod >= yob; // is year of death later than year of birth
-
-        } catch(NumberFormatException e) { // in this case a BIRTH_YEAR or DEATH_YEAR is invalid
-            return true;
-        }
+        return true;
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Arrays.asList(
-            Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
-            Death.MOTHER_FORENAME,
-            Death.MOTHER_MAIDEN_SURNAME,
-            Death.FORENAME,
-            Death.SURNAME
+    public List<Integer> getSearchMappingFields() {
+        return Arrays.asList(
+                Marriage.GROOM_FORENAME,
+                Marriage.GROOM_SURNAME,
+                Marriage.BRIDE_FORENAME,
+                Marriage.BRIDE_SURNAME,
+                Marriage.PLACE_OF_MARRIAGE,
+                Marriage.MARRIAGE_DAY,
+                Marriage.MARRIAGE_MONTH,
+                Marriage.MARRIAGE_YEAR
         );
     }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        return getGroundTruthLinksOn(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
     }
-
 }

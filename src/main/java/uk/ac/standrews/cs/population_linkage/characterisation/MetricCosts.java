@@ -1,10 +1,12 @@
 package uk.ac.standrews.cs.population_linkage.characterisation;
 
+import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -18,6 +20,18 @@ public class MetricCosts {
 
     private final Path store_path;
     protected final String repo_name;
+
+    public static final List<Integer> SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS = Arrays.asList(
+
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE
+    );
 
     private MetricCosts(Path store_path, String repo_name) {
 
@@ -33,7 +47,7 @@ public class MetricCosts {
 
         for (StringMetric metric : Constants.BASE_METRICS) {
 
-            calculateAllDistances(birth_records, new Sigma(metric, Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
+            calculateAllDistances(birth_records, new Sigma(metric, SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
         }
     }
 

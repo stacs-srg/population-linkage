@@ -34,6 +34,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
             } catch (Exception e) {
                 cause = e;
                 SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
+                System.out.println("Initilisation exception - trying again with different reference points - new seed: " + SEED);
             }
         }
 

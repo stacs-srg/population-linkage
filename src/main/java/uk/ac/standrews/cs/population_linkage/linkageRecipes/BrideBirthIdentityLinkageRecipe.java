@@ -1,19 +1,39 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
+import java.time.LocalDate;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
-    public BrideBirthIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new BrideBirthIdentityLinkageRecipe(sourceRepo, resultsRepo,
+                linkageType + "-links");
+
+        new BitBlasterLinkageRunner()
+                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
+                );
+    }
+
+    public static final String linkageType = "bride-birth-identity";
+
+    public BrideBirthIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -28,7 +48,7 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between a bride and her birth record";
+        return linkageType;
     }
 
     @Override
@@ -53,11 +73,55 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Constants.BRIDE_IDENTITY_LIKAGE_FIELDS;
+        return Arrays.asList(
+                Marriage.BRIDE_FATHER_FORENAME,
+                Marriage.BRIDE_FATHER_SURNAME,
+                Marriage.BRIDE_MOTHER_FORENAME,
+                Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+                Marriage.BRIDE_FORENAME,
+                Marriage.BRIDE_SURNAME
+        );
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Constants.BABY_IDENTITY_LINKAGE_FIELDS; }
+    public boolean isViableLink(RecordPair proposedLink) {
+        try {
+            int dom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_DAY));
+            int mom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_MONTH));
+            int yom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_YEAR));
+
+            int dob = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_DAY));
+            int mob = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_MONTH));
+            int yob = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
+
+            boolean personAgedOver15AtMarriage = yob + LinkageConfig.MIN_AGE_AT_MARRIAGE <= yom;
+
+            LocalDate birthDate = LocalDate.of(yob, mob, dob);
+            LocalDate marriageDate = LocalDate.of(yom, mom, dom);
+
+            int groomsExpectedAge = birthDate.until(marriageDate).getYears();
+            int groomAge = Integer.parseInt(proposedLink.record1.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH));
+
+            boolean groomOfExpectedAge = Math.abs(groomAge - groomsExpectedAge) < 10;
+
+            return personAgedOver15AtMarriage && groomOfExpectedAge; // is person at least 15 on marriage date
+
+        } catch(NumberFormatException e) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR or GROOM_AGE_OR_DATE_OF_BIRTH is invalid
+            return true;
+        }
+    }
+
+    @Override
+    public List<Integer> getSearchMappingFields() {
+        return Arrays.asList(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FORENAME,
+            Birth.SURNAME
+        );
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

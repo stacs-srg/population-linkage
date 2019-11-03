@@ -3,6 +3,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -41,14 +42,14 @@ public abstract class LinkageRecipe {
 
     protected int preFilteringRequiredPopulatedLinkageFields = 0;
 
-    public LinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
+    public LinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
 
         this.results_repository_name = results_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.source_repository_name = source_repository_name;
-        this.record_repository = record_repository;
 
         store_path = ApplicationProperties.getStorePath();
+        this.record_repository = new RecordRepository(store_path, source_repository_name);
 
         createRecordIterables();
     }
@@ -97,6 +98,8 @@ public abstract class LinkageRecipe {
     public abstract String getSearchRole();
 
     public abstract List<Integer> getLinkageFields();
+
+    public abstract boolean isViableLink(RecordPair proposedLink);
 
     /**
      * This identifies how to map the fields in the search records to the fields in the storage records
@@ -398,7 +401,7 @@ public abstract class LinkageRecipe {
         return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getPreFilteredStoredRecords(), getPreFilteredSearchRecords());
     }
 
-    private String toKey(LXP record1, LXP record2) {
+    public String toKey(LXP record1, LXP record2) {
         String s1 = Utilities.originalId(record1);
         String s2 = Utilities.originalId(record2);
 
@@ -639,6 +642,22 @@ public abstract class LinkageRecipe {
 
     private String getSRBString(Path store_path, String results_repo_name, String bucket_name) {
         return store_path.toString() + "|" + results_repo_name + "|" + bucket_name;
+    }
+
+    public String getResults_repository_name() {
+        return results_repository_name;
+    }
+
+    public String getLinks_persistent_name() {
+        return links_persistent_name;
+    }
+
+    public String getSource_repository_name() {
+        return source_repository_name;
+    }
+
+    public RecordRepository getRecord_repository() {
+        return record_repository;
     }
 
     /*

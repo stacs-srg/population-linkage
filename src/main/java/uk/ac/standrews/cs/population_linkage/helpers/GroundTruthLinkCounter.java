@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.LinkageRunner;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 
@@ -41,10 +42,10 @@ public class GroundTruthLinkCounter {
         this.gtCountsFile = gtCountsFile;
     }
 
-    public int count(LinkageRunner linkageRunner) { //, String linkageApproach) {
+    public int count(LinkageRecipe linkageRecipe) { //, String linkageApproach) {
         System.out.println("Count ground truth links in population: " + sourceRepoName);
 
-        String linkageApproach = linkageRunner.getClass().getName();
+        String linkageApproach = linkageRecipe.getClass().getName();
 
         try {
             FileManipulation.createFileIfDoesNotExist(gtCountsFile);
@@ -61,7 +62,7 @@ public class GroundTruthLinkCounter {
             if(numberOfGTLinks == -1) { // if count not already done then do count
                 System.out.println("Ground truth links count not in file will count from repo: " + sourceRepoName);
                 long startTime = System.currentTimeMillis();
-                numberOfGTLinks = linkageRunner.countNumberOfGroundTruthLinks(sourceRepoName);
+                numberOfGTLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
                 long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
                 new FileChannelHandle(gtCountsFile, FileChannelHandle.optionsWA)
@@ -77,11 +78,6 @@ public class GroundTruthLinkCounter {
             throw new RuntimeException(e);
         }
     }
-
-//    public static void main(String[] args) {
-//        new GroundTruthLinkCounter(args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5])).count();
-//        countAll(Paths.get(args[0]));
-//    }
 
     private int getCountFromLog(Path recordCounts, String populationName, String populationSize,
                                 String populationNumber, String corruptionNumber, String linkageApproach) throws IOException {

@@ -1,11 +1,13 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
@@ -52,7 +54,16 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
     @Override
     public List<Integer> getComparisonFields() {
-        return Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
+        return Arrays.asList(
+                Birth.FATHER_FORENAME,
+                Birth.FATHER_SURNAME,
+                Birth.MOTHER_FORENAME,
+                Birth.MOTHER_MAIDEN_SURNAME,
+                Birth.PARENTS_PLACE_OF_MARRIAGE,
+                Birth.PARENTS_DAY_OF_MARRIAGE,
+                Birth.PARENTS_MONTH_OF_MARRIAGE,
+                Birth.PARENTS_YEAR_OF_MARRIAGE
+        );
     }
 
     public static void main(String[] args) throws Exception {

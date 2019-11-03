@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
+import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -7,6 +8,8 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -170,8 +173,8 @@ public class IntrinsicDimensionalityCalculator {
 
     public static void main(String[] args) throws Exception {
 
-        List<Integer> fields = Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS;
-        String fieldDescriptors = Constants.stringRepresentationOf(Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, Birth.class, Birth.getLabels());
+        List<Integer> fields = SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS; // Insert desired fields
+        String fieldDescriptors = Constants.stringRepresentationOf(fields, Birth.class, Birth.getLabels());
 
 
         new IntrinsicDimensionalityCalculator(
@@ -206,10 +209,23 @@ public class IntrinsicDimensionalityCalculator {
                         new IntrinsicDimensionalityCalculator(populationName, populationSize,
                                 populationNumber, !corruptionNumber.equals("0"), corruptionNumber,
                                 idCalcsFile, recordCount).calculate("JENSEN_SHANNON", 100000,
-                                                Constants.stringRepresentationOf(Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, Birth.class, Birth.getLabels()),
-                                                Constants.SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS);
+                                                Constants.stringRepresentationOf(SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, Birth.class, Birth.getLabels()),
+                                                SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS);
                     }
 
 
     }
+
+    public static final List<Integer> SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS = Arrays.asList(
+
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE
+    );
+
 }

@@ -1,18 +1,36 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.util.*;
+import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
-    public BirthMotherIdentityLinkageRecipe(String results_repository_name, String links_persistent_name, String source_repository_name, RecordRepository record_repository) {
-        super(results_repository_name, links_persistent_name, source_repository_name, record_repository);
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new BirthMotherIdentityLinkageRecipe(sourceRepo, resultsRepo,
+                linkageType + "-links");
+
+        new BitBlasterLinkageRunner()
+                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
+                );
+    }
+
+    public static final String linkageType = "birth-mother-identity";
+
+    public BirthMotherIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -31,7 +49,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getLinkageType() {
-        return "identity bundling between babies on birth records and mothers on birth records - same person in roles of baby and mother";
+        return linkageType;
     }
 
     @Override
@@ -56,11 +74,23 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Constants.BIRTH_FATHER_BABY_LINKAGE_FIELDS;
+        return Arrays.asList(
+            Birth.FORENAME,
+            Birth.SURNAME
+        );
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Constants.BIRTH_MOTHER_MOTHER_LINKAGE_FIELDS; }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return true;
+    }
+
+    @Override
+    public List<Integer> getSearchMappingFields() { return Arrays.asList(
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME
+        );
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
