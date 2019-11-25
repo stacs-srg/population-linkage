@@ -2,16 +2,17 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -86,7 +87,13 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
+        return isViable( proposedLink );
+    }
 
+    /*
+     * This is a bit (a lot (Graham made me do it) of a hack) - can call the static method from the GT experiments
+     */
+    public static boolean isViable(RecordPair proposedLink) {
         try {
             int fathersYOB = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
             int childsYOB = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
@@ -96,6 +103,8 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
             return true; // a YOB is missing or in an unexpected format
         }
     }
+
+
 
     @Override
     public List<Integer> getSearchMappingFields() { return Arrays.asList(

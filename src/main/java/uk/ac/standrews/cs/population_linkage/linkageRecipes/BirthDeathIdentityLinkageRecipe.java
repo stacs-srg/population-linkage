@@ -2,16 +2,17 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -87,6 +88,10 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
+        return isViable( proposedLink );
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
         try {
             int yob = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
             int yod = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR));

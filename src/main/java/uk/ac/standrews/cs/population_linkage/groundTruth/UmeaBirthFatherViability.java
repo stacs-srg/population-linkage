@@ -2,7 +2,9 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma2;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -23,13 +25,13 @@ import java.util.List;
  * This is identity linkage between the baby on one record and the father on another record.
  * The ground truth is listed in isTrueLink.
  **/
-public class UmeaBirthFather extends AsymmetricSingleSourceLinkageAnalysis {
+public class UmeaBirthFatherViability extends AsymmetricSingleSourceLinkageAnalysis {
 
-    private UmeaBirthFather(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+    private UmeaBirthFatherViability(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
         super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs);
     }
 
-    UmeaBirthFather(Path store_path, String repo_name, String linkage_results_filename, String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+    UmeaBirthFatherViability(Path store_path, String repo_name, String linkage_results_filename, String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
         super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
     }
 
@@ -47,6 +49,10 @@ public class UmeaBirthFather extends AsymmetricSingleSourceLinkageAnalysis {
         if (child_id.isEmpty() || father_id.isEmpty()) return LinkStatus.UNKNOWN;
 
         return child_id.equals(father_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
+    }
+
+    public boolean isViableLink( RecordPair proposedLink) {
+        return BirthFatherIdentityLinkageRecipe.isViable(proposedLink);
     }
 
     @Override
@@ -95,6 +101,6 @@ public class UmeaBirthFather extends AsymmetricSingleSourceLinkageAnalysis {
         String repo_name = "umea";
         int NUMBER_OF_RUNS = 1;
 
-        new UmeaBirthFather(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaBirthFatherViability(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }

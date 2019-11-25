@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
@@ -277,8 +278,10 @@ abstract class ThresholdAnalysis {
             final Sample[] samples = linkage_results.get(run_number).get(metric_name);
             final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
 
+            final RecordPair proposedLink = new RecordPair(record1, record2, distance);
+
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                recordSample(threshold_index, samples, is_true_link, distance);
+                recordSample(threshold_index, samples, is_true_link, distance, proposedLink);
             }
 
             final int index = thresholdToIndex(distance);
@@ -437,11 +440,15 @@ abstract class ThresholdAnalysis {
         distance_results_writer.flush();
     }
 
-    private void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance) {
+    public boolean isViableLink( RecordPair proposedLink) {
+        return true;
+    }
+
+    private void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance, RecordPair proposedLink) {
 
         final double threshold = indexToThreshold(threshold_index);
 
-        if (distance <= threshold) {
+        if (distance <= threshold && isViableLink(proposedLink)) {
 
             if (is_true_link) {
                 samples[threshold_index].tp++;
