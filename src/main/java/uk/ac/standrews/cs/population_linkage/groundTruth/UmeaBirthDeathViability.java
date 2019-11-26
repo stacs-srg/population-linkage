@@ -89,6 +89,7 @@ public class UmeaBirthDeathViability extends TwoSourcesLinkageAnalysis {
         return Arrays.asList(
                 Death.FORENAME,
                 Death.SURNAME,
+                
                 Death.FATHER_FORENAME,
                 Death.FATHER_SURNAME,
                 Death.MOTHER_FORENAME,

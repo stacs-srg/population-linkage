@@ -4,9 +4,15 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "verify",
+            "label": "validate",
             "type": "shell",
-            "command": "mvn -B verify",
+            "command": "mvn -B validate",
+            "group": "build"
+        },
+        {
+            "label": "compile",
+            "type": "shell",
+            "command": "mvn -B compile",
             "group": "build"
         },
         {
@@ -14,11 +20,29 @@
             "type": "shell",
             "command": "mvn -B test",
             "group": "test"
-        }
+        },
         {
-            "label": "compile",
+            "label": "clean",
             "type": "shell",
-            "command": "mvn -B test",
+            "command": "mvn -B clean",
+            "group": "build"
+        },
+        {
+            "label": "verify",
+            "type": "shell",
+            "command": "mvn -B verify",
+            "group": "build"
+        },
+        {
+            "label": "install",
+            "type": "shell",
+            "command": "mvn -B clean install",
+            "group": "build"
+        },
+        {
+            "label": "deploy",
+            "type": "shell",
+            "command": "mvn -B clean deploy",
             "group": "build"
         }
     ]
