@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
@@ -46,6 +47,7 @@ public abstract class SimilaritySearchTest {
     abstract List<Integer> getReferencePointsOptions(int number_of_data_points);
 
     @Test
+    @Ignore
     public void similaritySearchGivesCorrectResults() {
 
         for (double side_of_square = 1.0; side_of_square <= MAX_SIDE_OF_SQUARE; side_of_square++) {

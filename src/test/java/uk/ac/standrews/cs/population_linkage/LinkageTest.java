@@ -1,6 +1,7 @@
 package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -69,6 +70,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkAllRecordPairsWithSingleDataSet() throws PersistentObjectException {
 
         linker.setThreshold(Double.MAX_VALUE);
@@ -98,6 +100,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkAllRecordPairsWithTwoDataSets() throws PersistentObjectException {
 
         linker.setThreshold(Double.MAX_VALUE);
@@ -119,6 +122,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkRecordPairsWithinDistanceZeroWithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
@@ -132,6 +136,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkRecordPairsWithinDistanceZeroWithTwoDataSets() throws PersistentObjectException {
 
         // "jane smyth" distance 0 from "jane smyth"
@@ -144,6 +149,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkRecordPairsWithinDistance035WithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
@@ -157,6 +163,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkRecordPairsWithinDistance035WithTwoDataSets() throws PersistentObjectException {
 
         // "john smith" distance 0.333 from "john stith"
@@ -171,6 +178,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkRecordPairsWithinDistance05WithSingleDataSet() throws PersistentObjectException {
 
         // "janet smith" distance 0 from "janet smith"
@@ -194,6 +202,7 @@ public abstract class LinkageTest {
     }
 
     @Test
+    @Ignore
     public void checkRecordPairsWithinDistance05WithTwoDataSets() throws PersistentObjectException {
 
         // "john smith" distance 0.333 from "john stith"
