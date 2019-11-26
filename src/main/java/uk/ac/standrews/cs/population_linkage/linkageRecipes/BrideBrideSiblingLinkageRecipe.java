@@ -2,8 +2,8 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -83,7 +83,25 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return true;
+        return isViable( proposedLink );
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
+        if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
+
+        try {
+            int bride1Age = Integer.parseInt(proposedLink.record1.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)); // TODO is this age or dob?
+            int bride2Age = Integer.parseInt(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)); // TODO is this age or dob?
+
+            boolean bride1AgedOver15AtMarriage = bride1Age >= LinkageConfig.MIN_AGE_AT_MARRIAGE;
+            boolean bride2AgedOver15AtMarriage = bride2Age >= LinkageConfig.MIN_AGE_AT_MARRIAGE;
+            boolean possibleSiblings = Math.abs(bride1Age - bride2Age) <= LinkageConfig.SIBLINGS_MAX_AGE_DIFF;
+
+            return bride1AgedOver15AtMarriage && bride2AgedOver15AtMarriage && possibleSiblings;
+
+        } catch(NumberFormatException e) { 
+            return true;
+        }
     }
 
     @Override

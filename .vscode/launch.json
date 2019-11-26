@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - UmeaBirthDeathViability",
+            "request": "launch",
+            "mainClass": "uk.ac.standrews.cs.population_linkage.groundTruth.UmeaBirthDeathViability",
+            "projectName": "population-linkage"
+        }
+    ]
+}
