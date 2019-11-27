@@ -20,6 +20,7 @@ import java.util.Properties;
  */
 public class ApplicationProperties extends Properties {
 
+    private static final long serialVersionUID = 15472546L;
     private static final Path DEFAULT_CONFIG_DIRECTORY_PATH = Paths.get("properties");
     private static final String APPLICATION_PROPERTIES_FILE_NAME = "application.properties";
 

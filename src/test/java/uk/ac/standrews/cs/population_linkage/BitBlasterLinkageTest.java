@@ -18,7 +18,7 @@ public class BitBlasterLinkageTest extends SimilaritySearchLinkageTest {
             }
 
             @Override
-            public String getSearchStructureType() {
+            public String getSearchStructureType()  {
                 return "BitBlaster";
             }
         };

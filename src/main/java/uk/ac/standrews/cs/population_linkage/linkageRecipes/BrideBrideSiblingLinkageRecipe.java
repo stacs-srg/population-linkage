@@ -5,6 +5,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRun
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
@@ -90,8 +91,12 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
         if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
 
         try {
-            int bride1Age = Integer.parseInt(proposedLink.record1.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)); // TODO is this age or dob?
-            int bride2Age = Integer.parseInt(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)); // TODO is this age or dob?
+
+            int bride1birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record1.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
+            int bride2birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
+
+            int bride1Age = Integer.parseInt(proposedLink.record1.getString(Marriage.YEAR_OF_REGISTRATION)) - bride1birthYear;
+            int bride2Age = Integer.parseInt(proposedLink.record2.getString(Marriage.YEAR_OF_REGISTRATION)) - bride2birthYear;
 
             boolean bride1AgedOver15AtMarriage = bride1Age >= LinkageConfig.MIN_AGE_AT_MARRIAGE;
             boolean bride2AgedOver15AtMarriage = bride2Age >= LinkageConfig.MIN_AGE_AT_MARRIAGE;
