@@ -20,10 +20,12 @@ import java.util.List;
  * This is indirect sibling linkage between the deceaseds on two death records.
  * The ground truth is listed in isTrueLink.
  **/
-public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
+public class UmeaDeathSiblingViability extends SymmetricSingleSourceLinkageAnalysis {
 
-    private UmeaDeathSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs);
+    private UmeaDeathSiblingViability(Path store_path, String repo_name, int number_of_records_to_be_checked,
+            int number_of_runs) throws IOException {
+        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(),
+                number_of_records_to_be_checked, number_of_runs);
     }
 
     @Override
@@ -37,7 +39,8 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
         final String d1_parent_id = record1.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
         final String d2_parent_id = record2.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
 
-        if (d1_parent_id.isEmpty() || d2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
+        if (d1_parent_id.isEmpty() || d2_parent_id.isEmpty())
+            return LinkStatus.UNKNOWN;
 
         return d1_parent_id.equals(d2_parent_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
     }
@@ -63,10 +66,7 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
 
     @Override
     public List<Integer> getComparisonFields() {
-        return Arrays.asList(
-                Death.FATHER_FORENAME,
-                Death.FATHER_SURNAME,
-                Death.MOTHER_FORENAME,
+        return Arrays.asList(Death.FATHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_FORENAME,
                 Death.MOTHER_MAIDEN_SURNAME);
     }
 
@@ -76,6 +76,7 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
         String repo_name = "umea";
         int NUMBER_OF_RUNS = 1;
 
-        new UmeaDeathSibling(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaDeathSiblingViability(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS)
+                .run();
     }
 }

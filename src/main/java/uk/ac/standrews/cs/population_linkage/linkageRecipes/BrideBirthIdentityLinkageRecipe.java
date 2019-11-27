@@ -83,8 +83,13 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
         );
     }
 
+
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
+        return isViable( proposedLink );
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
         try {
             int dom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_DAY));
             int mom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_MONTH));

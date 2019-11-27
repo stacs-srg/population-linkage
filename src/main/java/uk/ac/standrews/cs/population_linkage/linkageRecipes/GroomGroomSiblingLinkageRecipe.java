@@ -5,7 +5,9 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
@@ -85,7 +87,27 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return true;
+        return isViable( proposedLink );
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
+        if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
+
+        try {
+
+            int groom1birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record1.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
+            int groom2birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record2.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
+
+            int groom1Age = Integer.parseInt(proposedLink.record1.getString(Marriage.YEAR_OF_REGISTRATION)) - groom1birthYear;
+            int groom2Age = Integer.parseInt(proposedLink.record2.getString(Marriage.YEAR_OF_REGISTRATION)) - groom2birthYear;
+
+            boolean possibleSiblings = Math.abs(groom1Age - groom2Age) <= LinkageConfig.SIBLINGS_MAX_AGE_DIFF;
+
+            return possibleSiblings;
+
+        } catch(NumberFormatException e) { 
+            return true;
+        }
     }
 
     @Override

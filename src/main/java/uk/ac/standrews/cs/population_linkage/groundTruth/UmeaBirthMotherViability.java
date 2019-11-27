@@ -97,6 +97,6 @@ public class UmeaBirthMotherViability extends AsymmetricSingleSourceLinkageAnaly
         String repo_name = "umea";
         int NUMBER_OF_RUNS = 1;
 
-        new UmeaBirthMother(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaBirthMotherViability(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }

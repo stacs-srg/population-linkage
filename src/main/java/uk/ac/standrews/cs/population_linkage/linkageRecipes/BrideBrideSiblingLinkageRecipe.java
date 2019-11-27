@@ -98,11 +98,9 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
             int bride1Age = Integer.parseInt(proposedLink.record1.getString(Marriage.YEAR_OF_REGISTRATION)) - bride1birthYear;
             int bride2Age = Integer.parseInt(proposedLink.record2.getString(Marriage.YEAR_OF_REGISTRATION)) - bride2birthYear;
 
-            boolean bride1AgedOver15AtMarriage = bride1Age >= LinkageConfig.MIN_AGE_AT_MARRIAGE;
-            boolean bride2AgedOver15AtMarriage = bride2Age >= LinkageConfig.MIN_AGE_AT_MARRIAGE;
             boolean possibleSiblings = Math.abs(bride1Age - bride2Age) <= LinkageConfig.SIBLINGS_MAX_AGE_DIFF;
 
-            return bride1AgedOver15AtMarriage && bride2AgedOver15AtMarriage && possibleSiblings;
+            return possibleSiblings;
 
         } catch(NumberFormatException e) { 
             return true;

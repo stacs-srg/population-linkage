@@ -90,9 +90,6 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
         return isViable( proposedLink );
     }
 
-    /*
-     * This is a bit (a lot (Graham made me do it) of a hack) - can call the static method from the GT experiments
-     */
     public static boolean isViable(RecordPair proposedLink) {
         try {
             int fathersYOB = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
@@ -103,8 +100,6 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
             return true; // a YOB is missing or in an unexpected format
         }
     }
-
-
 
     @Override
     public List<Integer> getSearchMappingFields() { return Arrays.asList(

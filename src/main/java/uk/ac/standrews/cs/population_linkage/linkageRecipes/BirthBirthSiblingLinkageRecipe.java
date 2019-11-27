@@ -75,6 +75,10 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
 
         if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
 
