@@ -9,6 +9,7 @@ bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
 bs <- "UmeaBirthSiblingPRFByThreshold.csv"
 
 db <- "UmeaBirthDeathPRFByThreshold.csv"
+bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
 ds <- "UmeaDeathSiblingPRFByThreshold.csv"
 
 gb <- "UmeaGroomBirthPRFByThreshold.csv"
@@ -20,7 +21,7 @@ gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
 
 filenames <- c( bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
 
-filename <- bfv
+filename <- db
 
 # Takes something like Sigma2-Levenshtein-16-20-14-15--13-19-11-12 and returns Levenshtein
 reduceMetricName <- function( str) {
@@ -65,7 +66,7 @@ createRecallTable <- function( filename ) {
       metric_and_thresh  <- subsetted[ which( subsetted$metric == metric ), ]
       metric_and_thresh <- metric_and_thresh[ which( metric_and_thresh$threshold == thresh ), ]
     
-      results[ nrow(results)+1,"metric" ] <- reduceMetricName( metric )
+      results[ nrow(results)+1,"metric" ] <- metric # reduceMetricName( metric )
       results[ nrow(results),"threshold" ] <- thresh
       results[ nrow(results),"recall" ] <- metric_and_thresh$recall
     

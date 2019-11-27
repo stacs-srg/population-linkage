@@ -4,6 +4,7 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -82,7 +83,18 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return true;
+        return isViable( proposedLink );
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
+        try {
+            int mothersYOB = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
+            int childsYOB = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
+
+            return mothersYOB + LinkageConfig.MIN_AGE_AT_BIRTH <= childsYOB && childsYOB <= mothersYOB + LinkageConfig.MALE_MAX_AGE_AT_BIRTH;
+        } catch (NumberFormatException e) {
+            return true; // a YOB is missing or in an unexpected format
+        }
     }
 
     @Override

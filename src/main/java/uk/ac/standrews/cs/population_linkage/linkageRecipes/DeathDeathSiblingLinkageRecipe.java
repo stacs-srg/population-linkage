@@ -4,6 +4,7 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -86,7 +87,24 @@ public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return true;
+        return isViable(proposedLink);
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
+
+        if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
+
+        try {
+
+            int approxYob1 = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
+
+            int approxYob2 = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
+
+            return Math.abs(approxYob1 - approxYob2) <= LinkageConfig.SIBLINGS_MAX_AGE_DIFF;
+
+        } catch(NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
+            return true;
+        }
     }
 
     @Override

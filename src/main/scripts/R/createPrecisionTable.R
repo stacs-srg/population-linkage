@@ -21,7 +21,7 @@ gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
 
 filenames <- c( bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
 
-filename <- bdv
+filename <- db
 
 # Takes something like Sigma2-Levenshtein-16-20-14-15--13-19-11-12 and returns Levenshtein
 reduceMetricName <- function( str) {
