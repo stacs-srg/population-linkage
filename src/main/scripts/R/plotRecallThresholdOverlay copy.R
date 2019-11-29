@@ -8,7 +8,6 @@ bf <- "UmeaBirthFatherPRFByThreshold.csv"
 bs <- "UmeaBirthSiblingPRFByThreshold.csv"
 
 db <- "UmeaBirthDeathPRFByThreshold.csv"
-dbv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
 ds <- "UmeaDeathSiblingPRFByThreshold.csv"
 
 gb <- "UmeaGroomBirthPRFByThreshold.csv"
@@ -20,7 +19,7 @@ gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
 
 bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
 
-filenames <- c( db  ) #,dbv,bfv,bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
+filenames <- c( bfv,bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
 
 process_data <- function( filename ) {
   
@@ -34,6 +33,7 @@ process_data <- function( filename ) {
   
   subsetted <- mydata[ which( mydata$records.processed == max_processed ), ]
   
+#  return( plot( subsetted,filename ) )
   return( plot( subsetted,filename ) )
 }
   
@@ -55,14 +55,14 @@ plot <- function( subsetted, filename ) {
     
     for( thresh in unique( subsetted$threshold ) ) {
       
-      select_p_thresh  <- subsetted[ which( subsetted$metric == metric ), ]
-      select_p_thresh <- select_p_thresh[ which( select_p_thresh$threshold == thresh ), ]
+      select_r_thresh  <- subsetted[ which( subsetted$metric == metric ), ]
+      select_r_thresh <- select_r_thresh[ which( select_r_thresh$threshold == thresh ), ]
       
-      p_max <- max( select_p_thresh$precision )
+      r_max <- max( select_r_thresh$recall )
       
       results[ nrow(results)+1,"metric" ] <- metric
       results[ nrow(results),"threshold" ] <- thresh
-      results[ nrow(results),"precison" ] <- p_max
+      results[ nrow(results),"recall" ] <- r_max
       
       results <- results[with(results, order(threshold)), ] # sort in threshold order
     }
@@ -77,14 +77,15 @@ plot <- function( subsetted, filename ) {
     
   palette( cbPalette )
   gg <- ggplot( results, aes( x=threshold ) ) +
-    geom_line( aes( y=precison, colour=as.factor(results$metric)), show.legend=T ) +
-    ggtitle( paste( "Threshold vs Precision for",filename ) ) +
+    geom_line( aes( y=recall, colour=as.factor(results$metric)), show.legend=T ) +
+    ggtitle( paste( "Threshold vs Recall for",filename ) ) +
     theme(legend.position="bottom") +
-    ylab( "Precision" ) +
+    ylab( "recall" ) +
     ylim(0,1) +
     xlab( "threshold") +
     scale_colour_manual(values=cbPalette) # +
-    # facet_wrap(~metric) # add in facet wrap to put on sepearate graphs.
+  # facet_wrap(~metric) # add in facet wrap to put on sepearate graphs.
+  
   
   return(gg)
 }
