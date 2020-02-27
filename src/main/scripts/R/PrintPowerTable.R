@@ -18,7 +18,15 @@ bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
 ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
 gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
 
-filenames <- c( bm, bf, bs, ds, bd,gb,bb, bgs,bbs,ggs,gbs )
+bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
+bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
+bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
+dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
+bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
+
+
+filenames <- c( bfv,bmv,bdv,dsv,bsv  ) 
+#filenames <- c( bm, bf, bs, ds, bd,gb,bb, bgs,bbs,ggs,gbs )
 
 heightvswidth <- function( metric, subsetted ) {
   
@@ -141,6 +149,6 @@ for( filename in filenames ) {
 
 all_results <- all_results[with(all_results, order(-power,-f_max)), ] # sort in power then f_max order  first was -fudge,
 options(max.print=1000000)
-#printLinkageMetricPowerTable( all_results )
+printLinkageMetricPowerTable( all_results )
 #print( all_results ) 
 

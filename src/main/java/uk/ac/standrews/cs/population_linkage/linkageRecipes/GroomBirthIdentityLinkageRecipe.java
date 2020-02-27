@@ -1,21 +1,20 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import java.time.LocalDate;
-import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.List;
-import java.util.Map;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -91,6 +90,10 @@ public class GroomBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
+
+    public static boolean isViable(RecordPair proposedLink) {
         try {
             int dom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_DAY));
             int mom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_MONTH));

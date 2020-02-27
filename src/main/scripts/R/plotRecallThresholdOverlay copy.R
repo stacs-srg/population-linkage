@@ -8,6 +8,7 @@ bf <- "UmeaBirthFatherPRFByThreshold.csv"
 bs <- "UmeaBirthSiblingPRFByThreshold.csv"
 
 db <- "UmeaBirthDeathPRFByThreshold.csv"
+dbv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
 ds <- "UmeaDeathSiblingPRFByThreshold.csv"
 
 gb <- "UmeaGroomBirthPRFByThreshold.csv"
@@ -18,8 +19,13 @@ ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
 gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
 
 bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
+bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
+bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
+dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
+bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
 
-filenames <- c( bfv,bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
+filenames <- c( bfv,bmv,bdv,dsv,bsv  ) 
+#filenames <- c( dbv, db ) #c( bfv,bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
 
 process_data <- function( filename ) {
   
