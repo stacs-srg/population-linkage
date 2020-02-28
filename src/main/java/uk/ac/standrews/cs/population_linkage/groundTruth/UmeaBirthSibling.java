@@ -1,6 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
-import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBirthSiblingLinkageRecipe;
@@ -11,6 +10,7 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 /* Performs linkage analysis on data from births.
@@ -21,7 +21,7 @@ import java.util.List;
  **/
 public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
-    private UmeaBirthSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+    UmeaBirthSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
         super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs);
     }
 

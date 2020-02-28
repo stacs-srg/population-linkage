@@ -20,7 +20,7 @@ import java.util.List;
  **/
 public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
 
-    private UmeaDeathSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+    UmeaDeathSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
         super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs);
     }
 
