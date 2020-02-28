@@ -11,7 +11,7 @@
     <artifactId>population-linkage</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>population-linkageRecipe</name>
+    <name>population-linkage</name>
 
     <description>Population linkage</description>
     <inceptionYear>2018</inceptionYear>

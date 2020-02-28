@@ -1,7 +1,6 @@
 package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
