@@ -2,7 +2,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -11,9 +10,9 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.*;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 // This class is a confusion to me (Tom)
 public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
@@ -40,7 +39,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return BirthParentsMarriageLinkageRecipe.trueMatch(record1, record2);
+        return trueMatch(record1, record2);
     }
 
     @Override

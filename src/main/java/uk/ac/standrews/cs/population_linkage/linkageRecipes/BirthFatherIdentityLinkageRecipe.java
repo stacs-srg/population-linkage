@@ -40,6 +40,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+
         final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY);
         final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY);
 
@@ -91,14 +92,12 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     public static boolean isViable(RecordPair proposedLink) {
-        try {
-            int fathersYOB = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int childsYOB = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
 
-            return fathersYOB + LinkageConfig.MIN_AGE_AT_BIRTH <= childsYOB && childsYOB <= fathersYOB + LinkageConfig.MALE_MAX_AGE_AT_BIRTH;
-        } catch (NumberFormatException e) {
-            return true; // a YOB is missing or in an unexpected format
-        }
+        // Proposed link is between a person being born on the first record, and the same person
+        // appearing as father on the second record. Check that a plausible period has elapsed for
+        // the person to be the father.
+
+        return birthParentIdentityLinkIsViable(proposedLink);
     }
 
     @Override
@@ -125,9 +124,6 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredStoredRecords() {
-        return filterBySex(
-                super.getPreFilteredStoredRecords(),
-                Birth.SEX, "m");
+        return filterBySex(super.getPreFilteredStoredRecords(), Birth.SEX, "m");
     }
-
 }

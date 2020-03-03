@@ -2,16 +2,17 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
 
@@ -92,15 +93,13 @@ public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
+            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record1.getString(Death.AGE_AT_DEATH));
+            int year_of_birth2 = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
 
-            int approxYob1 = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
-
-            int approxYob2 = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
-
-            return Math.abs(approxYob1 - approxYob2) <= LinkageConfig.SIBLINGS_MAX_AGE_DIFF;
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
 
         } catch(NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
             return true;

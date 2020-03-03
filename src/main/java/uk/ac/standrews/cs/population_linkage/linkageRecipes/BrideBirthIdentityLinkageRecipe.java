@@ -1,19 +1,18 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import java.time.LocalDate;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -38,6 +37,7 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+
         final String bride_id = record1.getString(Marriage.BRIDE_IDENTITY);
         final String child_id = record2.getString(Birth.CHILD_IDENTITY);
 
@@ -83,37 +83,14 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
         );
     }
 
-
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
         return isViable( proposedLink );
     }
 
     public static boolean isViable(RecordPair proposedLink) {
-        try {
-            int dom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_DAY));
-            int mom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_MONTH));
-            int yom = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_YEAR));
 
-            int dob = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_DAY));
-            int mob = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_MONTH));
-            int yob = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
-
-            boolean personAgedOver15AtMarriage = yob + LinkageConfig.MIN_AGE_AT_MARRIAGE <= yom;
-
-            LocalDate birthDate = LocalDate.of(yob, mob, dob);
-            LocalDate marriageDate = LocalDate.of(yom, mom, dom);
-
-            int groomsExpectedAge = birthDate.until(marriageDate).getYears();
-            int groomAge = Integer.parseInt(proposedLink.record1.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH));
-
-            boolean groomOfExpectedAge = Math.abs(groomAge - groomsExpectedAge) < 10;
-
-            return personAgedOver15AtMarriage && groomOfExpectedAge; // is person at least 15 on marriage date
-
-        } catch(NumberFormatException e) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR or GROOM_AGE_OR_DATE_OF_BIRTH is invalid
-            return true;
-        }
+        return spouseBirthIdentityLinkIsViable(proposedLink, true);
     }
 
     @Override
@@ -142,5 +119,4 @@ public class BrideBirthIdentityLinkageRecipe extends LinkageRecipe {
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
         return getNumberOfGroundTruthTrueLinksPostFilterOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
     }
-
 }

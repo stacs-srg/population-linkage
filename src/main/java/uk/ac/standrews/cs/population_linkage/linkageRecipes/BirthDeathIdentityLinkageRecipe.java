@@ -3,6 +3,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -37,12 +38,13 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+
         final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY).trim();
         final String d2_deceased_id = record2.getString(Death.DECEASED_IDENTITY).trim();
 
-        if (b1_baby_id.isEmpty() || d2_deceased_id.isEmpty() ) {
+        if (b1_baby_id.isEmpty() || d2_deceased_id.isEmpty()) {
             return LinkStatus.UNKNOWN;
-        } else if (b1_baby_id.equals( d2_deceased_id ) ) {
+        } else if (b1_baby_id.equals(d2_deceased_id)) {
             return LinkStatus.TRUE_MATCH;
         } else {
             return LinkStatus.NOT_TRUE_MATCH;
@@ -92,13 +94,16 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     public static boolean isViable(RecordPair proposedLink) {
+
         try {
-            int yob = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int yod = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR));
+            int year_of_birth = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
+            int year_of_death = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR));
 
-            return yod >= yob; // is year of death later than year of birth
+            int age_at_death = year_of_death - year_of_birth;
 
-        } catch(NumberFormatException e) { // in this case a BIRTH_YEAR or DEATH_YEAR is invalid
+            return age_at_death >= 0 && age_at_death <= LinkageConfig.MAX_AGE_AT_DEATH;
+
+        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR or DEATH_YEAR is invalid
             return true;
         }
     }
@@ -128,5 +133,4 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
         return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
-
 }

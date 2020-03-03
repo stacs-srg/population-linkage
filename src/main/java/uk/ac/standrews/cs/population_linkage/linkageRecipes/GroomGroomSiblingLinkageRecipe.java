@@ -1,20 +1,18 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.List;
-import java.util.Map;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
@@ -91,21 +89,16 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     public static boolean isViable(RecordPair proposedLink) {
-        if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
+
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
+            int year_of_birth1 = getBirthYearOfSpouse(proposedLink.record1, false);
+            int year_of_birth2 = getBirthYearOfSpouse(proposedLink.record2, false);
 
-            int groom1birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record1.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
-            int groom2birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record2.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
 
-            int groom1Age = Integer.parseInt(proposedLink.record1.getString(Marriage.YEAR_OF_REGISTRATION)) - groom1birthYear;
-            int groom2Age = Integer.parseInt(proposedLink.record2.getString(Marriage.YEAR_OF_REGISTRATION)) - groom2birthYear;
-
-            boolean possibleSiblings = Math.abs(groom1Age - groom2Age) <= LinkageConfig.SIBLINGS_MAX_AGE_DIFF;
-
-            return possibleSiblings;
-
-        } catch(NumberFormatException e) { 
+        } catch(NumberFormatException e) {
             return true;
         }
     }

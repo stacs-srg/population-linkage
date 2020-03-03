@@ -2,17 +2,18 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -37,14 +38,15 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP death, LXP marriage) {
+
         String deceasedID = death.getString(Death.DECEASED_IDENTITY).trim();
         String brideID = marriage.getString(Marriage.BRIDE_IDENTITY).trim();
 
-        if(deceasedID.isEmpty() || brideID.isEmpty() ) {
+        if (deceasedID.isEmpty() || brideID.isEmpty()) {
             return LinkStatus.UNKNOWN;
         }
 
-        if (deceasedID.equals(brideID) ) {
+        if (deceasedID.equals(brideID)) {
             return LinkStatus.TRUE_MATCH;
         } else {
             return LinkStatus.NOT_TRUE_MATCH;
@@ -88,15 +90,8 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        try {
-            int yod = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
-            int yom = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
 
-            return yod >= yom; // is death after marriage
-
-        } catch(NumberFormatException e) { // in this case a DEATH_YEAR or MARRIAGE_YEAR is invalid
-            return true;
-        }
+        return deathMarriageLinkIsViable(proposedLink);
     }
 
     @Override

@@ -5,13 +5,14 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRun
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
@@ -88,19 +89,14 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     public static boolean isViable(RecordPair proposedLink) {
-        if(LinkageConfig.SIBLINGS_MAX_AGE_DIFF == null) return true;
+
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
+            int year_of_birth1 = getBirthYearOfSpouse(proposedLink.record1, true);
+            int year_of_birth2 = getBirthYearOfSpouse(proposedLink.record2, true);
 
-            int bride1birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record1.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
-            int bride2birthYear = Integer.parseInt(Normalisation.extractYear(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH)));  // assumes that this field is a date
-
-            int bride1Age = Integer.parseInt(proposedLink.record1.getString(Marriage.YEAR_OF_REGISTRATION)) - bride1birthYear;
-            int bride2Age = Integer.parseInt(proposedLink.record2.getString(Marriage.YEAR_OF_REGISTRATION)) - bride2birthYear;
-
-            boolean possibleSiblings = Math.abs(bride1Age - bride2Age) <= LinkageConfig.SIBLINGS_MAX_AGE_DIFF;
-
-            return possibleSiblings;
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
 
         } catch(NumberFormatException e) { 
             return true;

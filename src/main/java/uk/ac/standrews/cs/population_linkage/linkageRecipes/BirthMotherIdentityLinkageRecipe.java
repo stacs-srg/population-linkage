@@ -2,16 +2,16 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
-
-import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -36,12 +36,13 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY);
-        final String b2_father_id = record2.getString(Birth.MOTHER_IDENTITY);
 
-        if (b1_baby_id.isEmpty() || b2_father_id.isEmpty() ) {
+        final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY);
+        final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY);
+
+        if (b1_baby_id.isEmpty() || b2_mother_id.isEmpty()) {
             return LinkStatus.UNKNOWN;
-        } else if (b1_baby_id.equals( b2_father_id ) ) {
+        } else if (b1_baby_id.equals(b2_mother_id)) {
             return LinkStatus.TRUE_MATCH;
         } else {
             return LinkStatus.NOT_TRUE_MATCH;
@@ -87,14 +88,12 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     public static boolean isViable(RecordPair proposedLink) {
-        try {
-            int mothersYOB = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int childsYOB = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
 
-            return mothersYOB + LinkageConfig.MIN_AGE_AT_BIRTH <= childsYOB && childsYOB <= mothersYOB + LinkageConfig.MALE_MAX_AGE_AT_BIRTH;
-        } catch (NumberFormatException e) {
-            return true; // a YOB is missing or in an unexpected format
-        }
+        // Proposed link is between a person being born on the first record, and the same person
+        // appearing as mother on the second record. Check that a plausible period has elapsed for
+        // the person to be the mother.
+
+        return birthParentIdentityLinkIsViable(proposedLink);
     }
 
     @Override
@@ -121,8 +120,6 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getPreFilteredStoredRecords() {
-        return filterBySex(
-                super.getPreFilteredStoredRecords(),
-                Birth.SEX, "f");
+        return filterBySex(super.getPreFilteredStoredRecords(), Birth.SEX, "f");
     }
 }

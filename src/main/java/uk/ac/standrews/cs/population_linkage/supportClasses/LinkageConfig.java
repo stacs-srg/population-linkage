@@ -9,9 +9,11 @@ public class LinkageConfig {
     public static int numberOfROs = 70;
 
     public static Integer MIN_AGE_AT_MARRIAGE = 15;
-    public static Integer SIBLINGS_MAX_AGE_DIFF = 40;
+    public static Integer MAX_SIBLING_AGE_DIFF = 40;
 
-    public static Integer MIN_AGE_AT_BIRTH = 15;
-    public static Integer MALE_MAX_AGE_AT_BIRTH = 50;
+    public static Integer MIN_PARENT_AGE_AT_BIRTH = 15;
+    public static Integer MAX_PARENT_AGE_AT_BIRTH = 50;
+    public static Integer MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY = 10;
 
+    public static Integer MAX_AGE_AT_DEATH = 120;
 }
