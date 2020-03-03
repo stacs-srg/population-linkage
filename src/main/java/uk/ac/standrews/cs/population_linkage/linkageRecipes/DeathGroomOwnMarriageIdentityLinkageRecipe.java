@@ -38,6 +38,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP death, LXP marriage) {
+
         String deceasedID = death.getString(Death.DECEASED_IDENTITY).trim();
         String groomID = marriage.getString(Marriage.GROOM_IDENTITY).trim();
 
@@ -91,7 +92,12 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
 
-        return deathMarriageLinkIsViable(proposedLink);
+        return isViable(proposedLink);
+    }
+
+    public static boolean isViable(final RecordPair proposedLink) {
+
+        return deathMarriageIdentityLinkIsViable(proposedLink);
     }
 
     @Override
@@ -127,5 +133,4 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
                 super.getPreFilteredStoredRecords(),
                 Birth.SEX, "m");
     }
-
 }

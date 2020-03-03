@@ -91,7 +91,12 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
 
-        return deathMarriageLinkIsViable(proposedLink);
+        return isViable(proposedLink);
+    }
+
+    public static boolean isViable(final RecordPair proposedLink) {
+
+        return deathMarriageIdentityLinkIsViable(proposedLink);
     }
 
     @Override
@@ -127,5 +132,4 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
                 super.getPreFilteredStoredRecords(),
                 Birth.SEX, "f");
     }
-
 }

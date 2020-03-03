@@ -542,7 +542,7 @@ public abstract class LinkageRecipe {
         }
     }
 
-    protected boolean deathMarriageLinkIsViable(final RecordPair proposedLink) {
+    protected static boolean deathMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
 
         try {
             int year_of_death = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
