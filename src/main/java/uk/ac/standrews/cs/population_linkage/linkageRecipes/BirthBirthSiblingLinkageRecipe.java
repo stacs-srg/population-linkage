@@ -102,17 +102,7 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
 
-        final String b1_mother_id = record1.getString(Birth.MOTHER_IDENTITY).trim();
-        final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY).trim();
-
-        final String b1_father_id = record1.getString(Birth.FATHER_IDENTITY).trim();
-        final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY).trim();
-
-        if (b1_mother_id.isEmpty() || b1_father_id.isEmpty() || b2_mother_id.isEmpty() || b2_father_id.isEmpty()) return LinkStatus.UNKNOWN;
-
-        if (b1_mother_id.equals(b2_mother_id) && b1_father_id.equals(b2_father_id)) return LinkStatus.TRUE_MATCH;
-
-        return LinkStatus.NOT_TRUE_MATCH;
+        return trueMatch(record1, record2);
     }
 
     @Override
@@ -130,11 +120,21 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
         return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY);
     }
 
-    // This has been left as it's called by the groun truth classes - however it seems overly complicated, the above isTrueMatch method should always return the same as this for synthetic and for umea
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
-        final String b1_parent_marriage_id = record1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
-        final String b2_parent_marriage_id = record2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+        // Various possible relevant sources of ground truth for siblings:
+        // * identities of parents
+        // * identities of parents' marriage record
+        // * identities of parents' birth records
+
+        // This recipe is tuned to the Umea dataset, for which it is assumed that where an identifier is not
+        // present, this means that the corresponding person/record is not included in the dataset. This
+        // would be because the parent was not born or married within the geographical and temporal region.
+
+        // Therefore we interpret absence of an identifier as having a particular meaning, and thus where
+        // one record in a pair has an identifier and one doesn't, we classify as a non-match.
+        // In a more general context with dirtier data, we have less information about what a missing
+        // identifier means, so we might classify this as unknown.
 
         final String b1_mother_id = record1.getString(Birth.MOTHER_IDENTITY);
         final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY);
@@ -142,24 +142,37 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
         final String b1_father_id = record1.getString(Birth.FATHER_IDENTITY);
         final String b2_father_id = record2.getString(Birth.FATHER_IDENTITY);
 
+        final String b1_parent_marriage_id = record1.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+        final String b2_parent_marriage_id = record2.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY);
+
         final String b1_mother_birth_id = record1.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
         final String b2_mother_birth_id = record2.getString(Birth.MOTHER_BIRTH_RECORD_IDENTITY);
 
         final String b1_father_birth_id = record1.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
         final String b2_father_birth_id = record2.getString(Birth.FATHER_BIRTH_RECORD_IDENTITY);
 
-        if (!b1_parent_marriage_id.isEmpty() && b1_parent_marriage_id.equals(b2_parent_marriage_id)) return LinkStatus.TRUE_MATCH;
+        if (equalsNonEmpty(b1_mother_id, b2_mother_id) && equalsNonEmpty(b1_father_id, b2_father_id)) return LinkStatus.TRUE_MATCH;
 
-        if (!b1_mother_id.isEmpty() && b1_mother_id.equals(b2_mother_id) && !b1_father_id.isEmpty() && b1_father_id.equals(b2_father_id)) return LinkStatus.TRUE_MATCH;
+        if (equalsNonEmpty(b1_parent_marriage_id, b2_parent_marriage_id)) return LinkStatus.TRUE_MATCH;
 
-        if (!b1_mother_birth_id.isEmpty() && b1_mother_birth_id.equals(b2_mother_birth_id) && !b1_father_birth_id.isEmpty() && b1_father_birth_id.equals(b2_father_birth_id)) return LinkStatus.TRUE_MATCH;
+        if (equalsNonEmpty(b1_mother_birth_id, b2_mother_birth_id) && equalsNonEmpty(b1_father_birth_id, b2_father_birth_id)) return LinkStatus.TRUE_MATCH;
 
-        if (b1_parent_marriage_id.isEmpty() && b2_parent_marriage_id.isEmpty() &&
-                b1_mother_id.isEmpty() && b2_mother_id.isEmpty() &&
-                b1_father_id.isEmpty() && b2_father_id.isEmpty() &&
-                b1_mother_birth_id.isEmpty() && b2_mother_birth_id.isEmpty() &&
-                b1_father_birth_id.isEmpty() && b2_father_birth_id.isEmpty()) return LinkStatus.UNKNOWN;
+        if (allEmpty(
+                b1_parent_marriage_id, b2_parent_marriage_id,
+                b1_mother_id, b2_mother_id, b1_father_id, b2_father_id,
+                b1_mother_birth_id, b2_mother_birth_id, b1_father_birth_id, b2_father_birth_id)) return LinkStatus.UNKNOWN;
 
         return LinkStatus.NOT_TRUE_MATCH;
+    }
+
+    private static boolean equalsNonEmpty(final String s1, final String s2) {
+        return !s1.isEmpty() && s1.equals(s2);
+    }
+
+    private static boolean allEmpty(final String... strings) {
+        for (String s : strings) {
+            if (!s.isEmpty()) return false;
+        }
+        return true;
     }
 }

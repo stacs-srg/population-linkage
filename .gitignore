@@ -8,3 +8,4 @@ application.properties
 *.csv
 *.meta
 src/main/scripts/R/.Rhistory
+!/properties/application.properties
