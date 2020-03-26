@@ -16,6 +16,8 @@ import java.util.Map;
 
 public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
+    private static final boolean TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN = false;
+
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
@@ -127,14 +129,17 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
         // * identities of parents' marriage record
         // * identities of parents' birth records
 
-        // This recipe is tuned to the Umea dataset, for which it is assumed that where an identifier is not
+        // If TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN is false, then the recipe is tuned to the Umea dataset,
+        // for which it is assumed that where an identifier is not
         // present, this means that the corresponding person/record is not included in the dataset. This
         // would be because the parent was not born or married within the geographical and temporal region.
 
         // Therefore we interpret absence of an identifier as having a particular meaning, and thus where
         // one record in a pair has an identifier and one doesn't, we classify as a non-match.
-        // In a more general context with dirtier data, we have less information about what a missing
-        // identifier means, so we might classify this as unknown.
+
+        // For use in a more general context with dirtier data, TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN
+        // should be set to true. We then have less information about what a missing
+        // identifier means, so classify as unknown.
 
         final String b1_mother_id = record1.getString(Birth.MOTHER_IDENTITY);
         final String b2_mother_id = record2.getString(Birth.MOTHER_IDENTITY);
@@ -157,10 +162,22 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
 
         if (equalsNonEmpty(b1_mother_birth_id, b2_mother_birth_id) && equalsNonEmpty(b1_father_birth_id, b2_father_birth_id)) return LinkStatus.TRUE_MATCH;
 
-        if (allEmpty(
-                b1_parent_marriage_id, b2_parent_marriage_id,
-                b1_mother_id, b2_mother_id, b1_father_id, b2_father_id,
-                b1_mother_birth_id, b2_mother_birth_id, b1_father_birth_id, b2_father_birth_id)) return LinkStatus.UNKNOWN;
+        if (TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN) {
+
+            if (anyEmpty(
+                    b1_parent_marriage_id, b2_parent_marriage_id,
+                    b1_mother_id, b2_mother_id, b1_father_id, b2_father_id,
+                    b1_mother_birth_id, b2_mother_birth_id, b1_father_birth_id, b2_father_birth_id))
+                return LinkStatus.UNKNOWN;
+        }
+
+        else {
+            if (allEmpty(
+                    b1_parent_marriage_id, b2_parent_marriage_id,
+                    b1_mother_id, b2_mother_id, b1_father_id, b2_father_id,
+                    b1_mother_birth_id, b2_mother_birth_id, b1_father_birth_id, b2_father_birth_id))
+                return LinkStatus.UNKNOWN;
+        }
 
         return LinkStatus.NOT_TRUE_MATCH;
     }
@@ -174,5 +191,12 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
             if (!s.isEmpty()) return false;
         }
         return true;
+    }
+
+    private static boolean anyEmpty(final String... strings) {
+        for (String s : strings) {
+            if (s.isEmpty()) return true;
+        }
+        return false;
     }
 }

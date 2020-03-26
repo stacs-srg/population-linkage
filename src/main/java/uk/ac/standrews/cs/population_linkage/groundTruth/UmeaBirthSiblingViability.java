@@ -19,7 +19,7 @@ public class UmeaBirthSiblingViability extends UmeaBirthSibling {
         super(store_path, repo_name, number_of_records_to_be_checked, number_of_runs);
     }
 
-    public boolean isViableLink( RecordPair proposedLink) {
+    public boolean isViableLink(RecordPair proposedLink) {
         return BirthBirthSiblingLinkageRecipe.isViable(proposedLink);
     }
 
@@ -32,6 +32,6 @@ public class UmeaBirthSiblingViability extends UmeaBirthSibling {
 
         // number_of_records_to_be_checked = CHECK_ALL_RECORDS for exhaustive otherwise DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED or some other specific number.
 
-        new UmeaBirthSiblingViability(store_path, repo_name, CHECK_ALL_RECORDS, NUMBER_OF_RUNS).run();
+        new UmeaBirthSiblingViability(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }
