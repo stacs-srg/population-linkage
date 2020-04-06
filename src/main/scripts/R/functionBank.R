@@ -1,5 +1,6 @@
 library("ggplot2")
 library("stringr")
+library("scales")
 
 source( "~/repos/github/population-linkage/src/main/scripts/R/utils.R" )
 source( "~/repos/github/population-linkage/src/main/scripts/R/dataManipulation.R")
@@ -237,7 +238,7 @@ plotAllZeroPlots <- function(plotdata, measure, filename, xlimit) {
       final <- subset[nrow(subset),measure]
       subset[,'final'] <- final
       subset[,'col_val'] <- val
-      plot <- plot + geom_line(data=subset, aes(x=records.processed, y=final-get(measure)  )  ) # colour=col_val
+      plot <- plot + geom_line(data=subset, aes(x=records.processed, y=abs(final-get(measure))  )  ) # colour=col_val
       #val <- val + 1
     }
   }
@@ -245,13 +246,10 @@ plotAllZeroPlots <- function(plotdata, measure, filename, xlimit) {
   plot <- plot +
     scale_y_continuous(minor_breaks = seq(-1 , 1, 0.001), breaks = seq(-1 ,1, 0.01)) +
     geom_segment(aes(x=0,xend=xlimit,y=0.01,yend=0.01), colour = 'red', linetype = 2) +
-    geom_segment(aes(x=0,xend=xlimit,y=-0.01,yend=-0.01), colour = 'red', linetype = 2) +
-    xlim(0,xlimit) + 
-    #ggtitle(paste("Max error", measure)) + 
-    labs(x = "Records processed", y = "Error in F-measure" ) +
+    scale_x_continuous(labels = comma, limits = c(0, xlimit)) +
+    labs(x = "Records processed", y = "Absolute error in F-measure" ) +
     theme(legend.position="none", panel.background = element_rect(fill="white"),
-          panel.grid.major = element_line(size = 0.25, linetype = 'solid',
-                                          colour = "grey") )
+          panel.grid.major = element_line(size = 0.25, linetype = 'solid', colour = "grey") )
   
   ggsave( paste0( filename,"-",xlimit,".png", sep="" ),plot,dpi=320 )
 }
