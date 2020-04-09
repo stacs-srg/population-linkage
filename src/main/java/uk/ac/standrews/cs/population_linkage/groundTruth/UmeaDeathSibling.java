@@ -1,15 +1,15 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
-import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathDeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 /* Performs linkage analysis on data from deaths.
@@ -57,11 +57,7 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
 
     @Override
     public List<Integer> getComparisonFields() {
-        return Arrays.asList(
-                Death.FATHER_FORENAME,
-                Death.FATHER_SURNAME,
-                Death.MOTHER_FORENAME,
-                Death.MOTHER_MAIDEN_SURNAME);
+        return DeathDeathSiblingLinkageRecipe.getComparisonFields();
     }
 
     public static void main(String[] args) throws Exception {

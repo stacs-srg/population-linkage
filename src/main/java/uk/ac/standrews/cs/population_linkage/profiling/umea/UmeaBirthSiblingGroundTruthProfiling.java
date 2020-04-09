@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.groundTruth;
+package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;

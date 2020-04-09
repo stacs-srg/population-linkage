@@ -27,6 +27,7 @@ abstract class ThresholdAnalysis {
     static final long SEED = 87626L;
     static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
     static final int CHECK_ALL_RECORDS = -1;
+    private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;
@@ -75,9 +76,9 @@ abstract class ThresholdAnalysis {
         setupRecords();
     }
 
-    private static int thresholdToIndex(final double threshold) {
+    private static int distanceToIndex(final double distance) {
 
-        return (int) (threshold * (NUMBER_OF_THRESHOLDS_SAMPLED - 1) + EPSILON);
+        return (int) (distance * (NUMBER_OF_DISTANCES_SAMPLED - 1) + EPSILON);
     }
 
     private static double indexToThreshold(final int index) {
@@ -86,14 +87,9 @@ abstract class ThresholdAnalysis {
     }
 
     private static String getCallingClassName() {
-        try {
-            throw new RuntimeException();
-        } catch (RuntimeException e) {
-            String full_classname = e.getStackTrace()[2].getClassName(); // need to jump over getCallingClassName frame and getLinkageResultsFilename frame
-            String simple_classname = full_classname.substring(full_classname.lastIndexOf(".") + 1); // find last dot in classpath and then loose that too.
-            System.out.println("Calling class = " + simple_classname);
-            return simple_classname;
-        }
+
+        String full_classname = new RuntimeException().getStackTrace()[2].getClassName(); // need to jump over getCallingClassName frame and getLinkageResultsFilename frame
+        return full_classname.substring(full_classname.lastIndexOf(".") + 1);
     }
 
     static String getLinkageResultsFilename() {
@@ -278,13 +274,13 @@ abstract class ThresholdAnalysis {
             final Sample[] samples = linkage_results.get(run_number).get(metric_name);
             final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
 
-            final RecordPair proposedLink = new RecordPair(record1, record2, distance);
+            final RecordPair possible_link = new RecordPair(record1, record2, distance);
 
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                recordSample(threshold_index, samples, is_true_link, distance, proposedLink);
+                recordSample(threshold_index, samples, is_true_link, possible_link);
             }
 
-            final int index = thresholdToIndex(distance);
+            final int index = distanceToIndex(distance);
 
             if (is_true_link) {
                 link_counts[index]++;
@@ -444,11 +440,11 @@ abstract class ThresholdAnalysis {
         return true;
     }
 
-    private void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, final double distance, RecordPair proposedLink) {
+    private void recordSample(final int threshold_index, final Sample[] samples, final boolean is_true_link, RecordPair possible_link) {
 
         final double threshold = indexToThreshold(threshold_index);
 
-        if (distance <= threshold && isViableLink(proposedLink)) {
+        if (possible_link.distance <= threshold && isViableLink(possible_link)) {
 
             if (is_true_link) {
                 samples[threshold_index].tp++;

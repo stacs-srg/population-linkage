@@ -16,6 +16,13 @@ import java.util.Map;
 
 public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
 
+    public static final List<Integer> COMPARISON_FIELDS = Arrays.asList(
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME
+    );
+
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
@@ -35,8 +42,8 @@ public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
         super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
-    @Override
-    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+    public static LinkStatus trueMatch(LXP record1, LXP record2) {
+
         final String b1_mother_id = record1.getString(Death.MOTHER_IDENTITY);
         final String b2_mother_id = record2.getString(Death.MOTHER_IDENTITY);
 
@@ -49,6 +56,12 @@ public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
                 b1_father_id.isEmpty() && b2_father_id.isEmpty() ) return LinkStatus.UNKNOWN;
 
         return LinkStatus.NOT_TRUE_MATCH;
+    }
+
+    @Override
+    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+
+        return trueMatch(record1, record2);
     }
 
     @Override
@@ -78,12 +91,11 @@ public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Arrays.asList(
-                Death.FATHER_FORENAME,
-                Death.FATHER_SURNAME,
-                Death.MOTHER_FORENAME,
-                Death.MOTHER_MAIDEN_SURNAME
-        );
+        return getComparisonFields();
+    }
+
+    public static List<Integer> getComparisonFields() {
+        return COMPARISON_FIELDS;
     }
 
     @Override

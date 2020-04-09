@@ -1,8 +1,5 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
-import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
@@ -42,7 +39,8 @@ public class Constants {
     public static final List<StringMetric> PHONETIC_COMPARATORS = Arrays.asList(
             METAPHONE, NYSIIS);
 
-    public static final List<StringMetric> BASE_METRICS = concatenate(TRUE_METRICS, PSEUDO_METRICS, PHONETIC_COMPARATORS);
+//    public static final List<StringMetric> BASE_METRICS = concatenate(TRUE_METRICS, PSEUDO_METRICS, PHONETIC_COMPARATORS);
+    public static final List<StringMetric> BASE_METRICS = Arrays.asList(DICE);
 
     public static String stringRepresentationOf(List<Integer> fields, Class record, List<String> labels) {
         StringBuilder sb = new StringBuilder();
