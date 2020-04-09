@@ -1,32 +1,27 @@
+# Prints a F1 power table.
+# This is used to create the power tables in the paper.
+# Output is in the form of: filename, metric, power, max F1 measure, threshold for F1 max
+
 setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
 
 path <- "~/repos/github/population-linkage/src/main/resources/"
 
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
-
-bd <- "UmeaBirthDeathPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
-
-gb <- "UmeaGroomBirthPRFByThreshold.csv"
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
-
-bgs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
-
-bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
-bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
 bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
+bgsv <- "UmeaBrideGroomSiblingViabilityPRFByThreshold.csv"
+bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
 dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
+bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
+gbv <- "UmeaGroomBirthViabilityPRFByThreshold.csv"
 bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
+gbsv <- "UmeaGroomBrideSiblingViabilityPRFByThreshold.csv"
+bbsv <- "UmeaBrideBrideSiblingViabilityPRFByThreshold.csv"
+ggsv <- "UmeaGroomGroomSiblingViabilityPRFByThreshold.csv"
+
+bbv <- "UmeaBrideBirthViabilityPRFByThreshold.csv"
 
 
-filenames <- c( bfv,bmv,bdv,dsv,bsv  ) 
-#filenames <- c( bm, bf, bs, ds, bd,gb,bb, bgs,bbs,ggs,gbs )
+filenames <- c( bdv,bgsv,bfv,dsv,bmv,gbv,bsv,gbsv,bbsv,ggsv,bbv )
 
 heightvswidth <- function( metric, subsetted ) {
   
@@ -136,10 +131,6 @@ all_results <- data.frame(metric=character(),
 #                            fudge=double(),
                             stringsAsFactors=FALSE)
 
-
-
-#filename <- bm
-#process_data( filename )
 
 for( filename in filenames ) {
   rm( list=c("mydata"))

@@ -1,5 +1,8 @@
-INPUT_FILE_PATH <- "/Users/graham/Desktop/dummy.csv"
-OUTPUT_DIRECTORY_PATH <- "/Users/graham/Desktop/f_measure_max_error"
+# This program used to generate the convergence graphs in the paper.
+# Currently these are numbered 4 & 5 and have titles "Evolution of aggregate errors in F1-measure..."
+
+INPUT_FILE_PATH <- "/Users/al/Documents/Current/Results/2019-03-08-Umea-full-nXn/UmeaBirthSiblingLPRFByThreshold-full.csv"
+OUTPUT_DIRECTORY_PATH <- "/tmp/"
 
 source("FunctionBank.R")
 

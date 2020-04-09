@@ -3,25 +3,22 @@ source("FunctionBank.R")
 
 path <- "~/repos/github/population-linkage/src/main/resources/"
 
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
-
-db <- "UmeaBirthDeathPRFByThreshold.csv"
 bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
+bgsv <- "UmeaBrideGroomSiblingViabilityPRFByThreshold.csv"
+bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
+dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
+bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
+gbv <- "UmeaGroomBirthViabilityPRFByThreshold.csv"
+bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
+gbsv <- "UmeaGroomBrideSiblingViabilityPRFByThreshold.csv"
+bbsv <- "UmeaBrideBrideSiblingViabilityPRFByThreshold.csv"
+ggsv <- "UmeaGroomGroomSiblingViabilityPRFByThreshold.csv"
 
-gb <- "UmeaGroomBirthPRFByThreshold.csv"
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
+bbv <- "UmeaBrideBirthViabilityPRFByThreshold.csv"
 
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
+filenames <- c( bdv,bgsv,bfv,dsv,bmv,gbv,bsv,gbsv,bbsv,ggsv,bbv )
 
-filenames <- c( bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
-
-filename <- db
+filename <- bdv
 
 # Takes something like Sigma2-Levenshtein-16-20-14-15--13-19-11-12 and returns Levenshtein
 reduceMetricName <- function( str) {

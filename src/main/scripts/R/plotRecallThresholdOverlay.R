@@ -3,21 +3,20 @@ source("FunctionBank.R")
 
 path <- "~/repos/github/population-linkage/src/main/resources/"
 
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
+bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
+bgsv <- "UmeaBrideGroomSiblingViabilityPRFByThreshold.csv"
+bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
+dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
+bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
+gbv <- "UmeaGroomBirthViabilityPRFByThreshold.csv"
+bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
+gbsv <- "UmeaGroomBrideSiblingViabilityPRFByThreshold.csv"
+bbsv <- "UmeaBrideBrideSiblingViabilityPRFByThreshold.csv"
+ggsv <- "UmeaGroomGroomSiblingViabilityPRFByThreshold.csv"
 
-db <- "UmeaBirthDeathPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
+bbv <- "UmeaBrideBirthViabilityPRFByThreshold.csv"
 
-gb <- "UmeaGroomBirthPRFByThreshold.csv"
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
-
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
-
-filenames <- c( bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
+filenames <- c( bdv,bgsv,bfv,dsv,bmv,gbv,bsv,gbsv,bbsv,ggsv,bbv )
 
 process_data <- function( filename ) {
   
@@ -81,11 +80,11 @@ plot <- function( subsetted, filename ) {
     ylab( "recall" ) +
     ylim(0,1) +
     xlab( "threshold") +
-    scale_colour_manual(values=cbPalette) +
-    facet_wrap(~metric)
+    scale_colour_manual(values=cbPalette) #+
+  #facet_wrap(~metric)
   
   return(gg)
-}
+} 
 
 for( f in filenames ) {
   rm( list=c("mydata"))

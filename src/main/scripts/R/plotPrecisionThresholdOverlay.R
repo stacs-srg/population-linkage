@@ -3,30 +3,20 @@ source("FunctionBank.R")
 
 path <- "~/repos/github/population-linkage/src/main/resources/"
 
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
-
-db <- "UmeaBirthDeathPRFByThreshold.csv"
-dbv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
-
-gb <- "UmeaGroomBirthPRFByThreshold.csv"
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
-
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
-
-bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
-bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
 bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
+bgsv <- "UmeaBrideGroomSiblingViabilityPRFByThreshold.csv"
+bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
 dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
+bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
+gbv <- "UmeaGroomBirthViabilityPRFByThreshold.csv"
 bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
+gbsv <- "UmeaGroomBrideSiblingViabilityPRFByThreshold.csv"
+bbsv <- "UmeaBrideBrideSiblingViabilityPRFByThreshold.csv"
+ggsv <- "UmeaGroomGroomSiblingViabilityPRFByThreshold.csv"
 
+bbv <- "UmeaBrideBirthViabilityPRFByThreshold.csv"
 
-filenames <- c( bfv,bmv,bdv,dsv,bsv  ) 
-#filenames <- c( dbv,bfv,bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
+filenames <- c( bdv,bgsv,bfv,dsv,bmv,gbv,bsv,gbsv,bbsv,ggsv,bbv )
 
 process_data <- function( filename ) {
   
@@ -48,6 +38,12 @@ process_data <- function( filename ) {
 reduce <- function( str) {
   
   return( strsplit( str,"-" )[[1]][2] )
+}
+
+expt_name <- function( filename ) {
+  name <-substr( filename, 5, nchar(filename))
+  name <- strsplit( name,"P" )[[1]]  # eliminate text after PRF
+  return( strsplit( name,"Viability" )[[1]] )  # eliminate Viability at end
 }
 
 plot <- function( subsetted, filename ) {
@@ -84,13 +80,13 @@ plot <- function( subsetted, filename ) {
   palette( cbPalette )
   gg <- ggplot( results, aes( x=threshold ) ) +
     geom_line( aes( y=precison, colour=as.factor(results$metric)), show.legend=T ) +
-    ggtitle( paste( "Threshold vs Precision for",filename ) ) +
+    ggtitle( paste( "Threshold vs Precision for",expt_name( filename ) ) ) +
     theme(legend.position="bottom") +
     ylab( "Precision" ) +
     ylim(0,1) +
     xlab( "threshold") +
     scale_colour_manual(values=cbPalette) # +
-    # facet_wrap(~metric) # add in facet wrap to put on sepearate graphs.
+    # facet_wrap(~metric) # add in facet wrap to put on separate graphs.
   
   return(gg)
 }
