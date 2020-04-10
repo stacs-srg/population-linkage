@@ -740,6 +740,24 @@ public abstract class LinkageRecipe {
         return record_repository;
     }
 
+    static boolean equalsNonEmpty(final String s1, final String s2) {
+        return !s1.isEmpty() && s1.equals(s2);
+    }
+
+    static boolean allEmpty(final String... strings) {
+        for (String s : strings) {
+            if (!s.isEmpty()) return false;
+        }
+        return true;
+    }
+
+    static boolean anyEmpty(final String... strings) {
+        for (String s : strings) {
+            if (s.isEmpty()) return true;
+        }
+        return false;
+    }
+
     /*
     --------- DEBUG -----------
      */

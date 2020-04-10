@@ -108,24 +108,6 @@ public class BirthBirthSiblingLinkageRecipe extends LinkageRecipe {
         return LinkStatus.NOT_TRUE_MATCH;
     }
 
-    private static boolean equalsNonEmpty(final String s1, final String s2) {
-        return !s1.isEmpty() && s1.equals(s2);
-    }
-
-    private static boolean allEmpty(final String... strings) {
-        for (String s : strings) {
-            if (!s.isEmpty()) return false;
-        }
-        return true;
-    }
-
-    private static boolean anyEmpty(final String... strings) {
-        for (String s : strings) {
-            if (s.isEmpty()) return true;
-        }
-        return false;
-    }
-
     @Override
     public String getLinkageType() {
         return linkageType;

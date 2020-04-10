@@ -5,7 +5,6 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathDeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
@@ -32,12 +31,14 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
     @Override
     protected LinkStatus isTrueMatch(LXP record1, LXP record2) {
 
-        final String d1_parent_id = record1.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
-        final String d2_parent_id = record2.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
+        return DeathDeathSiblingLinkageRecipe.trueMatch(record1, record2);
 
-        if (d1_parent_id.isEmpty() || d2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
-
-        return d1_parent_id.equals(d2_parent_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
+//        final String d1_parent_id = record1.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
+//        final String d2_parent_id = record2.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
+//
+//        if (d1_parent_id.isEmpty() || d2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
+//
+//        return d1_parent_id.equals(d2_parent_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
     }
 
     @Override

@@ -44,16 +44,20 @@ public class DeathDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
-        final String b1_mother_id = record1.getString(Death.MOTHER_IDENTITY);
-        final String b2_mother_id = record2.getString(Death.MOTHER_IDENTITY);
+        final String d1_mother_id = record1.getString(Death.MOTHER_IDENTITY);
+        final String d2_mother_id = record2.getString(Death.MOTHER_IDENTITY);
 
-        final String b1_father_id = record1.getString(Death.FATHER_IDENTITY);
-        final String b2_father_id = record2.getString(Death.FATHER_IDENTITY);
+        final String d1_father_id = record1.getString(Death.FATHER_IDENTITY);
+        final String d2_father_id = record2.getString(Death.FATHER_IDENTITY);
 
-        if (!b1_mother_id.isEmpty() && b1_mother_id.equals(b2_mother_id) && !b1_father_id.isEmpty() && b1_father_id.equals(b2_father_id)) return LinkStatus.TRUE_MATCH;
+        final String d1_parent_marriage_id = record1.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
+        final String d2_parent_marriage_id = record2.getString(Death.PARENT_MARRIAGE_RECORD_IDENTITY);
 
-        if ( b1_mother_id.isEmpty() && b2_mother_id.isEmpty() &&
-                b1_father_id.isEmpty() && b2_father_id.isEmpty() ) return LinkStatus.UNKNOWN;
+        if (equalsNonEmpty(d1_parent_marriage_id, d2_parent_marriage_id)) return LinkStatus.TRUE_MATCH;
+
+        if (equalsNonEmpty(d1_mother_id, d2_mother_id) && equalsNonEmpty(d1_father_id, d2_father_id)) return LinkStatus.TRUE_MATCH;
+
+        if (allEmpty(d1_mother_id, d2_mother_id, d1_father_id, d2_father_id)) return LinkStatus.UNKNOWN;
 
         return LinkStatus.NOT_TRUE_MATCH;
     }
