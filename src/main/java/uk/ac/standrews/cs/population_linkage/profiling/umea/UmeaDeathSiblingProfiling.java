@@ -21,6 +21,7 @@ public class UmeaDeathSiblingProfiling {
 
     public static final Dice BASE_METRIC = Constants.DICE;
     private static final double DISTANCE_THRESHOLD = 0.48;
+    private static final int OUTER_LOOP_SIZE = 25000;
 
     public static void main(String[] args) {
 
@@ -56,7 +57,7 @@ public class UmeaDeathSiblingProfiling {
 
         Metric<LXP> metric = new Sigma(BASE_METRIC, DeathDeathSiblingLinkageRecipe.getComparisonFields());
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < OUTER_LOOP_SIZE; i++) {
 
              for (int j = i + 1; j < size; j++) {
 
@@ -111,8 +112,8 @@ public class UmeaDeathSiblingProfiling {
 
             if (i%100 == 0) {
 
-                System.out.println("without viability check");
-                printCounts(tp_without_viability, fp_without_viability, tn_without_viability, fn_without_viability, unknown_count, total);
+//                System.out.println("without viability check");
+//                printCounts(tp_without_viability, fp_without_viability, tn_without_viability, fn_without_viability, unknown_count, total);
 
                 System.out.println("with viability check");
                 printCounts(tp_with_viability, fp_with_viability, tn_with_viability, fn_with_viability, unknown_count, total);
@@ -136,8 +137,8 @@ public class UmeaDeathSiblingProfiling {
         System.out.printf("unknown: %,d (%.2f%%)\n\n", unknown_count, 100.0 * unknown_count / (double) total1);
         System.out.printf("precision: %.2f%%\n", precision);
         System.out.printf("recall: %.2f%%\n\n", recall);
-        System.out.printf("total1: %,d\n", total1);
-        System.out.printf("total2: %,d\n", total2);
+        System.out.printf("total: %,d\n", total1);
+//        System.out.printf("total2: %,d\n", total2);
     }
 
     public static void printPercentage(final long count, final long total, final String label) {
