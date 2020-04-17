@@ -1,24 +1,7 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
+source("inputFiles.R")
 
-path <- "~/repos/github/population-linkage/src/main/resources/"
-
-bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
-bgsv <- "UmeaBrideGroomSiblingViabilityPRFByThreshold.csv"
-bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
-dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
-bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
-gbv <- "UmeaGroomBirthViabilityPRFByThreshold.csv"
-bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
-gbsv <- "UmeaGroomBrideSiblingViabilityPRFByThreshold.csv"
-bbsv <- "UmeaBrideBrideSiblingViabilityPRFByThreshold.csv"
-ggsv <- "UmeaGroomGroomSiblingViabilityPRFByThreshold.csv"
-
-bbv <- "UmeaBrideBirthViabilityPRFByThreshold.csv"
-
-filenames <- c( bdv,bgsv,bfv,dsv,bmv,gbv,bsv,gbsv,bbsv,ggsv,bbv )
-
-filename <- bdv
+filename <- bd
 
 # Takes something like Sigma2-Levenshtein-16-20-14-15--13-19-11-12 and returns Levenshtein
 reduceMetricName <- function( str) {
@@ -66,7 +49,6 @@ createRecallTable <- function( filename ) {
       results[ nrow(results)+1,"metric" ] <- metric # reduceMetricName( metric )
       results[ nrow(results),"threshold" ] <- thresh
       results[ nrow(results),"recall" ] <- metric_and_thresh$recall
-    
     }
   }
   
@@ -75,5 +57,3 @@ createRecallTable <- function( filename ) {
   
 results <- createRecallTable( filename )
 write.csv(results,paste0( "/tmp/",reduceSourceName( filename ),"-recall",".csv"), row.names = TRUE)
-
-

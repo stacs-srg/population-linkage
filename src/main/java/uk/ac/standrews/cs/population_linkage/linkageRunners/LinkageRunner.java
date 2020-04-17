@@ -1,23 +1,12 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
-import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
-import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.helpers.GroundTruthLinkCounter;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkers.Linker;
+import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
+import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
+import uk.ac.standrews.cs.population_linkage.supportClasses.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -29,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
@@ -354,7 +343,6 @@ public abstract class LinkageRunner {
             System.out.println("---------------------------------------------------------------------------------------------------------------");
 
         } catch (Exception ignored) { }
-
     }
 
 
@@ -383,5 +371,4 @@ public abstract class LinkageRunner {
     public void setBaseMetric(StringMetric baseMetric) {
         this.baseMetric = baseMetric;
     }
-
 }

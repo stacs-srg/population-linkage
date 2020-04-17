@@ -1,26 +1,5 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
-
-path <- "~/repos/github/population-linkage/src/main/resources/"
-
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bfaf <- "UmeaBirthFatherAgeFilteredPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
-
-db <- "UmeaDeathBirthPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
-
-gb <- "UmeaGroomBirthPRFByThreshold.csv"
-gp <- "UmeaGroomParentsPRFByThreshold.csv"
-
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
-bp <- "UmeaBrideParentsPRFByThreshold.csv"
-
-bgs <- "UmeaBrideGroomSiblingPRFByThreshold.csv"
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
+source("inputFiles.R")
 
 filename <- bbs
 

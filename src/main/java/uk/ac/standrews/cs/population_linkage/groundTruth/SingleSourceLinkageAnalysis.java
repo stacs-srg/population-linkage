@@ -20,7 +20,7 @@ public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    void setupRecords() {
+    public void setupRecords() {
 
         System.out.println("Reading records from repository: " + repo_name);
 
@@ -35,13 +35,13 @@ public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
+    public void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
 
         processRecord(record_index, number_of_records, source_records, source_records, metric, increment_counts);
     }
 
     @Override
-    void printMetaData() {
+    public void printMetaData() {
 
         linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");

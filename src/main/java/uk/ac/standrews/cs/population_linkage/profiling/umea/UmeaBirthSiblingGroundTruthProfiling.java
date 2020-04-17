@@ -2,7 +2,7 @@ package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -40,7 +40,7 @@ public class UmeaBirthSiblingGroundTruthProfiling {
 
                 total++;
 
-                final LinkStatus linkStatus = BirthBirthSiblingLinkageRecipe.trueMatch(record_list.get(i), record_list.get(j));
+                final LinkStatus linkStatus = BirthSiblingLinkageRecipe.trueMatch(record_list.get(i), record_list.get(j));
 
                 switch (linkStatus) {
                     case TRUE_MATCH: match_count++; break;

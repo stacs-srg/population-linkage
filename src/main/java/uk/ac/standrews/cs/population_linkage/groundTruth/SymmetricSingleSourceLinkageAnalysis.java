@@ -21,7 +21,7 @@ public abstract class SymmetricSingleSourceLinkageAnalysis extends SingleSourceL
         super(store_path,repo_name, linkage_results_filename,  distance_results_filename,  number_of_records_to_be_checked, number_of_runs );
     }
 
-    protected List<Metric<LXP>> getCombinedMetrics() {
+    public List<Metric<LXP>> getCombinedMetrics() {
 
         final List<Metric<LXP>> result = new ArrayList<>();
 

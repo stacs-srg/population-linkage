@@ -1,8 +1,8 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
+setwd("~/Documents/Code/github/population-linkage/src/main/scripts/R")
 
-source("FunctionBank.R")
+source("functionBank.R")
 
-conditionLoadIntoGlobal( "~/repos/github/population-linkage/src/main/resources/UmeaBirthFatherPRFByThreshold.csv", "mydata" )
+conditionLoadIntoGlobal( "../../resources/UmeaBirthFatherIdentityPRFByThreshold.csv", "mydata" )
 
 mydata$precision <- as.numeric(mydata$precision)
 mydata$recall <- as.numeric(mydata$recall)
@@ -27,3 +27,5 @@ plotmetrics( rrr, "recall", xlim ,metric, thresholds )
 ppp <- summarySE(subsetted, measurevar="precision", groupvars=c("metric", "threshold","records.processed")) # calculate mean,stdev,stderr
 
 plotmetrics( ppp, "precision", xlim ,metric, thresholds ) 
+
+

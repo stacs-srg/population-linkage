@@ -11,11 +11,35 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
+
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Birth.FORENAME,
+            Birth.SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Death.FORENAME,
+            Death.SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME,
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME
+    );
+
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY)),
+            list(pair(Birth.STANDARDISED_ID, Death.BIRTH_RECORD_IDENTITY)),
+            list(pair(Birth.DEATH_RECORD_IDENTITY, Death.STANDARDISED_ID))
+    );
 
     public static void main(String[] args) throws BucketException {
 
@@ -23,14 +47,14 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         String resultsRepo = args[1]; // e.g. synth_results
 
         LinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo,
-                linkageType + "-links");
+                LINKAGE_TYPE + "-links");
 
         new BitBlasterLinkageRunner()
                 .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
                 );
     }
 
-    public static final String linkageType = "birth-death-identity";
+    public static final String LINKAGE_TYPE = "birth-death-identity";
 
     public BirthDeathIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);
@@ -38,31 +62,25 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+        return trueMatch(record1, record2);
+    }
 
-        final String b1_baby_id = record1.getString(Birth.CHILD_IDENTITY).trim();
-        final String d2_deceased_id = record2.getString(Death.DECEASED_IDENTITY).trim();
-
-        if (b1_baby_id.isEmpty() || d2_deceased_id.isEmpty()) {
-            return LinkStatus.UNKNOWN;
-        } else if (b1_baby_id.equals(d2_deceased_id)) {
-            return LinkStatus.TRUE_MATCH;
-        } else {
-            return LinkStatus.NOT_TRUE_MATCH;
-        }
+    public static LinkStatus trueMatch(LXP record1, LXP record2) {
+        return trueMatch(record1, record2, TRUE_MATCH_ALTERNATIVES);
     }
 
     @Override
     public String getLinkageType() {
-        return linkageType;
+        return LINKAGE_TYPE;
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Birth.class;
     }
 
     @Override
-    public Class getSearchType() {
+    public Class<? extends LXP> getSearchType() {
         return Death.class;
     }
 
@@ -78,14 +96,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Arrays.asList(
-                Birth.FATHER_FORENAME,
-                Birth.FATHER_SURNAME,
-                Birth.MOTHER_FORENAME,
-                Birth.MOTHER_MAIDEN_SURNAME,
-                Birth.FORENAME,
-                Birth.SURNAME
-        );
+        return LINKAGE_FIELDS;
     }
 
     @Override
@@ -109,28 +120,23 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() { return Arrays.asList(
-            Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
-            Death.MOTHER_FORENAME,
-            Death.MOTHER_MAIDEN_SURNAME,
-            Death.FORENAME,
-            Death.SURNAME
-        );
-    }
+    public List<Integer> getSearchMappingFields() { return SEARCH_FIELDS; }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+//        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+//        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+//        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 }

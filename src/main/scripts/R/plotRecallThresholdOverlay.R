@@ -1,22 +1,5 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
-
-path <- "~/repos/github/population-linkage/src/main/resources/"
-
-bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
-bgsv <- "UmeaBrideGroomSiblingViabilityPRFByThreshold.csv"
-bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
-dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
-bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
-gbv <- "UmeaGroomBirthViabilityPRFByThreshold.csv"
-bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
-gbsv <- "UmeaGroomBrideSiblingViabilityPRFByThreshold.csv"
-bbsv <- "UmeaBrideBrideSiblingViabilityPRFByThreshold.csv"
-ggsv <- "UmeaGroomGroomSiblingViabilityPRFByThreshold.csv"
-
-bbv <- "UmeaBrideBirthViabilityPRFByThreshold.csv"
-
-filenames <- c( bdv,bgsv,bfv,dsv,bmv,gbv,bsv,gbsv,bbsv,ggsv,bbv )
+source("inputFiles.R")
 
 process_data <- function( filename ) {
   

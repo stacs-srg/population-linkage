@@ -2,7 +2,7 @@ setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
 
 path <- "~/repos/github/population-linkage/src/main/resources/"
-f1 <- "UmeaBirthFatherPRFByThreshold.csv"
+f1 <- "UmeaBirthFatherIdentityPRFByThreshold.csv"
 f2 <- "UmeaBirthSiblingPRFByThreshold.csv"
 
 filename <- f2

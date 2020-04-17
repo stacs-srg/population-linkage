@@ -1,30 +1,16 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthMotherIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBirthIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideGroomSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathDeathSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBirthIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBrideSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.*;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.BufferedReader;
@@ -51,13 +37,15 @@ public class LinkageJobQueueHandler {
     // Linkage type defines the 'type' of linkage to be performed - the provided string should be the same as the
     // linkageType field in the relevant linkage runner class
 
+    private static final String COMMENT_INDICATOR = "#";
+
     public static void main(String[] args) throws Exception {
         Path jobQ = Paths.get(args[0]);
         Path linkageResultsFile = Paths.get(args[1]);
         Path recordCountsFile = Paths.get(args[2]);
         Path statusFile = Paths.get(args[3]);
 
-        while(getStatus(statusFile)) {
+        while (getStatus(statusFile)) {
 
             FileChannel fileChannel = getFileChannel(jobQ);
             System.out.println("Locking job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -149,37 +137,35 @@ public class LinkageJobQueueHandler {
         // TODO Replace with reflective call.
 
         switch (linkageType) {
-            case BirthBirthSiblingLinkageRecipe.linkageType:
-                return new BirthBirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BirthDeathIdentityLinkageRecipe.linkageType:
+            case BirthSiblingLinkageRecipe.LINKAGE_TYPE:
+                return new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+            case BirthDeathIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BirthDeathSiblingLinkageRecipe.linkageType:
+            case BirthDeathSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new BirthDeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BirthFatherIdentityLinkageRecipe.linkageType:
+            case BirthFatherIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new BirthFatherIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BirthMotherIdentityLinkageRecipe.linkageType:
+            case BirthMotherIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new BirthMotherIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BirthParentsMarriageLinkageRecipe.linkageType:
+            case BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE:
                 return new BirthParentsMarriageLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BrideBirthIdentityLinkageRecipe.linkageType:
-                return new BrideBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BrideBrideSiblingLinkageRecipe.linkageType:
+            case BirthBrideIdentityLinkageRecipe.LINKAGE_TYPE:
+                return new BirthBrideIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+            case BrideBrideSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new BrideBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case BrideGroomSiblingLinkageRecipe.linkageType:
+            case BrideGroomSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new BrideGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case DeathBrideOwnMarriageIdentityLinkageRecipe.linkageType:
+            case DeathBrideOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case DeathDeathSiblingLinkageRecipe.linkageType:
-                return new DeathDeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case DeathGroomOwnMarriageIdentityLinkageRecipe.linkageType:
+            case DeathSiblingLinkageRecipe.LINKAGE_TYPE:
+                return new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+            case DeathGroomOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case FatherGroomIdentityLinkageRecipe.linkageType:
+            case FatherGroomIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new FatherGroomIdentityLinkageRecipe(links_persistent_name, sourceRepo, resultsRepo);
-            case GroomBirthIdentityLinkageRecipe.linkageType:
-                return new GroomBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case GroomBrideSiblingLinkageRecipe.linkageType:
-                return new GroomBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case GroomGroomSiblingLinkageRecipe.linkageType:
+            case BirthGroomIdentityLinkageRecipe.LINKAGE_TYPE:
+                return new BirthGroomIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+            case GroomGroomSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new GroomGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             default:
                 throw new RuntimeException("LinkageType not found");
@@ -188,51 +174,51 @@ public class LinkageJobQueueHandler {
 
     private static String getLinkageFields(int n, LinkageRecipe linkageRecipe, String sourceRepo) { //String links_persistent_name, String gt_persistent_name, String sourceRepo, String resultsRepo) {
 
-        Class record;
+        Class<? extends LXP> record_type;
         List<Integer> fields;
 
-        if(n == 1) {
-            record = linkageRecipe.getStoredType();
+        if (n == 1) {
+            record_type = linkageRecipe.getStoredType();
             fields = linkageRecipe.getLinkageFields();
         } else {
-            record = linkageRecipe.getSearchType();
+            record_type = linkageRecipe.getSearchType();
             fields = linkageRecipe.getSearchMappingFields();
         }
 
-        List<String> recordLabels = getRecordLabels(record);
+        List<String> recordLabels = getRecordLabels(record_type);
 
-        return Constants.stringRepresentationOf(fields, record, recordLabels);
+        return Constants.stringRepresentationOf(fields, record_type, recordLabels);
     }
 
-    private static List<String> getRecordLabels(Class record) {
+    private static List<String> getRecordLabels(Class<? extends LXP> record_type) {
 
-        if(record.equals(Birth.class)) {
+        if (record_type.equals(Birth.class)) {
             return Birth.getLabels();
         }
 
-        if(record.equals(Marriage.class)) {
+        if (record_type.equals(Marriage.class)) {
             return Marriage.getLabels();
         }
 
-        if(record.equals(Death.class)) {
+        if (record_type.equals(Death.class)) {
             return Death.getLabels();
         }
 
-        throw new RuntimeException("Record type not resolved:" + record);
+        throw new RuntimeException("Record type not resolved:" + record_type);
     }
 
     private static FileChannel getFileChannel(Path jobFile) throws IOException {
-        HashSet<StandardOpenOption> options = new HashSet<>(Sets.newHashSet(StandardOpenOption.READ, StandardOpenOption.WRITE));
+        Set<StandardOpenOption> options = new HashSet<>(Sets.newHashSet(StandardOpenOption.READ, StandardOpenOption.WRITE));
         return FileChannel.open(jobFile, options);
     }
 
     private static String toRepoName(String populationName, String populationSize, String populationNumber, String corruptionNumber, boolean corrupted) {
 
-        if(populationSize.equals("-") && populationNumber.equals("-") && corruptionNumber.equals("-"))
+        if (populationSize.equals("-") && populationNumber.equals("-") && corruptionNumber.equals("-"))
             return populationName;
 
         String sourceRepoName;
-        if(corrupted)
+        if (corrupted)
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
         else {
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_clean";
@@ -256,7 +242,7 @@ public class LinkageJobQueueHandler {
             while (buffer.hasRemaining()) {
 
                 char c = (char) buffer.get();
-                if(c == '\n') {
+                if (c == '\n') {
 
                     data.add(Arrays.asList(line.split(",")));
 
@@ -267,7 +253,7 @@ public class LinkageJobQueueHandler {
 
             }
 
-            if(!line.equals("")) data.add(Arrays.asList(line.split(",")));
+            if (!line.equals("")) data.add(Arrays.asList(line.split(",")));
 
             buffer.clear();
             Thread.sleep(1000);
@@ -278,17 +264,16 @@ public class LinkageJobQueueHandler {
         return data;
     }
 
-
     public static void overwriteToJobFile(FileChannel jobFile, List<List<String>> jobs) throws IOException {
         jobFile.truncate(0);
 
 
         StringBuilder sb = new StringBuilder();
 
-        for(List<String> row : jobs) {
+        for (List<String> row : jobs) {
             boolean first = true;
             for (String value : row) {
-                if(first) {
+                if (first) {
                     sb.append(value);
                     first = false;
                 } else {
@@ -307,7 +292,7 @@ public class LinkageJobQueueHandler {
 
         buf.flip();
 
-        while(buf.hasRemaining()) {
+        while (buf.hasRemaining()) {
             jobFile.write(buf);
         }
     }
@@ -316,17 +301,17 @@ public class LinkageJobQueueHandler {
         // read in file
         ArrayList<String> lines = new ArrayList<>(getAllLines(statusPath));
 
-        if(!lines.isEmpty()) {
+        if (!lines.isEmpty()) {
             switch (lines.get(0)) {
-                case "run": return true;
-                case "terminate" : return false;
+                case "run":
+                    return true;
+                case "terminate":
+                    return false;
             }
         }
 
         return true;
     }
-
-    private static final String COMMENT_INDICATOR = "#";
 
     public static List<String> getAllLines(Path path) throws IOException {
 
@@ -342,7 +327,6 @@ public class LinkageJobQueueHandler {
                     lines.add(line);
                 }
             }
-            reader.close();
         }
 
         return lines;

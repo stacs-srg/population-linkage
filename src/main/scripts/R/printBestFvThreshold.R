@@ -1,26 +1,5 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
-
-path <- "~/repos/github/population-linkage/src/main/resources/"
-
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bfaf <- "UmeaBirthFatherAgeFilteredPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
-
-db <- "UmeaDeathBirthPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
-
-gb <- "UmeaGroomBirthPRFByThreshold.csv"
-gp <- "UmeaGroomParentsPRFByThreshold.csv"
-
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
-bp <- "UmeaBrideParentsPRFByThreshold.csv"
-
-bgs <- "UmeaBrideGroomSiblingPRFByThreshold.csv"
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
+source("inputFiles.R")
 
 filename <- bs
 
@@ -56,9 +35,6 @@ printBestF <- function( metric ) {
   }
   
   print( paste( results[ 1,"metric" ], results[ 1,"threshold" ], results[ 1,"best_f" ] ) )
-  
 }
 
 for( metric in unique( subsetted$metric ) ) { printBestF(metric) }
-  
-

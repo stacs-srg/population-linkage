@@ -10,11 +10,28 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
+
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME
+    );
+
+    /**
+     * Various possible relevant sources of ground truth for siblings:
+     * * identities of parents
+     * * identities of parents' birth records
+     */
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY), pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY)),
+            list(pair(Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY), pair(Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY))
+    );
 
     public static void main(String[] args) throws BucketException {
 
@@ -22,14 +39,14 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
         String resultsRepo = args[1]; // e.g. synth_results
 
         LinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, resultsRepo,
-                linkageType + "-links");
+                LINKAGE_TYPE + "-links");
 
         new BitBlasterLinkageRunner()
                 .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
                 );
     }
 
-    public static final String linkageType = "groom-groom-sibling";
+    public static final String LINKAGE_TYPE = "groom-groom-sibling";
 
     public GroomGroomSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);
@@ -37,29 +54,32 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        final String m1_mother_id = record1.getString(Marriage.GROOM_MOTHER_IDENTITY);
-        final String m2_mother_id = record2.getString(Marriage.GROOM_MOTHER_IDENTITY);
+         return trueMatch(record1, record2);
+    }
 
-        final String m1_father_id = record1.getString(Marriage.GROOM_FATHER_IDENTITY);
-        final String m2_father_id = record2.getString(Marriage.GROOM_FATHER_IDENTITY);
+    public static LinkStatus trueMatch(LXP record1, LXP record2) {
 
-        if (!m1_mother_id.isEmpty() && m1_mother_id.equals(m2_mother_id) && !m1_father_id.isEmpty() && m1_father_id.equals(m2_father_id)) return LinkStatus.TRUE_MATCH;
+        final String m1_groom_id = record1.getString(Marriage.GROOM_IDENTITY);
+        final String m2_groom_id = record2.getString(Marriage.GROOM_IDENTITY);
 
-        return LinkStatus.NOT_TRUE_MATCH;
+        // Exclude matches for multiple marriages of the same groom.
+        if (m1_groom_id.equals(m2_groom_id)) return LinkStatus.NOT_TRUE_MATCH;
+
+        return trueMatch(record1, record2, TRUE_MATCH_ALTERNATIVES);
     }
 
     @Override
     public String getLinkageType() {
-        return linkageType;
+        return LINKAGE_TYPE;
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Marriage.class;
     }
 
     @Override
-    public Class getSearchType() {
+    public Class<? extends LXP> getSearchType() {
         return Marriage.class;
     }
 
@@ -75,12 +95,7 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Arrays.asList(
-                Marriage.GROOM_FATHER_FORENAME,
-                Marriage.GROOM_FATHER_SURNAME,
-                Marriage.GROOM_MOTHER_FORENAME,
-                Marriage.GROOM_MOTHER_MAIDEN_SURNAME
-        );
+        return LINKAGE_FIELDS;
     }
 
     @Override
@@ -93,8 +108,8 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
         if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
-            int year_of_birth1 = getBirthYearOfSpouse(proposedLink.record1, false);
-            int year_of_birth2 = getBirthYearOfSpouse(proposedLink.record2, false);
+            int year_of_birth1 = getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
+            int year_of_birth2 = getBirthYearOfPersonBeingMarried(proposedLink.record2, false);
 
             return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
 
@@ -105,27 +120,24 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getSearchMappingFields() {
-        return Arrays.asList(
-                Marriage.GROOM_FATHER_FORENAME,
-                Marriage.GROOM_FATHER_SURNAME,
-                Marriage.GROOM_MOTHER_FORENAME,
-                Marriage.GROOM_MOTHER_MAIDEN_SURNAME
-        );
+        return LINKAGE_FIELDS;
     }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+//        return getGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+//        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+//        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
-
 }

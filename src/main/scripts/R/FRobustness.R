@@ -1,26 +1,5 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
-
-path <- "~/repos/github/population-linkage/src/main/resources/"
-
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
-
-db <- "UmeaDeathBirthPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
-
-gp <- "UmeaGroomParentsPRFByThreshold.csv"
-
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
-bp <- "UmeaBrideParentsPRFByThreshold.csv"
-
-bgs <- "UmeaBrideGroomSiblingPRFByThreshold.csv"
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
-
-filenames <- c( bm,bf,bs,db,ds,gp,bb,bp,bgs,bbs,ggs,gbs )
+source("inputFiles.R")
 
 heightvswidth <- function( metric, subsetted ) {
   

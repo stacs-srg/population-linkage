@@ -1,22 +1,5 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
-
-path <- "~/repos/github/population-linkage/src/main/resources/"
-
-bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
-bgsv <- "UmeaBrideGroomSiblingViabilityPRFByThreshold.csv"
-bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
-dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
-bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
-gbv <- "UmeaGroomBirthViabilityPRFByThreshold.csv"
-bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
-gbsv <- "UmeaGroomBrideSiblingViabilityPRFByThreshold.csv"
-bbsv <- "UmeaBrideBrideSiblingViabilityPRFByThreshold.csv"
-ggsv <- "UmeaGroomGroomSiblingViabilityPRFByThreshold.csv"
-
-bbv <- "UmeaBrideBirthViabilityPRFByThreshold.csv"
-
-filenames <- c( bdv,bgsv,bfv,dsv,bmv,gbv,bsv,gbsv,bbsv,ggsv,bbv )
+source("inputFiles.R")
 
 process_data <- function( filename ) {
   
@@ -32,8 +15,7 @@ process_data <- function( filename ) {
   
   return( plot( subsetted,filename ) )
 }
-  
-  
+
 # Takes something like Sigma2-Levenshtein-16-20-14-15--13-19-11-12 and returns Levenshtein
 reduce <- function( str) {
   
@@ -42,8 +24,7 @@ reduce <- function( str) {
 
 expt_name <- function( filename ) {
   name <-substr( filename, 5, nchar(filename))
-  name <- strsplit( name,"P" )[[1]]  # eliminate text after PRF
-  return( strsplit( name,"Viability" )[[1]] )  # eliminate Viability at end
+  return( strsplit( name,"P" )[[1]] )  # eliminate text after PRF
 }
 
 plot <- function( subsetted, filename ) {
@@ -95,7 +76,3 @@ for( f in filenames ) {
   rm( list=c("mydata"))
   ggsave( paste( "/tmp/", f, ".png", sep="" ),process_data( f ) )
 }
-
-#process_data( bfaf ) 
-  
-

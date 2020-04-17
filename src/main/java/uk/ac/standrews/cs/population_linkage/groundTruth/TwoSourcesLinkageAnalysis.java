@@ -18,7 +18,7 @@ import java.util.List;
  * This class performs linkage analysis on data pulled from two different data sources, for example births and deaths.
  * Classes extending this class are required to implement the following methods:
  *     getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
- *     <getSearchRecords(RecordRepository record_repository), which provides the records from the second data source
+ *     getSearchRecords(RecordRepository record_repository), which provides the records from the second data source
  *     getSourceType(), which provides a textual description of the first data source, for example, "births"
  *     getSearchType(), which provides a textual description of the first data source, for example, "deaths"
  *     LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of datum's from source 1 and source 2
@@ -42,7 +42,7 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     protected abstract List<Integer> getComparisonFields2();
 
     @Override
-    protected List<Metric<LXP>> getCombinedMetrics() {
+    public List<Metric<LXP>> getCombinedMetrics() {
 
         final List<Metric<LXP>> result = new ArrayList<>();
 
@@ -53,7 +53,7 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    void setupRecords() {
+    public void setupRecords() {
 
         System.out.println("Reading records from repository: " + repo_name );
 
@@ -72,13 +72,13 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
+    public void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
 
         processRecord(record_index, number_of_records2, source_records, source_records2, metric, increment_counts);
     }
 
     @Override
-    void printMetaData() {
+    public void printMetaData() {
 
         linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");

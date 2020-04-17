@@ -1,31 +1,7 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
 source("FunctionBank.R")
+source("inputFiles.R")
 
-path <- "~/repos/github/population-linkage/src/main/resources/"
-
-bm <- "UmeaBirthMotherPRFByThreshold.csv"
-bf <- "UmeaBirthFatherPRFByThreshold.csv"
-bs <- "UmeaBirthSiblingPRFByThreshold.csv"
-
-db <- "UmeaBirthDeathPRFByThreshold.csv"
-dbv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
-ds <- "UmeaDeathSiblingPRFByThreshold.csv"
-
-gb <- "UmeaGroomBirthPRFByThreshold.csv"
-bb <- "UmeaBrideBirthPRFByThreshold.csv"
-
-bbs <- "UmeaBrideBrideSiblingPRFByThreshold.csv"
-ggs <- "UmeaGroomGroomSiblingPRFByThreshold.csv"
-gbs <- "UmeaGroomBrideSiblingPRFByThreshold.csv"
-
-bfv <- "UmeaBirthFatherViabilityPRFByThreshold.csv"
-bmv <- "UmeaBirthMotherViabilityPRFByThreshold.csv"
-bdv <- "UmeaBirthDeathViabilityPRFByThreshold.csv"
-dsv <- "UmeaDeathSiblingViabilityPRFByThreshold.csv"
-bsv <- "UmeaBirthSiblingViabilityPRFByThreshold.csv"
-
-filenames <- c( bfv,bmv,bdv,dsv,bsv  ) 
-#filenames <- c( dbv, db ) #c( bfv,bm,bf,bs,db,gb,bb,bbs,ggs,gbs,ds )
+filenames <- c( bf,bm,bd,ds,bs  )
 
 process_data <- function( filename ) {
   
@@ -42,7 +18,6 @@ process_data <- function( filename ) {
 #  return( plot( subsetted,filename ) )
   return( plot( subsetted,filename ) )
 }
-  
   
 # Takes something like Sigma2-Levenshtein-16-20-14-15--13-19-11-12 and returns Levenshtein
 reduce <- function( str) {
@@ -100,7 +75,3 @@ for( f in filenames ) {
   rm( list=c("mydata"))
   ggsave( paste( "/tmp/", f, ".png", sep="" ),process_data( f ) )
 }
-
-#process_data( bfaf ) 
-  
-

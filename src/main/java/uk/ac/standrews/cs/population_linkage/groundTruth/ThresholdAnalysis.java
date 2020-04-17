@@ -25,8 +25,8 @@ import java.util.concurrent.CountDownLatch;
 abstract class ThresholdAnalysis {
 
     static final long SEED = 87626L;
-    static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
-    static final int CHECK_ALL_RECORDS = -1;
+    protected static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
+    protected static final int CHECK_ALL_RECORDS = -1;
     private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
@@ -92,12 +92,12 @@ abstract class ThresholdAnalysis {
         return full_classname.substring(full_classname.lastIndexOf(".") + 1);
     }
 
-    static String getLinkageResultsFilename() {
+    protected static String getLinkageResultsFilename() {
 
         return getCallingClassName() + "PRFByThreshold";
     }
 
-    static String getDistanceResultsFilename() {
+    protected static String getDistanceResultsFilename() {
 
         return getCallingClassName() + "LinksByDistance";
     }
@@ -105,25 +105,25 @@ abstract class ThresholdAnalysis {
     /**
      * @return list of comparison fields that will be used for comparing records
      */
-    abstract List<Integer> getComparisonFields();
+    public abstract List<Integer> getComparisonFields();
 
-    abstract String getDatasetName();
+    public abstract String getDatasetName();
 
-    abstract String getSourceType();
+    public abstract String getSourceType();
 
-    abstract String getLinkageType();
+    public abstract String getLinkageType();
 
-    abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
+    public abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
 
-    abstract void setupRecords();
+    public abstract void setupRecords();
 
-    abstract void processRecord(int i, Metric<LXP> metric, boolean evaluating_first_metric);
+    public abstract void processRecord(int i, Metric<LXP> metric, boolean evaluating_first_metric);
 
-    abstract void printMetaData();
+    public abstract void printMetaData();
 
-    abstract LinkStatus isTrueMatch(final LXP record1, final LXP record2);
+    public abstract LinkStatus isTrueMatch(final LXP record1, final LXP record2);
 
-    abstract List<Metric<LXP>> getCombinedMetrics();
+    public abstract List<Metric<LXP>> getCombinedMetrics();
 
     public void run() throws Exception {
 

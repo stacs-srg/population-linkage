@@ -39,6 +39,4 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
     SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric) {
         return new BitBlasterSearchStructureFactory<>(composite_metric, LinkageConfig.numberOfROs);
     }
-
-
 }

@@ -1,14 +1,10 @@
 package uk.ac.standrews.cs.population_linkage.CompositeLinker;
 
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBirthIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBirthIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.*;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathGroomOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.FatherGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -44,7 +40,7 @@ public class CompositeLinkageRecipe {
 
     private static void print(TreeMap<Double, LinkageQuality> thresholdResults) {
 
-        for(Map.Entry<Double, LinkageQuality> thresholdResult : thresholdResults.entrySet()) {
+        for (Map.Entry<Double, LinkageQuality> thresholdResult : thresholdResults.entrySet()) {
             System.out.println(thresholdResult.getKey() + "," + thresholdResult.getValue().toCSV());
         }
     }
@@ -56,7 +52,7 @@ public class CompositeLinkageRecipe {
         LinkageConfig.numberOfROs = 70;
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
-                new GroomBirthIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new BirthGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
                 metric, 0.2, true, 6, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> fatherGroomLinks = new BitBlasterLinkageRunner().run(
@@ -81,19 +77,19 @@ public class CompositeLinkageRecipe {
                 metric, 0.67, true, 5, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
-                new GroomBirthIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new BirthGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
                 metric, 0.67, true, 3, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> deathBrideLinks = new BitBlasterLinkageRunner().run(
                 new DeathBrideOwnMarriageIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
                 metric, 0.67, true, 3, true, false, true, false).getMapOfLinks();
 
-        Map<String, Collection<Link>> brideBirthLinks = new BitBlasterLinkageRunner().run(
-                new BrideBirthIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+        Map<String, Collection<Link>> birthBrideLinks = new BitBlasterLinkageRunner().run(
+                new BirthBrideIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
                 metric, 0.67, true, 5, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks, "death-birth-via-groom-id");
-        Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, brideBirthLinks, "death-birth-via-bride-id");
+        Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, birthBrideLinks, "death-birth-via-bride-id");
         deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)
 
         return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name), true);
@@ -106,7 +102,7 @@ public class CompositeLinkageRecipe {
         int tp = 0; // these are counters with which we use if evaluating
         int fp = 0;
 
-        for(Collection<DoubleLink> links : indirectLinks.values()) {
+        for (Collection<DoubleLink> links : indirectLinks.values()) {
             Link link = chooseIndirectLink(links);
             if (trueMatch(link, directLinkageForGT, directReversed)) {
                 tp++;
@@ -122,10 +118,8 @@ public class CompositeLinkageRecipe {
         return lq;
     }
 
-
-
     private static boolean trueMatch(Link link, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException {
-        if(directReversed) {
+        if (directReversed) {
             return directLinkageForGT.isTrueMatch(link.getRecord2().getReferend(), link.getRecord1().getReferend()).equals(TRUE_MATCH);
         } else {
             return directLinkageForGT.isTrueMatch(link.getRecord1().getReferend(), link.getRecord2().getReferend()).equals(TRUE_MATCH);
@@ -135,11 +129,11 @@ public class CompositeLinkageRecipe {
     private static Link chooseIndirectLink(Collection<DoubleLink> links) throws BucketException, PersistentObjectException {
         Link bestLink = null;
 
-        for(DoubleLink link : links) {
-            if(bestLink == null) {
+        for (DoubleLink link : links) {
+            if (bestLink == null) {
                 bestLink = link.directLink();
             } else {
-                if(bestLink.getDistance() > link.directLink().getDistance())
+                if (bestLink.getDistance() > link.directLink().getDistance())
                     bestLink = link.directLink();
             }
         }
@@ -147,18 +141,17 @@ public class CompositeLinkageRecipe {
     }
 
 
-
     private static Map<String, Collection<DoubleLink>> combineLinks(Map<String, Collection<Link>> firstLinks, Map<String, Collection<Link>> secondLinks, String linkType) throws BucketException {
 
         Map<String, Collection<DoubleLink>> doubleLinksByFirstRecordID = new HashMap<>();
 
-        for(String record1ID : firstLinks.keySet()) {
+        for (String record1ID : firstLinks.keySet()) {
 
             Collection<Link> firstLinksByID = firstLinks.get(record1ID);
-            for(Link link1 : firstLinksByID) {
+            for (Link link1 : firstLinksByID) {
 
                 String record2ID = Utilities.originalId(link1.getRecord2().getReferend());
-                if(secondLinks.get(record2ID) != null) {
+                if (secondLinks.get(record2ID) != null) {
                     for (Link link2 : secondLinks.get(record2ID)) {
                         doubleLinksByFirstRecordID.computeIfAbsent(record1ID, o ->
                                 new ArrayList<>()).add(new DoubleLink(link1, link2, linkType));

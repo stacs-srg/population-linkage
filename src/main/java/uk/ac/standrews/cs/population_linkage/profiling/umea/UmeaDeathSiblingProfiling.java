@@ -2,7 +2,7 @@ package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathDeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
@@ -55,7 +55,7 @@ public class UmeaDeathSiblingProfiling {
         final long size = record_list.size();
         System.out.println("size: " + size);
 
-        Metric<LXP> metric = new Sigma(BASE_METRIC, DeathDeathSiblingLinkageRecipe.getComparisonFields());
+        Metric<LXP> metric = new Sigma(BASE_METRIC, DeathSiblingLinkageRecipe.getComparisonFields());
 
         for (int i = 0; i < OUTER_LOOP_SIZE; i++) {
 
@@ -68,9 +68,9 @@ public class UmeaDeathSiblingProfiling {
 
                  final double distance = metric.distance(record1, record2);
 
-                 final LinkStatus match_status = DeathDeathSiblingLinkageRecipe.trueMatch(record1, record2);
+                 final LinkStatus match_status = DeathSiblingLinkageRecipe.trueMatch(record1, record2);
                  final boolean close_enough = distance <= DISTANCE_THRESHOLD;
-                 final boolean viable = DeathDeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, distance));
+                 final boolean viable = DeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, distance));
 
                  switch (match_status) {
 
@@ -95,12 +95,6 @@ public class UmeaDeathSiblingProfiling {
                          }
                          if (close_enough && viable) {
                              fp_with_viability++;
-
-//                             System.out.println("\nFP: distance: " + distance);
-//                             System.out.println("record 1: " + record1);
-//                             System.out.println("record 2: " + record2);
-
-
                          } else {
                              tn_with_viability++;
                          }
@@ -111,9 +105,6 @@ public class UmeaDeathSiblingProfiling {
             }
 
             if (i%100 == 0) {
-
-//                System.out.println("without viability check");
-//                printCounts(tp_without_viability, fp_without_viability, tn_without_viability, fn_without_viability, unknown_count, total);
 
                 System.out.println("with viability check");
                 printCounts(tp_with_viability, fp_with_viability, tn_with_viability, fn_with_viability, unknown_count, total);
@@ -138,7 +129,6 @@ public class UmeaDeathSiblingProfiling {
         System.out.printf("precision: %.2f%%\n", precision);
         System.out.printf("recall: %.2f%%\n\n", recall);
         System.out.printf("total: %,d\n", total1);
-//        System.out.printf("total2: %,d\n", total2);
     }
 
     public static void printPercentage(final long count, final long total, final String label) {

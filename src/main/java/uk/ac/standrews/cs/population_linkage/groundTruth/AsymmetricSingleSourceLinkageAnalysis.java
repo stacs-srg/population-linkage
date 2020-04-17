@@ -24,7 +24,7 @@ public abstract class AsymmetricSingleSourceLinkageAnalysis extends SingleSource
     }
 
     @Override
-    protected List<Metric<LXP>> getCombinedMetrics() {
+    public List<Metric<LXP>> getCombinedMetrics() {
 
         final List<Metric<LXP>> result = new ArrayList<>();
 
