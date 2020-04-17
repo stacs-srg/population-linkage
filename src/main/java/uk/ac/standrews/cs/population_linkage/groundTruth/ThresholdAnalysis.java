@@ -54,6 +54,8 @@ abstract class ThresholdAnalysis {
 
     ThresholdAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
 
+        System.out.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
+
         this.number_of_runs = number_of_runs;
         pairs_evaluated = new long[number_of_runs];
         pairs_ignored = new long[number_of_runs];
@@ -74,6 +76,11 @@ abstract class ThresholdAnalysis {
         run_numbers_for_metrics = initialiseRunNumbers();
 
         setupRecords();
+    }
+
+    private double getMaxHeapinGB() {
+
+        return (double)Runtime.getRuntime().maxMemory() / 1000000000;
     }
 
     private static int distanceToIndex(final double distance) {
