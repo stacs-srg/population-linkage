@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.CompositeLinker;
+package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;

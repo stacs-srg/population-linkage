@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.CompositeLinker;
+package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathBrideOwnMarriageIdentityLinkageRecipe;
