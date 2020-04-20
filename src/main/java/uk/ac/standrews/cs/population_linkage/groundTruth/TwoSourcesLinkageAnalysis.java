@@ -1,8 +1,8 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma2;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -17,22 +17,22 @@ import java.util.List;
 /**
  * This class performs linkage analysis on data pulled from two different data sources, for example births and deaths.
  * Classes extending this class are required to implement the following methods:
- *     getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
- *     getSearchRecords(RecordRepository record_repository), which provides the records from the second data source
- *     getSourceType(), which provides a textual description of the first data source, for example, "births"
- *     getSearchType(), which provides a textual description of the first data source, for example, "deaths"
- *     LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of datum's from source 1 and source 2
- *     getComparisonFields(), returns the set of fields to be used for distance comparison from data source 1 (note the name)
- *     getComparisonFields2(), returns the set of fields to be used for distance comparison from data source 2
+ * getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
+ * getSearchRecords(RecordRepository record_repository), which provides the records from the second data source
+ * getSourceType(), which provides a textual description of the first data source, for example, "births"
+ * getSearchType(), which provides a textual description of the first data source, for example, "deaths"
+ * LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of datum's from source 1 and source 2
+ * getComparisonFields(), returns the set of fields to be used for distance comparison from data source 1 (note the name)
+ * getComparisonFields2(), returns the set of fields to be used for distance comparison from data source 2
  */
 public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
 
     private List<LXP> source_records2;
     private int number_of_records2;
 
-    protected TwoSourcesLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs ) throws IOException {
+    protected TwoSourcesLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs) throws IOException {
 
-        super(store_path,repo_name, linkage_results_filename,  distance_results_filename,  number_of_records_to_be_checked, number_of_runs );
+        super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
     }
 
     protected abstract Iterable<LXP> getSourceRecords2(RecordRepository record_repository);
@@ -55,14 +55,14 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     @Override
     public void setupRecords() {
 
-        System.out.println("Reading records from repository: " + repo_name );
+        if (verbose) System.out.println("Reading records from repository: " + repo_name);
 
         final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
 
         final Iterable<LXP> records1 = getSourceRecords(record_repository);
         final Iterable<LXP> records2 = getSourceRecords2(record_repository);
 
-        System.out.println("Randomising record order");
+        if (verbose) System.out.println("Randomising record order");
 
         source_records = Utilities.permute(records1, SEED);
         source_records2 = Utilities.permute(records2, SEED);
@@ -83,14 +83,14 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
         linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
         linkage_results_metadata_writer.println("Dataset: " + getDatasetName());
-        linkage_results_metadata_writer.println("LinkageRecipe type: " + getLinkageType());
+        linkage_results_metadata_writer.println("Linkage type: " + getLinkageType());
         linkage_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         linkage_results_metadata_writer.flush();
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
         distance_results_metadata_writer.println("Dataset: " + getDatasetName());
-        distance_results_metadata_writer.println("LinkageRecipe type: " + getLinkageType());
+        distance_results_metadata_writer.println("Linkage type: " + getLinkageType());
         distance_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         distance_results_metadata_writer.flush();
     }

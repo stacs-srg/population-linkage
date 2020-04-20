@@ -14,21 +14,20 @@ import java.time.LocalDateTime;
  */
 public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
 
-    protected SingleSourceLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs ) throws IOException {
+    protected SingleSourceLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs) throws IOException {
 
-        super(store_path,repo_name, linkage_results_filename,  distance_results_filename,  number_of_records_to_be_checked, number_of_runs );
+        super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
     }
 
     @Override
     public void setupRecords() {
 
-        System.out.println("Reading records from repository: " + repo_name);
+        if (verbose) System.out.println("Reading records from repository: " + repo_name);
 
         final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
-
         final Iterable<LXP> records = getSourceRecords(record_repository);
 
-        System.out.println("Randomising record order");
+        if (verbose) System.out.println("Randomising record order");
 
         source_records = Utilities.permute(records, SEED);
         number_of_records = number_of_records_to_be_checked == CHECK_ALL_RECORDS ? source_records.size() : number_of_records_to_be_checked;
@@ -46,14 +45,14 @@ public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
         linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
         linkage_results_metadata_writer.println("Dataset: " + getDatasetName());
-        linkage_results_metadata_writer.println("LinkageRecipe type: " + getLinkageType());
-        linkage_results_metadata_writer.println("Records: " + getSourceType() );
+        linkage_results_metadata_writer.println("Linkage type: " + getLinkageType());
+        linkage_results_metadata_writer.println("Records: " + getSourceType());
         linkage_results_metadata_writer.flush();
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
         distance_results_metadata_writer.println("Dataset: " + getDatasetName());
-        distance_results_metadata_writer.println("LinkageRecipe type: " + getLinkageType());
+        distance_results_metadata_writer.println("Linkage type: " + getLinkageType());
         distance_results_metadata_writer.println("Records: " + getSourceType());
         distance_results_metadata_writer.flush();
     }

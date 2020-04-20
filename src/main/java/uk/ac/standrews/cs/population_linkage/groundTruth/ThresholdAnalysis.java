@@ -32,12 +32,14 @@ abstract class ThresholdAnalysis {
     private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;
     private static final String DELIMIT = ",";
-    final int number_of_runs;
+
     final int number_of_records_to_be_checked;
+    final int number_of_runs;
     final Path store_path;
     final String repo_name;
     final PrintWriter linkage_results_metadata_writer;
     final PrintWriter distance_results_metadata_writer;
+
     private final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
     private final List<Metric<LXP>> combined_metrics;
     private final long[] pairs_evaluated;
@@ -51,20 +53,23 @@ abstract class ThresholdAnalysis {
     List<LXP> source_records;
     int number_of_records;
     private int records_processed = 0;
+    boolean verbose = false;
 
-    ThresholdAnalysis(final Path store_path, final String repo_name1, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+    ThresholdAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs) throws IOException {
 
+        System.out.println("Running ground truth analysis for " + getLinkageType() + " on data: " + repo_name);
         System.out.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
 
+        this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         this.number_of_runs = number_of_runs;
+
         pairs_evaluated = new long[number_of_runs];
         pairs_ignored = new long[number_of_runs];
-        this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         combined_metrics = getCombinedMetrics();
         linkage_results = initialiseState();
 
         this.store_path = store_path;
-        this.repo_name = repo_name1;
+        this.repo_name = repo_name;
 
         linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".csv", false)));
         distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".csv", false)));
@@ -76,6 +81,10 @@ abstract class ThresholdAnalysis {
         run_numbers_for_metrics = initialiseRunNumbers();
 
         setupRecords();
+    }
+
+    public void setVerbose(final boolean verbose) {
+        this.verbose = verbose;
     }
 
     private double getMaxHeapinGB() {
@@ -144,11 +153,16 @@ abstract class ThresholdAnalysis {
             processBlock(block_index);
             printSamples();
 
-            System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
+            if (verbose) {
+                System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
+                System.out.flush();
+            }
+        }
+
+        if (verbose) {
+            System.out.println("Run completed");
             System.out.flush();
         }
-        System.out.println("Run completed");
-        System.out.flush();
     }
 
     private List<Map<String, Sample[]>> initialiseState() {
