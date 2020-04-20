@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
+import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.*;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
@@ -12,12 +13,14 @@ import java.util.List;
 
 public class Constants {
 
+    public static final int DEFAULT_CHAR_VAL_UPPER_BOUND = 2048;
+
     public static final Cosine COSINE = new Cosine();
     public static final DamerauLevenshtein DAMERAU_LEVENSHTEIN = new DamerauLevenshtein(1, 1, 1, 1);
     public static final Jaccard JACCARD = new Jaccard();
-    public static JensenShannon JENSEN_SHANNON = new JensenShannon();
+    public static final JensenShannon JENSEN_SHANNON = new JensenShannon();
     public static final Levenshtein LEVENSHTEIN = new Levenshtein();
-    public static SED SED = new SED();
+    public static final SED SED = new SED();
 
     public static final BagDistance BAG_DISTANCE = new BagDistance();
     public static final Dice DICE = new Dice();
@@ -39,10 +42,9 @@ public class Constants {
     public static final List<StringMetric> PHONETIC_COMPARATORS = Arrays.asList(
             METAPHONE, NYSIIS);
 
-//    public static final List<StringMetric> BASE_METRICS = concatenate(TRUE_METRICS, PSEUDO_METRICS, PHONETIC_COMPARATORS);
-    public static final List<StringMetric> BASE_METRICS = Arrays.asList(DICE);
+    public static final List<StringMetric> BASE_METRICS = concatenate(TRUE_METRICS, PSEUDO_METRICS, PHONETIC_COMPARATORS);
 
-    public static String stringRepresentationOf(List<Integer> fields, Class record, List<String> labels) {
+    public static String stringRepresentationOf(List<Integer> fields, Class<? extends LXP> record, List<String> labels) {
         StringBuilder sb = new StringBuilder();
         sb.append(record.getSimpleName()).append("[ ");
 
@@ -66,10 +68,10 @@ public class Constants {
     }
 
     public static StringMetric get(String stringMetric) {
-        return get(stringMetric, 2048);
+        return get(stringMetric, DEFAULT_CHAR_VAL_UPPER_BOUND);
     }
 
-    public static StringMetric get(String stringMetric, int CHAR_VAL_UPPER_BOUND) {
+    public static StringMetric get(String stringMetric, int charValUpperBound) {
 
         switch (stringMetric.toUpperCase()) {
             case "COSINE":
@@ -79,12 +81,11 @@ public class Constants {
             case "JACCARD":
                 return JACCARD;
             case "JENSEN_SHANNON":
-                JENSEN_SHANNON = new JensenShannon(CHAR_VAL_UPPER_BOUND);
-                return JENSEN_SHANNON;
+                return new JensenShannon(charValUpperBound);
             case "LEVENSHTEIN":
                 return LEVENSHTEIN;
             case "SED":
-                return SED = new SED(CHAR_VAL_UPPER_BOUND);
+                return new SED(charValUpperBound);
             case "BAG_DISTANCE":
                 return BAG_DISTANCE;
             case "DICE":
@@ -104,8 +105,7 @@ public class Constants {
             case "NYSIIS":
                 return NYSIIS;
             default:
-                throw new UnsupportedOperationException("Specified Metric Not Supported");
+                throw new UnsupportedOperationException("metric not supported: " + stringMetric);
         }
-
     }
 }
