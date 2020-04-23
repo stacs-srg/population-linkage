@@ -102,10 +102,16 @@ public abstract class LinkageRecipe {
 
         for (List<Pair> true_match_fields : true_match_alternatives) {
 
-            for (Pair fields : true_match_fields) {
-                if (identityFieldNotEmpty(record1, fields.first)) return false;
-                if (identityFieldNotEmpty(record2, fields.second)) return false;
-            }
+            if (!allFieldsEmpty(record1, record2, true_match_fields)) return false;
+        }
+        return true;
+    }
+
+    public static boolean allFieldsEmpty(final LXP record1, final LXP record2, final List<Pair> true_match_fields) {
+
+        for (Pair fields : true_match_fields) {
+            if (identityFieldNotEmpty(record1, fields.first)) return false;
+            if (identityFieldNotEmpty(record2, fields.second)) return false;
         }
         return true;
     }
@@ -875,7 +881,7 @@ public abstract class LinkageRecipe {
         }
     }
 
-    protected static class Pair {
+    public static class Pair {
         public final int first;
         public final int second;
 

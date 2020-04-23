@@ -17,6 +17,7 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -58,7 +59,20 @@ public class Sigma2 extends Metric<LXP> {
                 total_distance += f_distance;
 
             } catch (NullPointerException e) {
-                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(i) + " in records \n" + a + "\n and \n" + b, e);
+                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                System.out.println("NPE");
+                System.out.println("i: " + i);
+                System.out.println("a: " + a == null ? "null" : "not null");
+                System.out.println("b: " + b == null ? "null" : "not null");
+                System.out.println("id of a: " + a.getString(Marriage.STANDARDISED_ID));
+                System.out.println("id of b: " + b.getString(Marriage.STANDARDISED_ID));
+                System.out.println("field name a: " + a.getMetaData().getFieldName(fieldList1.get(i)));
+                System.out.println("field name b: " + b.getMetaData().getFieldName(fieldList2.get(i)));
+                System.out.println("field value a: " + a.getString(fieldList1.get(i)));
+                System.out.println("field value b: " + b.getString(fieldList2.get(i)));
+                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+                throw new RuntimeException("exception comparing fields " + a.getMetaData().getFieldName(fieldList1.get(i)) + " and " + b.getMetaData().getFieldName(fieldList2.get(i)) + " in records \n" + a + "\n and \n" + b, e);
             } catch (Exception e) {
                 throw new RuntimeException("exception comparing fields " + a.getString(i) + " and " + b.getString(i) + " from field " + a.getMetaData().getFieldName(i) + " in records \n" + a + "\n and \n" + b, e);
             }
