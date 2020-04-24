@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
@@ -60,6 +64,16 @@ public class UmeaBirthDeathIdentity extends TwoSourcesLinkageAnalysis {
                 Death.MOTHER_FORENAME,
                 Death.MOTHER_MAIDEN_SURNAME
         );
+    }
+
+    @Override
+    public int getIdFieldIndex() {
+        return BirthDeathIdentityLinkageRecipe.ID_FIELD_INDEX1;
+    }
+
+    @Override
+    public int getIdFieldIndex2() {
+        return BirthDeathIdentityLinkageRecipe.ID_FIELD_INDEX2;
     }
 
     @Override

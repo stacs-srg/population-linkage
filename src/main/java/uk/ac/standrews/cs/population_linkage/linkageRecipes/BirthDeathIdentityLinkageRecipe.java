@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
@@ -33,6 +37,9 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
             Death.FATHER_FORENAME,
             Death.FATHER_SURNAME
     );
+
+    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(

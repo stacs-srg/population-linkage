@@ -1,7 +1,10 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -39,7 +42,7 @@ public abstract class LinkageTest {
     final LXP death4 = new DummyLXP("anthony", "aardvark", "8");
     final LXP death5 = new DummyLXP("tony", "armadillo", "9");
 
-    final Metric<LXP> metric = new Sigma(new Levenshtein(), Arrays.asList(0, 1));
+    final Metric<LXP> metric = new Sigma(new Levenshtein(), Arrays.asList(0, 1), 0);
 
     final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3, birth4);
     final List<LXP> death_records = Arrays.asList(death1, death2, death3, death4, death5);

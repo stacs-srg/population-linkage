@@ -1,6 +1,9 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.helpers;
 
-import java.util.Arrays;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -8,8 +11,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -18,10 +19,22 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 public class IntrinsicDimensionalityCalculator {
+
+    public static final List<Integer> SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS = Arrays.asList(
+
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE
+    );
 
     private String sourceRepoName;
     private String populationName;
@@ -39,7 +52,7 @@ public class IntrinsicDimensionalityCalculator {
         this.corruptionNumber = corruptionNumber;
         this.resultsFile = resultsFile;
 
-        if(corrupted)
+        if (corrupted)
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
         else {
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_clean";
@@ -56,6 +69,44 @@ public class IntrinsicDimensionalityCalculator {
         this.resultsFile = resultsFile;
     }
 
+    public static void main(String[] args) throws Exception {
+
+        List<Integer> fields = SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS; // Insert desired fields
+        String fieldDescriptors = Constants.stringRepresentationOf(fields, Birth.class, Birth.getLabels());
+
+        new IntrinsicDimensionalityCalculator(
+                args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5]), Integer.parseInt(args[6])
+        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
+    }
+
+    public static void countAll(Path idCalcsFile, Path recordCountsFile) throws Exception {
+
+        String[] populationNames = {"synthetic-scotland"};
+        String[] populationSizes = {"13k", "133k", "530k"};
+        String[] populationNumbers = {"1", "2", "3", "4", "5"};
+        String[] corruptionNumbers = {"0"}; //,"1","2"};
+
+        for (String populationName : populationNames)
+            for (String populationSize : populationSizes)
+                for (String populationNumber : populationNumbers)
+                    for (String corruptionNumber : corruptionNumbers) {
+                        new ValidatePopulationInStorr(populationName, populationSize, populationNumber, !corruptionNumber.equals("0"), corruptionNumber)
+                                .validate(recordCountsFile);
+
+                        int recordCount = ValidatePopulationInStorr.getCountFromLog(recordCountsFile,
+                                RecordRepository.BIRTHS_BUCKET_NAME, populationName, populationSize,
+                                populationNumber, corruptionNumber);
+
+                        new IntrinsicDimensionalityCalculator(populationName, populationSize,
+                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber,
+                                idCalcsFile, recordCount).calculate("JENSEN_SHANNON", 100000,
+                                Constants.stringRepresentationOf(SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, Birth.class, Birth.getLabels()),
+                                SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS);
+                    }
+
+
+    }
+
     public void calculate(String stringMetric, int sampleN, String fieldsDescriptor, List<Integer> fields) {
         System.out.println("Calculating intrinsic dimensionality for population: " + sourceRepoName);
 
@@ -63,10 +114,10 @@ public class IntrinsicDimensionalityCalculator {
 
         try {
             FileManipulation.createFileIfDoesNotExist(resultsFile);
-            if(FileManipulation.countLines(resultsFile) == 0) {
+            if (FileManipulation.countLines(resultsFile) == 0) {
                 new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
                         .appendToFile("population,size,pop#,corruption#,metric,intrinsic-dimensionality,sample-size,calc-time-seconds,on-fields" +
-                        System.lineSeparator());
+                                System.lineSeparator());
             }
 
             long startTime = System.currentTimeMillis();
@@ -75,8 +126,8 @@ public class IntrinsicDimensionalityCalculator {
 
             new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
                     .appendToFile((populationName + "," + populationSize + "," + populationNumber + "," +
-                    corruptionNumber + "," + stringMetric +  "," + instinsicDimensionality + "," + sampleN + "," +
-                    timeTakenInSeconds + "," + fieldsDescriptor + System.lineSeparator()));
+                            corruptionNumber + "," + stringMetric + "," + instinsicDimensionality + "," + sampleN + "," +
+                            timeTakenInSeconds + "," + fieldsDescriptor + System.lineSeparator()));
 
 
         } catch (IOException e) {
@@ -89,63 +140,41 @@ public class IntrinsicDimensionalityCalculator {
         final Path store_path = ApplicationProperties.getStorePath();
         final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
 
-        Sigma distanceFunction = new Sigma(baseMetric, fields);
+        Sigma distanceFunction = new Sigma(baseMetric, fields, 0);
 
         List<RecordPair> pairs = new ArrayList<>();
 
-        int everyNthPair = (int) Math.pow(numberOfRecords, 2) / sampleN;
-
-        long consideredPairs = 0;
         long sampledPairs = 0;
         double sumOfDistances = 0;
 
         List<LXP> births = new ArrayList<>();
 
-        for(LXP r: Utilities.getBirthRecords(record_repository))
+        for (LXP r : Utilities.getBirthRecords(record_repository))
             births.add(r);
 
 
-        for(LXP record1 : births) {
-            for(LXP record2 : births) {
+        for (LXP record1 : births) {
+            for (LXP record2 : births) {
 
-                if(record1.getString(Birth.FAMILY).trim().equals(record2.getString(Birth.FAMILY).trim())) {
+                if (record1.getString(Birth.FAMILY).trim().equals(record2.getString(Birth.FAMILY).trim())) {
                     double distance = distanceFunction.calculateDistance(record1, record2);
                     pairs.add(new RecordPair(record1, record2, distance));
 
                     sampledPairs++;
                     sumOfDistances += distance;
                 }
-
-                consideredPairs++;
             }
         }
 
-//        Random rng = new Random();
-
-//        while(sampledPairs < sampleN) {
-//
-//            LXP record1 = births.get(rng.nextInt(births.size()));
-//            LXP record2 = births.get(rng.nextInt(births.size()));
-//
-//            if(record1.getString(Birth.FAMILY).trim().equals(record2.getString(Birth.FAMILY).trim())) {
-//                double distance = distanceFunction.calculateDistance(record1, record2);
-//                pairs.add(new RecordPair(record1, record2, distance));
-//
-//                sampledPairs++;
-//                sumOfDistances += distance;
-//            }
-//        }
-
-
         double mean = sumOfDistances / sampledPairs;
 
-        double cumalativeDeviation = 0;
+        double cumulativeDeviation = 0;
 
-        for(RecordPair pair : pairs) {
-            cumalativeDeviation += Math.pow(pair.distance - mean, 2);
+        for (RecordPair pair : pairs) {
+            cumulativeDeviation += Math.pow(pair.distance - mean, 2);
         }
 
-        double standardDeviation = Math.sqrt(cumalativeDeviation / (double) sampledPairs);
+        double standardDeviation = Math.sqrt(cumulativeDeviation / (double) sampledPairs);
 
         double intrinsicDimensionality = (Math.pow(mean, 2)) / (2 * Math.pow(standardDeviation, 2));
 
@@ -157,75 +186,5 @@ public class IntrinsicDimensionalityCalculator {
         record_repository.stopStoreWatcher();
 
         return intrinsicDimensionality;
-
     }
-
-    private boolean toSample(long consideredPairs, int everyNthPair) {
-        if(everyNthPair <= 1) return true;
-        return consideredPairs % everyNthPair == 0;
-    }
-
-
-
-    private boolean toSampleRnd(long consideredPairs, int everyNthPair) {
-        return new Random().nextInt(everyNthPair) == 0;
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        List<Integer> fields = SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS; // Insert desired fields
-        String fieldDescriptors = Constants.stringRepresentationOf(fields, Birth.class, Birth.getLabels());
-
-
-        new IntrinsicDimensionalityCalculator(
-                args[0], args[1], args[2], args[3].equals("true"), args[4], Paths.get(args[5]), Integer.valueOf(args[6])
-        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
-//
-//        new IntrinsicDimensionalityCalculator(
-//                args[0], Paths.get(args[5]), Integer.valueOf(args[6])
-//        ).calculate(args[7], Integer.parseInt(args[8]), fieldDescriptors, fields);
-
-//        countAll(Paths.get(args[0]), Paths.get(args[1]));
-    }
-
-    public static void countAll(Path idCalcsFile, Path recordCountsFile) throws Exception {
-
-        String[] populationNames   = {"synthetic-scotland"};
-        String[] populationSizes   = {"13k","133k","530k"};
-        String[] populationNumbers = {"1","2","3","4","5"};
-        String[] corruptionNumbers = {"0"}; //,"1","2"};
-
-        for(String populationName : populationNames)
-            for (String populationSize : populationSizes)
-                for(String populationNumber : populationNumbers)
-                    for(String corruptionNumber : corruptionNumbers) {
-                        new ValidatePopulationInStorr(populationName, populationSize, populationNumber, !corruptionNumber.equals("0"), corruptionNumber)
-                                .validate(recordCountsFile);
-
-                        int recordCount = ValidatePopulationInStorr.getCountFromLog(recordCountsFile,
-                                RecordRepository.BIRTHS_BUCKET_NAME, populationName, populationSize,
-                                populationNumber, corruptionNumber);
-
-                        new IntrinsicDimensionalityCalculator(populationName, populationSize,
-                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber,
-                                idCalcsFile, recordCount).calculate("JENSEN_SHANNON", 100000,
-                                                Constants.stringRepresentationOf(SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS, Birth.class, Birth.getLabels()),
-                                                SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS);
-                    }
-
-
-    }
-
-    public static final List<Integer> SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS = Arrays.asList(
-
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.PARENTS_PLACE_OF_MARRIAGE,
-            Birth.PARENTS_DAY_OF_MARRIAGE,
-            Birth.PARENTS_MONTH_OF_MARRIAGE,
-            Birth.PARENTS_YEAR_OF_MARRIAGE
-    );
-
 }

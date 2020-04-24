@@ -1,23 +1,9 @@
 /*
- * Copyright 2017 Systems Research Group, University of St Andrews:
+ * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
- *
- * This file is part of the module linkage-java.
- *
- * linkage-java is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * linkage-java is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with linkage-java. If not, see
- * <http://www.gnu.org/licenses/>.
  */
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
-
-import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -30,51 +16,43 @@ import java.util.List;
  */
 public class Sigma2 extends Metric<LXP> {
 
-    final StringMetric baseDistance;
-    List<Integer> fieldList1;
-    List<Integer> fieldList2;
+    final StringMetric base_distance;
+    final List<Integer> field_list1;
+    final List<Integer> field_list2;
+    final int id_field_index1;
+    final int id_field_index2;
 
-    public Sigma2(StringMetric baseDistance, List<Integer> fields1, List<Integer> fields2) {
+    public Sigma2(final StringMetric base_distance, final List<Integer> field_list1, final List<Integer> field_list2, final int id_field_index1, final int id_field_index2) {
 
-        if (fields1.size() != fields2.size()) {
+        if (field_list1.size() != field_list2.size()) {
             throw new RuntimeException("Field lists must be the same length");
         }
-        this.baseDistance = baseDistance;
-        this.fieldList1 = fields1;
-        this.fieldList2 = fields2;
+        this.base_distance = base_distance;
+        this.field_list1 = field_list1;
+        this.field_list2 = field_list2;
+        this.id_field_index1 = id_field_index1;
+        this.id_field_index2 = id_field_index2;
     }
 
     @Override
-    public double calculateDistance(LXP a, LXP b) {
+    public double calculateDistance(final LXP a, final LXP b) {
 
         double total_distance = 0.0d;
 
-        for (int i = 0; i < fieldList1.size(); i++) {
+        for (int i = 0; i < field_list1.size(); i++) {
 
             try {
-                int field1_index = fieldList1.get(i);
-                int field2_index = fieldList2.get(i);
+                int field_index1 = field_list1.get(i);
+                int field_index2 = field_list2.get(i);
 
-                double f_distance = baseDistance.distance(a.getString(field1_index), b.getString(field2_index));
-                total_distance += f_distance;
+                final String field_value1 = a.getString(field_index1);
+                final String field_value2 = b.getString(field_index2);
 
-            } catch (NullPointerException e) {
-                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                System.out.println("NPE");
-                System.out.println("i: " + i);
-                System.out.println("a: " + a == null ? "null" : "not null");
-                System.out.println("b: " + b == null ? "null" : "not null");
-                System.out.println("id of a: " + a.getString(Marriage.STANDARDISED_ID));
-                System.out.println("id of b: " + b.getString(Marriage.STANDARDISED_ID));
-                System.out.println("field name a: " + a.getMetaData().getFieldName(fieldList1.get(i)));
-                System.out.println("field name b: " + b.getMetaData().getFieldName(fieldList2.get(i)));
-                System.out.println("field value a: " + a.getString(fieldList1.get(i)));
-                System.out.println("field value b: " + b.getString(fieldList2.get(i)));
-                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                total_distance += base_distance.distance(field_value1, field_value2);
 
-                throw new RuntimeException("exception comparing fields " + a.getMetaData().getFieldName(fieldList1.get(i)) + " and " + b.getMetaData().getFieldName(fieldList2.get(i)) + " in records \n" + a + "\n and \n" + b, e);
             } catch (Exception e) {
-                throw new RuntimeException("exception comparing fields " + a.getString(i) + " and " + b.getString(i) + " from field " + a.getMetaData().getFieldName(i) + " in records \n" + a + "\n and \n" + b, e);
+                printExceptionDebug(a, b, i);
+                throw new RuntimeException("exception comparing fields " + a.getMetaData().getFieldName(field_list1.get(i)) + " and " + b.getMetaData().getFieldName(field_list2.get(i)) + " in records \n" + a + "\n and \n" + b, e);
             }
         }
 
@@ -83,17 +61,22 @@ public class Sigma2 extends Metric<LXP> {
 
     @Override
     public String getMetricName() {
-        return baseDistance.getMetricName();
-//        return "Sigma2" + "-" + baseDistance.getMetricName() + "-" + hyphenConcat(fieldList1) + "--" + hyphenConcat(fieldList2);
+        return base_distance.getMetricName();
     }
 
-    static String hyphenConcat(List<Integer> fieldList) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < fieldList.size() - 1; i++) {
-            sb.append(fieldList.get(i));
-            sb.append("-");
-        }
-        sb.append(fieldList.get(fieldList.size() - 1));
-        return sb.toString();
+    private void printExceptionDebug(final LXP a, final LXP b, final int field_index_index) {
+
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        System.out.println("Exception in distance calculation");
+        System.out.println("index of field index list: " + field_index_index);
+        System.out.println("a: " + (a == null ? "null" : "not null"));
+        System.out.println("b: " + (b == null ? "null" : "not null"));
+        System.out.println("id of a: " + a.getString(id_field_index1));
+        System.out.println("id of b: " + b.getString(id_field_index2));
+        System.out.println("field name a: " + a.getMetaData().getFieldName(field_list1.get(field_index_index)));
+        System.out.println("field name b: " + b.getMetaData().getFieldName(field_list2.get(field_index_index)));
+        System.out.println("field value a: " + a.getString(field_list1.get(field_index_index)));
+        System.out.println("field value b: " + b.getString(field_list2.get(field_index_index)));
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     }
 }

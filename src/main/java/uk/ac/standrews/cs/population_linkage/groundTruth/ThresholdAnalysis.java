@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
@@ -25,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 abstract class ThresholdAnalysis {
 
     static final long SEED = 87626L;
+
     protected static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
     protected static final int CHECK_ALL_RECORDS = -1;
     private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
@@ -35,6 +40,7 @@ abstract class ThresholdAnalysis {
 
     final int number_of_records_to_be_checked;
     final int number_of_runs;
+
     final Path store_path;
     final String repo_name;
     final PrintWriter linkage_results_metadata_writer;
@@ -122,6 +128,8 @@ abstract class ThresholdAnalysis {
      * @return list of comparison fields that will be used for comparing records
      */
     public abstract List<Integer> getComparisonFields();
+
+    public abstract int getIdFieldIndex();
 
     public abstract String getDatasetName();
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
 import uk.ac.standrews.cs.population_linkage.helpers.GroundTruthLinkCounter;
@@ -30,8 +34,6 @@ public abstract class LinkageRunner {
     private Linker linker;
     private LinkageRecipe linkageRecipe;
 
-    private boolean printFPs = false;
-    private boolean printFNs = false;
     private Path gtLinksCountFile = Paths.get("gt-link-counts.csv"); // TODO put this in the application properties?
 
     public LinkageResult run(LinkageRecipe linkageRecipe, StringMetric baseMetric, double threshold,
@@ -54,13 +56,12 @@ public abstract class LinkageRunner {
 
         MemoryLogger.update();
 
-        LinkageResult lr = link(prefilter, persistLinks, evaluateQuality, numberOGroundTruthLinks, prefilterRequiredFields, generateMapOfLinks, reverseMap);
+        LinkageResult result = link(prefilter, persistLinks, evaluateQuality, numberOGroundTruthLinks, prefilterRequiredFields, generateMapOfLinks, reverseMap);
 
         linkageRecipe.getRecord_repository().stopStoreWatcher();
         linker.terminate();
 
-        return lr;
-
+        return result;
     }
 
     public TreeMap<Double, LinkageQuality> evaluateThresholds(String source_repository_name, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, double minThreshold, double step, double maxThreshold) throws BucketException {
@@ -228,6 +229,7 @@ public abstract class LinkageRunner {
                     if (doesGTSayIsTrue(linkage_says_true_link)) {
                         tp++;
                     } else {
+                        final boolean printFPs = false;
                         if(printFPs) printLink(linkage_says_true_link, "FP");
                         fp++;
                     }
@@ -260,6 +262,7 @@ public abstract class LinkageRunner {
             lq = new LinkageQuality("Evaluation not requested");
         }
 
+        final boolean printFNs = false;
         if(printFNs) {
             for (Link missingLinks : groundTruthLinks.values()) {
                 printLink(missingLinks, "FN");
@@ -304,7 +307,6 @@ public abstract class LinkageRunner {
         return next;
     }
 
-
     private void showLink(Link calculated_link) {
 
         try {
@@ -345,7 +347,6 @@ public abstract class LinkageRunner {
         } catch (Exception ignored) { }
     }
 
-
     public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
         Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
         return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
@@ -355,7 +356,7 @@ public abstract class LinkageRunner {
     public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields());
+        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields(), 0);
     }
 
     abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric);

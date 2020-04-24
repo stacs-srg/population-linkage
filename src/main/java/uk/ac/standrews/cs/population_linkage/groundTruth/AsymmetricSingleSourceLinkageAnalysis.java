@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -16,12 +20,14 @@ import java.util.List;
  */
 public abstract class AsymmetricSingleSourceLinkageAnalysis extends SingleSourceLinkageAnalysis {
 
+    protected AsymmetricSingleSourceLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs) throws IOException {
+
+        super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
+    }
+
     protected abstract List<Integer> getComparisonFields2();
 
-    protected AsymmetricSingleSourceLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs ) throws IOException {
-
-        super(store_path,repo_name, linkage_results_filename,  distance_results_filename,  number_of_records_to_be_checked, number_of_runs );
-    }
+    protected abstract int getIdFieldIndex2();
 
     @Override
     public List<Metric<LXP>> getCombinedMetrics() {
@@ -29,7 +35,7 @@ public abstract class AsymmetricSingleSourceLinkageAnalysis extends SingleSource
         final List<Metric<LXP>> result = new ArrayList<>();
 
         for (final StringMetric base_metric : Constants.BASE_METRICS) {
-            result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2()));
+            result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2(), getIdFieldIndex(), getIdFieldIndex2()));
         }
         return result;
     }

@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
@@ -43,6 +47,16 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
     @Override
     public List<Integer> getComparisonFields2() {
         return BirthGroomIdentityLinkageRecipe.SEARCH_FIELDS;
+    }
+
+    @Override
+    public int getIdFieldIndex() {
+        return BirthGroomIdentityLinkageRecipe.ID_FIELD_INDEX1;
+    }
+
+    @Override
+    public int getIdFieldIndex2() {
+        return BirthGroomIdentityLinkageRecipe.ID_FIELD_INDEX2;
     }
 
     @Override

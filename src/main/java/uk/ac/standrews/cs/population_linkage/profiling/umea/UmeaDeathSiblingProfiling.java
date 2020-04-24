@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
@@ -55,7 +59,7 @@ public class UmeaDeathSiblingProfiling {
         final long size = record_list.size();
         System.out.println("size: " + size);
 
-        Metric<LXP> metric = new Sigma(BASE_METRIC, DeathSiblingLinkageRecipe.getComparisonFields());
+        Metric<LXP> metric = new Sigma(BASE_METRIC, DeathSiblingLinkageRecipe.getComparisonFields(), DeathSiblingLinkageRecipe.ID_FIELD_INDEX);
 
         for (int i = 0; i < OUTER_LOOP_SIZE; i++) {
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
@@ -27,6 +31,8 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
             Birth.PARENTS_MONTH_OF_MARRIAGE,
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
+
+    public static final int ID_FIELD_INDEX = Birth.STANDARDISED_ID;
 
     /**
      * Various possible relevant sources of ground truth for siblings:

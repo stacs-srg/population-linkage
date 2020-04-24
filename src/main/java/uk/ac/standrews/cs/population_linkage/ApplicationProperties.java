@@ -1,6 +1,6 @@
 /*
- * Copyright 2015-2018 ARC project:
- * <http://arc.cs.st-andrews.ac.uk/>
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
  */
 package uk.ac.standrews.cs.population_linkage;
 

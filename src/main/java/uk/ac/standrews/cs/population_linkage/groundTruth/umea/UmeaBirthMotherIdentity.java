@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
@@ -38,6 +42,16 @@ public class UmeaBirthMotherIdentity extends AsymmetricSingleSourceLinkageAnalys
     @Override
     public List<Integer> getComparisonFields2() {
         return BirthMotherIdentityLinkageRecipe.SEARCH_FIELDS;
+    }
+
+    @Override
+    public int getIdFieldIndex() {
+        return BirthMotherIdentityLinkageRecipe.ID_FIELD_INDEX1;
+    }
+
+    @Override
+    public int getIdFieldIndex2() {
+        return BirthMotherIdentityLinkageRecipe.ID_FIELD_INDEX2;
     }
 
     @Override

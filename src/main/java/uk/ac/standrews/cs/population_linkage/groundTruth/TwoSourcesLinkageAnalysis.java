@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -41,13 +45,15 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
 
     protected abstract List<Integer> getComparisonFields2();
 
+    protected abstract int getIdFieldIndex2();
+
     @Override
     public List<Metric<LXP>> getCombinedMetrics() {
 
         final List<Metric<LXP>> result = new ArrayList<>();
 
         for (final StringMetric base_metric : Constants.BASE_METRICS) {
-            result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2()));
+            result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2(), getIdFieldIndex(), getIdFieldIndex2()));
         }
         return result;
     }

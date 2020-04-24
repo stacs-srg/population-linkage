@@ -1,3 +1,7 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
@@ -5,6 +9,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRun
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
@@ -23,6 +28,9 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
             Birth.MOTHER_FORENAME,
             Birth.MOTHER_MAIDEN_SURNAME
     );
+
+    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Birth.STANDARDISED_ID;
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(

@@ -1,13 +1,17 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.characterisation;
 
-import java.util.Arrays;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -15,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static uk.ac.standrews.cs.population_linkage.supportClasses.Constants.*;
+import static uk.ac.standrews.cs.population_linkage.supportClasses.Constants.TRUE_METRICS;
 
 public class MetricSpaceChecks {
 
@@ -28,18 +32,6 @@ public class MetricSpaceChecks {
 
     private final PrintStream outstream;
     private List<Metric<LXP>> combined_metrics;
-
-    public static final List<Integer> SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS = Arrays.asList(
-
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.PARENTS_PLACE_OF_MARRIAGE,
-            Birth.PARENTS_DAY_OF_MARRIAGE,
-            Birth.PARENTS_MONTH_OF_MARRIAGE,
-            Birth.PARENTS_YEAR_OF_MARRIAGE
-    );
 
     private MetricSpaceChecks(Path store_path, String repo_name, String filename) throws Exception {
 
@@ -64,8 +56,8 @@ public class MetricSpaceChecks {
 
         List<Metric<LXP>> result = new ArrayList<>();
 
-        for (Metric<String> base_metric : TRUE_METRICS) {
-            result.add(new Sigma(base_metric, SIBLING_BUNDLING_BIRTH_LINKAGE_FIELDS));
+        for (StringMetric base_metric : TRUE_METRICS) {
+            result.add(new Sigma(base_metric, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, 0));
         }
         return result;
     }
