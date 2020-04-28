@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 public class GroundTruthResultsFilter {
 
@@ -15,6 +17,8 @@ public class GroundTruthResultsFilter {
     public static final String OUTPUT_FILE_PATH = "/Users/graham/Desktop/filtered.csv";
 
     public static void main(String[] args) throws IOException {
+
+        List<String> thresholds = Arrays.asList("0.40", "0.60", "0.80");
 
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader( Files.newInputStream(Paths.get(INPUT_FILE_PATH))));
              final PrintWriter writer = new PrintWriter(FileManipulation.getOutputStreamWriter(Paths.get(OUTPUT_FILE_PATH)))) {
@@ -28,7 +32,7 @@ public class GroundTruthResultsFilter {
                 String metric = values[5];
                 String threshold = values[6];
 
-                if (metric.startsWith("Sigma-Levenshtein") && threshold.equals("0.80")) {
+                if (metric.startsWith("Sigma-Levenshtein") && thresholds.contains(threshold)) {
                     writer.println(line);
                 }
             }
