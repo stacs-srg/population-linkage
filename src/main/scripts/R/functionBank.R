@@ -14,7 +14,7 @@ plotFMeasureConvergence <- function(data, metric, thresholds, x_upper_bound, x_a
   data <- filter(data, metric, thresholds)
   data <- recalculateFMeasure(data)
 
-  plot <- makePlot(data, "f_measure", x_upper_bound, 1.0, x_axis_label, y_axis_label, "Threshold", "bottom", colours)
+  plot <- makeConvergencePlot(data, "f_measure", x_upper_bound, 1.0, x_axis_label, y_axis_label, "Threshold", "bottom", colours)
 
   return(plot)
 }
@@ -26,7 +26,16 @@ plotFMeasureErrorConvergence <- function(data, metric, thresholds, x_upper_bound
   data <- recalculateFMeasure(data)
   data <- addAbsoluteErrorColumn(data)
 
-  plot <- makePlot(data, "absolute_error", x_upper_bound, 0.12, x_axis_label, y_axis_label, NULL, "none", colours)
+  plot <- makeConvergencePlot(data, "absolute_error", x_upper_bound, 0.12, x_axis_label, y_axis_label, NULL, "none", colours)
+
+  return(plot)
+}
+
+plotAllFMeasureErrorConvergence <- function(data, x_upper_bound, x_axis_label, y_axis_label, line_colour) {
+
+  data <- recalculateFMeasure(data)
+
+  plot <- makeOverlaidConvergencePlot(data, x_upper_bound, x_axis_label, y_axis_label, line_colour)
 
   return(plot)
 }
@@ -57,7 +66,7 @@ addAbsoluteErrorColumn <- function(data) {
   return(data)
 }
 
-makePlot <- function(data, measure, x_upper_bound, y_upper_bound, x_axis_label, y_axis_label, legend_label, legend_position, colours) {
+makeConvergencePlot <- function(data, measure, x_upper_bound, y_upper_bound, x_axis_label, y_axis_label, legend_label, legend_position, colours) {
 
   summary <- summarySE(data, measurevar = measure, groupvars = c("metric", "threshold", "records.processed"))
 
@@ -67,8 +76,37 @@ makePlot <- function(data, measure, x_upper_bound, y_upper_bound, x_axis_label, 
     scale_x_continuous(minor_breaks = NULL, labels = comma, limits = c(0, x_upper_bound)) +
     scale_y_continuous(minor_breaks = NULL, limits = c(0, y_upper_bound)) +
     labs(x = x_axis_label, y = y_axis_label, colour = legend_label) +
-    theme(legend.position = legend_position) +
+    # theme(legend.position = legend_position) +
+    theme(legend.position = legend_position, panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_line(size = 0.25, linetype = 'solid', colour = "grey")) +
     scale_colour_manual(values = colours)
+
+  return(plot)
+}
+
+makeOverlaidConvergencePlot <- function(data, x_upper_bound, x_axis_label, y_axis_label, line_colour) {
+
+  summary <- summarySE(data, measurevar = "f_measure", groupvars = c("metric", "threshold", "records.processed"))
+
+  plot <- ggplot()
+
+  for (thresh in unique(summary$threshold)) {
+    for (metric in unique(summary$metric)) {
+
+      subset <- filter(summary, metric, thresh)
+      subset[, 'final'] <- subset[nrow(subset), "f_measure"]
+
+      plot <- plot + geom_line(data = subset, aes(x = records.processed, y = abs(final - get("f_measure"))), colour = line_colour)
+    }
+  }
+
+  plot <- plot +
+    scale_x_continuous(labels = comma, limits = c(0, x_upper_bound)) +
+    scale_y_continuous(breaks = seq(0, 1, 0.01)) +
+    labs(x = x_axis_label, y = y_axis_label) +
+    theme(legend.position = "none", panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_line(size = 0.25, linetype = 'solid', colour = "grey")) +
+    geom_segment(aes(x = 0, xend = x_upper_bound, y = 0.01, yend = 0.01), colour = 'red', linetype = "dashed")
 
   return(plot)
 }
