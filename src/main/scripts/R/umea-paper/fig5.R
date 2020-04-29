@@ -8,9 +8,9 @@
 ##########################################################################
 # Edit these paths appropriately.
 
-INPUT_FILE_PATH <- "~/Desktop/UmeaBirthSiblingPRFByThreshold-filtered.csv"
+INPUT_FILE_PATH <- "/Users/al/Documents/Current/Results/2019-03-08-Umea-full-nXn/UmeaBirthSiblingPRFByThreshold-full.csv"
 OUTPUT_FILE_PATH <- "~/Desktop/figure5.png"
-PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
+PROJECT_DIRECTORY_PATH <- "/Users/al/repos/github/population-linkage"
 ##########################################################################
 
 R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
