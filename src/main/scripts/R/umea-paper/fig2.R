@@ -1,4 +1,4 @@
-# Figure 3: evolution of F1 measure error for specific metric and threshold.
+# Figure 2: evolution of F1 measure for specific metric and thresholds.
 # Input file: output from Umea birth sibling bundling ground truth:
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthSibling
 # run over all records with 10 repetitions
@@ -6,7 +6,7 @@
 # TODO: update with location of archived input file on manifesto
 
 INPUT_FILE_PATH <- "~/Desktop/UmeaBirthSiblingPRFByThreshold-filtered.csv"
-OUTPUT_FILE_PATH <- "~/Desktop/figure3.png"
+OUTPUT_FILE_PATH <- "~/Desktop/figure2.png"
 
 PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
 R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
@@ -16,14 +16,14 @@ source("functionBank.R")
 conditionLoadIntoGlobal(INPUT_FILE_PATH, "data")
 
 METRIC <- "Sigma-Levenshtein"
-THRESHOLD <- 0.8
-X_UPPER_BOUND <- 25000
+THRESHOLDS <- c(0.4, 0.6, 0.8)
+X_UPPER_BOUND <- 250000
 X_LABEL <- "Records processed"
-Y_LABEL <- "Absolute error in F1-measure"
-COLOURS <- "black"
+Y_LABEL <- "F1-measure"
+COLOURS <- c("firebrick2", "dodgerblue2", "green3")
 
 # The output warning "Removed ... row(s) containing missing values (geom_path)" is harmless,
 # indicating that data with x > X_UPPER_BOUND is ignored.
-plot <- plotFMeasureErrorConvergence(data, METRIC, THRESHOLD, X_UPPER_BOUND, X_LABEL, Y_LABEL, COLOURS)
+plot <- plotFMeasureConvergence(data, METRIC, THRESHOLDS, X_UPPER_BOUND, X_LABEL, Y_LABEL, COLOURS)
 
 ggsave(OUTPUT_FILE_PATH, plot, dpi = 320, width = 20, height = 20, units = "cm")

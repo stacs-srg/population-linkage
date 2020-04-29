@@ -5,32 +5,77 @@ library("scales")
 source("utils.R")
 source("dataManipulation.R")
 
-# This returns a convergenge plot with error bars for a given metric and threshold.
-plotFMeasureConvergence <- function(metric, threshold, x_upper_bound, x_label, y_label) {
+############################################################################
+# Functions in this section used in processing data for Umea paper.
 
-  plotdata <- plotdata[which(plotdata$threshold == threshold),]
-  plotdata <- plotdata[which(plotdata$metric == metric),]
-  plotdata <- plotdata[order(plotdata$records.processed),]
+# Returns a convergence plot, with error bars for a given metric and threshold.
+plotFMeasureConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
 
-  precision <- precision(plotdata$tp, plotdata$fp)
-  recall <- recall(plotdata$tp, plotdata$fn)
-  plotdata$f_measure <- fmeasure(precision, recall)
+  data <- filter(data, metric, thresholds)
+  data <- recalculateFMeasure(data)
 
-  final_measure <- plotdata[nrow(plotdata), "f_measure"]
-  plotdata[, "abs_diff"] <- abs(final_measure - plotdata[, "f_measure"])
-
-  plotdata <- summarySE(plotdata, measurevar = "abs_diff", groupvars = c("metric", "threshold", "records.processed")) # calculate mean,stdev,stderr
-
-  plot <- ggplot(plotdata, aes(x = records.processed)) +
-    geom_line(aes(y = abs_diff)) +
-    geom_errorbar(aes(ymin = abs_diff - ci, ymax = abs_diff + ci), width = 1) +
-    scale_x_continuous(minor_breaks = NULL, labels = comma, limits = c(0, x_upper_bound)) +
-    labs(x = x_label, y = y_label)
+  plot <- makePlot(data, "f_measure", x_upper_bound, 1.0, x_axis_label, y_axis_label, "Threshold", "bottom", colours)
 
   return(plot)
 }
 
-# This returns a new data frame containing the metric,threshold, closeness, records processed derived from the data parmeter for the supplied measure 
+# Returns a convergence plot for absolute error relative to final value, with error bars for a given metric and threshold.
+plotFMeasureErrorConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
+
+  data <- filter(data, metric, thresholds)
+  data <- recalculateFMeasure(data)
+  data <- addAbsoluteErrorColumn(data)
+
+  plot <- makePlot(data, "absolute_error", x_upper_bound, 0.12, x_axis_label, y_axis_label, NULL, "none", colours)
+
+  return(plot)
+}
+
+filter <- function(data, metric, thresholds) {
+
+  data <- data[which(data$metric == metric),]
+  data <- data[which(data$threshold %in% thresholds),]
+
+  return(data)
+}
+
+recalculateFMeasure <- function(data) {
+
+  # Recalculate since F-measure in source data is only calculated to 2 decimal places.
+  precision <- precision(data$tp, data$fp)
+  recall <- recall(data$tp, data$fn)
+  data$f_measure <- fmeasure(precision, recall)
+
+  return(data)
+}
+
+addAbsoluteErrorColumn <- function(data) {
+
+  final_measure <- data[nrow(data), "f_measure"]
+  data[, "absolute_error"] <- abs(final_measure - data[, "f_measure"])
+
+  return(data)
+}
+
+makePlot <- function(data, measure, x_upper_bound, y_upper_bound, x_axis_label, y_axis_label, legend_label, legend_position, colours) {
+
+  summary <- summarySE(data, measurevar = measure, groupvars = c("metric", "threshold", "records.processed"))
+
+  plot <- ggplot(summary) +
+    geom_line(aes_string(x = "records.processed", y = measure, colour = as.factor(summary$threshold)), show.legend = T) +
+    geom_errorbar(aes(x = records.processed, ymin = get(measure) - ci, ymax = get(measure) + ci, colour = as.factor(threshold))) +
+    scale_x_continuous(minor_breaks = NULL, labels = comma, limits = c(0, x_upper_bound)) +
+    scale_y_continuous(minor_breaks = NULL, limits = c(0, y_upper_bound)) +
+    labs(x = x_axis_label, y = y_axis_label, colour = legend_label) +
+    theme(legend.position = legend_position) +
+    scale_colour_manual(values = colours)
+
+  return(plot)
+}
+
+############################################################################
+
+# This returns a new data frame containing the metric,threshold, closeness, records processed derived from the data parmeter for the supplied measure
 analyse_space <- function(data, measure) {
 
   thresholds <- c(0.4, 0.6, 0.8)
@@ -205,7 +250,7 @@ plotmetrics <- function(df, measure, lim, metric, thresholds) {
     labs(colour = "Threshold") +
     ggtitle(metric)
 
-  ggsave(paste("/tmp/", metric, "-", measure, "-", lim, ".png", sep = ""), plot)
+  ggsave(paste("/Users/graham/Desktop/", metric, "-", measure, "-", lim, ".png", sep = ""), plot)
 }
 
 # This plots df relative to the final measure for the given params and saves to a filename
