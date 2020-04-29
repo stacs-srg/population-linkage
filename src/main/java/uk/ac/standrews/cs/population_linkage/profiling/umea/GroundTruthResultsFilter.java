@@ -13,8 +13,8 @@ import java.util.List;
 
 public class GroundTruthResultsFilter {
 
-    public static final String INPUT_FILE_PATH = "/Users/graham/Desktop/UmeaBirthSiblingPRFByThreshold-full.csv";
-    public static final String OUTPUT_FILE_PATH = "/Users/graham/Desktop/filtered.csv";
+    public static final String INPUT_FILE_PATH = "/Users/al/Documents/Current/Results/2019-03-08-Umea-full-nXn/UmeaBirthSiblingLPRFByThreshold-full.csv";
+    public static final String OUTPUT_FILE_PATH = "/Users/al/Desktop/filtered.csv";
 
     public static void main(String[] args) throws IOException {
 

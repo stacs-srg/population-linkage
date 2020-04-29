@@ -174,7 +174,7 @@ public class UmeaNameDistribution {
         System.out.println("Complete");
     }
 
-    private static void printStats( Map<String,Integer> counts, String title ) {
+    public static void printStats( Map<String,Integer> counts, String title ) {
 
         Collection<Integer> values = counts.values();
         
