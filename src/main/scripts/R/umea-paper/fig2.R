@@ -16,8 +16,7 @@ PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
 R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
 
 setwd(paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, sep = "/"))
-source("functionBank.R")
-conditionLoadIntoGlobal(INPUT_FILE_PATH, "data")
+source("umea-paper/common.R")
 
 METRIC <- "Sigma-Levenshtein"
 THRESHOLDS <- c(0.4, 0.6, 0.8)
@@ -30,4 +29,4 @@ COLOURS <- c("firebrick2", "dodgerblue2", "green3")
 # indicating that data with x > X_UPPER_BOUND is ignored.
 plot <- plotFMeasureConvergence(data, METRIC, THRESHOLDS, X_UPPER_BOUND, X_AXIS_LABEL, Y_AXIS_LABEL, COLOURS)
 
-ggsave(OUTPUT_FILE_PATH, plot, dpi = 320, width = 20, height = 20, units = "cm")
+ggsave(OUTPUT_FILE_PATH, plot, dpi = IMAGE_DPI, width = X_IMAGE_WIDTH, height = Y_IMAGE_WIDTH, units = IMAGE_SIZE_UNITS)

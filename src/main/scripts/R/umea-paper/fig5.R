@@ -16,8 +16,7 @@ PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
 R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
 
 setwd(paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, sep = "/"))
-source("functionBank.R")
-conditionLoadIntoGlobal(INPUT_FILE_PATH, "data")
+source("umea-paper/common.R")
 
 X_UPPER_BOUND <- 25000
 X_AXIS_LABEL <- "Records processed"
@@ -26,4 +25,4 @@ COLOUR <- "black"
 
 plot <- plotAllFMeasureErrorConvergence(data, X_UPPER_BOUND, X_AXIS_LABEL, Y_AXIS_LABEL, COLOUR)
 
-ggsave(OUTPUT_FILE_PATH, plot, dpi = 320, width = 20, height = 20, units = "cm")
+ggsave(OUTPUT_FILE_PATH, plot, dpi = IMAGE_DPI, width = X_IMAGE_WIDTH, height = Y_IMAGE_WIDTH, units = IMAGE_SIZE_UNITS)
