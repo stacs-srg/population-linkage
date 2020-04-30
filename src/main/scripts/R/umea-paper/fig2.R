@@ -6,17 +6,18 @@
 # TODO: update with location of archived input file on manifesto
 
 ##########################################################################
-# Edit these paths appropriately.
+# Edit these appropriately.
 
-INPUT_FILE_PATH <- "~/Desktop/UmeaBirthSiblingPRFByThreshold-filtered.csv"
-OUTPUT_FILE_PATH <- "~/Desktop/figure2.png"
+INPUT_DIRECTORY_PATH <- "~/Desktop"
+OUTPUT_DIRECTORY_PATH <- "~/Desktop"
 PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
+
+INPUT_FILE_NAME <- "UmeaBirthSiblingPRFByThreshold-full"
+OUTPUT_FILE_NAME <- "figure2"
 ##########################################################################
 
-R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
-
-setwd(paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, sep = "/"))
-source("umea-paper/common.R")
+##########################################################################
+# Edit if adjustments to figure required.
 
 METRIC <- "Sigma-Levenshtein"
 THRESHOLDS <- c(0.4, 0.6, 0.8)
@@ -24,6 +25,17 @@ X_UPPER_BOUND <- 250000
 X_AXIS_LABEL <- "Records processed"
 Y_AXIS_LABEL <- "F1-measure"
 COLOURS <- c("firebrick2", "dodgerblue2", "green3")
+##########################################################################
+
+R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
+R_WORKING_DIRECTORY <- paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, sep = "/")
+setwd(R_WORKING_DIRECTORY)
+source("umea-paper/common.R")
+
+INPUT_FILE_PATH <- inputFilePath(INPUT_DIRECTORY_PATH, INPUT_FILE_NAME)
+OUTPUT_FILE_PATH <- outputFilePath(OUTPUT_DIRECTORY_PATH, OUTPUT_FILE_NAME)
+
+conditionLoadIntoGlobal(INPUT_FILE_PATH, "data")
 
 # The output warning "Removed ... row(s) containing missing values (geom_path)" is harmless,
 # indicating that data with x > X_UPPER_BOUND is ignored.

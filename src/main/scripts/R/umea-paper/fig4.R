@@ -6,22 +6,34 @@
 # TODO: update with location of archived input file on manifesto
 
 ##########################################################################
-# Edit these paths appropriately.
+# Edit these appropriately.
 
-INPUT_FILE_PATH <- "/Users/al/Documents/Current/Results/2019-03-08-Umea-full-nXn/UmeaBirthSiblingPRFByThreshold-full.csv"
-OUTPUT_FILE_PATH <- "~/Desktop/figure4.png"
-PROJECT_DIRECTORY_PATH <- "/Users/al/repos/github/population-linkage"
+INPUT_DIRECTORY_PATH <- "~/Desktop"
+OUTPUT_DIRECTORY_PATH <- "~/Desktop"
+PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
+
+INPUT_FILE_NAME <- "UmeaBirthSiblingPRFByThreshold-full"
+OUTPUT_FILE_NAME <- "figure4"
 ##########################################################################
 
-R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
-
-setwd(paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, sep = "/"))
-source("umea-paper/common.R")
+##########################################################################
+# Edit if adjustments to figure required.
 
 X_UPPER_BOUND <- 227889
 X_AXIS_LABEL <- "Records processed"
 Y_AXIS_LABEL <- "Absolute error in F1-measure"
 COLOUR <- "black"
+##########################################################################
+
+R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
+R_WORKING_DIRECTORY <- paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, sep = "/")
+setwd(R_WORKING_DIRECTORY)
+source("umea-paper/common.R")
+
+INPUT_FILE_PATH <- inputFilePath(INPUT_DIRECTORY_PATH, INPUT_FILE_NAME)
+OUTPUT_FILE_PATH <- outputFilePath(OUTPUT_DIRECTORY_PATH, OUTPUT_FILE_NAME)
+
+conditionLoadIntoGlobal(INPUT_FILE_PATH, "data")
 
 plot <- plotAllFMeasureErrorConvergence(data, X_UPPER_BOUND, X_AXIS_LABEL, Y_AXIS_LABEL, COLOUR)
 

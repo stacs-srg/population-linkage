@@ -34,8 +34,18 @@ plotFMeasureErrorConvergence <- function(data, metric, thresholds, x_upper_bound
 plotAllFMeasureErrorConvergence <- function(data, x_upper_bound, x_axis_label, y_axis_label, line_colour) {
 
   data <- recalculateFMeasure(data)
-
   plot <- makeOverlaidConvergencePlot(data, x_upper_bound, x_axis_label, y_axis_label, line_colour)
+
+  return(plot)
+}
+
+plotFMeasureVsThreshold <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  number_of_records_processed <- max(data$records.processed)
+  data <- data[which(data$records.processed == number_of_records_processed),]
+
+  data <- recalculateFMeasure(data)
+  plot <- makeFMeasureVsThresholdPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
 
   return(plot)
 }
@@ -71,14 +81,13 @@ makeConvergencePlot <- function(data, measure, x_upper_bound, y_upper_bound, x_a
   summary <- summarySE(data, measurevar = measure, groupvars = c("metric", "threshold", "records.processed"))
 
   plot <- ggplot(summary) +
-    geom_line(aes_string(x = "records.processed", y = measure, colour = as.factor(summary$threshold)), show.legend = T) +
+    geom_line(aes_string(x = "records.processed", y = measure, colour = as.factor(summary$threshold))) +
     geom_errorbar(aes(x = records.processed, ymin = get(measure) - ci, ymax = get(measure) + ci, colour = as.factor(threshold))) +
-    scale_x_continuous(minor_breaks = NULL, labels = comma, limits = c(0, x_upper_bound)) +
-    scale_y_continuous(minor_breaks = NULL, limits = c(0, y_upper_bound)) +
+    scale_x_continuous(labels = comma, limits = c(0, x_upper_bound)) +
+    scale_y_continuous(n.breaks = 10, limits = c(0, y_upper_bound)) +
     labs(x = x_axis_label, y = y_axis_label, colour = legend_label) +
-    # theme(legend.position = legend_position) +
     theme(legend.position = legend_position, panel.background = element_rect(fill = "white"),
-          panel.grid.major = element_line(size = 0.25, linetype = 'solid', colour = "grey")) +
+          panel.grid.major = element_line(size = 0.25, linetype = "solid", colour = "grey")) +
     scale_colour_manual(values = colours)
 
   return(plot)
@@ -94,7 +103,7 @@ makeOverlaidConvergencePlot <- function(data, x_upper_bound, x_axis_label, y_axi
     for (metric in unique(summary$metric)) {
 
       subset <- filter(summary, metric, thresh)
-      subset[, 'final'] <- subset[nrow(subset), "f_measure"]
+      subset[, "final"] <- subset[nrow(subset), "f_measure"]
 
       plot <- plot + geom_line(data = subset, aes(x = records.processed, y = abs(final - get("f_measure"))), colour = line_colour)
     }
@@ -105,10 +114,74 @@ makeOverlaidConvergencePlot <- function(data, x_upper_bound, x_axis_label, y_axi
     scale_y_continuous(breaks = seq(0, 1, 0.01)) +
     labs(x = x_axis_label, y = y_axis_label) +
     theme(legend.position = "none", panel.background = element_rect(fill = "white"),
-          panel.grid.major = element_line(size = 0.25, linetype = 'solid', colour = "grey")) +
-    geom_segment(aes(x = 0, xend = x_upper_bound, y = 0.01, yend = 0.01), colour = 'red', linetype = "dashed")
+          panel.grid.major = element_line(size = 0.25, linetype = "solid", colour = "grey")) +
+    geom_segment(aes(x = 0, xend = x_upper_bound, y = 0.01, yend = 0.01), linetype = "dashed", colour = "red")
 
   return(plot)
+}
+
+makeFMeasureVsThresholdPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  collated_data <- collateData(data)
+
+  plot <- ggplot(collated_data, aes(x = threshold)) +
+    geom_line(aes(y = f1, colour = as.factor(metric))) +
+    labs(x = x_axis_label, y = y_axis_label, colour = "") + # suppress legend label
+    scale_colour_manual(values = custom_palette)
+
+  if (faceted) {
+    plot <- plot +
+      facet_wrap(~metric) +
+      scale_x_continuous(limits = c(0, 1), minor_breaks = NULL) +
+      scale_y_continuous(limits = c(0, 1), minor_breaks = NULL) +
+      theme(legend.position = "bottom", panel.spacing = unit(0.75, "lines")) # space out the images a little
+
+  } else {
+    plot <- plot +
+      scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
+      scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
+      theme(legend.position = "bottom", panel.background = element_rect(fill = "white"),
+            panel.grid.major = element_line(size = 0.25, linetype = "solid", colour = "grey"))
+  }
+
+  return(plot)
+}
+
+collateData <- function(data) {
+
+  collated_data <- data.frame(metric = character(),
+                              threshold = double(),
+                              f1 = double(),
+                              stringsAsFactors = FALSE)
+
+  for (metric in unique(data$metric)) {
+    for (threshold in unique(data$threshold)) {
+
+      filtered_data <- filter(data, metric, threshold)
+
+      collated_data[nrow(collated_data) + 1, "metric"] <- metric
+      collated_data[nrow(collated_data), "threshold"] <- threshold
+      collated_data[nrow(collated_data), "f1"] <- filtered_data$f_measure # already filtered by metric & threshold, and data only contains one run, so only a single value
+    }
+  }
+
+  return(collated_data)
+}
+
+saveFMeasureVsThreshold <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
+
+  conditionLoadIntoGlobal(input_file_path, "linkage_data")
+
+  plot <- plotFMeasureVsThreshold(linkage_data, x_axis_label, y_axis_label, palette, faceted)
+  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
+}
+
+inputFilePath <- function(directory_path, file_name) {
+  return(paste(directory_path, paste0(file_name, ".csv"), sep = "/"))
+}
+
+outputFilePath <- function(directory_path, file_name) {
+  return(paste(directory_path, paste0(file_name, ".png"), sep = "/"))
 }
 
 ############################################################################
