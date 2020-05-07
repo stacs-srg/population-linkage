@@ -12,7 +12,7 @@ source("dataManipulation.R")
 plotFMeasureConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
 
   data <- filter(data, metric, thresholds)
-  data <- recalculateFMeasure(data)
+  data <- recalculateStatistics(data)
 
   plot <- makeConvergencePlot(data, "f_measure", x_upper_bound, 1.0, x_axis_label, y_axis_label, "Threshold", "bottom", colours)
 
@@ -23,7 +23,7 @@ plotFMeasureConvergence <- function(data, metric, thresholds, x_upper_bound, x_a
 plotFMeasureErrorConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
 
   data <- filter(data, metric, thresholds)
-  data <- recalculateFMeasure(data)
+  data <- recalculateStatistics(data)
   data <- addAbsoluteErrorColumn(data)
 
   plot <- makeConvergencePlot(data, "absolute_error", x_upper_bound, 0.12, x_axis_label, y_axis_label, NULL, "none", colours)
@@ -33,7 +33,7 @@ plotFMeasureErrorConvergence <- function(data, metric, thresholds, x_upper_bound
 
 plotAllFMeasureErrorConvergence <- function(data, x_upper_bound, x_axis_label, y_axis_label, line_colour) {
 
-  data <- recalculateFMeasure(data)
+  data <- recalculateStatistics(data)
   plot <- makeOverlaidConvergencePlot(data, x_upper_bound, x_axis_label, y_axis_label, line_colour)
 
   return(plot)
@@ -44,8 +44,30 @@ plotFMeasureVsThreshold <- function(data, x_axis_label, y_axis_label, custom_pal
   number_of_records_processed <- max(data$records.processed)
   data <- data[which(data$records.processed == number_of_records_processed),]
 
-  data <- recalculateFMeasure(data)
+  data <- recalculateStatistics(data)
   plot <- makeFMeasureVsThresholdPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
+
+  return(plot)
+}
+
+plotROC <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  number_of_records_processed <- max(data$records.processed)
+  data <- data[which(data$records.processed == number_of_records_processed),]
+
+  data <- recalculateStatistics(data)
+  plot <- makeROCPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
+
+  return(plot)
+}
+
+plotPrecisionVsRecall <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  number_of_records_processed <- max(data$records.processed)
+  data <- data[which(data$records.processed == number_of_records_processed),]
+
+  data <- recalculateStatistics(data)
+  plot <- makePrecisionVsRecallPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
 
   return(plot)
 }
@@ -58,12 +80,14 @@ filter <- function(data, metric, thresholds) {
   return(data)
 }
 
-recalculateFMeasure <- function(data) {
+recalculateStatistics <- function(data) {
 
   # Recalculate since F-measure in source data is only calculated to 2 decimal places.
-  precision <- precision(data$tp, data$fp)
-  recall <- recall(data$tp, data$fn)
-  data$f_measure <- fmeasure(precision, recall)
+  data$precision <- precision(data$tp, data$fp)
+  data$recall <- recall(data$tp, data$fn)
+  data$false_positive_rate <- false_positive_rate(data$tn, data$fp)
+  data$true_positive_rate <- data$recall
+  data$f_measure <- fmeasure(data$precision, data$recall)
 
   return(data)
 }
@@ -122,10 +146,25 @@ makeOverlaidConvergencePlot <- function(data, x_upper_bound, x_axis_label, y_axi
 
 makeFMeasureVsThresholdPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
 
+  return(makePerMetricPlot(data, "threshold", "f_measure", x_axis_label, y_axis_label, custom_palette, faceted))
+}
+
+makeROCPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  return(makePerMetricPlot(data, "false_positive_rate", "true_positive_rate", x_axis_label, y_axis_label, custom_palette, faceted))
+}
+
+makePrecisionVsRecallPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  return(makePerMetricPlot(data, "recall", "precision", x_axis_label, y_axis_label, custom_palette, faceted))
+}
+
+makePerMetricPlot <- function(data, x_axis_name, y_axis_name, x_axis_label, y_axis_label, custom_palette, faceted) {
+
   collated_data <- collateData(data)
 
-  plot <- ggplot(collated_data, aes(x = threshold)) +
-    geom_line(aes(y = f1, colour = as.factor(metric))) +
+  plot <- ggplot(collated_data, aes_string(x = x_axis_name)) +
+    geom_line(aes_string(y = y_axis_name, colour = as.factor(collated_data$metric))) +
     labs(x = x_axis_label, y = y_axis_label, colour = "") + # suppress legend label
     scale_colour_manual(values = custom_palette)
 
@@ -136,7 +175,8 @@ makeFMeasureVsThresholdPlot <- function(data, x_axis_label, y_axis_label, custom
       scale_y_continuous(limits = c(0, 1), minor_breaks = NULL) +
       theme(legend.position = "bottom", panel.spacing = unit(0.75, "lines")) # space out the images a little
 
-  } else {
+  }
+  else {
     plot <- plot +
       scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
       scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
@@ -149,10 +189,7 @@ makeFMeasureVsThresholdPlot <- function(data, x_axis_label, y_axis_label, custom
 
 collateData <- function(data) {
 
-  collated_data <- data.frame(metric = character(),
-                              threshold = double(),
-                              f1 = double(),
-                              stringsAsFactors = FALSE)
+  collated_data <- data.frame()
 
   for (metric in unique(data$metric)) {
     for (threshold in unique(data$threshold)) {
@@ -161,7 +198,13 @@ collateData <- function(data) {
 
       collated_data[nrow(collated_data) + 1, "metric"] <- metric
       collated_data[nrow(collated_data), "threshold"] <- threshold
-      collated_data[nrow(collated_data), "f1"] <- filtered_data$f_measure # already filtered by metric & threshold, and data only contains one run, so only a single value
+
+      # Assignments below make sense because filtered_data only contains a single row.
+      collated_data[nrow(collated_data), "false_positive_rate"] <- filtered_data$false_positive_rate
+      collated_data[nrow(collated_data), "true_positive_rate"] <- filtered_data$true_positive_rate
+      collated_data[nrow(collated_data), "precision"] <- filtered_data$precision
+      collated_data[nrow(collated_data), "recall"] <- filtered_data$recall
+      collated_data[nrow(collated_data), "f_measure"] <- filtered_data$f_measure
     }
   }
 
@@ -176,12 +219,28 @@ saveFMeasureVsThreshold <- function(input_file_path, output_file_path, x_axis_la
   ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
 }
 
-inputFilePath <- function(directory_path, file_name) {
-  return(paste(directory_path, paste0(file_name, ".csv"), sep = "/"))
+saveROC <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
+
+  conditionLoadIntoGlobal(input_file_path, "linkage_data")
+
+  plot <- plotROC(linkage_data, x_axis_label, y_axis_label, palette, faceted)
+  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
 }
 
-outputFilePath <- function(directory_path, file_name) {
-  return(paste(directory_path, paste0(file_name, ".png"), sep = "/"))
+savePrecisionVsRecall <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
+
+  conditionLoadIntoGlobal(input_file_path, "linkage_data")
+
+  plot <- plotPrecisionVsRecall(linkage_data, x_axis_label, y_axis_label, palette, faceted)
+  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
+}
+
+inputFilePath <- function(directory_path, file_name_root, file_name_detail) {
+  return(paste(directory_path, paste0(file_name_root, file_name_detail, ".csv"), sep = "/"))
+}
+
+outputFilePath <- function(directory_path, file_name_root, file_name_detail) {
+  return(paste(directory_path, paste0(file_name_root, file_name_detail, ".png"), sep = "/"))
 }
 
 ############################################################################
@@ -412,4 +471,3 @@ plotAllZeroPlots <- function(plotdata, measure, filename, xlimit) {
 
   ggsave(paste0(filename, "-", xlimit, ".png", sep = ""), plot, dpi = 320)
 }
-

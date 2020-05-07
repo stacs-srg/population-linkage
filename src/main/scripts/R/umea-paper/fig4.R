@@ -8,12 +8,14 @@
 ##########################################################################
 # Edit these appropriately.
 
-INPUT_DIRECTORY_PATH <- "~/Desktop"
+INPUT_DIRECTORY_PATH <- "~/Desktop/data"
 OUTPUT_DIRECTORY_PATH <- "~/Desktop"
 PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
 
-INPUT_FILE_NAME <- "UmeaBirthSiblingPRFByThreshold-full"
-OUTPUT_FILE_NAME <- "figure4"
+INPUT_FILE_NAME_ROOT <- "UmeaBirthSibling"
+INPUT_FILE_NAME_ROOT_DETAIL <- "PRFByThreshold-full"
+OUTPUT_FILE_NAME_ROOT <- "figure"
+OUTPUT_FILE_NAME_ROOT_DETAIL <- 4
 ##########################################################################
 
 ##########################################################################
@@ -30,8 +32,8 @@ R_WORKING_DIRECTORY <- paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, 
 setwd(R_WORKING_DIRECTORY)
 source("umea-paper/common.R")
 
-INPUT_FILE_PATH <- inputFilePath(INPUT_DIRECTORY_PATH, INPUT_FILE_NAME)
-OUTPUT_FILE_PATH <- outputFilePath(OUTPUT_DIRECTORY_PATH, OUTPUT_FILE_NAME)
+INPUT_FILE_PATH <- inputFilePath(INPUT_DIRECTORY_PATH, INPUT_FILE_NAME_ROOT, INPUT_FILE_NAME_ROOT_DETAIL)
+OUTPUT_FILE_PATH <- outputFilePath(OUTPUT_DIRECTORY_PATH, OUTPUT_FILE_NAME_ROOT, OUTPUT_FILE_NAME_ROOT_DETAIL)
 
 conditionLoadIntoGlobal(INPUT_FILE_PATH, "data")
 
