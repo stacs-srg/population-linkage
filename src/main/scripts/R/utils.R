@@ -22,6 +22,16 @@ conditionLoadIntoGlobal <- function(filename, name, sep = ",") {
   }
 }
 
+# Load the data from the file filename into the global env
+loadIntoGlobal <- function(filename, name, sep = ",") {
+
+  if (isdefined(name)) {
+    rm(list = name, envir = .GlobalEnv)
+  }
+  data <- read.table(filename, sep = sep, header = TRUE, stringsAsFactors = FALSE)
+  assign(name, data, envir = .GlobalEnv)
+}
+
 clear <- function() {
   cat("\014")
 }

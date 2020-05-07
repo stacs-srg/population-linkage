@@ -37,7 +37,7 @@ source("umea-paper/common.R")
 INPUT_FILE_PATH <- inputFilePath(INPUT_DIRECTORY_PATH, INPUT_FILE_NAME_ROOT, INPUT_FILE_NAME_ROOT_DETAIL)
 OUTPUT_FILE_PATH <- outputFilePath(OUTPUT_DIRECTORY_PATH, OUTPUT_FILE_NAME_ROOT, OUTPUT_FILE_NAME_ROOT_DETAIL)
 
-conditionLoadIntoGlobal(INPUT_FILE_PATH, "data")
+loadIntoGlobal(INPUT_FILE_PATH, "data")
 
 # The output warning "Removed ... row(s) containing missing values (geom_path)" is harmless,
 # indicating that data with x > X_UPPER_BOUND is ignored.

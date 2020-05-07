@@ -213,7 +213,8 @@ collateData <- function(data) {
 
 saveFMeasureVsThreshold <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
 
-  conditionLoadIntoGlobal(input_file_path, "linkage_data")
+  # conditionLoadIntoGlobal(input_file_path, "linkage_data")
+  loadIntoGlobal(input_file_path, "linkage_data")
 
   plot <- plotFMeasureVsThreshold(linkage_data, x_axis_label, y_axis_label, palette, faceted)
   ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
@@ -221,7 +222,8 @@ saveFMeasureVsThreshold <- function(input_file_path, output_file_path, x_axis_la
 
 saveROC <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
 
-  conditionLoadIntoGlobal(input_file_path, "linkage_data")
+  # conditionLoadIntoGlobal(input_file_path, "linkage_data")
+  loadIntoGlobal(input_file_path, "linkage_data")
 
   plot <- plotROC(linkage_data, x_axis_label, y_axis_label, palette, faceted)
   ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
@@ -229,7 +231,8 @@ saveROC <- function(input_file_path, output_file_path, x_axis_label, y_axis_labe
 
 savePrecisionVsRecall <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
 
-  conditionLoadIntoGlobal(input_file_path, "linkage_data")
+  # conditionLoadIntoGlobal(input_file_path, "linkage_data")
+  loadIntoGlobal(input_file_path, "linkage_data")
 
   plot <- plotPrecisionVsRecall(linkage_data, x_axis_label, y_axis_label, palette, faceted)
   ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)

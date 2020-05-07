@@ -1,6 +1,7 @@
 # Figures 6-9: F1 measure vs threshold and precision vs recall for various metrics,
 # for selected linkages, facet wrapped.
-# Figures 10-15: F1 measure vs threshold for various metrics, for selected linkages, overlaid.
+# Figures 10-15: F1 measure vs threshold and precision vs recall for various metrics,
+# for selected linkages, overlaid.
 #
 # Input files: output from ...
 
@@ -56,15 +57,10 @@ for (i in 0:(NUMBER_OF_INPUT_FILES - 1)) {
 
   output_file_path <- outputFilePath(OUTPUT_DIRECTORY_PATH, OUTPUT_FILE_NAME_ROOT, i * 2 + FIRST_OUTPUT_FILE_NUMBER)
 
-  # Clear any data from previous plots.
-  if (exists("linkage_data")) { rm(list = "linkage_data") }
-
   saveFMeasureVsThreshold(input_file_path, output_file_path, "Threshold", "F1-measure",
                           PALETTE, IMAGE_DPI, X_IMAGE_WIDTH, Y_IMAGE_WIDTH, IMAGE_SIZE_UNITS, FACETED[i + 1])
 
   output_file_path <- outputFilePath(OUTPUT_DIRECTORY_PATH, OUTPUT_FILE_NAME_ROOT, i * 2 + FIRST_OUTPUT_FILE_NUMBER + 1)
-
-  rm(list = "linkage_data")
 
   savePrecisionVsRecall(input_file_path, output_file_path, "Recall", "Precision",
                         PALETTE, IMAGE_DPI, X_IMAGE_WIDTH, Y_IMAGE_WIDTH, IMAGE_SIZE_UNITS, FACETED[i + 1])
