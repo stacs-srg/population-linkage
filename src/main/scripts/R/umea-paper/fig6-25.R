@@ -1,11 +1,34 @@
 # Figures 6-9: F1 measure vs threshold and precision vs recall for various metrics,
 # for selected linkages, facet wrapped.
-# Figures 10-15: F1 measure vs threshold and precision vs recall for various metrics,
+#
+# Figures 10-25: F1 measure vs threshold and precision vs recall for various metrics,
 # for selected linkages, overlaid.
 #
-# Input files: output from ...
+# Input files: output from all the various linkages, run over 25,000 records without repetition:
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthBrideIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthDeathIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthFatherIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthGroomIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthMotherIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBrideBrideSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBrideGroomSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaDeathSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaGroomGroomSibling
 
-# TODO: update with location of archived input files on manifesto
+# Archived input data files:
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthBrideIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthDeathIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthFatherIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthGroomIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthMotherIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthSiblingPRFByThreshold-full-filtered.csv
+# [to be replaced by Al with non-filtered version when connectivity allows]
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBrideBrideSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBrideGroomSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaDeathSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaGroomGroomSiblingPRFByThreshold.csv
 
 ##########################################################################
 # Edit these appropriately.

@@ -1,9 +1,12 @@
 # Figure 4: evolution of F1 measure error for all metrics and thresholds, for all records.
+#
 # Input file: output from Umea birth sibling bundling ground truth:
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthSibling
 # run over all records with 10 repetitions
-
-# TODO: update with location of archived input file on manifesto
+#
+# Archived input data file:
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthSiblingPRFByThreshold-full-filtered.csv
+# [to be replaced by Al with non-filtered version when connectivity allows]
 
 ##########################################################################
 # Edit these appropriately.
@@ -13,7 +16,7 @@ OUTPUT_DIRECTORY_PATH <- "~/Desktop"
 PROJECT_DIRECTORY_PATH <- "~/Documents/Code/github/population-linkage"
 
 INPUT_FILE_NAME_ROOT <- "UmeaBirthSibling"
-INPUT_FILE_NAME_ROOT_DETAIL <- "PRFByThreshold-full"
+INPUT_FILE_NAME_ROOT_DETAIL <- "PRFByThreshold-full-filtered"
 OUTPUT_FILE_NAME_ROOT <- "figure"
 OUTPUT_FILE_NAME_ROOT_DETAIL <- 4
 ##########################################################################
