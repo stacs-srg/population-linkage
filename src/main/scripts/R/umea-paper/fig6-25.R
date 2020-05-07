@@ -52,6 +52,7 @@ FACETED <- c(T, T, F, F, F, F, F, F, F, F)
 
 NUMBER_OF_INPUT_FILES <- length(INPUT_FILE_NAME_ROOTS)
 FIRST_OUTPUT_FILE_NUMBER <- 6
+Y_IMAGE_WIDTH <- 13
 
 # Figure 6: birth-groom identity linkage (threshold vs F), faceted
 # Figure 7: birth-groom identity linkage (precision vs recall), faceted
