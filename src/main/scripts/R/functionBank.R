@@ -6,7 +6,15 @@ source("utils.R")
 source("dataManipulation.R")
 
 ############################################################################
-# Functions in this section used in processing data for Umea paper.
+# Functions in this section used in processing data for Umea papers.
+
+RAW_METRIC_NAMES <- c("BagDistance", "Cosine", "Damerau-Levenshtein", "Dice", "Jaccard", "Jaro", "JaroWinkler",
+                      "JensenShannon", "Levenshtein", "LongestCommonSubstring", "Metaphone-Levenshtein", "NYSIIS-Levenshtein", "NeedlemanWunsch", "SED", "SmithWaterman")
+
+DISPLAY_METRIC_NAMES <- c("Bag Distance", "Cosine", "Damerau-Levenshtein", "Dice", "Jaccard", "Jaro", "Jaro-Winkler",
+                          "Jensen-Shannon", "Levenshtein", "Longest Common Substring", "Metaphone-Levenshtein", "NYSIIS-Levenshtein", "Needleman-Wunsch", "SED", "Smith-Waterman")
+
+METRIC_NAME_MAP <- setNames(as.list(DISPLAY_METRIC_NAMES), RAW_METRIC_NAMES)
 
 # Returns a convergence plot, with error bars for a given metric and threshold.
 plotFMeasureConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
@@ -196,7 +204,7 @@ collateData <- function(data) {
 
       filtered_data <- filter(data, metric, threshold)
 
-      collated_data[nrow(collated_data) + 1, "metric"] <- metric
+      collated_data[nrow(collated_data) + 1, "metric"] <- METRIC_NAME_MAP[[metric]]
       collated_data[nrow(collated_data), "threshold"] <- threshold
 
       # Assignments below make sense because filtered_data only contains a single row.

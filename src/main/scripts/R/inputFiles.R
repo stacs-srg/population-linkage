@@ -1,6 +1,6 @@
-setwd("~/repos/github/population-linkage/src/main/scripts/R")
+setwd("~/Documents/Code/github/population-linkage/src/main/scripts/R")
 
-path <- "../../resources/"
+path <- "~/Desktop/data/"
 
 bd <- "UmeaBirthDeathIdentityPRFByThreshold.csv"
 bgs <- "UmeaBrideGroomSiblingPRFByThreshold.csv"

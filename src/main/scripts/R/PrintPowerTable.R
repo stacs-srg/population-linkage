@@ -25,7 +25,7 @@ heightvswidth <- function( metric, subsetted ) {
   return( results )
 }
 
-printLinkageMetricPowerTable <- function( results_frame ) {
+ printLinkageMetricPowerTable <- function( results_frame ) {
   
   for( filename in unique( results_frame$filename ) ) {
     

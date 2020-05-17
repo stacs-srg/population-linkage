@@ -1,11 +1,33 @@
-# Generates all plots of F1 measure vs threshold and precision vs recall for various metrics,
+# Generates all plots of F1 measure vs threshold, precision vs recall and ROC for various metrics,
 # for selected linkages, both facet wrapped and overlaid.
 #
 # This generates all the versions, including those not currently selected for use as figures.
 #
-# Input files: output from ...
+# Input files: output from all the various linkages, run over 25,000 records without repetition:
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthBrideIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthDeathIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthFatherIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthGroomIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthMotherIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBrideBrideSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBrideGroomSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaDeathSibling
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaGroomGroomSibling
 
-# TODO: update with location of archived input files on manifesto
+# Archived input data files:
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthBrideIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthDeathIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthFatherIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthGroomIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthMotherIdentityPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBirthSiblingPRFByThreshold-full-filtered.csv
+# [to be replaced by Al with non-filtered version when connectivity allows]
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBrideBrideSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaBrideGroomSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaDeathSiblingPRFByThreshold.csv
+# sftp://secure@manifesto.cs.st-andrews.ac.uk//data/umea-paper/UmeaGroomGroomSiblingPRFByThreshold.csv
 
 ##########################################################################
 # Edit these appropriately.
@@ -21,6 +43,9 @@ R_DIRECTORY_RELATIVE_PATH <- "src/main/scripts/R"
 R_WORKING_DIRECTORY <- paste(PROJECT_DIRECTORY_PATH, R_DIRECTORY_RELATIVE_PATH, sep = "/")
 setwd(R_WORKING_DIRECTORY)
 source("umea-paper/common.R")
+
+# Compress Y direction to reduce space taken up in papers.
+Y_IMAGE_WIDTH <- 13
 
 INPUT_FILE_NAME_ROOTS <- c(BBI_FILE_NAME_ROOT, BDI_FILE_NAME_ROOT, BFI_FILE_NAME_ROOT, BGI_FILE_NAME_ROOT, BMI_FILE_NAME_ROOT,
                            BS_FILE_NAME_ROOT, BBS_FILE_NAME_ROOT, BGS_FILE_NAME_ROOT, DS_FILE_NAME_ROOT, GGS_FILE_NAME_ROOT)
