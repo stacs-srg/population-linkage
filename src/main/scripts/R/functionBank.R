@@ -15,6 +15,7 @@ DISPLAY_METRIC_NAMES <- c("Bag Distance", "Cosine", "Damerau-Levenshtein", "Dice
                           "Jensen-Shannon", "Levenshtein", "Longest Common Substring", "Metaphone-Levenshtein", "NYSIIS-Levenshtein", "Needleman-Wunsch", "SED", "Smith-Waterman")
 
 METRIC_NAME_MAP <- setNames(as.list(DISPLAY_METRIC_NAMES), RAW_METRIC_NAMES)
+DIAGRAM_FILE_TYPE <- ".eps"
 
 # Returns a convergence plot, with error bars for a given metric and threshold.
 plotFMeasureConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
@@ -251,7 +252,7 @@ inputFilePath <- function(directory_path, file_name_root, file_name_detail) {
 }
 
 outputFilePath <- function(directory_path, file_name_root, file_name_detail) {
-  return(paste(directory_path, paste0(file_name_root, file_name_detail, ".png"), sep = "/"))
+  return(paste(directory_path, paste0(file_name_root, file_name_detail, DIAGRAM_FILE_TYPE), sep = "/"))
 }
 
 ############################################################################
