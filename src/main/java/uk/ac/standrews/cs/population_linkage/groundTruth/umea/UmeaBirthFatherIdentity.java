@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.AsymmetricSingleSourceLinkageAnalysis;
+import uk.ac.standrews.cs.population_linkage.groundTruth.ThresholdAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
@@ -88,6 +89,8 @@ public class UmeaBirthFatherIdentity extends AsymmetricSingleSourceLinkageAnalys
         Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "umea";
         int NUMBER_OF_RUNS = 1;
+
+        ThresholdAnalysis.MULTIPLE_LINKS = false; // Temporary horrible hack.
 
         new UmeaBirthFatherIdentity(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
