@@ -102,12 +102,20 @@ public class FMeasureTables {
 
     private static void outputTable(final Map<String, Map<String, Double>> max_f_measures) {
 
+        printDivider();
         printHeaderRow(max_f_measures);
+        printDivider();
         printRows(max_f_measures);
+        printDivider();
         printMeanRow(max_f_measures);
 
         System.out.println();
         System.out.println();
+    }
+
+    private static void printDivider() {
+
+        System.out.println("\\hline \\noalign{\\smallskip}");
     }
 
     private static void printHeaderRow(final Map<String, Map<String, Double>> values_by_linkage_and_metric) {
