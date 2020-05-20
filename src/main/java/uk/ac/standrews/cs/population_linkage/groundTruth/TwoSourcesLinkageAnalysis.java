@@ -34,9 +34,9 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     private List<LXP> source_records2;
     private int number_of_records2;
 
-    protected TwoSourcesLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs) throws IOException {
+    protected TwoSourcesLinkageAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
 
-        super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs);
+        super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs, allow_multiple_links);
     }
 
     protected abstract Iterable<LXP> getSourceRecords2(RecordRepository record_repository);

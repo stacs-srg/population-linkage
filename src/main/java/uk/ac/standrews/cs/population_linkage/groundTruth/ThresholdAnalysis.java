@@ -28,7 +28,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public abstract class ThresholdAnalysis {
 
-    public static boolean MULTIPLE_LINKS = true;
+    protected final boolean allow_multiple_links;
     protected static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
     protected static final int CHECK_ALL_RECORDS = -1;
     static final long SEED = 87626L;
@@ -57,13 +57,14 @@ public abstract class ThresholdAnalysis {
     boolean verbose = false;
     private int records_processed = 0;
 
-    ThresholdAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs) throws IOException {
+    ThresholdAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
 
         System.out.println("Running ground truth analysis for " + getLinkageType() + " on data: " + repo_name);
         System.out.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
 
         this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         this.number_of_runs = number_of_runs;
+        this.allow_multiple_links = allow_multiple_links;
 
         pairs_evaluated = new long[number_of_runs];
         pairs_ignored = new long[number_of_runs];
@@ -299,7 +300,7 @@ public abstract class ThresholdAnalysis {
                     final Sample[] samples = linkage_results.get(run_number).get(metric_name);
                     final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
 
-                    if (MULTIPLE_LINKS) {
+                    if (allow_multiple_links) {
 
                         for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
 
