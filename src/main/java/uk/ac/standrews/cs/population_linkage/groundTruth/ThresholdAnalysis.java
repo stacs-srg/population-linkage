@@ -28,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
  */
 public abstract class ThresholdAnalysis {
 
-    protected final boolean allow_multiple_links;
     protected static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
     protected static final int CHECK_ALL_RECORDS = -1;
     static final long SEED = 87626L;
@@ -37,6 +36,7 @@ public abstract class ThresholdAnalysis {
     private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;
     private static final String DELIMIT = ",";
+    protected final boolean allow_multiple_links;
     final int number_of_records_to_be_checked;
     final int number_of_runs;
     final Path store_path;
@@ -344,13 +344,13 @@ public abstract class ThresholdAnalysis {
                                         }
 
                                     } else {
-                                        if (tentative_link_is_true_link) {
-                                            tentative_samples[threshold_index].fn--;
-                                            tentative_samples[threshold_index].tp++;
-                                        } else {
-                                            tentative_samples[threshold_index].tn--;
-                                            tentative_samples[threshold_index].fp++;
-                                        }
+//                                        if (tentative_link_is_true_link) {
+//                                            tentative_samples[threshold_index].fn--;
+//                                            tentative_samples[threshold_index].tp++;
+//                                        } else {
+//                                            tentative_samples[threshold_index].tn--;
+//                                            tentative_samples[threshold_index].fp++;
+//                                        }
                                     }
                                 }
                             }
