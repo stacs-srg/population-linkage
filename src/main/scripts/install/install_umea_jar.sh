@@ -5,4 +5,4 @@
 #
 
 
-mvn -q install:install-file -Dfile=$1 -DgroupId=uk.ac.standrews.cs -DartifactId=UMEA-DATA -Dversion=1.0-SNAPSHOT -Dpackaging=jar
+mvn -q install:install-file -Dfile=$1 -DgroupId=uk.ac.standrews.cs -DartifactId=umea-data -Dversion=1.0-SNAPSHOT -Dpackaging=jar
