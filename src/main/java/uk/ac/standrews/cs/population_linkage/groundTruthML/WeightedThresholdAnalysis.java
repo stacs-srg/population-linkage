@@ -17,10 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -35,7 +32,6 @@ public abstract class WeightedThresholdAnalysis {
     protected static final int CHECK_ALL_RECORDS = -1;
     static final long SEED = 87626L;
     private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
-    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;
     private static final String DELIMIT = ",";
@@ -46,20 +42,21 @@ public abstract class WeightedThresholdAnalysis {
     final String repo_name;
     final PrintWriter linkage_results_metadata_writer;
     final PrintWriter distance_results_metadata_writer;
-    private final Sample[] samples;             // counts of TPFP etc.
+    private final Sample sample;                           // counts of TPFP etc.
     private final long[] pairs_evaluated;
     private final long[] pairs_ignored;
     private final PrintWriter linkage_results_writer;
     private final PrintWriter distance_results_writer;
-    private final int[] non_link_distance_counts;
-    private final int[] link_distance_counts;
+    private int non_link_distance_counts;
+    private int link_distance_counts;
+    private final double threshold;
     private int run_number;
     List<LXP> source_records;
     int number_of_records;
-    boolean verbose = false;
+    boolean verbose = true;
     private int records_processed = 0;
 
-    WeightedThresholdAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
+    WeightedThresholdAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links, double threshold) throws IOException {
 
         System.out.println("Running ground truth analysis for " + getLinkageType() + " on data: " + repo_name);
         System.out.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
@@ -67,13 +64,11 @@ public abstract class WeightedThresholdAnalysis {
         this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         this.number_of_runs = number_of_runs;
         this.allow_multiple_links = allow_multiple_links || !MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE;
+        this.threshold = threshold;
 
         pairs_evaluated = new long[number_of_runs];
         pairs_ignored = new long[number_of_runs];
-        samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
-        for( int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++ ) {
-            samples[i] = new Sample();
-        }
+        sample = new Sample();
 
         this.store_path = store_path;
         this.repo_name = repo_name;
@@ -83,8 +78,8 @@ public abstract class WeightedThresholdAnalysis {
         linkage_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".meta", false)));
         distance_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".meta", false)));
 
-        non_link_distance_counts = new int[NUMBER_OF_THRESHOLDS_SAMPLED];
-        link_distance_counts = new int[NUMBER_OF_THRESHOLDS_SAMPLED];
+        non_link_distance_counts = 0;
+        link_distance_counts = 9;
         run_number = 0;
 
         setupRecords();
@@ -93,11 +88,6 @@ public abstract class WeightedThresholdAnalysis {
     private static int distanceToIndex(final double distance) {
 
         return (int) (distance * (NUMBER_OF_DISTANCES_SAMPLED - 1) + EPSILON);
-    }
-
-    private static double indexToThreshold(final int index) {
-
-        return (double) index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
     }
 
     private static String getCallingClassName() {
@@ -160,7 +150,7 @@ public abstract class WeightedThresholdAnalysis {
         for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
 
             processBlock(block_index);
-            printSamples();
+ //           printSamples();
 
             if (verbose) {
                 System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
@@ -168,34 +158,12 @@ public abstract class WeightedThresholdAnalysis {
             }
         }
 
+        printSamples();
+
         if (verbose) {
             System.out.println("Run completed");
             System.out.flush();
         }
-    }
-
-    private List<Map<String, int[]>> initialiseDistances() {
-
-        final List<Map<String, int[]>> result = new ArrayList<>();
-
-        for (int i = 0; i < number_of_runs; i++) {
-
-            final Map<String, int[]> map = new HashMap<>();
-
-            map.put(getMetric().getMetricName(), new int[NUMBER_OF_THRESHOLDS_SAMPLED]);
-
-            result.add(map);
-        }
-        return result;
-    }
-
-    private Map<String, Integer> initialiseRunNumbers() {
-
-        final Map<String, Integer> map = new HashMap<>();
-
-        map.put(getMetric().getMetricName(), 0);
-
-        return map;
     }
 
     private void processBlock(final int block_index) {
@@ -243,7 +211,7 @@ public abstract class WeightedThresholdAnalysis {
 
         double min_distance = 1.01;
 
-        Sample[] tentative_samples = null;
+        Sample tentative_samples = null;
         boolean tentative_link_is_true_link = false;
 
         for (int j = 0; j < last_record_index; j++) { //******* Process all the records in the second source for each in block
@@ -267,7 +235,7 @@ public abstract class WeightedThresholdAnalysis {
                     final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
 
                     if (allow_multiple_links) {
-                        recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
+                        recordLinkDecisions(sample, distance, link_is_viable, is_true_link);
                     } else {
 
                         if (distance_is_closest_encountered && link_is_viable) {
@@ -275,14 +243,14 @@ public abstract class WeightedThresholdAnalysis {
                             // Undo any previous tentative link decision.
                             undoTentativeLinkDecision(tentative_samples, min_distance, tentative_link_is_true_link);
 
-                            recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
+                            recordLinkDecisions(sample, distance, link_is_viable, is_true_link);
 
                             // Record these as tentative in case another closer record is found.
-                            tentative_samples = samples;
+                            tentative_samples = sample;
                             tentative_link_is_true_link = is_true_link;
 
                         } else {
-                            recordNegativeLinkDecisions(samples, is_true_link);
+                            recordNegativeLinkDecisions(sample, is_true_link);
                         }
                     }
 
@@ -314,91 +282,74 @@ public abstract class WeightedThresholdAnalysis {
 
     private void updateTrueLinkCounts(final String metric_name, final int run_number, final double distance, final boolean is_true_link) {
 
-        final int index = distanceToIndex(distance);
+        if (is_true_link) {
+            link_distance_counts++;
+        } else {
+            non_link_distance_counts++;
+        }
+    }
+
+    private void recordNegativeLinkDecisions(final Sample samples, final boolean is_true_link) {
 
         if (is_true_link) {
-            link_distance_counts[index]++;
+            samples.fn++;
         } else {
-            non_link_distance_counts[index]++;
+            samples.tn++;
         }
     }
 
-    private void recordNegativeLinkDecisions(final Sample[] samples, final boolean is_true_link) {
+    private void recordLinkDecisions(final Sample samples, final double link_distance, final boolean link_is_viable, final boolean is_true_link) {
 
-        for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+        if (link_distance <= threshold && link_is_viable) {
 
             if (is_true_link) {
-                samples[threshold_index].fn++;
+                samples.tp++;
             } else {
-                samples[threshold_index].tn++;
+                samples.fp++;
+            }
+
+        } else {
+            if (is_true_link) {
+                samples.fn++;
+            } else {
+                samples.tn++;
             }
         }
     }
 
-    private void recordLinkDecisions(final Sample[] samples, final double link_distance, final boolean link_is_viable, final boolean is_true_link) {
-
-        for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-
-            final double threshold = indexToThreshold(threshold_index);
-
-            if (link_distance <= threshold && link_is_viable) {
-
-                if (is_true_link) {
-                    samples[threshold_index].tp++;
-                } else {
-                    samples[threshold_index].fp++;
-                }
-
-            } else {
-                if (is_true_link) {
-                    samples[threshold_index].fn++;
-                } else {
-                    samples[threshold_index].tn++;
-                }
-            }
-        }
-    }
-
-    private void undoTentativeLinkDecision(final Sample[] tentative_samples, final double tentative_link_distance, final boolean tentative_link_is_true_link) {
+    private void undoTentativeLinkDecision(final Sample tentative_samples, final double tentative_link_distance, final boolean tentative_link_is_true_link) {
 
         if (tentative_samples != null) {
 
-            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+            if (tentative_link_distance <= threshold) {
 
-                final double threshold = indexToThreshold(threshold_index);
-
-                if (tentative_link_distance <= threshold) {
-
-                    if (tentative_link_is_true_link) {
-                        tentative_samples[threshold_index].tp--;
-                        tentative_samples[threshold_index].fn++;
-                    } else {
-                        tentative_samples[threshold_index].fp--;
-                        tentative_samples[threshold_index].tn++;
-                    }
-
+                if (tentative_link_is_true_link) {
+                    tentative_samples.tp--;
+                    tentative_samples.fn++;
+                } else {
+                    tentative_samples.fp--;
+                    tentative_samples.tn++;
                 }
+
             }
         }
     }
 
     private void printSamples() {
 
-        final String metric_name = getMetric().getMetricName();
+        String metric_name = getMetric().getMetricName();
 
         for (int run_number = 0; run_number < number_of_runs; run_number++) {
-
-            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                printSample(run_number, metric_name, indexToThreshold(threshold_index), samples[threshold_index]);
-            }
-
-            printDistances(run_number, metric_name);
+            printSample(run_number, metric_name, threshold, sample);
         }
+
+        printDistances(run_number, metric_name);
     }
+
 
     private void printDistances(final int run_number, final String metric_name) {
 
-        printDistances(run_number, metric_name, false, non_link_distance_counts);
+        printDistances(run_number, metric_name, false, this.non_link_distance_counts);
         printDistances(run_number, metric_name, true, link_distance_counts);
     }
 
@@ -450,10 +401,8 @@ public abstract class WeightedThresholdAnalysis {
         distance_results_writer.print("links_non-link");
         distance_results_writer.print(DELIMIT);
 
-        for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
-            if (i > 0) distance_results_writer.print(DELIMIT);
-            distance_results_writer.print(String.format("%.2f", indexToThreshold(i)));
-        }
+        distance_results_writer.print(String.format("%.2f", threshold));
+
         distance_results_writer.println();
         distance_results_writer.flush();
     }
@@ -492,7 +441,7 @@ public abstract class WeightedThresholdAnalysis {
         linkage_results_writer.flush();
     }
 
-    private void printDistances(final int run_number, final String metric_name, boolean links, int[] distances) {
+    private void printDistances(final int run_number, final String metric_name, boolean links, int distances) {
 
         distance_results_writer.print(LocalDateTime.now());
         distance_results_writer.print(DELIMIT);
@@ -508,11 +457,7 @@ public abstract class WeightedThresholdAnalysis {
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print(links ? "links" : "non-links");
         distance_results_writer.print(DELIMIT);
-
-        for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
-            distance_results_writer.print(distances[i]);
-            distance_results_writer.print(DELIMIT);
-        }
+        distance_results_writer.print(distances);
         distance_results_writer.println();
         distance_results_writer.flush();
     }

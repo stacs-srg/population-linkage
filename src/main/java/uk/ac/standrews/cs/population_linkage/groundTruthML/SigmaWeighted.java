@@ -36,13 +36,14 @@ public class SigmaWeighted extends Metric<LXP> {
 
     private String combineNames() {
         StringBuilder sb = new StringBuilder();
-        sb.append( "Wighted:" );
-        for( Metric m : metrics ) {
-            sb.append( m.getMetricName() );
+        sb.append( "Weighted:" );
+        for( int i = 0; i < field_list.size(); i++ ) {
+            sb.append( metrics.get(i).getMetricName() );
+            sb.append( ":" );
+            sb.append( String.format("%.2f", weights.get(i) ) );
             sb.append( "+" );
         }
-        sb.subSequence( 0,sb.length() - 1);
-        return sb.toString();
+        return sb.subSequence( 0,sb.length() - 1).toString();
     }
 
     @Override

@@ -44,11 +44,14 @@ import static uk.ac.standrews.cs.population_linkage.supportClasses.Constants.*;
  * 29/6/2020
  *
  */
-public class UmeaBirthSiblingWeighted extends SymmetricSingleSourceWeightedLinkageAnalysis {
+public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysis {
 
-    UmeaBirthSiblingWeighted(Path store_path, String repo_name, final List<Integer> fields, final List<Metric> metrics, final List<Float> weights, final int number_of_records_to_be_checked, final int number_of_runs
-                             ) throws IOException {
-        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, fields, metrics, weights, true);
+    private final Metric<LXP> metric;
+
+    UmeaBirthSiblingWeighted(Path store_path, String repo_name, final List<Integer> fields, final List<Metric> metrics, final List<Float> weights, final int number_of_records_to_be_checked, final int number_of_runs,
+                             double threshold) throws IOException {
+        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true, threshold);
+        this.metric = new SigmaWeighted(fields, metrics, weights, getIdFieldIndex());
     }
 
     @Override
@@ -94,6 +97,9 @@ public class UmeaBirthSiblingWeighted extends SymmetricSingleSourceWeightedLinka
     public String getSourceType() {
         return "births";
     }
+
+    @Override
+    public Metric<LXP> getMetric() { return metric; }
 
     /**
      * Splits a param list into separate fields
@@ -205,6 +211,7 @@ public class UmeaBirthSiblingWeighted extends SymmetricSingleSourceWeightedLinka
         // number_of_records_to_be_checked = CHECK_ALL_RECORDS for exhaustive
         // otherwise DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED or some other specific number.
 
-        new UmeaBirthSiblingWeighted(store_path, repo_name, fields, metrics, weights, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaBirthSiblingWeighted(store_path, repo_name, fields, metrics, weights, 500, NUMBER_OF_RUNS, threshold).run();
+//        new UmeaBirthSiblingWeighted(store_path, repo_name, fields, metrics, weights, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS, threshold).run();
     }
 }
