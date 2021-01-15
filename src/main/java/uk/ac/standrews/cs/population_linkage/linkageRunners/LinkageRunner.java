@@ -31,8 +31,8 @@ public abstract class LinkageRunner {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
     private StringMetric baseMetric;
-    private Linker linker;
-    private LinkageRecipe linkageRecipe;
+    protected Linker linker;
+    protected LinkageRecipe linkageRecipe;
 
     private Path gtLinksCountFile = Paths.get("gt-link-counts.csv"); // TODO put this in the application properties?
 
@@ -277,7 +277,7 @@ public abstract class LinkageRunner {
     }
 
 
-    private boolean doesGTSayIsTrue(Link linkage_says_true_link) {
+    protected boolean doesGTSayIsTrue(Link linkage_says_true_link) {
         try {
             return linkageRecipe.isTrueMatch(
                     linkage_says_true_link.getRecord1().getReferend(),
@@ -300,7 +300,7 @@ public abstract class LinkageRunner {
 
     ///////////////////////////// Private methods /////////////////////////////
 
-    private LocalDateTime nextTimeStamp(final LocalDateTime previous_time_stamp, final String step_description) {
+    protected LocalDateTime nextTimeStamp(final LocalDateTime previous_time_stamp, final String step_description) {
 
         LocalDateTime next = LocalDateTime.now();
         System.out.println(prettyPrint(Duration.between(previous_time_stamp, next)) + " to " + step_description);
@@ -321,7 +321,7 @@ public abstract class LinkageRunner {
         } catch (Exception e) {}
     }
 
-    private void printLink(Link link, String classification) {
+    protected void printLink(Link link, String classification) {
 
         try {
             LXP person1 = link.getRecord1().getReferend();

@@ -713,26 +713,32 @@ public abstract class LinkageRecipe {
 
         for (LXP record : records) {
 
-            int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields + 1;
-
-            for (int attribute : filterOn) {
-                String value = record.getString(attribute).toLowerCase().trim();
-                if (value.equals("") || value.contains("missing")) {
-                    numberOfEmptyFieldsPermitted--;
-                }
-
-                if (numberOfEmptyFieldsPermitted == 0) {
-                    break;
-                }
-
-            }
-
-            if (numberOfEmptyFieldsPermitted > 0) { // this is a data-full record that we want to keep
+            if( passesFilter(record, filterOn, reqPopulatedFields) ) {
                 filteredRecords.add(record);
             }
         }
 
         return filteredRecords;
+    }
+
+    public boolean passesFilter(LXP record, List<Integer> filterOn, int reqPopulatedFields) {
+        int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields + 1;
+
+        for (int attribute : filterOn) {
+            String value = record.getString(attribute).toLowerCase().trim();
+            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----") ) {  // TODO could make this field specific (or standardise empty).
+                numberOfEmptyFieldsPermitted--;
+            }
+
+            if (numberOfEmptyFieldsPermitted == 0) {
+                break;
+            }
+        }
+
+        if (numberOfEmptyFieldsPermitted > 0) { // this is a data-full record that we want to keep
+            return true;
+        }
+        return false;
     }
 
     protected Iterable<LXP> filterBySex(Iterable<LXP> records, int sexField, String keepSex) {

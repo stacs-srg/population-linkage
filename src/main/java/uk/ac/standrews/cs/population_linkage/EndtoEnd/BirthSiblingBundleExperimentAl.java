@@ -2,10 +2,11 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRecipes;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.AlBitBlasterEndtoEndLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -17,7 +18,7 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import java.util.List;
 import java.util.Map;
 
-public class BirthSiblingLinkageRecipe extends LinkageRecipe {
+public class BirthSiblingBundleExperimentAl extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "birth-birth-sibling";
 
@@ -47,18 +48,8 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.MOTHER_BIRTH_RECORD_IDENTITY, Birth.MOTHER_BIRTH_RECORD_IDENTITY), pair(Birth.FATHER_BIRTH_RECORD_IDENTITY, Birth.FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public BirthSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+    public BirthSiblingBundleExperimentAl(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);
-    }
-
-    public static void main(String[] args) throws BucketException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, false, 5, false, false, false, false);
     }
 
     public static boolean isViable(RecordPair proposedLink) {
@@ -141,5 +132,25 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
         throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
 //        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY);
+    }
+
+    public static void main(String[] args) throws BucketException {
+
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        LinkageRecipe linkageRecipe = new BirthSiblingBundleExperimentAl(sourceRepo, resultsRepo, LINKAGE_TYPE + "-links");
+
+        new AlBitBlasterEndtoEndLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, 8, false, false, false, false);
+// 8 fields is all of them => very conservative.
+//        Birth.FATHER_FORENAME,
+//        Birth.FATHER_SURNAME,
+//        Birth.MOTHER_FORENAME,
+//        Birth.MOTHER_MAIDEN_SURNAME,
+//        Birth.PARENTS_PLACE_OF_MARRIAGE,
+//        Birth.PARENTS_DAY_OF_MARRIAGE,
+//        Birth.PARENTS_MONTH_OF_MARRIAGE,
+//        Birth.PARENTS_YEAR_OF_MARRIAGE
+        System.exit(1); // shut down the VM - stop BB running.
     }
 }
