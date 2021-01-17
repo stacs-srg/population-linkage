@@ -131,19 +131,19 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getGroundTruthLinksOnSiblingSymmetric(Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getGroundTruthLinksOnSiblingSymmetric(Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() { // See comment above
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
     }
 }

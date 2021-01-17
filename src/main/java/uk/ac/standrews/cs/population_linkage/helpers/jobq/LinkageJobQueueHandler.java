@@ -2,12 +2,28 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.helpers;
+package uk.ac.standrews.cs.population_linkage.helpers.jobq;
 
 import com.google.common.collect.Sets;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.*;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.helpers.JobRunnerIO;
+import uk.ac.standrews.cs.population_linkage.helpers.ValidatePopulationInStorr;
+import uk.ac.standrews.cs.population_linkage.helpers.jobq.Job;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthMotherIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideGroomSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -16,6 +32,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,7 +49,7 @@ import java.util.*;
 public class LinkageJobQueueHandler {
 
     // to use the linkage job queue handler define a csv job file with the following headings
-    // population,size,pop_number,corruption_number,linkage-type,metric,threshold,preFilter,max-sibling-gap,evaluate_quality,ROs,births-cache-size,marriages-cache-size,deaths-cache-size,persist_links,results-repo,links_persistent_name,gt_persistent_name
+    // linkage-results-file,reason,priority,required-memory,seed,population,size,pop-number,corruption-profile,threshold,metric,linkage-type,results-repo,links-persistent-name,pre-filter,pre-filter-required-fields,persist-links,evaluate-quality,births-cache-size,marriages-cache-size,deaths-cache-size,ros,max-sibling-age-diff,min-marriage-age,min-parenting-age,max-parenting-age,max-marriage-age-discrepancy,max-death-age
     //
     // Empty fields should contain a - (i.e. a single dash)
     // The job queue can be used for both synthetic populations and the umea data
@@ -45,11 +62,11 @@ public class LinkageJobQueueHandler {
 
     public static void main(String[] args) throws Exception {
         Path jobQ = Paths.get(args[0]);
-        Path linkageResultsFile = Paths.get(args[1]);
+        int assignedMemory = Integer.parseInt(args[1]);
         Path recordCountsFile = Paths.get(args[2]);
         Path statusFile = Paths.get(args[3]);
 
-        while (getStatus(statusFile)) {
+        while(getStatus(statusFile)) {
 
             FileChannel fileChannel = getFileChannel(jobQ);
             System.out.println("Locking job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -57,10 +74,9 @@ public class LinkageJobQueueHandler {
             System.out.println("Locked job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             List<List<String>> jobs = readInJobFile(fileChannel);
 
-            if (jobs.size() > 1) {
-                // jobs in queue
-                List<String> columnLabels = jobs.get(0);
-                List<String> job = jobs.remove(1);
+            Job job = pickJob(jobs, assignedMemory);
+
+            if (job != null) {
 
                 System.out.println("Job taken: " + job);
 
@@ -71,40 +87,64 @@ public class LinkageJobQueueHandler {
                 // At this point we have a linkage job no body else has - now we need to:
                 // put job info into variables
 
-                String populationName = job.get(columnLabels.indexOf("population")).trim();
-                String populationSize = job.get(columnLabels.indexOf("size")).trim();
-                String populationNumber = job.get(columnLabels.indexOf("pop_number")).trim();
-                String corruptionNumber = job.get(columnLabels.indexOf("corruption_number")).trim();
-                boolean corrupted = !corruptionNumber.equals("0");
-                double threshold = Double.parseDouble(job.get(columnLabels.indexOf("threshold")).trim());
-                String metric = job.get(columnLabels.indexOf("metric")).trim();
-                String maxSiblingGapString = job.get(columnLabels.indexOf("max-sibling-gap")).trim();
-                Integer maxSiblingGap = (maxSiblingGapString.equals("")) ? null : Integer.valueOf(maxSiblingGapString);
-                int birthsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("births-cache-size")).trim());
-                int marriagesCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
-                int deathsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
-                int numROs = Integer.parseInt(job.get(columnLabels.indexOf("ROs")).trim());
-                String linkageType = job.get(columnLabels.indexOf("linkage-type")).trim();
+                var linkageResultsFile = Paths.get(job.get("linkage-results-file"));
+                var reason = job.get("reason");
+                var priority = job.get("priority", Integer.class);
+                var requiredMemory = job.get("required-memory", Integer.class);
 
-                String resultsRepo = job.get(columnLabels.indexOf("results-repo")).trim();
-                String links_persistent_name = job.get(columnLabels.indexOf("links_persistent_name")).trim();
+                var populationName = job.get("population");
+                var populationSize = job.get("size");
+                var populationNumber = job.get("pop-number");
+                var corruptionProfile = job.get("corruption-profile");
+                var corrupted = !corruptionProfile.equals("0");
 
-                boolean preFilter = job.get(columnLabels.indexOf("preFilter")).trim().toLowerCase().equals("true");
-                int preFilterRequiredFields = Integer.parseInt(job.get(columnLabels.indexOf("preFilterRequiredFields")).trim());
-                boolean persist_links = job.get(columnLabels.indexOf("persist_links")).trim().toLowerCase().equals("true");
-                boolean evaluate_quality = job.get(columnLabels.indexOf("evaluate_quality")).trim().toLowerCase().equals("true");
+                var threshold = job.get("threshold", Double.class);
+                var metric = job.get("metric");
+                var linkageType = job.get("linkage-type");
 
-                String sourceRepo = toRepoName(populationName, populationSize, populationNumber, corruptionNumber, corrupted);
+                var resultsRepo = job.get("results-repo");
+                var links_persistent_name = job.get("links-persistent-name");
+
+                var preFilter = job.get("pre-filter", Boolean.class);
+                var preFilterRequiredFields = job.get("pre-filter-required-fields", Integer.class);
+                var persist_links = job.get("persist-links", Boolean.class);
+                var evaluate_quality = job.get("evaluate-quality", Boolean.class);
+
+                var birthsCacheSize = job.get("births-cache-size", Integer.class);
+                var marriagesCacheSize = job.get("marriages-cache-size", Integer.class);
+                var deathsCacheSize = job.get("deaths-cache-size", Integer.class);
+                var numROs = job.get("ros", Integer.class);
+
+                var seed = job.getNullable("seed", "-", Long.class);
+                seed = seed == null ? LinkageConfig.seed : seed;
+
+                var maxSiblingAgeDiff = job.getNullable("max-sibling-age-diff", "-", Integer.class);
+                var minAgeAtMarriage = job.get("min-marriage-age", Integer.class);
+                var minParentAgeAtBirth = job.get("min-parenting-age", Integer.class);
+                var maxParentAgeAtBirth = job.get("max-parenting-age", Integer.class);
+                var maxAllowableMarriageAgeDiscrepancy = job.get("max-marriage-age-discrepancy", Integer.class);
+                var maxAgeAtDeath = job.get("max-death-age", Integer.class);
+
+                var sourceRepo = toRepoName(populationName, populationSize, populationNumber, corruptionProfile, corrupted);
 
                 LinkageConfig.birthCacheSize = birthsCacheSize;
                 LinkageConfig.marriageCacheSize = marriagesCacheSize;
                 LinkageConfig.deathCacheSize = deathsCacheSize;
                 LinkageConfig.numberOfROs = numROs;
-                LinkageConfig.MAX_SIBLING_AGE_DIFF = maxSiblingGap;
+                LinkageConfig.seed = seed;
 
-                // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
-                new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber).validate(recordCountsFile);
+                LinkageConfig.MAX_SIBLING_AGE_DIFF = maxSiblingAgeDiff;
+                LinkageConfig.MIN_AGE_AT_MARRIAGE = minAgeAtMarriage;
+                LinkageConfig.MIN_PARENT_AGE_AT_BIRTH = minParentAgeAtBirth;
+                LinkageConfig.MAX_PARENT_AGE_AT_BIRTH = maxParentAgeAtBirth;
+                LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY = maxAllowableMarriageAgeDiscrepancy;
+                LinkageConfig.MAX_AGE_AT_DEATH = maxAgeAtDeath;
 
+                // validate the data is in the storr (local scratch space on clusters - but either way it's defined in application.properties)
+                new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionProfile)
+                        .validate(recordCountsFile);
+
+                LinkageQuality lq = new LinkageQuality("No Experiment Run");
                 StringMetric chosenMetric = Constants.get(metric, 4096);
 
                 JobRunnerIO.setupResultsFile(linkageResultsFile);
@@ -112,7 +152,6 @@ public class LinkageJobQueueHandler {
                 long startTime = System.currentTimeMillis();
 
                 LinkageRecipe linkageRecipe = getLinkageRecipe(linkageType, resultsRepo, links_persistent_name, sourceRepo);
-                String linkageApproach = linkageRecipe.getLinkageType();
 
                 LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run(
                         linkageRecipe, chosenMetric, threshold, preFilter, preFilterRequiredFields,
@@ -123,16 +162,46 @@ public class LinkageJobQueueHandler {
 
                 long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
-                JobRunnerIO.appendToResultsFile(threshold, metric, LinkageConfig.MAX_SIBLING_AGE_DIFF, linkageQuality, timeTakenInSeconds,
-                        linkageResultsFile, populationName, populationSize, populationNumber, corruptionNumber,
-                        linkageApproach, numROs, fieldsUsed1, fieldsUsed2, preFilter,
-                        birthsCacheSize, marriagesCacheSize, deathsCacheSize);
+                JobRunnerIO.appendToResultsFile(linkageResultsFile, reason, populationName, populationSize, populationNumber,
+                        corruptionProfile, corrupted, threshold, metric, linkageType, resultsRepo, links_persistent_name,
+                        preFilter, preFilterRequiredFields, persist_links, evaluate_quality, birthsCacheSize,
+                        marriagesCacheSize, deathsCacheSize, numROs, maxSiblingAgeDiff, minAgeAtMarriage,
+                        minParentAgeAtBirth, maxParentAgeAtBirth, maxAllowableMarriageAgeDiscrepancy, maxAgeAtDeath,
+                        sourceRepo, linkageQuality, timeTakenInSeconds, linkageRecipe.getClass().getCanonicalName(),
+                        fieldsUsed1, fieldsUsed2, priority, requiredMemory, seed);
+
+                // runs GC to ensure no object left in memory from previous linkages that may skew memory usage logging
+                System.gc();
 
             } else {
                 fileChannel.close();
-                System.out.println("No jobs in job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                System.out.println("No suitable jobs in job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 Thread.sleep(60000);
             }
+        }
+    }
+
+    private static Job pickJob(List<List<String>> jobs, int assignedMemory) {
+
+        List<String> labels = jobs.get(0);
+
+        int highestPriority = Integer.MAX_VALUE;
+        Integer rowIndex = null;
+
+        for(int row = 1; row < jobs.size(); row++) {
+            var job = new Job(labels, jobs.get(row));
+            if(assignedMemory <= job.get("required-memory", Integer.class)) {
+                var jobPriority = job.get("priority", Integer.class);
+                if(jobPriority < highestPriority) {
+                    highestPriority = jobPriority;
+                    rowIndex = row;
+                }
+            }
+        }
+        if(rowIndex != null) {
+            return new Job(labels, jobs.remove(rowIndex.intValue()));
+        } else {
+            return null;
         }
     }
 
@@ -313,7 +382,6 @@ public class LinkageJobQueueHandler {
                     return false;
             }
         }
-
         return true;
     }
 

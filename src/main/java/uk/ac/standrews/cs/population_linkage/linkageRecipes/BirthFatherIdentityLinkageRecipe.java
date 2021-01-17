@@ -118,20 +118,20 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
     }
 
     @Override

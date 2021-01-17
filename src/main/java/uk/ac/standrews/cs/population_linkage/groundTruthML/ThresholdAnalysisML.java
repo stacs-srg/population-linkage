@@ -5,6 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import java.util.Map;
 
 abstract class ThresholdAnalysisML {
 
-    static final long SEED = 87626L;
+    static final long SEED = LinkageConfig.seed;
     static final int NUMBER_OF_RUNS = 10;
 
     static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.

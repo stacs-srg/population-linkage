@@ -131,19 +131,19 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
+        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
     }
 }

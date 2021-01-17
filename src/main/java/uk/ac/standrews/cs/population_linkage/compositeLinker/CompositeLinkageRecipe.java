@@ -5,9 +5,9 @@
 package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathBrideOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathGroomOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.FatherGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;

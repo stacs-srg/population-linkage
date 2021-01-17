@@ -2,10 +2,9 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRecipes.unused;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;

@@ -5,6 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -30,7 +31,7 @@ public abstract class WeightedThresholdAnalysis {
 
     protected static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
     protected static final int CHECK_ALL_RECORDS = -1;
-    static final long SEED = 87626L;
+    static final long SEED = LinkageConfig.seed;
     private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;

@@ -6,6 +6,7 @@ package uk.ac.standrews.cs.population_linkage.characterisation;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -24,7 +25,7 @@ import static uk.ac.standrews.cs.population_linkage.supportClasses.Constants.TRU
 public class MetricSpaceChecks {
 
     private static final int DUMP_COUNT_INTERVAL = 1000000;
-    private static final long SEED = 34553543456223L;
+    private static final long SEED = LinkageConfig.seed;
     private static final double DELTA = 0.0000001;
 
     private final Path store_path;

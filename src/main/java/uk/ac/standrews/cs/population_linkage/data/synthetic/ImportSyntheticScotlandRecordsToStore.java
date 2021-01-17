@@ -4,7 +4,6 @@
  */
 package uk.ac.standrews.cs.population_linkage.data.synthetic;
 
-
 import uk.ac.standrews.cs.data.synthetic.SyntheticBirthsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticDeathsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticMarriagesDataSet;
@@ -64,12 +63,16 @@ public class ImportSyntheticScotlandRecordsToStore {
         System.out.println();
         System.out.println("Complete");
 
+        record_repository.stopStoreWatcher();
+
         return record_repository;
     }
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = ApplicationProperties.getStorePath();
+        Path store_path = Path.of("/Users/tdalton/tom/phd/store");
+
+//                ApplicationProperties.getStorePath();
 
 //        new ImportSyntheticScotlandRecordsToStore(store_path, args[0], args[1], args[2], args[3].equals("true"), args[4]).run();
         addAllToStore(store_path);
@@ -78,9 +81,9 @@ public class ImportSyntheticScotlandRecordsToStore {
     public static void addAllToStore(Path store_path) throws Exception {
 
         String[] populationNames   = {"synthetic-scotland"};
-        String[] populationSizes   = {"13k"};    // TOM: ,"133k","530k"
-        String[] populationNumbers = {"1","2","3","4","5"};     // TOM: ,"2","3","4","5"
-        String[] corruptionNumbers = {"0","A","B","C"};
+        String[] populationSizes   = {"133k"};    // TOM: ,,"530k", "1222k"
+        String[] populationNumbers = {"1"};     // TOM: ,"2","3","4","5"
+        String[] corruptionNumbers = {"0"};
 
         for(String populationName : populationNames)
             for (String populationSize : populationSizes)

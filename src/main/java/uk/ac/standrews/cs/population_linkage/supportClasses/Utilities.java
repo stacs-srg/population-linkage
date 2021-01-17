@@ -18,7 +18,7 @@ import java.util.Random;
 
 public class Utilities {
 
-    private static final long SEED = 34553543456223L;
+    private static final long SEED = LinkageConfig.seed;
 
     public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
 

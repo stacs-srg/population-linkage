@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.searchStructures;
 
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -16,7 +17,7 @@ import java.util.Random;
 public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     private static final int DEFAULT_NUMBER_OF_REFERENCE_POINTS = 70;
-    private static long SEED = 34258723425L;
+    private static long SEED = LinkageConfig.seed;
     private ParallelBitBlaster2<T> bit_blaster;
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data) {
