@@ -2,9 +2,10 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRunners;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
@@ -19,7 +20,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingL
 
 public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
 
-    HashMap<Long, List<Link>> familyBundles = new HashMap();  // maps from id to all links in same family.
+    HashMap<Long, Family> familyBundles = new HashMap();  // maps from id on birth record to Family
 
     private static final int NUMBER_OF_BIRTHS = 10000;
 //    private HashMap<String, List<LXP>> gt;
@@ -72,10 +73,12 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
                 default:
                     unknown++;
             }
-            bundleLinks(link);
+            BundleFamilies(link);
         }
 
-        mergeFamilies(); // families are keyed by each family member - this eliminates duplicates and makes them keyed in familyBundles by ID of one (arbitrary) member
+        createFamilyBirths();
+        mergeFamilies();            // families are keyed by each family member - this eliminates duplicates and makes them keyed in familyBundles by ID of one (arbitrary) member
+                                    // This is not what you would want in a real system - would want them keyed by all family members (probably).
         showFamilies();
 
         numberOfGroundTruthTrueLinks = countTrueLinks(filtered_source_records);
@@ -86,6 +89,15 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         lq.print(System.out);
 
         return null; // TODO FIX THIS
+    }
+
+    /**
+     * Takes the links in families and turns them into sets of births.
+     */
+    private void createFamilyBirths() throws BucketException {
+        for (Family f : familyBundles.values()) {
+            f.createSiblings();
+        }
     }
 
     private List<Link> dedupSymmetricAndSelfPairs(Iterable<Link> links) throws BucketException {
@@ -135,17 +147,31 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         List<Long> to_remove = new ArrayList<>();
         List<Long> processed = new ArrayList<>();
         for (Long id : familyBundles.keySet()) {
-            Set<LXP> births = getfamilyBirths(id);
+            Set<LXP> this_family = getfamilyBirths(id);
             processed.add(id);
-            for (LXP sibling : births) {
+            for (LXP sibling : this_family) {
                 if (!processed.contains(sibling.getId())) { // don't look at siblings already processed - they are in.
-                    if (familiesAreSame(getfamilyBirths(sibling.getId()), births)) {
+                    Set<LXP> siblings_family = getfamilyBirths(sibling.getId());
+                    boolean siblings_family_subset_of_this = siblings_family.containsAll(this_family);
+                    boolean this_family_subset_of_siblings = this_family.containsAll(siblings_family);
+                    boolean families_are_the_same = siblings_family_subset_of_this && this_family_subset_of_siblings;
+
+                    if ( families_are_the_same ) {
                         to_remove.add(sibling.getId());
-                        System.out.println("Removed 1 family");
-                    }
-                    // TODO deal with subsetting here.
-                    else {
+                        System.out.println("Removed 1 duplicated family");
+                    } else if( this_family_subset_of_siblings ) {
+                        to_remove.add(id);
+                        System.out.println("Removed 1 overlapping primary family");
+                    } else if( siblings_family_subset_of_this ) {
+                        to_remove.add(sibling.getId());
+                        System.out.println("Removed 1 overlapping sibling's family");
+                    } else {
                         System.out.println("Families are different"); // TODO What to do.
+                        System.out.println( "partial overlap:");
+                        showFamily( this_family );
+                        System.out.println( "family2:" );
+                        showFamily( siblings_family );
+
                     }
                 }
             }
@@ -155,13 +181,16 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         }
     }
 
-    private boolean familiesAreSame(Set<LXP> births1, Set<LXP> births2) {
-        return births1.containsAll(births2) && births2.containsAll(births1);
-    }
 
+    /**
+     *
+     * @param id - birth id of a potential family member.
+     * @return a set of LXPs which are Borth Records
+     * @throws BucketException
+     */
     private Set<LXP> getfamilyBirths(Long id) throws BucketException {
-        List<Link> links = familyBundles.get(id);
-        return unpair(links);
+        Family f = familyBundles.get(id);
+        return f.getBirthSiblings();
     }
 
 
@@ -197,18 +226,8 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         }
         System.out.println("Families formed:");
         System.out.println("father_errors = " + father_errors + " mother_errors = " + mother_errors);
-        System.out.println("Number of people in (real) families = " + person_count);
+        System.out.println("Number of people found = " + person_count);
         System.out.println("No families formed = " + family_count);
-    }
-
-    private Set<LXP> unpair(List<Link> links) throws BucketException {
-        Set<LXP> births = new TreeSet<>();
-        for (Link link : links) {
-            births.add(link.getRecord1().getReferend());
-            births.add(link.getRecord2().getReferend());
-
-        }
-        return births;
     }
 
     private void showFamily(Set<LXP> births) throws BucketException {
@@ -236,24 +255,24 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         System.out.println("===");
     }
 
-    private void bundleLinks(Link link) throws BucketException {
+    private void BundleFamilies(Link link) throws BucketException {
         Birth rec_1 = (Birth) link.getRecord1().getReferend();
         Birth rec_2 = (Birth) link.getRecord2().getReferend();
 
         long id_1 = rec_1.getId();
         long id_2 = rec_2.getId();
 
-        addLinktoBundle(id_1, link);
-        addLinktoBundle(id_2, link);
+        addLinktoFamily(id_1, link);
+        addLinktoFamily(id_2, link);
     }
 
-    private void addLinktoBundle(long id, Link link) {
-        List<Link> list = familyBundles.get(id);
-        if (list == null) {
-            list = new ArrayList<Link>();
+    private void addLinktoFamily(long id, Link link) {
+        Family f = familyBundles.get(id);
+        if (f == null) {
+            f = new Family();
         }
-        list.add(link);
-        familyBundles.put(id, list);
+        f.addSiblingBirth(link);
+        familyBundles.put(id, f);
     }
 
     public void showBirth(LXP birth, boolean father_matches, boolean mother_matches) throws BucketException {
