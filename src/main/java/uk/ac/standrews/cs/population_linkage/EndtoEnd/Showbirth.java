@@ -41,6 +41,9 @@ public class Showbirth {
     private void show(LXP birth) {
 
         System.out.println( "id:\t" + birth.getId() );
+        System.out.println( "fam_id:\t" + birth.get(Birth.FAMILY) );
+        System.out.println( "orig_id:\t" + birth.get(Birth.ORIGINAL_ID) );
+        System.out.println( "std_id:\t" + birth.get(Birth.STANDARDISED_ID ) );
         System.out.println( "firstname:\t" + "[" + birth.get(Birth.FORENAME) + "]" );
         System.out.println( "surname:\t" + "[" + birth.get(Birth.SURNAME) + "]");
         System.out.println( "fatherf:\t" + "[" + birth.get(Birth.FATHER_FORENAME) + "]");
@@ -58,7 +61,7 @@ public class Showbirth {
         System.out.println( "yom:\t" + birth.get(Birth.PARENTS_YEAR_OF_MARRIAGE) );
         System.out.println( "pom:\t" + birth.get(Birth.PARENTS_PLACE_OF_MARRIAGE) );
         System.out.println( "pob:\t" + birth.get(Birth.PLACE_OF_BIRTH) );
-        System.out.println( "fam_id:\t" + birth.get(Birth.FAMILY) );
+
     }
 
     public static void main(String[] args) throws BucketException {
