@@ -290,18 +290,18 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     }
 
-    public static LinkStatus trueMatch(LXP record1, LXP record2) {
+    public static LinkStatus trueMatch(LXP birth, LXP marriage) {
 
-        if(     record1.getString( Birth.FATHER_IDENTITY ).isEmpty()  ||
-                record1.getString( Birth.MOTHER_IDENTITY ).isEmpty()  ||
-                record2.getString(Marriage.GROOM_IDENTITY ).isEmpty() ||
-                record2.getString(Marriage.BRIDE_IDENTITY ).isEmpty() ) {
+        if(     birth.getString( Birth.FATHER_IDENTITY ).isEmpty()  ||
+                birth.getString( Birth.MOTHER_IDENTITY ).isEmpty()  ||
+                marriage.getString(Marriage.GROOM_IDENTITY ).isEmpty() ||
+                marriage.getString(Marriage.BRIDE_IDENTITY ).isEmpty() ) {
 
                     return LinkStatus.UNKNOWN;
 
         }
-        String marriage_key_from_marriage = toKeyFromMarriage( record1 );
-        String birth_key_from_marriage = toKeyFromBirth( record2 );
+        String birth_key_from_marriage = toKeyFromBirth( birth );
+        String marriage_key_from_marriage = toKeyFromMarriage( marriage );
 
         if (marriage_key_from_marriage.equals( birth_key_from_marriage ) ) {
             return LinkStatus.TRUE_MATCH;

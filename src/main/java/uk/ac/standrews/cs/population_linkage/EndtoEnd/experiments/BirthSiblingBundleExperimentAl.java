@@ -2,8 +2,9 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
 
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.AlBitBlasterEndtoEndLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;

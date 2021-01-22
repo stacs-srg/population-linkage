@@ -2,27 +2,33 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.runners;
 
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.Family;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
-import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe.trueMatch;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.BirthParentsMarriageLinkageRecipe.trueMatch;
 
-public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
+public class BitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunner extends BitBlasterLinkageRunner {
 
     HashMap<Long, Family> familyBundles = new HashMap();  // maps from id on birth record to Family
 
     private static final int NUMBER_OF_BIRTHS = 10000;
+    private static final int EVERYTHING = Integer.MAX_VALUE;
 //    private HashMap<String, List<LXP>> gt;
 
 
@@ -40,10 +46,10 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         // This is alternative to the code in LinkageRunner which requires the whole set to be manifested.
         // This only manifests the first REQUIRED fields.
 
-        ArrayList<LXP> filtered_source_records = filter(prefilterRequiredFields, NUMBER_OF_BIRTHS, linkageRecipe.getStoredRecords());    // TODO Are these just the same?
-        // ArrayList<LXP> filtered_search_records = filter(prefilterRequiredFields, NUMBER_OF_BIRTHS, linkageRecipe.getSearchRecords()); // TODO - yes for Birth-Birth but not in general
+        ArrayList<LXP> filtered_birth_records = filter(prefilterRequiredFields, NUMBER_OF_BIRTHS, linkageRecipe.getStoredRecords(), linkageRecipe.getLinkageFields());
+        ArrayList<LXP> filtered_marriage_records = filter(prefilterRequiredFields, EVERYTHING, linkageRecipe.getSearchRecords(), linkageRecipe.getSearchMappingFields()); // do not filter these - will reduce what we can find otherwise!
 
-        linker.addRecords(filtered_source_records, filtered_source_records);
+        linker.addRecords(filtered_birth_records, filtered_marriage_records);
 
         System.out.println("Records added records to linker @ " + LocalDateTime.now().toString());
 
@@ -54,8 +60,6 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         int tp = 0;
         int fp = 0;
         int unknown = 0;
-
-        links = dedupSymmetricAndSelfPairs(links);
 
         for (Link link : links) {
 
@@ -76,12 +80,13 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
             BundleFamilies(link);
         }
 
-        createFamilyBirths();
+        createFamilyMarriageGrooms();
+
         mergeFamilies();            // families are keyed by each family member - this eliminates duplicates and makes them keyed in familyBundles by ID of one (arbitrary) member
                                     // This is not what you would want in a real system - would want them keyed by all family members (probably).
         showFamilies();
 
-        numberOfGroundTruthTrueLinks = countTrueLinks(filtered_source_records);
+        numberOfGroundTruthTrueLinks = countTrueLinks(filtered_birth_records,filtered_marriage_records);
 
         System.out.println( "Num GT true links = " + numberOfGroundTruthTrueLinks );
         int fn = numberOfGroundTruthTrueLinks - tp;
@@ -92,11 +97,11 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
     }
 
     /**
-     * Takes the links in families and turns them into sets of births.
+     * Takes the links in families and turns them into sets of births and Marriages
      */
-    private void createFamilyBirths() throws BucketException {
+    private void createFamilyMarriageGrooms() throws BucketException {
         for (Family f : familyBundles.values()) {
-            f.createSiblings();
+            f.createMarriageGrooms();
         }
     }
 
@@ -126,16 +131,13 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         return false;
     }
 
-    private int countTrueLinks(ArrayList<LXP> records) {
-        Object[] arrai = records.toArray();
+    private int countTrueLinks(ArrayList<LXP> birth_records,ArrayList<LXP> marriage_records) {
         int num_links = 0;
-        for (int i = 0; i < arrai.length - 1; i++) {
-            for (int j = i + 1; j < arrai.length; j++) {
-                if( ! arrai[i].equals(arrai[j]) ) {
-                    final LinkStatus linkStatus = trueMatch((LXP) arrai[i], (LXP) arrai[j]);
-                    if (linkStatus == LinkStatus.TRUE_MATCH) {
-                        num_links++;
-                    }
+        for ( LXP birth : birth_records ) {
+            for (LXP marriage : marriage_records) {
+                final LinkStatus linkStatus = trueMatch(birth, marriage);
+                if (linkStatus == LinkStatus.TRUE_MATCH) {
+                    num_links++;
                 }
             }
         }
@@ -144,48 +146,14 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
 
 
     private void mergeFamilies() throws BucketException {
-        List<Long> to_remove = new ArrayList<>();
-        List<Long> processed = new ArrayList<>();
-        for (Long id : familyBundles.keySet()) {
-            Set<LXP> this_family = getfamilyBirths(id);
-            processed.add(id);
-            for (LXP sibling : this_family) {
-                if (!processed.contains(sibling.getId())) { // don't look at siblings already processed - they are in.
-                    Set<LXP> siblings_family = getfamilyBirths(sibling.getId());
-                    boolean siblings_family_subset_of_this = siblings_family.containsAll(this_family);
-                    boolean this_family_subset_of_siblings = this_family.containsAll(siblings_family);
-                    boolean families_are_the_same = siblings_family_subset_of_this && this_family_subset_of_siblings;
-
-                    if ( families_are_the_same ) {
-                        to_remove.add(sibling.getId());
-                        System.out.println("Removed 1 duplicated family");
-                    } else if( this_family_subset_of_siblings ) {
-                        to_remove.add(id);
-                        System.out.println("Removed 1 overlapping primary family");
-                    } else if( siblings_family_subset_of_this ) {
-                        to_remove.add(sibling.getId());
-                        System.out.println("Removed 1 overlapping sibling's family");
-                    } else {
-                        System.out.println("Families are different"); // TODO What to do.
-                        System.out.println( "partial overlap:");
-                        showFamily( this_family );
-                        System.out.println( "family2:" );
-                        showFamily( siblings_family );
-
-                    }
-                }
-            }
-        }
-        for (Long id : to_remove) {
-            familyBundles.remove(id);
-        }
+        System.out.println("No merge yet");
     }
 
 
     /**
      *
      * @param id - birth id of a potential family member.
-     * @return a set of LXPs which are Borth Records
+     * @return a set of LXPs which are Birth Records
      * @throws BucketException
      */
     private Set<LXP> getfamilyBirths(Long id) throws BucketException {
@@ -194,17 +162,34 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
     }
 
 
-    private ArrayList<LXP> filter(int prefilterRequiredFields, int REQUIRED, Iterable<LXP> records_to_filter) {
+    /**
+     *
+     * @param id - birth id of a potential family member.
+     * @return a set of LXPs which are Marriage Records of the potential grooms in the family
+     * @throws BucketException
+     */
+    private Set<LXP> getfamilyGroomMarriages(Long id) throws BucketException {
+        Family f = familyBundles.get(id);
+        return f.getGroomMarriages();
+    }
+
+    private ArrayList<LXP> filter(int prefilterRequiredFields, int REQUIRED, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
         ArrayList<LXP> filtered_source_records = new ArrayList<>();
+        int count_rejected = 0;
+        int count_accepted = 0;
         linkageRecipe.setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
-        for (LXP birth : records_to_filter) {
-            if (linkageRecipe.passesFilter(birth, linkageRecipe.getLinkageFields(), prefilterRequiredFields)) {
-                filtered_source_records.add(birth);
+        for (LXP record : records_to_filter) {
+            if (linkageRecipe.passesFilter(record, linkageFields, prefilterRequiredFields)) {
+                filtered_source_records.add(record);
+                count_accepted++;
+            } else {
+                count_rejected++;
             }
             if (filtered_source_records.size() >= REQUIRED) {
                 break;
             }
         }
+        System.out.println( "Filtering: accepted: " + count_accepted + " rejected: " + count_rejected + " from " + ( count_rejected + count_accepted ) );
         return filtered_source_records;
     }
 
@@ -215,23 +200,34 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
 
         int count = 0;
         int family_count = 0;
-        int person_count = 0;
+        int sibling_count = 0;
 
         for (Long id : familyBundles.keySet()) {
             Set<LXP> births = getfamilyBirths(id);
+            Set<LXP> marriages = getfamilyGroomMarriages(id);
             family_count++;
-            person_count += births.size();
-            showFamily(births);
+            sibling_count += births.size();
+            showFMarriage(marriages);
+            showFBirths(births);
+
             count++;
         }
         System.out.println("Families formed:");
         System.out.println("father_errors = " + father_errors + " mother_errors = " + mother_errors);
-        System.out.println("Number of people found = " + person_count);
+        System.out.println("Number of siblings found = " + sibling_count);
         System.out.println("No families formed = " + family_count);
     }
 
-    private void showFamily(Set<LXP> births) throws BucketException {
+    private void showFMarriage(Set<LXP> marriages) throws BucketException {
         System.out.println("Family:");
+        for (LXP marriage : marriages) {
+            System.out.println("Marriage:");
+            showMarriage(marriage);
+        }
+    }
+
+    private void showFBirths(Set<LXP> births) throws BucketException {
+        System.out.println("Births:");
         String family_father_id = "";
         String family_mother_id = "";
 
@@ -257,13 +253,12 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
 
     private void BundleFamilies(Link link) throws BucketException {
         Birth rec_1 = (Birth) link.getRecord1().getReferend();
-        Birth rec_2 = (Birth) link.getRecord2().getReferend();
+        Marriage rec_2 = (Marriage) link.getRecord2().getReferend();
 
         long id_1 = rec_1.getId();
         long id_2 = rec_2.getId();
 
         addLinktoFamily(id_1, link);
-        addLinktoFamily(id_2, link);
     }
 
     private void addLinktoFamily(long id, Link link) {
@@ -271,7 +266,7 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         if (f == null) {
             f = new Family();
         }
-        f.addSiblingBirth(link);
+        f.addMarriageBabyAsGroom(link);
         familyBundles.put(id, f);
     }
 
@@ -281,9 +276,27 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
         String surname = birth.getString(Birth.SURNAME);
         String father_id = birth.getString(Birth.FATHER_IDENTITY);
         String mother_id = birth.getString(Birth.MOTHER_IDENTITY);
-        String parental_match = "  " + (father_matches ? "YES" : "NO") + "/" + (father_matches ? "YES" : "NO");
+
+        String parental_match = "  " + (father_matches ? "YES" : "NO") + "/" + (mother_matches ? "YES" : "NO");
         long oid = birth.getId();
-        System.out.println(oid + ": " + firstname + "," + surname + " F: " + father_id + " M: " + mother_id + "\t" + parental_match);
+        String std_id = birth.getString(Birth.STANDARDISED_ID);
+        System.out.println(oid + "/" + std_id + ": " + firstname + "," + surname + " F: " + father_id + " M: " + mother_id + "\t" + parental_match);
+    }
+
+    public void showMarriage(LXP marriage) throws BucketException {
+
+        String gfirstname = marriage.getString(Marriage.GROOM_FORENAME);
+        String gsurname = marriage.getString(Marriage.GROOM_SURNAME);
+        String gid = marriage.getString(Marriage.GROOM_IDENTITY);
+
+        String bfirstname = marriage.getString(Marriage.BRIDE_FORENAME);
+        String bsurname = marriage.getString(Marriage.BRIDE_SURNAME);
+        String bid = marriage.getString(Marriage.BRIDE_IDENTITY);
+
+        long oid = marriage.getId();
+        String std_id = marriage.getString( Marriage.STANDARDISED_ID );
+
+        System.out.println(oid + "/" + std_id + ": G: " + gfirstname + "," + gsurname + " GID: " + gid + " B: " + bfirstname + "," + bsurname + " BID: " + bid );
     }
 
 }

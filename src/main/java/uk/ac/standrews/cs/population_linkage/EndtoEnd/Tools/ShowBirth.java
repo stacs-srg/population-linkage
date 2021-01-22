@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.Tools;
 
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -14,13 +14,13 @@ import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import java.nio.file.Path;
 import java.util.Scanner;
 
-public class Showbirth {
+public class ShowBirth {
 
     private final RecordRepository record_repository;
     private final IBucket<Birth> births_bucket;
     protected Path store_path;
 
-    public Showbirth(String source_repository_name) {
+    public ShowBirth(String source_repository_name) {
 
         store_path = ApplicationProperties.getStorePath();
         this.record_repository = new RecordRepository(store_path, source_repository_name);
@@ -66,7 +66,7 @@ public class Showbirth {
 
     public static void main(String[] args) throws BucketException {
 
-        Showbirth sb = new Showbirth("Umea");
+        ShowBirth sb = new ShowBirth("Umea");
         sb.serviceQueries();
     }
 }
