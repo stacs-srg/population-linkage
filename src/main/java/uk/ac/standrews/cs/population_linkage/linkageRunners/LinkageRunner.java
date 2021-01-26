@@ -5,7 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
 import uk.ac.standrews.cs.population_linkage.helpers.GroundTruthLinkCounter;
-import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
+import uk.ac.standrews.cs.population_linkage.helpers.memorylogger.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
@@ -34,13 +34,20 @@ public abstract class LinkageRunner {
     private Linker linker;
     private LinkageRecipe linkageRecipe;
 
-    private Path gtLinksCountFile = Paths.get("gt-link-counts.csv"); // TODO put this in the application properties?
+    private Path defaultGtLinksCountFile = Paths.get("gt-link-counts.csv"); // TODO put this in the application properties?
+
+    public LinkageResult run(LinkageRecipe linkageRecipe, StringMetric baseMetric, double threshold,
+            boolean prefilter, int prefilterRequiredFields,
+            boolean generateMapOfLinks, boolean reverseMap,
+            boolean evaluateQuality, boolean persistLinks) throws BucketException {
+        return run(linkageRecipe, baseMetric, threshold, prefilter, prefilterRequiredFields, generateMapOfLinks,
+                reverseMap, evaluateQuality, persistLinks, defaultGtLinksCountFile);
+    }
 
     public LinkageResult run(LinkageRecipe linkageRecipe, StringMetric baseMetric, double threshold,
                              boolean prefilter, int prefilterRequiredFields,
                              boolean generateMapOfLinks, boolean reverseMap,
-                             boolean evaluateQuality, boolean persistLinks) throws BucketException {
-
+                             boolean evaluateQuality, boolean persistLinks, Path gtLinksCountFile) throws BucketException {
         MemoryLogger.update();
         this.baseMetric = baseMetric;
         this.linkageRecipe = linkageRecipe;

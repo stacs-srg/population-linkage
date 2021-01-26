@@ -69,4 +69,28 @@ public class LinkageQuality {
     public double getF_measure() {
         return f_measure;
     }
+
+    public int getTp() {
+        return tp;
+    }
+
+    public void setTp(int tp) {
+        this.tp = tp;
+    }
+
+    public int getFp() {
+        return fp;
+    }
+
+    public void setFp(int fp) {
+        this.fp = fp;
+    }
+
+    public int getFn() {
+        return fn;
+    }
+
+    public void setFn(int fn) {
+        this.fn = fn;
+    }
 }

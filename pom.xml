@@ -54,29 +54,35 @@
             <version>1.0.3</version>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>uk.ac.standrews.cs</groupId>-->
+<!--            <artifactId>data-kilmarnock</artifactId>-->
+<!--            <version>1.0-SNAPSHOT</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>uk.ac.standrews.cs</groupId>-->
+<!--            <artifactId>data-skye</artifactId>-->
+<!--            <version>1.0-SNAPSHOT</version>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>uk.ac.standrews.cs</groupId>
-            <artifactId>data-kilmarnock</artifactId>
+            <artifactId>valipop-synthetic-populations-scotland</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>uk.ac.standrews.cs</groupId>
-            <artifactId>data-skye</artifactId>
+            <artifactId>valipop-synthetic-populations-dominican-republic</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <dependency>
-            <groupId>uk.ac.standrews.cs</groupId>
-            <artifactId>valipop-synthetic-populations</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.ac.standrews.cs</groupId>
-            <artifactId>data-umea</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>uk.ac.standrews.cs</groupId>-->
+<!--            <artifactId>data-umea</artifactId>-->
+<!--            <version>1.0-SNAPSHOT</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>al-richard</groupId>
@@ -89,6 +95,30 @@
             <artifactId>assertj-core</artifactId>
             <version>3.18.1</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+            <version>2.12.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>28.1-jre</version>
         </dependency>
 
     </dependencies>

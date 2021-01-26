@@ -32,21 +32,21 @@ public class ValidatePopulationInStorr {
     private String populationSize;
     private String populationNumber;
     private boolean corrupted;
-    private String corruptionNumber;
+    private String corruptionProfile;
 
-    public ValidatePopulationInStorr(String populationName, String populationSize, String populationNumber, boolean corrupted, String corruptionNumber) {
+    public ValidatePopulationInStorr(String populationName, String populationSize, String populationNumber, String corruptionProfile) {
 
         this.populationName = populationName;
         this.populationSize = populationSize;
         this.populationNumber = populationNumber;
-        this.corrupted = corrupted;
-        this.corruptionNumber = corruptionNumber;
+        this.corrupted = !corruptionProfile.equals("0");
+        this.corruptionProfile = corruptionProfile;
 
         if(corrupted)
-            sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionNumber;
+            sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_corrupted_" + corruptionProfile;
         else {
             sourceRepoName = populationName + "_" + populationSize + "_" + populationNumber + "_clean";
-            corruptionNumber = "0";
+            corruptionProfile = "0";
         }
 
     }
@@ -62,7 +62,7 @@ public class ValidatePopulationInStorr {
         } catch (RuntimeException e) {
             System.out.println("Repository not found --- will now create: " + sourceRepoName);
             record_repository = new ImportSyntheticScotlandRecordsToStore(store_path, populationName, populationSize,
-                    populationNumber, !corruptionNumber.equals("0"), corruptionNumber).run();
+                    populationNumber, !corruptionProfile.equals("0"), corruptionProfile).run();
         }
 
         // this section checks to make sure the the storr repo contains the same number of records as was in the source
@@ -70,13 +70,13 @@ public class ValidatePopulationInStorr {
 
         for(String bucket : RecordRepository.getBucketNames()) {
 
-            int recordsInSource = getCountFromLog(recordCounts, bucket, populationName, populationSize, populationNumber, corruptionNumber);
+            int recordsInSource = getCountFromLog(recordCounts, bucket, populationName, populationSize, populationNumber, corruptionProfile);
 
             if(recordsInSource == -1) { // count not in log file - thus calc it
                 System.out.println("No count in file - will count from source for: " + sourceRepoName + ":" + bucket);
                 recordsInSource = getCountFromRawFile(bucket);
                 System.out.println("Count of: " + recordsInSource + " will be added to log for: " + sourceRepoName + ":" + bucket);
-                writeCountToLog(recordsInSource, recordCounts, bucket, populationName, populationSize, populationNumber, corruptionNumber);
+                writeCountToLog(recordsInSource, recordCounts, bucket, populationName, populationSize, populationNumber, corruptionProfile);
             }
 
             IBucket recordBucket = record_repository.getBucket(bucket);
@@ -97,7 +97,6 @@ public class ValidatePopulationInStorr {
 
     private void writeCountToLog(int count, Path recordCounts, String bucket, String populationName, String populationSize, String populationNumber, String corruptionNumber) throws IOException {
         FileChannel fc = getFileChannel(recordCounts);
-
         fc.lock(0, Long.MAX_VALUE, false);
 
         int checkCount = getCountFromLog(recordCounts, bucket, populationName, populationSize, populationNumber, corruptionNumber);
@@ -126,15 +125,15 @@ public class ValidatePopulationInStorr {
         switch (bucket) {
             case RecordRepository.BIRTHS_BUCKET_NAME:
                 recordRepository.importBirthRecords(SyntheticBirthsDataSet.factory(populationName, populationSize,
-                        populationNumber, corrupted, corruptionNumber));
+                        populationNumber, corrupted, corruptionProfile));
                 break;
             case RecordRepository.DEATHS_BUCKET_NAME:
                 recordRepository.importDeathRecords(SyntheticDeathsDataSet.factory(populationName, populationSize,
-                        populationNumber, corrupted, corruptionNumber));
+                        populationNumber, corrupted, corruptionProfile));
                 break;
             case RecordRepository.MARRIAGES_BUCKET_NAME:
                 recordRepository.importMarriageRecords(SyntheticMarriagesDataSet.factory(populationName, populationSize,
-                        populationNumber, corrupted, corruptionNumber));
+                        populationNumber, corrupted, corruptionProfile));
                 break;
 
         }
@@ -146,13 +145,13 @@ public class ValidatePopulationInStorr {
         switch (bucket) {
             case RecordRepository.BIRTHS_BUCKET_NAME:
                 return SyntheticBirthsDataSet.factory(populationName, populationSize, populationNumber,
-                        corrupted, corruptionNumber).getRecords().size();
+                        corrupted, corruptionProfile).getRecords().size();
             case RecordRepository.DEATHS_BUCKET_NAME:
                 return SyntheticDeathsDataSet.factory(populationName, populationSize, populationNumber,
-                        corrupted, corruptionNumber).getRecords().size();
+                        corrupted, corruptionProfile).getRecords().size();
             case RecordRepository.MARRIAGES_BUCKET_NAME:
                 return SyntheticMarriagesDataSet.factory(populationName, populationSize, populationNumber,
-                        corrupted, corruptionNumber).getRecords().size();
+                        corrupted, corruptionProfile).getRecords().size();
 
         }
 

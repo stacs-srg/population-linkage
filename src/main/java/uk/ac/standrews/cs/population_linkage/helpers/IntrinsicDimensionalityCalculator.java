@@ -90,7 +90,7 @@ public class IntrinsicDimensionalityCalculator {
             for (String populationSize : populationSizes)
                 for (String populationNumber : populationNumbers)
                     for (String corruptionNumber : corruptionNumbers) {
-                        new ValidatePopulationInStorr(populationName, populationSize, populationNumber, !corruptionNumber.equals("0"), corruptionNumber)
+                        new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corruptionNumber)
                                 .validate(recordCountsFile);
 
                         int recordCount = ValidatePopulationInStorr.getCountFromLog(recordCountsFile,

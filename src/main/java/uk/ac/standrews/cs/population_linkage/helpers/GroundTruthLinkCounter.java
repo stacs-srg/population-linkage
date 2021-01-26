@@ -109,23 +109,4 @@ public class GroundTruthLinkCounter {
 
         return -1;
     }
-
-
-//    public static void countAll(Path gtCountsFile) {
-//
-//        String[] populationNames   = {"synthetic-scotland"};
-//        String[] populationSizes   = {"13k","133k","530k"};
-//        String[] populationNumbers = {"1","2","3","4","5"};
-//        String[] corruptionNumbers = {"0","1","2"};
-//
-//        for(String populationName : populationNames)
-//            for (String populationSize : populationSizes)
-//                for(String populationNumber : populationNumbers)
-//                    for(String corruptionNumber : corruptionNumbers)
-//                        new GroundTruthLinkCounter(populationName, populationSize,
-//                                populationNumber, !corruptionNumber.equals("0"), corruptionNumber, gtCountsFile).count();
-//
-//
-//    }
-
 }

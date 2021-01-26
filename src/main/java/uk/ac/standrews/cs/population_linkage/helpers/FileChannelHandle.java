@@ -21,11 +21,6 @@ public class FileChannelHandle {
     public static HashSet<StandardOpenOption> optionsRW = Sets.newHashSet(StandardOpenOption.READ, StandardOpenOption.WRITE);
     public static HashSet<StandardOpenOption> optionsWA = Sets.newHashSet(StandardOpenOption.WRITE, StandardOpenOption.APPEND);
 
-
-    public FileChannelHandle(Path file) throws IOException {
-        fc = getFileChannel(file, optionsRW);
-    }
-
     public FileChannelHandle(Path file, HashSet<StandardOpenOption> openOptions) throws IOException {
         fc = getFileChannel(file, openOptions);
     }
@@ -68,7 +63,6 @@ public class FileChannelHandle {
     public void appendToFile(String toFileString) throws IOException {
 
         fc.lock(0, Long.MAX_VALUE, false);
-
 
         ByteBuffer buf = ByteBuffer.allocate(toFileString.getBytes().length + 1000);
         buf.clear();

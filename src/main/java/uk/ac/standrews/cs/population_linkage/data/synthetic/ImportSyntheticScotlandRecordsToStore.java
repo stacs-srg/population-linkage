@@ -7,7 +7,6 @@ package uk.ac.standrews.cs.population_linkage.data.synthetic;
 import uk.ac.standrews.cs.data.synthetic.SyntheticBirthsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticDeathsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticMarriagesDataSet;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
