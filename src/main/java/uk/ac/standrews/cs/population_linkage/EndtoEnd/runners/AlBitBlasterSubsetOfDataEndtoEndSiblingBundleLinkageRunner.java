@@ -19,7 +19,7 @@ import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe.trueMatch;
 
-public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
+public class AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends BitBlasterLinkageRunner {
 
     HashMap<Long, Family> familyBundles = new HashMap();  // maps from id on birth record to Family
 
@@ -151,23 +151,24 @@ public class AlBitBlasterEndtoEndLinkageRunner extends BitBlasterLinkageRunner {
             Set<LXP> this_family = getfamilyBirths(id);
             processed.add(id);
             for (LXP sibling : this_family) {
-                if (!processed.contains(sibling.getId())) { // don't look at siblings already processed - they are in.
-                    Set<LXP> siblings_family = getfamilyBirths(sibling.getId());
+                final long sib_id = sibling.getId();
+                if (!processed.contains(sib_id)) { // don't look at siblings already processed - they are in.
+                    Set<LXP> siblings_family = getfamilyBirths(sib_id);
                     boolean siblings_family_subset_of_this = siblings_family.containsAll(this_family);
                     boolean this_family_subset_of_siblings = this_family.containsAll(siblings_family);
                     boolean families_are_the_same = siblings_family_subset_of_this && this_family_subset_of_siblings;
 
                     if ( families_are_the_same ) {
-                        to_remove.add(sibling.getId());
+                        to_remove.add(sib_id);
                         System.out.println("Removed 1 duplicated family");
                     } else if( this_family_subset_of_siblings ) {
                         to_remove.add(id);
                         System.out.println("Removed 1 overlapping primary family");
                     } else if( siblings_family_subset_of_this ) {
-                        to_remove.add(sibling.getId());
+                        to_remove.add(sib_id);
                         System.out.println("Removed 1 overlapping sibling's family");
                     } else {
-                        System.out.println("Families are different"); // TODO What to do.
+                        System.out.println("Families are different ********* TODO "); // TODO What to do.
                         System.out.println( "partial overlap:");
                         showFamily( this_family );
                         System.out.println( "family2:" );

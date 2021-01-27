@@ -29,7 +29,6 @@ public class BitBlasterSubsetOfDataEndtoEndBirthGroomLinkageRunner extends BitBl
 
     private static final int NUMBER_OF_BIRTHS = 10000;
     private static final int EVERYTHING = Integer.MAX_VALUE;
-//    private HashMap<String, List<LXP>> gt;
 
 
     @Override
@@ -82,8 +81,6 @@ public class BitBlasterSubsetOfDataEndtoEndBirthGroomLinkageRunner extends BitBl
 
         createFamilyMarriageGrooms();
 
-        mergeFamilies();            // families are keyed by each family member - this eliminates duplicates and makes them keyed in familyBundles by ID of one (arbitrary) member
-                                    // This is not what you would want in a real system - would want them keyed by all family members (probably).
         showFamilies();
 
         numberOfGroundTruthTrueLinks = countTrueLinks(filtered_birth_records,filtered_marriage_records);
@@ -126,12 +123,6 @@ public class BitBlasterSubsetOfDataEndtoEndBirthGroomLinkageRunner extends BitBl
         }
         return num_links;
     }
-
-
-    private void mergeFamilies() throws BucketException {
-        System.out.println("No merge yet");
-    }
-
 
     /**
      *

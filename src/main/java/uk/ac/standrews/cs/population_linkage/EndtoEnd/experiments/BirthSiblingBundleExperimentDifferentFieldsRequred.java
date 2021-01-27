@@ -4,7 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.AlBitBlasterEndtoEndLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
@@ -25,7 +25,7 @@ public class BirthSiblingBundleExperimentDifferentFieldsRequred {
 
         for( int req_fields = 0; req_fields <= 8; req_fields ++ ) {
             System.out.println( "Number of fields required = " + req_fields);
-            new AlBitBlasterEndtoEndLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, req_fields, false, false, false, false);
+            new AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, req_fields, false, false, false, false);
         }
         System.exit(1); // shut down the VM - stop BB running.
     }
