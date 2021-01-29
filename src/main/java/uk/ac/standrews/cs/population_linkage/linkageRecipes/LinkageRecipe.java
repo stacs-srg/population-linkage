@@ -35,6 +35,15 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Linkage Recipe
+ * In all linkage recipies the naming convention is:
+ *     the stored type is the first part of the name
+ *     the query type is the second part of the name
+ * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
+ * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
+ *
+ */
 public abstract class LinkageRecipe {
 
     /**
@@ -162,6 +171,7 @@ public abstract class LinkageRecipe {
         return Arrays.asList(values);
     }
 
+    // TODO This method should not be in this class IMHO al
     protected static int getBirthYearOfPersonBeingMarried(final LXP record, final boolean spouse_is_bride) {
 
         final String age_or_birth_date1 = record.getString(spouse_is_bride ? Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH : Marriage.GROOM_AGE_OR_DATE_OF_BIRTH);
@@ -179,6 +189,7 @@ public abstract class LinkageRecipe {
         }
     }
 
+    // TODO This method should not be in this class IMHO al
     protected static boolean spouseBirthIdentityLinkIsViable(final RecordPair proposedLink, final boolean spouse_is_bride) {
 
         try {
@@ -217,6 +228,7 @@ public abstract class LinkageRecipe {
         }
     }
 
+    // TODO This method should not be in this class IMHO al
     protected static boolean deathMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
 
         try {
@@ -230,6 +242,7 @@ public abstract class LinkageRecipe {
         }
     }
 
+    // TODO This method should not be in this class IMHO al
     protected static boolean birthParentIdentityLinkIsViable(final RecordPair proposedLink) {
 
         try {
@@ -263,20 +276,12 @@ public abstract class LinkageRecipe {
         return false;
     }
 
-    /*
-    --------- DEBUG -----------
-     */
-    public static void showLXP(LXP lxp) {
-        System.out.println(lxp.getString(Birth.FORENAME) + " " + lxp.getString(Birth.SURNAME) + " // "
-                + lxp.getString(Birth.FATHER_FORENAME) + " " + lxp.getString(Birth.FATHER_SURNAME) + " " + lxp.getString(Birth.FAMILY));
-    }
-
     public Iterable<LXP> getStoredRecords() {
         return getIterable(getStoredType());
     }
 
-    public Iterable<LXP> getSearchRecords() {
-        return getIterable(getSearchType());
+    public Iterable<LXP> getQueryRecords() {
+        return getIterable(getQueryType());
     }
 
     public synchronized Iterable<LXP> getPreFilteredStoredRecords() {
@@ -285,19 +290,19 @@ public abstract class LinkageRecipe {
                 // we do this for symmetric linkage recipes as it ensures the iterables
                 // returned by this method and the one for records 2 is the same object - this is required by the
                 // implementation of similarity search - otherwise we link to people to themselves
-                pre_filtered_records = filterSourceRecords(getStoredRecords(), getLinkageFields());
+                pre_filtered_records = filterStoredRecords(getStoredRecords(), getLinkageFields());
             }
             return pre_filtered_records;
         } else {
-            return filterSourceRecords(getStoredRecords(), getLinkageFields());
+            return filterStoredRecords(getStoredRecords(), getLinkageFields());
         }
     }
 
-    public Iterable<LXP> getPreFilteredSearchRecords() {
+    public Iterable<LXP> getPreFilteredQueryRecords() {
         if (isSymmetric()) {
             return getPreFilteredStoredRecords();
         } else {
-            return filterSourceRecords(getSearchRecords(), getSearchMappingFields());
+            return filterStoredRecords(getQueryRecords(), getQueryMappingFields());
         }
     }
 
@@ -311,34 +316,33 @@ public abstract class LinkageRecipe {
 
     public abstract Class<? extends LXP> getStoredType();
 
-    public abstract Class<? extends LXP> getSearchType();
+    public abstract Class<? extends LXP> getQueryType();
 
     public abstract String getStoredRole();
 
-    public abstract String getSearchRole();
+    public abstract String getQueryRole();
 
     public abstract List<Integer> getLinkageFields();
 
     public abstract boolean isViableLink(RecordPair proposedLink);
 
     /**
-     * This identifies how to map the fields in the search records to the fields in the storage records
-     *
+     * This identifies how to map the fields in the query records to the fields in the storage records
      * @return list of integers identifies mapping fields
      */
-    public abstract List<Integer> getSearchMappingFields();
+    public abstract List<Integer> getQueryMappingFields();
 
     public boolean isSymmetric() {
         // A linkage is symmetric if both record sets being linked have the same: record type AND role
         // (By definition this must mean that the chosen linkage fields are the same for both records)
-        return getStoredType().equals(getSearchType()) && getStoredRole().equals(getSearchRole());
+        return getStoredType().equals(getQueryType()) && getStoredRole().equals(getQueryRole());
     }
 
     public LXP convertToOtherRecordType(LXP recordToConvert) {
         // here we are going to convert from the search type to the stored type - e.g. death to marriage (according to the role)
 
         // first make sure that the recordToConvert is of the appropriate type
-        if (!(recordToConvert.getClass().equals(getSearchType()))) {
+        if (!(recordToConvert.getClass().equals(getQueryType()))) {
             throw new RuntimeException("Wrong record type to convert:" + recordToConvert.getClass().getName());
         }
 
@@ -350,14 +354,14 @@ public abstract class LinkageRecipe {
             throw new RuntimeException(e.getMessage());
         }
 
-        if (getLinkageFields().size() != getSearchMappingFields().size()) {
+        if (getLinkageFields().size() != getQueryMappingFields().size()) {
             throw new RuntimeException("Mismatched size for linkage fields and mapping fields");
         }
 
         // this pulls out the linkage fields from the search type and assigns them to the corresponding fields in the stored type
         // we do this so that when we pass records to the metric search they will always appear to be of the same type as that stored in the search structure
         for (int i = 0; i < getLinkageFields().size(); i++) {
-            resultingRecord.put(getLinkageFields().get(i), recordToConvert.get(getSearchMappingFields().get(i)));
+            resultingRecord.put(getLinkageFields().get(i), recordToConvert.get(getQueryMappingFields().get(i)));
         }
 
         return resultingRecord;
@@ -397,7 +401,7 @@ public abstract class LinkageRecipe {
             records1.computeIfPresent(record2.getString(record2LinkageID), (k, recordSet1) -> {
                 try {
                     for (LXP record1 : recordSet1) {
-                        Link l = new Link(record1, getStoredRole(), record2, getSearchRole(), 1.0f, "ground truth", -1);
+                        Link l = new Link(record1, getStoredRole(), record2, getQueryRole(), 1.0f, "ground truth", -1);
                         String linkKey = toKey(record1, record2);
 
                         if (linkKey != null) // link key will be null if recipe is symmetric and record IDs are identical - shouldn't happen if this method is called
@@ -414,7 +418,7 @@ public abstract class LinkageRecipe {
     }
 
     protected Map<String, Link> getGroundTruthLinksOn(int record1LinkageID, int record2LinkageID) {
-        return getGroundTruthLinksOn(record1LinkageID, record2LinkageID, getStoredRecords(), getSearchRecords());
+        return getGroundTruthLinksOn(record1LinkageID, record2LinkageID, getStoredRecords(), getQueryRecords());
     }
 
     /**
@@ -445,11 +449,11 @@ public abstract class LinkageRecipe {
     }
 
     protected int getNumberOfGroundTruthTrueLinksOn(int record1LinkageID, int record2LinkageID) {
-        return getNumberOfGroundTruthTrueLinksOn(record1LinkageID, record2LinkageID, getStoredRecords(), getSearchRecords());
+        return getNumberOfGroundTruthTrueLinksOn(record1LinkageID, record2LinkageID, getStoredRecords(), getQueryRecords());
     }
 
     protected int getNumberOfGroundTruthTrueLinksPostFilterOn(int record1LinkageID, int record2LinkageID) {
-        return getNumberOfGroundTruthTrueLinksOn(record1LinkageID, record2LinkageID, getPreFilteredStoredRecords(), getPreFilteredSearchRecords());
+        return getNumberOfGroundTruthTrueLinksOn(record1LinkageID, record2LinkageID, getPreFilteredStoredRecords(), getPreFilteredQueryRecords());
     }
 
     /**
@@ -484,7 +488,7 @@ public abstract class LinkageRecipe {
                 for (LXP b : grouping)
                     if (!Utilities.originalId(a).equals(Utilities.originalId(b))) {
                         try {
-                            links.put(toKey(a, b), new Link(a, getStoredRole(), b, getSearchRole(), 1.0f, "ground truth", -1)); // role 1 and role 2 should be the same
+                            links.put(toKey(a, b), new Link(a, getStoredRole(), b, getQueryRole(), 1.0f, "ground truth", -1)); // role 1 and role 2 should be the same
                         } catch (PersistentObjectException e) {
                             ErrorHandling.error("PersistentObjectException adding getGroundTruthLinksOnSymmetric");
                         }
@@ -566,7 +570,7 @@ public abstract class LinkageRecipe {
                 for (LXP a : records1GroupedByFamilyID.get(famID)) {
                     for (LXP b : records2GroupedByFamilyID.get(famID)) {
                         try {
-                            links.put(toKey(a, b), new Link(a, getStoredRole(), b, getSearchRole(), 1.0f, "ground truth", -1));
+                            links.put(toKey(a, b), new Link(a, getStoredRole(), b, getQueryRole(), 1.0f, "ground truth", -1));
                         } catch (PersistentObjectException e) {
                             throw new RuntimeException(e);
                         }
@@ -578,7 +582,7 @@ public abstract class LinkageRecipe {
     }
 
     protected Map<String, Link> getGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
-        return getGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getStoredRecords(), getSearchRecords());
+        return getGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getStoredRecords(), getQueryRecords());
     }
 
     protected int getNumberOfGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID, Iterable<LXP> sourceRecords1, Iterable<LXP> sourceRecords2) {
@@ -614,16 +618,16 @@ public abstract class LinkageRecipe {
     }
 
     protected int getNumberOfGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
-        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getStoredRecords(), getSearchRecords());
+        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getStoredRecords(), getQueryRecords());
     }
 
     protected int getNumberOfGroundTruthLinksPostFilterOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
-        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getPreFilteredStoredRecords(), getPreFilteredSearchRecords());
+        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getPreFilteredStoredRecords(), getPreFilteredQueryRecords());
     }
 
-    public String toKey(LXP record1, LXP record2) {
-        String s1 = Utilities.originalId(record1);
-        String s2 = Utilities.originalId(record2);
+    public String toKey(LXP query_record, LXP stored_record) {
+        String s1 = Utilities.originalId(query_record);
+        String s2 = Utilities.originalId(stored_record);
 
         if (isSymmetric() && s1.compareTo(s2) == 0)
             return null;
@@ -654,7 +658,7 @@ public abstract class LinkageRecipe {
         initIterable(getStoredType());
 
         if (!isSymmetric()) // if symmetric linkage then source type two will be same as source type 1 - thus waste of time to init it twice!
-            initIterable(getSearchType());
+            initIterable(getQueryType());
     }
 
     private void initIterable(Class<? extends LXP> sourceType) {
@@ -708,7 +712,7 @@ public abstract class LinkageRecipe {
     ------- PERSISTENCE CODE ------------
      */
 
-    protected Iterable<LXP> filterSourceRecords(Iterable<LXP> records, List<Integer> filterOn, int reqPopulatedFields) {
+    protected Iterable<LXP> filterStoredRecords(Iterable<LXP> records, List<Integer> filterOn, int reqPopulatedFields) {
         Collection<LXP> filteredRecords = new HashSet<>();
 
         for (LXP record : records) {
@@ -751,8 +755,8 @@ public abstract class LinkageRecipe {
         return filteredRecords;
     }
 
-    protected Iterable<LXP> filterSourceRecords(Iterable<LXP> records, List<Integer> filterOn) {
-        return filterSourceRecords(records, filterOn, pre_filtering_required_populated_linkage_fields);
+    protected Iterable<LXP> filterStoredRecords(Iterable<LXP> records, List<Integer> filterOn) {
+        return filterStoredRecords(records, filterOn, pre_filtering_required_populated_linkage_fields);
     }
 
     public int getPreFilteringRequiredPopulatedLinkageFields() {
@@ -875,9 +879,9 @@ public abstract class LinkageRecipe {
         return record_repository;
     }
 
-    public int getSearchSetSize() {
+    public int getQuerySetSize() {
         try {
-            return getSize(getSearchType());
+            return getSize(getQueryType());
         } catch (BucketException e) {
             throw new RuntimeException(e.getMessage());
         }

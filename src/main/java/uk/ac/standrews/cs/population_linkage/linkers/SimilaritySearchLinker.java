@@ -65,7 +65,7 @@ public class SimilaritySearchLinker extends Linker {
 
                     loadNextSearchResults();
 
-                    if (linkage_recipe != null) progress_indicator.setTotalSteps(linkage_recipe.getSearchSetSize());
+                    if (linkage_recipe != null) progress_indicator.setTotalSteps(linkage_recipe.getQuerySetSize());
 
                     getNextPair();
                 }

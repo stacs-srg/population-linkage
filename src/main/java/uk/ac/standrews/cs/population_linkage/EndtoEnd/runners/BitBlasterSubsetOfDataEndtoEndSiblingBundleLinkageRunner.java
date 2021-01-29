@@ -4,7 +4,8 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.runners;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.Family;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.Siblings;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -15,13 +16,16 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe.trueMatch;
 
-public class AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends BitBlasterLinkageRunner {
+public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends BitBlasterLinkageRunner {
 
-    HashMap<Long, Family> familyBundles = new HashMap();  // maps from id on birth record to Family
+    HashMap<Long, Siblings> familyBundles = new HashMap();  // maps from id on birth record to MetaMarriage
 
     private static final int NUMBER_OF_BIRTHS = 10000;
 //    private HashMap<String, List<LXP>> gt;
@@ -96,8 +100,8 @@ public class AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends 
      * Takes the links in families and turns them into sets of births.
      */
     private void createFamilyBirths() throws BucketException {
-        for (Family f : familyBundles.values()) {
-            f.createSiblings();
+        for (Siblings s : familyBundles.values()) {
+            s.createSiblings();
         }
     }
 
@@ -145,42 +149,52 @@ public class AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends 
 
 
     private void mergeFamilies() throws BucketException {
-        List<Long> to_remove = new ArrayList<>();
-        List<Long> processed = new ArrayList<>();
-        for (Long id : familyBundles.keySet()) {
-            Set<LXP> this_family = getfamilyBirths(id);
-            processed.add(id);
-            for (LXP sibling : this_family) {
-                final long sib_id = sibling.getId();
-                if (!processed.contains(sib_id)) { // don't look at siblings already processed - they are in.
-                    Set<LXP> siblings_family = getfamilyBirths(sib_id);
-                    boolean siblings_family_subset_of_this = siblings_family.containsAll(this_family);
-                    boolean this_family_subset_of_siblings = this_family.containsAll(siblings_family);
-                    boolean families_are_the_same = siblings_family_subset_of_this && this_family_subset_of_siblings;
+        HashMap<Long, Siblings> processed = new HashMap<>();
+        for (Long primary_sibling_id : familyBundles.keySet()) {
+            Siblings this_family = familyBundles.get(primary_sibling_id);
 
-                    if ( families_are_the_same ) {
-                        to_remove.add(sib_id);
-                        System.out.println("Removed 1 duplicated family");
-                    } else if( this_family_subset_of_siblings ) {
-                        to_remove.add(id);
-                        System.out.println("Removed 1 overlapping primary family");
-                    } else if( siblings_family_subset_of_this ) {
-                        to_remove.add(sib_id);
-                        System.out.println("Removed 1 overlapping sibling's family");
-                    } else {
-                        System.out.println("Families are different ********* TODO "); // TODO What to do.
-                        System.out.println( "partial overlap:");
-                        showFamily( this_family );
-                        System.out.println( "family2:" );
-                        showFamily( siblings_family );
+            Set<LXP> siblings = this_family.getBirthSiblings();
+            for (LXP sibling : siblings) {
+                final long this_sibling_id = sibling.getId();
 
-                    }
+                Siblings siblings_family = familyBundles.get(this_sibling_id);
+                Set<LXP> siblings_siblings = siblings_family.getBirthSiblings();
+                boolean siblings_family_subset_of_this = siblings_siblings.containsAll(siblings);
+                boolean this_family_subset_of_siblings = siblings_siblings.containsAll(siblings);
+                boolean families_are_the_same = siblings_family_subset_of_this && this_family_subset_of_siblings;
+
+                if (families_are_the_same) {
+                    List<Link> sibling_links = siblings_family.getBirthLinks();
+                    this_family.addBirthLinks( sibling_links );
+                    processed.put(this_sibling_id, this_family);            // replace the siblings family with this one in processed.
+                    processed.put(primary_sibling_id, this_family);         // save this family
+                    System.out.println("Removed 1 duplicated family");
+                } else if (this_family_subset_of_siblings) {
+                    siblings_family.addBirthLinks( this_family.getBirthLinks() );
+                    processed.put(primary_sibling_id, siblings_family);  // move this id into the siblings family
+                    System.out.println("Removed 1 overlapping primary family");
+                } else if (siblings_family_subset_of_this) {
+                    List<Link> sibling_links = siblings_family.getBirthLinks();
+                    this_family.addBirthLinks( sibling_links );
+                    processed.put(this_sibling_id, this_family);                    // replace the siblings family with this one in processed.
+                    System.out.println("Removed 1 overlapping sibling's family");
+                } else {
+                    System.out.println("Families are different ********* TODO!! ");
+                    // TODO What to do.
+                    // Options -
+                    // Could combine and get a few potentially too big families
+                    // Could split into 2 - move the intersecting records into one of the other - could perhaps keep track of (potentialy) related families
+                    // Could split into 3 - Union plus two others.
+                    // Could do something with distances - k-means style
+                    System.out.println("partial overlap:");
+                    DisplayMethods.showFamily(siblings);
+                    System.out.println("family2:");
+                    DisplayMethods.showFamily(siblings_siblings);
+
                 }
             }
         }
-        for (Long id : to_remove) {
-            familyBundles.remove(id);
-        }
+        familyBundles = processed; // finaly replaced familyBundles with the merged family map.
     }
 
 
@@ -191,8 +205,8 @@ public class AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends 
      * @throws BucketException
      */
     private Set<LXP> getfamilyBirths(Long id) throws BucketException {
-        Family f = familyBundles.get(id);
-        return f.getBirthSiblings();
+        Siblings s = familyBundles.get(id);
+        return s.getBirthSiblings();
     }
 
 
@@ -219,42 +233,18 @@ public class AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends 
         int family_count = 0;
         int person_count = 0;
 
-        for (Long id : familyBundles.keySet()) {
-            Set<LXP> births = getfamilyBirths(id);
+        for (Siblings s: familyBundles.values()) {
+            Set<LXP> births = s.getBirthSiblings();
             family_count++;
             person_count += births.size();
-            showFamily(births);
+            DisplayMethods.showFamily(births);
             count++;
         }
+        System.out.println("Births in families = " + familyBundles.keySet().size() );
         System.out.println("Families formed:");
         System.out.println("father_errors = " + father_errors + " mother_errors = " + mother_errors);
         System.out.println("Number of people found = " + person_count);
         System.out.println("No families formed = " + family_count);
-    }
-
-    private void showFamily(Set<LXP> births) throws BucketException {
-        System.out.println("Family:");
-        String family_father_id = "";
-        String family_mother_id = "";
-
-        for (LXP birth : births) {
-            String this_father_id = birth.getString(Birth.FATHER_IDENTITY);
-            String this_mother_id = birth.getString(Birth.MOTHER_IDENTITY);
-            if (family_father_id.equals("")) {
-                family_father_id = this_father_id;  // saves the first mama and pappa
-                family_mother_id = this_mother_id;
-                showBirth(birth, true, true);
-            } else {
-                showBirth(birth, family_father_id.equals(family_father_id), family_mother_id.equals(this_mother_id));
-                if (!family_father_id.equals(family_father_id)) {
-                    father_errors++;
-                }
-                if (!family_father_id.equals(family_father_id)) {
-                    mother_errors++;
-                }
-            }
-        }
-        System.out.println("===");
     }
 
     private void BundleFamilies(Link link) throws BucketException {
@@ -269,23 +259,15 @@ public class AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends 
     }
 
     private void addLinktoFamily(long id, Link link) {
-        Family f = familyBundles.get(id);
-        if (f == null) {
-            f = new Family();
+        Siblings s = familyBundles.get(id);
+        if (s == null) {
+            s = new Siblings();
         }
-        f.addSiblingBirth(link);
-        familyBundles.put(id, f);
+        s.addSiblingBirth(link);
+        familyBundles.put(id, s);
     }
 
-    public void showBirth(LXP birth, boolean father_matches, boolean mother_matches) throws BucketException {
-
-        String firstname = birth.getString(Birth.FORENAME);
-        String surname = birth.getString(Birth.SURNAME);
-        String father_id = birth.getString(Birth.FATHER_IDENTITY);
-        String mother_id = birth.getString(Birth.MOTHER_IDENTITY);
-        String parental_match = "  " + (father_matches ? "YES" : "NO") + "/" + (father_matches ? "YES" : "NO");
-        long oid = birth.getId();
-        System.out.println(oid + ": " + firstname + "," + surname + " F: " + father_id + " M: " + mother_id + "\t" + parental_match);
+    public HashMap<Long, Siblings> getFamilyBundles() {
+        return familyBundles;
     }
-
 }

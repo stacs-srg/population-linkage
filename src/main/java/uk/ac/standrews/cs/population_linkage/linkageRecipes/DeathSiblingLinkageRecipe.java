@@ -10,7 +10,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
@@ -18,6 +17,15 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Linkage Recipe
+ * In all linkage recipies the naming convention is:
+ *     the stored type is the first part of the name
+ *     the query type is the second part of the name
+ * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
+ * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
+ *
+ */
 public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final List<Integer> COMPARISON_FIELDS = list(
@@ -81,7 +89,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class<? extends LXP> getSearchType() {
+    public Class<? extends LXP> getQueryType() {
         return Death.class;
     }
 
@@ -91,7 +99,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSearchRole() {
+    public String getQueryRole() {
         return Death.ROLE_DECEASED;
     }
 
@@ -125,7 +133,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() {
+    public List<Integer> getQueryMappingFields() {
         return getLinkageFields();
     }
 

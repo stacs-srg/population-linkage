@@ -2,43 +2,33 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRecipes.unused;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.*;
 
-// This class is a confusion to me (Tom)
-public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
+/**
+ * Linkage Recipe
+ * In all linkage recipies the naming convention is:
+ *     the stored type is the first part of the name
+ *     the query type is the second part of the name
+ * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
+ * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
+ *
+ */
+public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
-    public static void main(String[] args) throws BucketException {
+    public static final String LINKAGE_TYPE = "parents-marriage-birth-identity";
 
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new BirthParentsMarriageLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048),
-                        0.67, true, 5, false, false, true, false
-                );
-    }
-
-    public static final String LINKAGE_TYPE = "birth-parents-marriage-identity";
-
-    public BirthParentsMarriageLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+    public ParentsMarriageBirthLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
@@ -54,45 +44,26 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Class getStoredType() {
-        return Birth.class;
-    }
-
-    @Override
-    public Class getSearchType() {
         return Marriage.class;
     }
 
     @Override
+    public Class getQueryType() {
+        return Birth.class;
+    }
+
+    @Override
     public String getStoredRole() {
-        return Birth.ROLE_MOTHER; //return Birth.ROLE_PARENTS;
+        return Marriage.ROLE_PARENTS;  // bride and groom
+    }  // TODO this is arguably wrong and should be some name representing those getting married.
+
+    @Override
+    public String getQueryRole() {
+        return Birth.ROLE_PARENTS;
     } // mother and father
 
     @Override
-    public String getSearchRole() {
-        return Marriage.ROLE_BRIDES_MOTHER;  // return Marriage.ROLE_PARENTS;  // bride and groom
-    }
-
-    @Override
     public List<Integer> getLinkageFields() {
-        return Arrays.asList(
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.PARENTS_PLACE_OF_MARRIAGE,
-            Birth.PARENTS_DAY_OF_MARRIAGE,
-            Birth.PARENTS_MONTH_OF_MARRIAGE,
-            Birth.PARENTS_YEAR_OF_MARRIAGE
-        );
-    }
-
-    @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return true;
-    }
-
-    @Override
-    public List<Integer> getSearchMappingFields() {
         return Arrays.asList(
             Marriage.GROOM_FORENAME,
             Marriage.GROOM_SURNAME,
@@ -102,6 +73,25 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
             Marriage.MARRIAGE_DAY,
             Marriage.MARRIAGE_MONTH,
             Marriage.MARRIAGE_YEAR
+        );
+    }
+
+    @Override
+    public boolean isViableLink(RecordPair proposedLink) {
+        return true;
+    }
+
+    @Override
+    public List<Integer> getQueryMappingFields() {
+        return Arrays.asList(
+                Birth.FATHER_FORENAME,
+                Birth.FATHER_SURNAME,
+                Birth.MOTHER_FORENAME,
+                Birth.MOTHER_MAIDEN_SURNAME,
+                Birth.PARENTS_PLACE_OF_MARRIAGE,
+                Birth.PARENTS_DAY_OF_MARRIAGE,
+                Birth.PARENTS_MONTH_OF_MARRIAGE,
+                Birth.PARENTS_YEAR_OF_MARRIAGE
         );
     }
 
@@ -168,15 +158,12 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
         return 0;
     }
 
-    ////// AL HERE
-
     @Override
-    public Iterable<LXP> getPreFilteredStoredRecords() {
+    public Iterable<LXP> getPreFilteredQueryRecords() {
 
         Collection<LXP> filteredMarriageRecords = new HashSet<>();
 
         for(LXP record : marriage_records) {
-
 
             String groomForename = record.getString(Marriage.GROOM_FORENAME).trim();
             String groomSurname = record.getString(Marriage.GROOM_SURNAME).trim();
@@ -229,7 +216,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
 
     @Override
-    public Iterable<LXP> getPreFilteredSearchRecords() {
+    public Iterable<LXP> getPreFilteredStoredRecords() {
 
         HashSet<LXP> filteredBirthRecords = new HashSet<>();
 
@@ -279,9 +266,9 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
         return filteredBirthRecords;
     }
 
-    public String toKey(LXP record1, LXP record2) {
-        String s1= record1.getString(Birth.ORIGINAL_ID);
-        String s2 = record2.getString(Marriage.ORIGINAL_ID);
+    public String toKey(LXP query_record, LXP stored_record) {
+        String s1 = stored_record.getString(Marriage.ORIGINAL_ID);
+        String s2= query_record.getString(Birth.ORIGINAL_ID);
 
         if(s1.compareTo(s2) < 0)
             return s1 + "-" + s2;

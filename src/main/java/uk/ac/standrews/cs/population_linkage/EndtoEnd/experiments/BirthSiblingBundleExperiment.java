@@ -4,7 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
@@ -14,7 +14,7 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
  * This class attempts to perform birth-birth sibling linkage.
  * It creates a Map of families indexed (at the momement TODO) from birth ids to families
  */
-public class BirthSiblingBundleExperimentAl {
+public class BirthSiblingBundleExperiment {
 
     public static void main(String[] args) throws BucketException {
 
@@ -23,7 +23,7 @@ public class BirthSiblingBundleExperimentAl {
 
         LinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingLinkageRecipe.LINKAGE_TYPE + "-links");
 
-        new AlBitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, 8, false, false, false, false);
+        new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, 8, false, false, false, false);
 // 8 fields is all of them => very conservative.
 //        Birth.FATHER_FORENAME,
 //        Birth.FATHER_SURNAME,
@@ -33,6 +33,5 @@ public class BirthSiblingBundleExperimentAl {
 //        Birth.PARENTS_DAY_OF_MARRIAGE,
 //        Birth.PARENTS_MONTH_OF_MARRIAGE,
 //        Birth.PARENTS_YEAR_OF_MARRIAGE
-        System.exit(1); // shut down the VM - stop BB running.
     }
 }

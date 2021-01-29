@@ -4,9 +4,6 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes.unused;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
@@ -18,6 +15,19 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Linkage Recipe
+ * In all linkage recipies the naming convention is:
+ *     the stored type is the first part of the name
+ *     the query type is the second part of the name
+ * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
+ * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
+ *
+ */
 public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public static void main(String[] args) throws BucketException {
@@ -64,7 +74,7 @@ public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getSearchType() {
+    public Class getQueryType() {
         return Marriage.class;
     }
 
@@ -74,7 +84,7 @@ public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSearchRole() {
+    public String getQueryRole() {
         return Marriage.ROLE_GROOM;
     }
 
@@ -98,7 +108,7 @@ public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() {
+    public List<Integer> getQueryMappingFields() {
         return Arrays.asList(
                 Marriage.GROOM_FORENAME,
                 Marriage.GROOM_SURNAME,

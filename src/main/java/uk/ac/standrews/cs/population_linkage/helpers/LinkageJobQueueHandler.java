@@ -185,8 +185,8 @@ public class LinkageJobQueueHandler {
             record_type = linkageRecipe.getStoredType();
             fields = linkageRecipe.getLinkageFields();
         } else {
-            record_type = linkageRecipe.getSearchType();
-            fields = linkageRecipe.getSearchMappingFields();
+            record_type = linkageRecipe.getQueryType();
+            fields = linkageRecipe.getQueryMappingFields();
         }
 
         List<String> recordLabels = getRecordLabels(record_type);

@@ -5,7 +5,6 @@
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.runners;
 
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.MetaMarriage;
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -24,7 +23,7 @@ import java.util.Set;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe.trueMatch;
 
-public class BitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunner extends BitBlasterLinkageRunner {
+public class HackedBitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunner extends BitBlasterLinkageRunner {
 
     HashMap<Long, MetaMarriage> familyBundles = new HashMap();  // maps from id on birth record to MetaMarriage
 
@@ -217,9 +216,9 @@ public class BitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunner ext
             if (family_father_id.equals("")) {
                 family_father_id = this_father_id;  // saves the first mama and pappa
                 family_mother_id = this_mother_id;
-                DisplayMethods.showLXPBirth(birth, true, true);
+                showLXPBirth(birth, true, true);
             } else {
-                DisplayMethods.showLXPBirth(birth, family_father_id.equals(family_father_id), family_mother_id.equals(this_mother_id));
+                showLXPBirth(birth, family_father_id.equals(family_father_id), family_mother_id.equals(this_mother_id));
                 if (!family_father_id.equals(family_father_id)) {
                     father_errors++;
                 }
@@ -248,6 +247,19 @@ public class BitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunner ext
         }
         f.addBirthFathersMarriageLink(link);
         familyBundles.put(id, f);
+    }
+
+    public void showLXPBirth(LXP birth, boolean father_matches, boolean mother_matches) throws BucketException {
+
+        String firstname = birth.getString(Birth.FORENAME);
+        String surname = birth.getString(Birth.SURNAME);
+        String father_id = birth.getString(Birth.FATHER_IDENTITY);
+        String mother_id = birth.getString(Birth.MOTHER_IDENTITY);
+
+        String parental_match = "  " + (father_matches ? "YES" : "NO") + "/" + (mother_matches ? "YES" : "NO");
+        long oid = birth.getId();
+        String std_id = birth.getString(Birth.STANDARDISED_ID);
+        System.out.println(oid + "/" + std_id + ": " + firstname + "," + surname + " F: " + father_id + " M: " + mother_id + "\t" + parental_match);
     }
 
     public void showLXPMarriage(LXP marriage) throws BucketException {

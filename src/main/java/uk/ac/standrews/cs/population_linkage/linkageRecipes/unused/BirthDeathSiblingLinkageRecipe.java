@@ -70,7 +70,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getSearchType() {
+    public Class getQueryType() {
         return Death.class;
     }
 
@@ -80,7 +80,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSearchRole() {
+    public String getQueryRole() {
         return Death.ROLE_DECEASED;
     }
 
@@ -111,7 +111,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() {
+    public List<Integer> getQueryMappingFields() {
         return Arrays.asList(
                 Death.FATHER_FORENAME,
                 Death.FATHER_SURNAME,

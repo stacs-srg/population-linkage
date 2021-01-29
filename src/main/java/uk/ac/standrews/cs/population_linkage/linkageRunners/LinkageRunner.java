@@ -185,10 +185,10 @@ public abstract class LinkageRunner {
 
         if( pre_filter ) {
             linkageRecipe.setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
-            linker.addRecords(linkageRecipe.getPreFilteredStoredRecords(), linkageRecipe.getPreFilteredSearchRecords());
+            linker.addRecords(linkageRecipe.getPreFilteredStoredRecords(), linkageRecipe.getPreFilteredQueryRecords());
             missedLinks = numberOfGroundTruthTrueLinks - linkageRecipe.getNumberOfGroundTruthTrueLinksPostFilter();
         } else {
-            linker.addRecords(linkageRecipe.getStoredRecords(), linkageRecipe.getSearchRecords());
+            linker.addRecords(linkageRecipe.getStoredRecords(), linkageRecipe.getQueryRecords());
         }
 
         MemoryLogger.update();
@@ -331,10 +331,10 @@ public abstract class LinkageRunner {
 
             for(int i = 0 ; i < linkageRecipe.getLinkageFields().size(); i++) {
                 String r1FieldName = Utilities.getLabels(person1).get(linkageRecipe.getLinkageFields().get(i));
-                String r2FieldName = Utilities.getLabels(person2).get(linkageRecipe.getSearchMappingFields().get(i));
+                String r2FieldName = Utilities.getLabels(person2).get(linkageRecipe.getQueryMappingFields().get(i));
 
                 String r1FieldContent = person1.getString(linkageRecipe.getLinkageFields().get(i));
-                String r2FieldContent = person2.getString(linkageRecipe.getSearchMappingFields().get(i));
+                String r2FieldContent = person2.getString(linkageRecipe.getQueryMappingFields().get(i));
 
                 String isEquals = "≠";
                 if(r1FieldContent.equals(r2FieldContent)) isEquals = "=";
@@ -350,7 +350,7 @@ public abstract class LinkageRunner {
     public Linker getLinker(final double match_threshold, LinkageRecipe linkageRecipe) {
         Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
         return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, match_threshold, getNumberOfProgressUpdates(),
-                linkageRecipe.getLinkageType(), "threshold match at " + match_threshold, linkageRecipe.getStoredRole(), linkageRecipe.getSearchRole(), linkageRecipe::isViableLink, linkageRecipe);
+                linkageRecipe.getLinkageType(), "threshold match at " + match_threshold, linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
     }
 
     public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);

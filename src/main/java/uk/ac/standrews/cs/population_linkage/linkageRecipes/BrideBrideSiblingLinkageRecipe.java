@@ -18,6 +18,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Linkage Recipe
+ * In all linkage recipies the naming convention is:
+ *     the stored type is the first part of the name
+ *     the query type is the second part of the name
+ * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
+ * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
+ *
+ */
 public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public static List<Integer> COMPARISON_FIELDS = Arrays.asList(
@@ -88,7 +97,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class<? extends LXP> getSearchType() {
+    public Class<? extends LXP> getQueryType() {
         return Marriage.class;
     }
 
@@ -98,7 +107,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getSearchRole() {
+    public String getQueryRole() {
         return Marriage.ROLE_BRIDE;
     }
 
@@ -133,7 +142,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getSearchMappingFields() {
+    public List<Integer> getQueryMappingFields() {
         return getLinkageFields();
     }
 
