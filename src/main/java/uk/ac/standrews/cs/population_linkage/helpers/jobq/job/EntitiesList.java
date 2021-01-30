@@ -100,7 +100,20 @@ public class EntitiesList<T> extends ArrayList<T> {
 
     private void backUpResultFile() throws IOException {
         String[] split = fileName.split("\\.");
-        Files.copy(Path.of(fileName), Path.of(String.join(".", split[0] + "_backup", split[1])), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(Path.of(fileName), Path.of(String.join(".", split[0] + "_backup_" + getHostname(), split[1])), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    public String getHostname() {
+        try {
+            return execCmd("hostname").trim();
+        } catch (IOException e) {
+            return "NA";
+        }
+    }
+
+    private static String execCmd(String cmd) throws java.io.IOException {
+        java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(cmd).getInputStream()).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
     }
 
     private Object[] asArray() {

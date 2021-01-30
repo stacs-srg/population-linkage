@@ -62,8 +62,8 @@ public class LinkageJobQueueHandler {
     // linkageType field in the relevant linkage runner class
 
     public static void main(String[] args) throws Exception {
-        String jobQ = args[0];
-        int assignedMemory = Integer.parseInt(args[1]);
+        int assignedMemory = Integer.parseInt(args[0]);
+        String jobQ = args[1];
         Path recordCountsFile = Paths.get(args[2]);
         Path statusFile = Paths.get(args[3]);
         Path gtLinksFile = Paths.get(args[4]);
@@ -97,7 +97,7 @@ public class LinkageJobQueueHandler {
         LinkageQuality linkageQuality;
         try {
             linkageQuality = new BitBlasterLinkageRunner().run(
-                    linkageRecipe, chosenMetric, job.getThreshold(), job.isPreFilter(), job.getPreFilterRequiredFields(),
+                    linkageRecipe, chosenMetric, job.getThreshold().doubleValue(), job.isPreFilter(), job.getPreFilterRequiredFields(),
                     false, false, job.isEvaluateQuality(), job.isPersistLinks(), gtLinksFile).getLinkageQuality();
         } catch(PreEmptiveOutOfMemoryWarning e) {
             returnJobToJobList(JobMappers.map(job), jobQ, assignedMemory);

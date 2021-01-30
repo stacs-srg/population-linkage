@@ -1,10 +1,11 @@
 package uk.ac.standrews.cs.population_linkage.helpers.jobq.job;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class Job extends JobCore{
 
-    protected double threshold;
+    protected BigDecimal threshold;
     protected int preFilterRequiredFields;
     protected int birthsCacheSize;
     protected int marriagesCacheSize;
@@ -56,7 +57,7 @@ public class Job extends JobCore{
         if (!super.equals(o)) return false;
         Job job = (Job) o;
         return super.equals(o) &&
-                Double.compare(job.threshold, threshold) == 0 &&
+                job.threshold.compareTo(threshold) == 0 &&
                 preFilterRequiredFields == job.preFilterRequiredFields &&
                 birthsCacheSize == job.birthsCacheSize &&
                 marriagesCacheSize == job.marriagesCacheSize &&
@@ -75,11 +76,11 @@ public class Job extends JobCore{
         return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy, maxDeathAge);
     }
 
-    public double getThreshold() {
+    public BigDecimal getThreshold() {
         return threshold;
     }
 
-    public void setThreshold(double threshold) {
+    public void setThreshold(BigDecimal threshold) {
         this.threshold = threshold;
     }
 
