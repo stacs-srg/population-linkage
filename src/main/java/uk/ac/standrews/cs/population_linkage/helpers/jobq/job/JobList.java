@@ -55,7 +55,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         Optional<JobWithExpressions> topJobWithExpressions = getTopJobWithExpression(assignedMemory);
         Optional<JobWithExpressions> topSingularJob = getTopSingularJob(assignedMemory);
 
-        if(topSingularJob.isEmpty() && topJobWithExpressions.isEmpty()) {
+        if(!topSingularJob.isPresent() && !topJobWithExpressions.isPresent()) {
             return Optional.empty();
         }
 

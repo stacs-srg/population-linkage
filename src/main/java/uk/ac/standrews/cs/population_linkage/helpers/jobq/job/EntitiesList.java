@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
@@ -74,7 +75,7 @@ public class EntitiesList<T> extends ArrayList<T> {
             MappingIterator<T> mi = oReader.readValues(fileInputStream);
             return Streams.stream(mi).collect(Collectors.toList());
         } catch (CsvMappingException | RuntimeJsonMappingException e) {
-            return List.of();
+            return new ArrayList<>();
         }
     }
 
@@ -104,7 +105,7 @@ public class EntitiesList<T> extends ArrayList<T> {
 
     private void backUpResultFile() throws IOException {
         String[] split = fileName.split("\\.");
-        Files.copy(Path.of(fileName), Path.of(String.join(".", split[0] + "_backup_" + getHostname(), split[1])), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(Paths.get(fileName), Paths.get(String.join(".", split[0] + "_backup_" + getHostname(), split[1])), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public String getHostname() {

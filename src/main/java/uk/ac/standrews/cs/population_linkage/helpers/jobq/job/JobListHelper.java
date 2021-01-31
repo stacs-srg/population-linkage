@@ -31,7 +31,9 @@ public class JobListHelper {
 
     public static Set<JobWithExpressions> explodeJobWithExpressions(JobWithExpressions jobWithExpressions) {
         if(isSingularJob(jobWithExpressions)) {
-            return Set.of(jobWithExpressions);
+            HashSet<JobWithExpressions> set = new HashSet<>();
+            set.add(jobWithExpressions);
+            return set;
         }
 
         Set<JobWithExpressions> derivedJobs = new HashSet<>();

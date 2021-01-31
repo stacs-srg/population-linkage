@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.data.synthetic;
 
+import java.nio.file.Paths;
 import uk.ac.standrews.cs.data.synthetic.SyntheticBirthsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticDeathsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticMarriagesDataSet;
@@ -69,7 +70,7 @@ public class ImportSyntheticScotlandRecordsToStore {
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = Path.of("/Users/tdalton/tom/phd/store");
+        Path store_path = Paths.get("/Users/tdalton/tom/phd/store");
 
 //                ApplicationProperties.getStorePath();
 

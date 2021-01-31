@@ -6,6 +6,7 @@ package uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions;
 
 import java.io.Serializable;
 import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -23,7 +24,8 @@ public abstract class Expression<T> implements Serializable {
     }
 
     public Expression(T value) {
-        values = new HashSet<>(Set.of(value));
+        values = new HashSet<>();
+        values.add(value);
         updateExpression();
     }
 

@@ -26,19 +26,19 @@ public class IntegerExpression extends Expression<Integer> {
 
     @Override
     protected HashSet<Integer> parseRangeExpression(String expression) {
-        var start = Integer.parseInt(expression.split("->")[0]);
-        var end = Integer.parseInt(expression.split("@")[0].split("->")[1]);
+        int start = Integer.parseInt(expression.split("->")[0]);
+        int end = Integer.parseInt(expression.split("@")[0].split("->")[1]);
 
         if(start > end) {
-            var temp = end;
+            int temp = end;
             end = start;
             start = temp;
         }
 
-        var step = Integer.parseInt(expression.split("@")[1]);
+        int step = Integer.parseInt(expression.split("@")[1]);
 
         HashSet<Integer> values = new HashSet<>();
-        for(var d = start; d <= end; d += step) {
+        for(int d = start; d <= end; d += step) {
             values.add(d);
         }
 
@@ -62,7 +62,9 @@ public class IntegerExpression extends Expression<Integer> {
 
     @Override
     protected HashSet<Integer> parseSingleExpression(String expression) {
-        return new HashSet<>(Set.of(Integer.parseInt(expression)));
+        HashSet<Integer> hashSet = new HashSet<>();
+        hashSet.add(Integer.parseInt(expression));
+        return hashSet;
     }
 
     @Override

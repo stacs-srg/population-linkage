@@ -47,20 +47,20 @@ public class DoubleExpression extends Expression<BigDecimal> {
 
     @Override
     public HashSet<BigDecimal> parseRangeExpression(String expression) {
-        var start = new BigDecimal(expression.split("->")[0]);
-        var end = new BigDecimal(expression.split("@")[0].split("->")[1]);
+        BigDecimal start = new BigDecimal(expression.split("->")[0]);
+        BigDecimal end = new BigDecimal(expression.split("@")[0].split("->")[1]);
 
 
         if(aGtB(start, end)) {
-            var temp = end;
+            BigDecimal temp = end;
             end = start;
             start = temp;
         }
 
-        var step = new BigDecimal(expression.split("@")[1]);
+        BigDecimal step = new BigDecimal(expression.split("@")[1]);
 
         HashSet<BigDecimal> values = new HashSet<>();
-        for(var d = start; aLtEtB(d, end); d = d.add(step)) {
+        for(BigDecimal d = start; aLtEtB(d, end); d = d.add(step)) {
             values.add(d);
         }
 
@@ -83,6 +83,8 @@ public class DoubleExpression extends Expression<BigDecimal> {
 
     @Override
     public HashSet<BigDecimal> parseSingleExpression(String expression) {
-        return new HashSet<>(Set.of(new BigDecimal(expression)));
+        HashSet<BigDecimal> bigDecimals = new HashSet<>();
+        bigDecimals.add(new BigDecimal(expression));
+        return bigDecimals;
     }
 }
