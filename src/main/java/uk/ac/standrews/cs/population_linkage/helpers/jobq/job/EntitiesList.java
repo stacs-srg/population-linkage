@@ -13,8 +13,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvMappingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Streams;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
@@ -28,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class EntitiesList<T> extends ArrayList<T> {
@@ -37,6 +41,8 @@ public class EntitiesList<T> extends ArrayList<T> {
     private final CsvMapper csvMapper = new CsvMapper();
     private final Class<T> type;
     private final String fileName;
+
+    private Random rand = new Random();
 
     public EntitiesList(Class<T> type, String jobListFile, Lock lock) throws IOException, InterruptedException {
         this.type = type;
@@ -64,13 +70,20 @@ public class EntitiesList<T> extends ArrayList<T> {
         System.out.println("Locking " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 //        randomAccessFile.getChannel().lock(0, Long.MAX_VALUE, false);
 
+        Thread.sleep(rand.nextInt(10000));
+
         File lockFile = new File(String.format("lock-%s.txt", lock));
         do {
             while (lockFile.isFile()) {
-                Thread.sleep(10000);
+                Thread.sleep(10000 + rand.nextInt(10000));
             }
-        } while(!lockFile.createNewFile());
+        } while(cantAquireLock(lockFile));
         System.out.println("Locked " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    }
+
+    private boolean cantAquireLock(File lockFile) throws InterruptedException, IOException {
+        Thread.sleep(rand.nextInt(1000));
+        return !lockFile.createNewFile();
     }
 
     public void releaseAndCloseFile(Lock lock) throws IOException {
