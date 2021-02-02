@@ -13,16 +13,15 @@ import com.fasterxml.jackson.dataformat.csv.CsvMappingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Streams;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,19 +33,17 @@ import java.util.stream.Collectors;
 public class EntitiesList<T> extends ArrayList<T> {
 
     private final RandomAccessFile randomAccessFile;
-    private final FileInputStream fileInputStream;
+    private FileInputStream fileInputStream;
     private final CsvMapper csvMapper = new CsvMapper();
     private final Class<T> type;
     private final String fileName;
 
-    public EntitiesList(Class<T> type, String jobListFile) throws IOException {
+    public EntitiesList(Class<T> type, String jobListFile, Lock lock) throws IOException, InterruptedException {
         this.type = type;
         this.fileName = jobListFile;
         randomAccessFile = new RandomAccessFile(jobListFile, "rw");
-        System.out.println("Locking job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        lockFile();
-        System.out.println("Locked job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         fileInputStream = new FileInputStream(jobListFile);
+        lockFile(lock);
         addAll(readEntriesFromFile());
     }
 
@@ -58,15 +55,32 @@ public class EntitiesList<T> extends ArrayList<T> {
         this.fileName = null;
     }
 
-    private void lockFile() throws IOException {
-        randomAccessFile.getChannel().lock(0, Long.MAX_VALUE, false);
+    public enum Lock {
+        RESULTS,
+        JOBS
     }
 
-    public void releaseAndCloseFile() throws IOException {
+    protected void lockFile(Lock lock) throws IOException, InterruptedException {
+        System.out.println("Locking " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+//        randomAccessFile.getChannel().lock(0, Long.MAX_VALUE, false);
+
+        File lockFile = new File(String.format("lock-%s.txt", lock));
+        do {
+            while (lockFile.isFile()) {
+                Thread.sleep(10000);
+            }
+        } while(!lockFile.createNewFile());
+        System.out.println("Locked " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    }
+
+    public void releaseAndCloseFile(Lock lock) throws IOException {
+        File lockFile = new File(String.format("lock-%s.txt", lock));
         randomAccessFile.getChannel().close();
+        lockFile.delete();
+        System.out.println("Released lock for " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 
-    private List<T> readEntriesFromFile() throws IOException {
+    protected List<T> readEntriesFromFile() throws IOException {
         CsvSchema schema = CsvSchema.emptySchema().withHeader();
 
         ObjectReader oReader = csvMapper.readerFor(type).with(schema);
@@ -129,7 +143,7 @@ public class EntitiesList<T> extends ArrayList<T> {
                 return new Object[0];
             }
         }
-        return this.toArray();
+        return toArray();
     }
 
     private String toKebabCase(String string) {

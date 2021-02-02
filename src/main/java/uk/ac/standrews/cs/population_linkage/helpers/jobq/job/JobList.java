@@ -16,8 +16,8 @@ import static uk.ac.standrews.cs.population_linkage.helpers.jobq.job.JobListHelp
 
 public class JobList extends EntitiesList<JobWithExpressions> {
 
-    public JobList(String jobListFile) throws IOException {
-        super(JobWithExpressions.class, jobListFile);
+    public JobList(String jobListFile) throws IOException, InterruptedException {
+        super(JobWithExpressions.class, jobListFile, Lock.JOBS);
     }
 
     // for testing only
@@ -32,8 +32,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         System.out.println("Job taken: " + topJob);
 
         writeEntriesToFile();
-        releaseAndCloseFile();
-        System.out.println("Released job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        releaseAndCloseFile(Lock.JOBS);
         return topJob;
     }
 
@@ -44,7 +43,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
             Set<JobWithExpressions> partiallyExplodedJobs =
                     topJob.map(JobListHelper::explodeJobWithExpressions)
                             .orElse(Collections.emptySet());
-            this.addAll(partiallyExplodedJobs);
+            addAll(partiallyExplodedJobs);
             topJob = takeTopJob(assignedMemory); // this time the top job will be the singular job we created in the explosion
         }
 
@@ -63,16 +62,16 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         int singularPriority = topSingularJob.map(JobCore::getPriority).orElse(Integer.MAX_VALUE);
 
         if(topSingularJob.isPresent() && singularPriority <= expressionPriority) {
-            this.remove(topSingularJob.get());
+            remove(topSingularJob.get());
             return topSingularJob;
         } else {
-            this.remove(topJobWithExpressions.get());
+            remove(topJobWithExpressions.get());
             return topJobWithExpressions;
         }
     }
 
     private Optional<JobWithExpressions> getTopSingularJob(int assignedMemory) {
-        return this.stream()
+        return stream()
                 .sorted(Comparator.comparingInt(JobCore::getPriority))
                 .filter(JobListHelper::isSingularJob)
                 .filter(job -> job.getRequiredMemory() <= assignedMemory)
@@ -80,7 +79,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
     }
 
     private Optional<JobWithExpressions> getTopJobWithExpression(int assignedMemory) {
-        return this.stream()
+        return stream()
                 .sorted(Comparator.comparingInt(JobCore::getPriority))
                 .filter(job -> !isSingularJob(job))
                 .filter(job -> job.getRequiredMemory() <= assignedMemory)

@@ -86,7 +86,7 @@ public class LinkageJobQueueHandler {
         }
     }
 
-    private static void runLinkageExperiment(Job job, String jobQ, int assignedMemory, Path gtLinksFile) throws BucketException, java.io.IOException {
+    private static void runLinkageExperiment(Job job, String jobQ, int assignedMemory, Path gtLinksFile) throws BucketException, java.io.IOException, InterruptedException {
         StringMetric chosenMetric = Constants.get(job.getMetric(), 4096);
 
         Result result = new Result(job);
@@ -116,20 +116,20 @@ public class LinkageJobQueueHandler {
         result.setfMeasure(linkageQuality.getF_measure());
         result.setLinkageClass(linkageRecipe.getClass().getCanonicalName());
 
-        EntitiesList<Result> results = new EntitiesList<>(Result.class, result.getLinkageResultsFile());
+        EntitiesList<Result> results = new EntitiesList(Result.class, result.getLinkageResultsFile(), EntitiesList.Lock.RESULTS);
         results.add(result);
         results.writeEntriesToFile();
-        results.releaseAndCloseFile();
+        results.releaseAndCloseFile(EntitiesList.Lock.RESULTS);
     }
 
-    private static void returnJobToJobList(JobWithExpressions job, String jobQ, int assignedMemory) throws IOException {
+    private static void returnJobToJobList(JobWithExpressions job, String jobQ, int assignedMemory) throws IOException, InterruptedException {
         int updatedMemoryRequirement = (int) Math.ceil(assignedMemory * 1.1);
         job.setRequiredMemory(updatedMemoryRequirement);
 
         JobList jobs = new JobList(jobQ);
         jobs.add(job);
         jobs.writeEntriesToFile();
-        jobs.releaseAndCloseFile();
+        jobs.releaseAndCloseFile(EntitiesList.Lock.JOBS);
     }
 
     private static void validatePopulationRecordsAreInStorrAndIfNotImport(Path recordCountsFile, JobCore job) throws Exception {
