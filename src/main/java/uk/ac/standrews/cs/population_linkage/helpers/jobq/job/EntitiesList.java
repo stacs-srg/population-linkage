@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
@@ -25,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -32,7 +35,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.stream.Collectors;
+import org.apache.commons.codec.binary.Hex;
 
 public class EntitiesList<T> extends ArrayList<T> {
 
@@ -70,20 +75,65 @@ public class EntitiesList<T> extends ArrayList<T> {
         System.out.println("Locking " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 //        randomAccessFile.getChannel().lock(0, Long.MAX_VALUE, false);
 
-        Thread.sleep(rand.nextInt(10000));
+        Thread.sleep(rand.nextInt(1000));
 
         File lockFile = new File(String.format("lock-%s.txt", lock));
-        do {
-            while (lockFile.isFile()) {
-                Thread.sleep(10000 + rand.nextInt(10000));
-            }
-        } while(cantAquireLock(lockFile));
+        while(!aquiredLock(lockFile)) {
+            Thread.sleep(10000 + rand.nextInt(10000));
+        }
         System.out.println("Locked " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 
-    private boolean cantAquireLock(File lockFile) throws InterruptedException, IOException {
-        Thread.sleep(rand.nextInt(1000));
-        return !lockFile.createNewFile();
+    private boolean aquiredLock(File lockFile) throws InterruptedException {
+        Thread.sleep(5000);
+        try {
+            boolean createdNewFile = lockFile.createNewFile();
+
+            if (createdNewFile && getContentOf(lockFile).isEmpty()) {
+                String token = generateRandomString();
+                writeToFile(lockFile, token);
+                return ifFirstInFile(lockFile, token);
+            }
+            return false;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private boolean ifFirstInFile(File file, String token) throws FileNotFoundException, InterruptedException {
+        ArrayList<String> lines = getContentOf(file);
+
+        if(!lines.isEmpty() && lines.get(0).length() != 64) {
+            file.delete(); // the lock file is borked, we're deleting it and someone else can try for the lock
+            return false;
+        }
+
+        return !lines.isEmpty() && lines.get(0).equals(token);
+    }
+
+    private void writeToFile(File file, String string) throws IOException {
+        FileWriter fw = new FileWriter(file);
+        fw.append(string + "\n");
+        fw.close();
+    }
+
+    private ArrayList<String> getContentOf(File file) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        ArrayList<String> lines = new ArrayList<>();
+        while (scanner.hasNextLine()) {
+            lines.add(scanner.nextLine());
+        }
+        scanner.close();
+        return lines;
+    }
+
+    private static String generateRandomString() {
+        final byte[] bytes = new byte[64];
+        new SecureRandom().nextBytes(bytes);
+
+        return Hex.encodeHexString(bytes)
+                .substring(64)
+                .toUpperCase();
     }
 
     public void releaseAndCloseFile(Lock lock) throws IOException {
