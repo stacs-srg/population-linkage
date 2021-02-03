@@ -78,21 +78,24 @@ public class EntitiesList<T> extends ArrayList<T> {
         Thread.sleep(rand.nextInt(1000));
 
         File lockFile = new File(String.format("lock-%s.txt", lock));
-        while(!aquiredLock(lockFile)) {
-            Thread.sleep(10000 + rand.nextInt(10000));
+        while(!aquiredLock(lockFile, lock)) {
+            Thread.sleep(rand.nextInt(10000));
+            System.out.println("Sleeping on " + lock.name() + " file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }
         System.out.println("Locked " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 
-    private boolean aquiredLock(File lockFile) throws InterruptedException {
+    private boolean aquiredLock(File lockFile, Lock lock) throws InterruptedException {
         Thread.sleep(5000);
         try {
+            System.out.println("Trying to lock file on" + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             boolean createdNewFile = lockFile.createNewFile();
 
             if (createdNewFile && getContentOf(lockFile).isEmpty()) {
                 String token = generateRandomString();
                 writeToFile(lockFile, token);
-                return ifFirstInFile(lockFile, token);
+                System.out.println("My token is: " + token);
+                return ifFirstInFile(lockFile, token, lock);
             }
             return false;
         } catch (IOException e) {
@@ -100,15 +103,22 @@ public class EntitiesList<T> extends ArrayList<T> {
         }
     }
 
-    private boolean ifFirstInFile(File file, String token) throws FileNotFoundException, InterruptedException {
+    private boolean ifFirstInFile(File file, String token, Lock lock) throws FileNotFoundException, InterruptedException {
         ArrayList<String> lines = getContentOf(file);
 
         if(!lines.isEmpty() && lines.get(0).length() != 64) {
+            System.out.println("Deleting " + lock.name() + " lock file (borked) @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             file.delete(); // the lock file is borked, we're deleting it and someone else can try for the lock
             return false;
         }
 
-        return !lines.isEmpty() && lines.get(0).equals(token);
+        if(!lines.isEmpty() && lines.get(0).equals(token)) {
+            System.out.println("My lock file on" + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            return true;
+        } else {
+            System.out.println("Not my lock file on" + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            return false;
+        }
     }
 
     private void writeToFile(File file, String string) throws IOException {
