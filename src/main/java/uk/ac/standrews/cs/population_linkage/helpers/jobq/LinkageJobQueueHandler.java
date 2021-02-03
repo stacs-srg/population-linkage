@@ -87,7 +87,7 @@ public class LinkageJobQueueHandler {
     }
 
     private static void runLinkageExperiment(Job job, String jobQ, int assignedMemory, Path gtLinksFile) throws BucketException, java.io.IOException, InterruptedException {
-        StringMetric chosenMetric = Constants.get(job.getMetric(), 4096);
+        StringMetric chosenMetric = Constants.get(job.getMetric(), 8370);
 
         Result result = new Result(job);
         result.setStartTime(System.currentTimeMillis());
