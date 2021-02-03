@@ -5,11 +5,11 @@
 package uk.ac.standrews.cs.population_linkage.helpers.jobq.job;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.util.Objects;
 
-@JsonNaming(PropertyNamingStrategies.KebabCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategy.KebabCaseStrategy.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JobCore {
 
