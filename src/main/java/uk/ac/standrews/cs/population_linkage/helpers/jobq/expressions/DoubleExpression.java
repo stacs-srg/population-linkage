@@ -37,7 +37,7 @@ public class DoubleExpression extends Expression<BigDecimal> {
 
     @Override
     public String getSingleRegex() {
-        return "[0-9].[0-9]+";
+        return "[0-9]+.[0-9]+|[0-9]+";
     }
 
     @Override
