@@ -14,13 +14,13 @@ public class LinkageQuality {
     private double recall;
     private double f_measure;
 
-    private int tp;
-    private int fp;
-    private int fn;
+    private long tp;
+    private long fp;
+    private long fn;
 
     private String message = null;
 
-    public LinkageQuality(int tp, int fp, int fn) {
+    public LinkageQuality(long tp, long fp, long fn) {
         this.tp = tp;
         this.fp = fp;
         this.fn = fn;
@@ -70,7 +70,7 @@ public class LinkageQuality {
         return f_measure;
     }
 
-    public int getTp() {
+    public long getTp() {
         return tp;
     }
 
@@ -78,7 +78,7 @@ public class LinkageQuality {
         this.tp = tp;
     }
 
-    public int getFp() {
+    public long getFp() {
         return fp;
     }
 
@@ -86,7 +86,7 @@ public class LinkageQuality {
         this.fp = fp;
     }
 
-    public int getFn() {
+    public long getFn() {
         return fn;
     }
 

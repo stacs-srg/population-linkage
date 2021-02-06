@@ -19,9 +19,9 @@ public class Result extends Job {
 
     private long startTime;
     private boolean corrupted;
-    private int tp;
-    private int fp;
-    private int fn;
+    private long tp;
+    private long fp;
+    private long fn;
     private double precision;
     private double recall;
     private double fMeasure;
@@ -125,27 +125,27 @@ public class Result extends Job {
         }
     }
 
-    public int getTp() {
+    public long getTp() {
         return tp;
     }
 
-    public void setTp(int tp) {
+    public void setTp(long tp) {
         this.tp = tp;
     }
 
-    public int getFp() {
+    public long getFp() {
         return fp;
     }
 
-    public void setFp(int fp) {
+    public void setFp(long fp) {
         this.fp = fp;
     }
 
-    public int getFn() {
+    public long getFn() {
         return fn;
     }
 
-    public void setFn(int fn) {
+    public void setFn(long fn) {
         this.fn = fn;
     }
 

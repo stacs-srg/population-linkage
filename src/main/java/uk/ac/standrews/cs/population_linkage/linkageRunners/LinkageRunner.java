@@ -205,8 +205,8 @@ public abstract class LinkageRunner {
         LocalDateTime time_stamp = LocalDateTime.now();
 
         MemoryLogger.update();
-        int tp = 0; // these are counters with which we use if evaluating
-        int fp = 0;
+        long tp = 0; // these are counters with which we use if evaluating
+        long fp = 0;
 
         Map<String, Collection<Link>> linksByRecordID = new HashMap<>(); // this is for the map of links if requested
 
@@ -262,7 +262,7 @@ public abstract class LinkageRunner {
                 fp = fp/2;
             }
 
-            int fn = numberOfGroundTruthTrueLinks - tp;
+            long fn = numberOfGroundTruthTrueLinks - tp;
             lq = new LinkageQuality(tp, fp, fn);
             lq.print(System.out);
         } else {
