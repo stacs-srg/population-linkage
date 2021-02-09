@@ -27,8 +27,9 @@ public class JobList extends EntitiesList<JobWithExpressions> {
 
     public Optional<Job> selectJobAndReleaseFile(int assignedMemory) throws IOException {
 
-        // this is a hack as process keep busting through the lock and emptying the job file
+//        // this is a hack as process keep busting through the lock and emptying the job file
         if(isEmpty()) {
+            releaseAndCloseFile(Lock.JOBS);
             return Optional.empty();
         }
 
