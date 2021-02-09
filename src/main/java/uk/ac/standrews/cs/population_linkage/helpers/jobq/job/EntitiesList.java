@@ -146,9 +146,10 @@ public class EntitiesList<T> extends ArrayList<T> {
                 .toUpperCase();
     }
 
-    public void releaseAndCloseFile(Lock lock) throws IOException {
+    public void releaseAndCloseFile(Lock lock) throws IOException, InterruptedException {
         File lockFile = new File(String.format("lock-%s.txt", lock));
         randomAccessFile.getChannel().close();
+        Thread.sleep(10000);
         lockFile.delete();
         System.out.println("Released lock for " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }

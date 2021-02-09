@@ -34,7 +34,7 @@ public class Result extends Job {
     private String recordsRepo;
     private String resultsRepo;
     private String linksSubRepo;
-    private double maxMemoryUsage;
+    private Double maxMemoryUsage;
     private String codeVersion;
     private String hostname;
 
@@ -71,18 +71,26 @@ public class Result extends Job {
     }
 
     public String getCodeVersion() {
-        try {
-            return execCmd("git rev-parse HEAD").trim();
-        } catch (IOException e) {
-            return "NA";
+        if(codeVersion == null) {
+            try {
+                return execCmd("git rev-parse HEAD").trim();
+            } catch (IOException e) {
+                return "NA";
+            }
+        } else {
+            return codeVersion;
         }
     }
 
     public String getHostname() {
-        try {
-            return execCmd("hostname").trim();
-        } catch (IOException e) {
-            return "NA";
+        if(hostname == null) {
+            try {
+                return execCmd("hostname").trim();
+            } catch (IOException e) {
+                return "NA";
+            }
+        } else {
+            return hostname;
         }
     }
 
@@ -194,7 +202,11 @@ public class Result extends Job {
     }
 
     public double getMaxMemoryUsage() {
-        return MemoryLogger.getMax()/1000000000.0;
+        if(maxMemoryUsage == null) {
+            return MemoryLogger.getMax() / 1000000000.0;
+        } else {
+            return maxMemoryUsage;
+        }
     }
 
     public String getFieldsUsed1() {
