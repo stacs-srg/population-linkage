@@ -41,8 +41,8 @@ import org.apache.commons.codec.binary.Hex;
 
 public class EntitiesList<T> extends ArrayList<T> {
 
-    private final RandomAccessFile randomAccessFile;
-    private FileInputStream fileInputStream;
+    private RandomAccessFile randomAccessFile;
+    private String jobListFile;
     private final CsvMapper csvMapper = new CsvMapper();
     private final Class<T> type;
     private final String fileName;
@@ -52,8 +52,7 @@ public class EntitiesList<T> extends ArrayList<T> {
     public EntitiesList(Class<T> type, String jobListFile, Lock lock) throws IOException, InterruptedException {
         this.type = type;
         this.fileName = jobListFile;
-        randomAccessFile = new RandomAccessFile(jobListFile, "rw");
-        fileInputStream = new FileInputStream(jobListFile);
+        this.jobListFile = jobListFile;
         lockFile(lock);
         addAll(readEntriesFromFile());
     }
@@ -61,7 +60,7 @@ public class EntitiesList<T> extends ArrayList<T> {
     // for testing only
     protected EntitiesList(Class<T> type) {
         this.randomAccessFile = null;
-        this.fileInputStream = null;
+        this.jobListFile = null;
         this.type = type;
         this.fileName = null;
     }
@@ -71,9 +70,8 @@ public class EntitiesList<T> extends ArrayList<T> {
         JOBS
     }
 
-    protected void lockFile(Lock lock) throws IOException, InterruptedException {
+    protected void lockFile(Lock lock) throws InterruptedException {
         System.out.println("Locking " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-//        randomAccessFile.getChannel().lock(0, Long.MAX_VALUE, false);
 
         Thread.sleep(rand.nextInt(1000));
 
@@ -82,7 +80,7 @@ public class EntitiesList<T> extends ArrayList<T> {
             Thread.sleep(rand.nextInt(10000));
             System.out.println("Sleeping on " + lock.name() + " file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }
-        System.out.println("Locked " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        System.out.println("Locked " + lock.name() + " file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 
     private boolean aquiredLock(File lockFile, Lock lock) throws InterruptedException {
@@ -116,7 +114,7 @@ public class EntitiesList<T> extends ArrayList<T> {
             System.out.println("My lock file on" + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             return true;
         } else {
-            System.out.println("Not my lock file on" + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            System.out.println("Not my lock file on " + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             return false;
         }
     }
@@ -148,7 +146,9 @@ public class EntitiesList<T> extends ArrayList<T> {
 
     public void releaseAndCloseFile(Lock lock) throws IOException, InterruptedException {
         File lockFile = new File(String.format("lock-%s.txt", lock));
-        randomAccessFile.getChannel().close();
+        if(randomAccessFile != null) {
+            randomAccessFile.getChannel().close();
+        }
         Thread.sleep(10000);
         lockFile.delete();
         System.out.println("Released lock for " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -160,7 +160,7 @@ public class EntitiesList<T> extends ArrayList<T> {
         ObjectReader oReader = csvMapper.readerFor(type).with(schema);
 
         try {
-            MappingIterator<T> mi = oReader.readValues(fileInputStream);
+            MappingIterator<T> mi = oReader.readValues(new FileInputStream(jobListFile));
             return Streams.stream(mi).collect(Collectors.toList());
         } catch (CsvMappingException | RuntimeJsonMappingException e) {
             return new ArrayList<>();
@@ -169,7 +169,8 @@ public class EntitiesList<T> extends ArrayList<T> {
 
     public void writeEntriesToFile() throws IOException {
         backUpResultFile();
-        
+
+        randomAccessFile = new RandomAccessFile(jobListFile, "rw");
         randomAccessFile.getChannel().truncate(0);
 
         CsvSchema.Builder schemaBuilder = CsvSchema.builder();
