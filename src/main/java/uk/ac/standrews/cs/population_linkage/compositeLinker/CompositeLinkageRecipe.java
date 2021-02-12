@@ -92,6 +92,7 @@ public class CompositeLinkageRecipe {
                 new BirthBrideIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
                 metric, 0.67, true, 5, true, false, true, false).getMapOfLinks();
 
+        // heres an easy place to do male vs female LQ comparisons
         Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks, "death-birth-via-groom-id");
         Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, birthBrideLinks, "death-birth-via-bride-id");
         deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)

@@ -86,7 +86,7 @@ public class EntitiesList<T> extends ArrayList<T> {
     private boolean aquiredLock(File lockFile, Lock lock) throws InterruptedException {
         Thread.sleep(5000);
         try {
-            System.out.println("Trying to lock file on" + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            System.out.println("Trying to lock file on " + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             boolean createdNewFile = lockFile.createNewFile();
 
             if (createdNewFile && getContentOf(lockFile).isEmpty()) {
