@@ -25,6 +25,30 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j</artifactId>
+            <version>4.2.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+
+        <dependency> <!-- If you're using the Bolt driver -->
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-ogm-bolt-driver</artifactId>
+            <version>3.2.20</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-ogm-core</artifactId>
+            <version>3.2.20</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.stacs-srg</groupId>
             <artifactId>storr</artifactId>
             <version>1.0.1</version>
