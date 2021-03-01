@@ -1,0 +1,140 @@
+====
+    Copyright 2020 Systems Research Group, University of St Andrews:
+    <https://github.com/stacs-srg>
+====
+
+Text is from here: https://neo4j.com/docs/ogm-manual/current/reference/
+
+4.1. @NodeEntity: The basic building block
+
+The @NodeEntity annotation is used to declare that a POJO class is an entity backed by a node in the graph database.
+Entities handled by Neo4j-OGM must have one empty public constructor to allow the library to construct the objects.
+
+Fields on the entity are by default mapped to properties of the node.
+Fields referencing other node entities (or collections thereof) are linked with relationships.
+
+@NodeEntity annotations are inherited from super-types and interfaces.
+It is not necessary to annotate your domain objects at every inheritance level.
+
+Entity fields can be annotated with annotations like @Property, @Id, @GeneratedValue, @Transient or @Relationship.
+All annotations live in the org.neo4j.ogm.annotation package.
+Marking a field with the transient modifier has the same effect as annotating it with @Transient; it won’t be persisted to the graph database.
+
+The default label is the simple class name of the annotated entity. There are some rules to determine if parent classes also contribute their label to the child class:
+
+    the parent class is a non-abstract class (the existing of @NodeEntity is optional)
+
+    the parent class is an abstract class and has a @NodeEntity annotation
+
+    java.lang.Object will be ignored
+
+    interfaces do not create an additional label
+
+If the label or the value attribute of the @NodeEntity annotation is set it
+will replace the default label applied to the node in the database.
+
+4.1.1. @Properties: dynamically mapping properties to graph
+
+A @Properties annotation tells Neo4j-OGM to map values of a Map field in a node or relationship entity to properties of a node or a relationship in the graph.
+The property names are derived from field name or prefix, delimiter and keys in the Map.
+
+4.2. @Relationship: Connecting node entities
+
+Every field of an entity that references one or more other node entities is backed by relationships in the graph.
+These relationships are managed by Neo4j-OGM automatically.
+
+The simplest kind of relationship is a single object reference pointing to another entity (1:1).
+In this case, the reference does not have to be annotated at all, although the annotation may be used to control the direction and type of the relationship.
+When setting the reference, a relationship is created when the entity is persisted.
+If the field is set to null, the relationship is removed.
+
+It is also possible to have fields that reference a set of entities (1:N). Neo4j-OGM supports the following types of entity collections:
+
+    java.util.Vector
+    java.util.List, backed by a java.util.ArrayList
+    java.util.SortedSet, backed by a java.util.TreeSet
+    java.util.Set, backed by a java.util.HashSet
+    Arrays
+
+
+
+For graph to object mapping, the automatic transitive loading of related entities depends on the depth of the horizon specified on the call to Session.load().
+The default depth of 1 implies that related node or relationship entities will be loaded and have their properties set, but none of their related entities will be populated.
+
+If this Set of related entities is modified, the changes are reflected in the graph once the root object (Actor, in this case) is saved.
+Relationships are added, removed or updated according to the differences between the root object that was loaded and the corresponding one that was saved..
+
+Neo4j-OGM ensures by default that there is only one relationship of a given type between any two given entities.
+The exception to this rule is when a relationship is specified as either OUTGOING or INCOMING between two entities of the same type.
+In this case, it is possible to have two relationships of the given type between the two entities, one relationship in either direction.
+
+If you don’t care about the direction then you can specify direction=Relationship.UNDIRECTED which will
+guarantee that the path between two node entities is navigable from either side.
+
+For example, consider the PARTNER relationship between two companies,
+
+        where (A)-[:PARTNER_OF]→(B) implies (B)-[:PARTNER_OF]→(A).
+
+The direction of the relationship does not matter; only the fact that a PARTNER_OF relationship exists between these two companies is of importance.
+Hence an UNDIRECTED relationship is the correct choice, ensuring that there is only one relationship of this type between
+two partners and navigating between them from either entity is possible.
+
+4.3. @RelationshipEntity: Rich relationships
+
+To access the full data model of graph relationships, POJOs can also be annotated with @RelationshipEntity, making them relationship entities.
+Just as node entities represent nodes in the graph, relationship entities represent relationships.
+Such POJOs allow you to access and manage properties on the underlying relationships in the graph.
+
+Fields in relationship entities are similar to node entities, in that they’re persisted as properties on the relationship.
+For accessing the two endpoints of the relationship, two special annotations are available: @StartNode and @EndNode.
+A field annotated with one of these annotations will provide access to the corresponding endpoint, depending on the chosen annotation.
+
+For controlling the relationship-type a String attribute called type is available on the @RelationshipEntity annotation.
+Like the simple strategy for labelling node entities,
+if this is not provided then the name of the class is used to derive the relationship type,
+although it’s converted into SNAKE_CASE to honour the naming conventions of Neo4j relationships.
+As of the current version of Neo4j-OGM, the type must be specified on the @RelationshipEntity annotation
+as well as its corresponding @Relationship annotations. This can also be done without naming the attribute but only providing the value.
+
+@NodeEntity
+public class Actor {
+    Long id;
+    @Relationship(type="PLAYED_IN") private Role playedIn;  // -------->
+}
+
+@RelationshipEntity(type = "PLAYED_IN")     // <------------
+public class Role {
+    @Id @GeneratedValue   private Long relationshipId;
+    @Property  private String title;
+    @StartNode private Actor actor;
+    @EndNode   private Movie movie;    // ------>
+}
+
+@NodeEntity
+public class Movie {          // <------------
+    private Long id;
+    private String title;
+}
+
+
+
+Note that the Actor also contains a reference to a Role.
+This is important for persistence, even when saving the Role directly,
+because paths in the graph are written starting with nodes first and then relationships are created between them.
+Therefore, you need to structure your domain models so that relationship entities are reachable from node entities for this to work correctly.
+
+Additionally, Neo4j-OGM will not persist a relationship entity that doesn’t have any properties defined.
+If you don’t want to include properties in your relationship entity then you should use a plain @Relationship instead.
+Multiple relationship entities which have the same property values and relate the same nodes are indistinguishable
+from each other and are represented as a single relationship by Neo4j-OGM.
+
+
+
+
+
+
+
+
+
+
+

@@ -54,6 +54,8 @@ The brew installer for Neo4j creates this stuff:
 
 Note that you need a lot of different Mvn dependencies to get it all working too - in the POM.
 
+See also notes.txt about OGM.
+
 I hope this is useful!
 
 
