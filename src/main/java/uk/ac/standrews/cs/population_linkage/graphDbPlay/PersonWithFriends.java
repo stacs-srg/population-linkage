@@ -16,7 +16,7 @@ public class PersonWithFriends {
     @JsonProperty("name")
     private String name;
 
-//    @Relationship(type = "FRIEND", direction = Relationship.OUTGOING)  // FRIENDS is a label on the relationship arc
+//    @BlueNode(type = "FRIEND", direction = BlueNode.OUTGOING)  // FRIENDS is a label on the relationship arc
 //    Friends friends;
 
     public PersonWithFriends(String name ) {

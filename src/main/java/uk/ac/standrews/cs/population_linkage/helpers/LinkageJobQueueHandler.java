@@ -38,7 +38,7 @@ public class LinkageJobQueueHandler {
     // The job queue can be used for both synthetic populations and the umea data
     // in the case of umea specify the population as 'umea' and put a dash in each of size,pop_number,corruption_number
     //
-    // Linkage type defines the 'type' of linkage to be performed - the provided string should be the same as the
+    // EvidencePair type defines the 'type' of linkage to be performed - the provided string should be the same as the
     // linkageType field in the relevant linkage runner class
 
     private static final String COMMENT_INDICATOR = "#";

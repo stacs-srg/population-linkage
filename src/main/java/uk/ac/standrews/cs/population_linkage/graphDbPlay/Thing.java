@@ -16,7 +16,7 @@ public class Thing {
     @JsonProperty("name")
     private String name;
 
-    // In Relationship there is:
+    // In BlueNode there is:
     //    String TYPE = "type";
     //    String DIRECTION = "direction";
     //    String INCOMING = "INCOMING";

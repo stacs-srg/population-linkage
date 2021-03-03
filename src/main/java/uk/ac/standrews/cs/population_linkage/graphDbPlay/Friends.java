@@ -25,7 +25,7 @@ public class Friends {
         this.add( p );
     }
 
-    @Relationship(type = "FRIEND") // , direction = Relationship.OUTGOING)
+    @Relationship(type = "FRIEND") // , direction = BlueNode.OUTGOING)
     List<PersonWithFriends> friends = new ArrayList<>();
 
     public void add( PersonWithFriends p ) {

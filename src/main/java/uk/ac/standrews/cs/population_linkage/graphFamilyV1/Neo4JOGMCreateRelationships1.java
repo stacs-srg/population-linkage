@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.graphFamily;
+package uk.ac.standrews.cs.population_linkage.graphFamilyV1;
 
 /*
  * Copyright 2020 Systems Research Group, University of St Andrews:
@@ -55,7 +55,7 @@ public class Neo4JOGMCreateRelationships1 implements AutoCloseable
 
         PersonRef al_fiona = new PersonRef(al, fiona, "SPOUSE", "ref_al", "GROOM", "ref_fiona", "BRIDE", 0.9, "some prov 1", 0.1);
         PersonRef fiona_al = new PersonRef(fiona, al, "SPOUSE", "marriage_ref", "GROOM", "marriage_ref", "BRIDE", 0.9, "some prov 1", 0.1);
-//        PersonRef graham_alice = new PersonRef(graham, alice, "ref_graham", "SIBLING", "ref_alice", "SIBLING", 0.8, "BirthBirh", "some prov 2", 0.15);
+//        Provenance graham_alice = new Provenance(graham, alice, "ref_graham", "SIBLING", "ref_alice", "SIBLING", 0.8, "BirthBirh", "some prov 2", 0.15);
         PersonRef fiona_alice = new PersonRef(fiona, alice, "CHILD", "ref_fiona", "marriage_ref", "ref_alice", "CHILD", 0.81, "some prov 3", 0.11);
         PersonRef fiona_graham = new PersonRef(fiona, graham, "CHILD","ref_fiona", "marriage_ref", "ref_graham", "CHILD", 0.815,  "some prov 4", 0.12);
         PersonRef al_alice = new PersonRef(al, alice, "CHILD","ref_al", "marriage_ref", "ref_alice", "CHILD", 0.812, "some prov 5", 0.11);

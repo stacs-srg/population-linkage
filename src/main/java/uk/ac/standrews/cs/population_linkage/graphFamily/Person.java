@@ -1,45 +1,46 @@
 package uk.ac.standrews.cs.population_linkage.graphFamily;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Property;
-import org.neo4j.ogm.annotation.Relationship;
+import org.neo4j.ogm.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @NodeEntity
 public class Person {
-    @JsonProperty("id")
+    @Id
+    @GeneratedValue
     private Long id;
 
     @Property
-    private String first_name;
+    private String first_names;
     @Property
     private String second_name;
 
+    @Relationship(type="PARENT")
+    private List<Reference> parents = new ArrayList<>();				// alts and multiples
+
     @Relationship(type="CHILD")
-    private List<PersonRef> children = new ArrayList<>();				// alts and multiples
+    private List<Reference> children = new ArrayList<>();				// alts and multiples
 
     @Relationship(type="COPARENT")
-    private List<PersonRef> coparents = new ArrayList<>();; 				// alts and multiples
+    private List<Reference> coparents = new ArrayList<>(); 				// alts and multiples
 
     @Relationship(type="SPOUSE")
-    private List<PersonRef> spouses = new ArrayList<>();; 				// alts and multiples
+    private List<Reference> spouses = new ArrayList<>(); 				// alts and multiples
+
+    @Relationship(type="SIBLING") // TODO What about 1/2 siblings? what does this mean?
+    private List<Reference> siblings = new ArrayList<>(); 				// alts and multiples
 
     @Relationship(type="BIRTH")
-    private List<RecordProv> birth_record = new ArrayList<>();				// alts and multiples
-
-    @Relationship(type="MARRIAGE")
-    private List<RecordProv> mariage_records = new ArrayList<>(); 			// alts and multiples
+    private List<Evidence> birth_records = new ArrayList<>();  			// alts
 
     @Relationship(type="DEATH")
-    private List<RecordProv> death_records = new ArrayList<>();  			// alts
+    private List<Evidence> death_records = new ArrayList<>();  			// alts
 
     public Person() {}
 
     public Person(String first_name, String second_name) {
-        this.first_name = first_name;
+        this.first_names = first_name;
         this.second_name = second_name;
     }
 
@@ -52,59 +53,59 @@ public class Person {
         this.id = id;
     }
 
-    public String getFirst_name() {
-        return first_name;
+    public String getFirst_names() {
+        return first_names;
     }
 
     public String getSecond_name() {
         return second_name;
     }
 
-    public List<PersonRef> getChildren() {
+    public List<Reference> getChildren() {
         return children;
     }
 
-    public void addChild(PersonRef child) {
-        this.children.add(child);
+    private void addParent(Reference parent) {
+        this.parents.add(parent);
     }
 
-    public List<PersonRef> getCoparents() {
+    public List<Reference> getCoparents() {
         return coparents;
     }
 
-    public void addCoparent(PersonRef parent) {
+    public void addCoparent(Reference parent) {
         this.coparents.add(parent);
     }
 
-    public List<PersonRef> getSpouses() {
+    public List<Reference> getSpouses() {
         return spouses;
     }
 
-    public void addSpouse(PersonRef spouse) {
-        this.spouses.add(spouse);
+    public List<Evidence> getBirthRecords() {
+        return birth_records;
     }
 
-    public List<RecordProv> getBirthRecord() {
-        return birth_record;
+    public void addBirthRecord(Evidence birth_record) {
+        this.birth_records.add(birth_record);
     }
 
-    public void addBirthRecord(RecordProv birth_record) {
-        this.birth_record.add(birth_record);
-    }
-
-    public List<RecordProv> getMariageRecords() {
-        return mariage_records;
-    }
-
-    public void addMarriageRecord(RecordProv marriage_record) {
-        this.mariage_records.add(marriage_record);
-    }
-
-    public List<RecordProv> getDeathRecords() {
+    public List<Evidence> getDeathRecords() {
         return death_records;
     }
 
-    public void addDeathRecord(RecordProv death_record) {
-        this.birth_record.add(death_record);
+    public void addDeathRecord(Evidence death_record) {
+        this.death_records.add(death_record);
+    }
+
+    public void addChild(Person child, String parent_role, Evidence evidence ) {
+        Reference ref = new Reference(this, parent_role, child, "BABY",evidence );
+        this.children.add( ref);
+        child.parents.add( ref );
+    }
+
+    public void addSpouse(Person bride_or_groom, String this_role, Evidence evidence) {
+        Reference ref = new Reference(this, this_role, bride_or_groom, this_role.equals("GROOM") ? "BRIDE" : "GROOM", evidence);
+        this.spouses.add( ref);
+        bride_or_groom.spouses.add( ref );
     }
 }

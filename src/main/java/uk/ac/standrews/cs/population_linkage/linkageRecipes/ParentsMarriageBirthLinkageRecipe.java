@@ -16,7 +16,7 @@ import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 import java.util.*;
 
 /**
- * Linkage Recipe
+ * EvidencePair Recipe
  * In all linkage recipies the naming convention is:
  *     the stored type is the first part of the name
  *     the query type is the second part of the name

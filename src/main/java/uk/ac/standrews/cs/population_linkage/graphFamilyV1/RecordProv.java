@@ -1,4 +1,4 @@
-package uk.ac.standrews.cs.population_linkage.graphFamily;
+package uk.ac.standrews.cs.population_linkage.graphFamilyV1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.neo4j.ogm.annotation.NodeEntity;

@@ -122,7 +122,7 @@ public class FMeasureTables {
 
         final List<String> metrics_sorted_by_decreasing_values = sortMetricsByDecreasingMeanValues(values_by_linkage_and_metric);
 
-        System.out.print(bold("Linkage") + " & ");
+        System.out.print(bold("EvidencePair") + " & ");
         for (String metric : metrics_sorted_by_decreasing_values) {
             System.out.print(METRIC_ABBREVIATIONS.get(metric) + " & ");
         }

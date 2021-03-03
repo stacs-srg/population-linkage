@@ -89,14 +89,14 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
         linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
         linkage_results_metadata_writer.println("Dataset: " + getDatasetName());
-        linkage_results_metadata_writer.println("Linkage type: " + getLinkageType());
+        linkage_results_metadata_writer.println("EvidencePair type: " + getLinkageType());
         linkage_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         linkage_results_metadata_writer.flush();
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
         distance_results_metadata_writer.println("Dataset: " + getDatasetName());
-        distance_results_metadata_writer.println("Linkage type: " + getLinkageType());
+        distance_results_metadata_writer.println("EvidencePair type: " + getLinkageType());
         distance_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
         distance_results_metadata_writer.flush();
     }

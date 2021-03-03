@@ -36,7 +36,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Linkage Recipe
+ * EvidencePair Recipe
  * In all linkage recipies the naming convention is:
  *     the stored type is the first part of the name
  *     the query type is the second part of the name
