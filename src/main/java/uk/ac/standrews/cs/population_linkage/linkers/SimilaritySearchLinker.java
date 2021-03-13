@@ -5,6 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.linkers;
 
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.LXPHelper;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
@@ -74,7 +75,7 @@ public class SimilaritySearchLinker extends Linker {
 
                     next_record_from_search_set = search_set_iterator.next();
                     // the next_record_from_search_set converted into the same type as the stored records
-                    final LXP converted_record = linkage_recipe != null ? linkage_recipe.convertToOtherRecordType(next_record_from_search_set) : next_record_from_search_set;
+                    final LXP converted_record = linkage_recipe != null ? LXPHelper.convertToOtherRecordType(next_record_from_search_set, linkage_recipe) : next_record_from_search_set;
 
                     result_index = 0;
                     result_records = search_structure.findWithinThreshold(converted_record, threshold);

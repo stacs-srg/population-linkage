@@ -15,11 +15,6 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 public class BitBlasterLinkageRunner extends LinkageRunner{
 
     @Override
-    public LinkageRecipe getLinkageRecipe(String links_persistent_name, String source_repository_name, String results_repository_name, RecordRepository record_repository) {
-        return null;
-    }
-
-    @Override
     SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric) {
         return new BitBlasterSearchStructureFactory<>(composite_metric, LinkageConfig.numberOfROs);
     }

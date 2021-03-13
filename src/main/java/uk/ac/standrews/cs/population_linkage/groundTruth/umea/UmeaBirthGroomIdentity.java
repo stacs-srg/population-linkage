@@ -8,6 +8,7 @@ import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.TwoSourcesLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -16,6 +17,8 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.list;
 
 /**
  * Performs linkage analysis on data from births and marriages.
@@ -65,7 +68,7 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
-        return BirthGroomIdentityLinkageRecipe.trueMatch(record1, record2);
+        return Evaluation.trueMatch(record1, record2, BirthGroomIdentityLinkageRecipe.TRUE_MATCH_ALTERNATIVES, list());
     }
 
     public boolean isViableLink(RecordPair proposedLink) {

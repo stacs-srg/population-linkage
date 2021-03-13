@@ -6,55 +6,35 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.list;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.pair;
 
 public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
 
-    public static void main(String[] args) throws BucketException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new FatherGroomIdentityLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
-        );
-    }
-
     public static final String LINKAGE_TYPE = "father-groom-identity";
 
-    public FatherGroomIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public FatherGroomIdentityLinkageRecipe(Storr storr) {
+        super(storr);
     }
 
-    @Override
-    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        final String father_id = record1.getString(Birth.FATHER_IDENTITY);
-        final String groom_id = record2.getString(Marriage.GROOM_IDENTITY);
-
-        if (father_id.isEmpty() || groom_id.isEmpty() ) {
-            return LinkStatus.UNKNOWN;
-        } else if (father_id.equals( groom_id ) ) {
-            return LinkStatus.TRUE_MATCH;
-        } else {
-            return LinkStatus.NOT_TRUE_MATCH;
-        }
-    }
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY))
+    );
 
     @Override
     public String getLinkageType() {
         return LINKAGE_TYPE;
+    }
+
+    @Override
+    public boolean isSiblingLinkage() {
+        return false;
     }
 
     @Override
@@ -111,17 +91,7 @@ public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
-    }
-
-    @Override
-    public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
-    }
-
-    @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
+    public List<List<Pair>> getTrueMatchMappings() {
+        return TRUE_MATCH_ALTERNATIVES;
     }
 }

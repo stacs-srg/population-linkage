@@ -8,6 +8,9 @@ import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.AsymmetricSingleSourceLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideGroomSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.SpouseRole;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -16,6 +19,8 @@ import uk.ac.standrews.cs.storr.impl.LXP;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.list;
 
 /**
  * Performs linkage analysis on data from marriages.
@@ -60,12 +65,12 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
-        return BrideGroomSiblingLinkageRecipe.trueMatch(record1, record2);
+        return Evaluation.trueMatch(record1, record2, BrideGroomSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES, list());
     }
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return BrideGroomSiblingLinkageRecipe.isViable(proposedLink);
+        return ViableLink.spouseSpouseSiblingLinkIsViable(proposedLink, SpouseRole.BRIDE, SpouseRole.GROOM);
     }
 
     @Override

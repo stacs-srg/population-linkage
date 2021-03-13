@@ -8,6 +8,9 @@ import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.SymmetricSingleSourceLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.SpouseRole;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -50,12 +53,12 @@ public class UmeaGroomGroomSibling extends SymmetricSingleSourceLinkageAnalysis 
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
-        return GroomGroomSiblingLinkageRecipe.trueMatch(record1, record2);
+        return Evaluation.trueMatch(record1, record2, GroomGroomSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES, GroomGroomSiblingLinkageRecipe.EXCLUDED_MATCH_MAPPINGS);
     }
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return GroomGroomSiblingLinkageRecipe.isViable(proposedLink);
+        return ViableLink.spouseSpouseSiblingLinkIsViable(proposedLink, SpouseRole.GROOM, SpouseRole.GROOM);
     }
 
     @Override

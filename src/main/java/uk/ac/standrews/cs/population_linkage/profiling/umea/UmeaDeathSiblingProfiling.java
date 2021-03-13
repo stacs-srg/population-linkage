@@ -7,6 +7,8 @@ package uk.ac.standrews.cs.population_linkage.profiling.umea;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
@@ -72,9 +74,9 @@ public class UmeaDeathSiblingProfiling {
 
                  final double distance = metric.distance(record1, record2);
 
-                 final LinkStatus match_status = DeathSiblingLinkageRecipe.trueMatch(record1, record2);
+                 final LinkStatus match_status = Evaluation.trueMatch(record1, record2, DeathSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES, DeathSiblingLinkageRecipe.EXCLUDED_MATCH_MAPPINGS);
                  final boolean close_enough = distance <= DISTANCE_THRESHOLD;
-                 final boolean viable = DeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, distance));
+                 final boolean viable = ViableLink.deathSiblingLinkIsViable(new RecordPair(record1, record2, distance));
 
                  switch (match_status) {
 

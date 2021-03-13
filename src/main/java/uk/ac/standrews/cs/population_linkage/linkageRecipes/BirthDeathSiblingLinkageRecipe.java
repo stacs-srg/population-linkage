@@ -4,63 +4,39 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.list;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.pair;
 
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    public static void main(String[] args) throws BucketException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new BirthDeathSiblingLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
-                );
-    }
-
     public static final String LINKAGE_TYPE = "birth-death-sibling";
 
-    public BirthDeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BirthDeathSiblingLinkageRecipe(Storr storr) {
+        super(storr);
     }
 
-    @Override
-    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-
-        String childFatherID = record1.getString(Birth.FATHER_IDENTITY).trim();
-        String childMotherID = record1.getString(Birth.MOTHER_IDENTITY).trim();
-
-        String decFatherID = record2.getString(Death.FATHER_IDENTITY).trim();
-        String decMotherID = record2.getString(Death.MOTHER_IDENTITY).trim();
-
-        if(childFatherID.isEmpty() || childMotherID.isEmpty() || decFatherID.isEmpty() || decMotherID.isEmpty())
-            return LinkStatus.UNKNOWN;
-
-        if(childFatherID.equals(decFatherID) && childMotherID.equals(decMotherID))
-            return LinkStatus.TRUE_MATCH;
-
-        return LinkStatus.NOT_TRUE_MATCH;
-    }
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY), pair(Birth.MOTHER_IDENTITY, Death.MOTHER_IDENTITY))
+    );
 
     @Override
     public String getLinkageType() {
         return LINKAGE_TYPE;
+    }
+
+    @Override
+    public boolean isSiblingLinkage() {
+        return true;
     }
 
     @Override
@@ -95,18 +71,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
-
-        try {
-            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int year_of_birth2 = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
-
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
-
-        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR or DEATH_YEAR is invalid
-            return true;
-        }
+        return ViableLink.birthDeathSiblingLinkIsViable(proposedLink);
     }
 
     @Override
@@ -120,18 +85,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+    public List<List<Pair>> getTrueMatchMappings() {
+        return TRUE_MATCH_ALTERNATIVES;
     }
-
-    @Override
-    public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
-    }
-
-    @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthLinksPostFilterOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
-    }
-
 }

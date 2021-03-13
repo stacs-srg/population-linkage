@@ -111,7 +111,7 @@ public class EntitiesList<T> extends ArrayList<T> {
         }
 
         if(!lines.isEmpty() && lines.get(0).equals(token)) {
-            System.out.println("My lock file on" + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            System.out.println("My lock file on " + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             return true;
         } else {
             System.out.println("Not my lock file on " + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -158,6 +158,12 @@ public class EntitiesList<T> extends ArrayList<T> {
         CsvSchema schema = CsvSchema.emptySchema().withHeader();
 
         ObjectReader oReader = csvMapper.readerFor(type).with(schema);
+
+        File f = new File(jobListFile);
+        if (!f.exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            f.createNewFile();
+        }
 
         try {
             MappingIterator<T> mi = oReader.readValues(new FileInputStream(jobListFile));

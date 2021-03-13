@@ -8,6 +8,8 @@ import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.SymmetricSingleSourceLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -50,12 +52,12 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
-        return DeathSiblingLinkageRecipe.trueMatch(record1, record2);
+        return Evaluation.trueMatch(record1, record2, DeathSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES, DeathSiblingLinkageRecipe.EXCLUDED_MATCH_MAPPINGS);
     }
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return DeathSiblingLinkageRecipe.isViable(proposedLink);
+        return ViableLink.deathSiblingLinkIsViable(proposedLink);
     }
 
     @Override

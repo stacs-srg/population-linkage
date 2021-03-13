@@ -5,20 +5,22 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 
 public class LinkageResult {
 
     private Map<String, Collection<Link>> mapOfLinks = null;
-    private LinkageQuality linkageQuality = null;
+    private Map<EvaluationApproach.Type, LinkageQuality> linkageEvaluations;
 
-    public LinkageResult(LinkageQuality linkageQuality, Map<String, Collection<Link>> mapOfLinks) {
+    public LinkageResult(Map<EvaluationApproach.Type, LinkageQuality> linkageEvaluations, Map<String, Collection<Link>> mapOfLinks) {
         this.mapOfLinks = mapOfLinks;
-        this.linkageQuality = linkageQuality;
+        this.linkageEvaluations = linkageEvaluations;
     }
 
-    public LinkageResult(LinkageQuality linkageQuality) {
-        this.linkageQuality = linkageQuality;
+    public LinkageResult(Map<EvaluationApproach.Type, LinkageQuality> linkageEvaluations) {
+        this.linkageEvaluations = linkageEvaluations;
     }
 
     public Map<String, Collection<Link>> getMapOfLinks() {
@@ -28,7 +30,7 @@ public class LinkageResult {
         return mapOfLinks;
     }
 
-    public LinkageQuality getLinkageQuality() {
-        return linkageQuality;
+    public Map<EvaluationApproach.Type, LinkageQuality> getLinkageEvaluations() {
+        return linkageEvaluations;
     }
 }

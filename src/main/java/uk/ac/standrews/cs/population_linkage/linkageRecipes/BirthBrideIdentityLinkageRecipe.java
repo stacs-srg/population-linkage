@@ -4,18 +4,17 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.List;
-import java.util.Map;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.list;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.pair;
 
 public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
@@ -37,8 +36,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
             Marriage.BRIDE_FATHER_SURNAME
     );
 
-    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
-    public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
+    public static final String LINKAGE_TYPE = "birth-bride-identity";
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
@@ -46,37 +44,18 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.STANDARDISED_ID, Marriage.BRIDE_BIRTH_RECORD_IDENTITY))
     );
 
-    public static void main(String[] args) throws BucketException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
-                );
-    }
-
-    public static final String LINKAGE_TYPE = "birth-bride-identity";
-
-    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
-    }
-
-    @Override
-    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-        return trueMatch(record1, record2);
-    }
-
-    public static LinkStatus trueMatch(LXP record1, LXP record2) {
-        return trueMatch(record1, record2, TRUE_MATCH_ALTERNATIVES);
+    public BirthBrideIdentityLinkageRecipe(Storr storr) {
+        super(storr);
     }
 
     @Override
     public String getLinkageType() {
         return LINKAGE_TYPE;
+    }
+
+    @Override
+    public boolean isSiblingLinkage() {
+        return false;
     }
 
     @Override
@@ -106,34 +85,16 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return isViable( proposedLink );
+        return ViableLink.spouseBirthIdentityLinkIsViable(proposedLink, true);
     }
 
-    public static boolean isViable(RecordPair proposedLink) {
-
-        return spouseBirthIdentityLinkIsViable(proposedLink, true);
+    @Override
+    public List<List<Pair>> getTrueMatchMappings() {
+        return TRUE_MATCH_ALTERNATIVES;
     }
 
     @Override
     public List<Integer> getSearchMappingFields() {
         return SEARCH_FIELDS;
-    }
-
-    @Override
-    public Map<String, Link> getGroundTruthLinks() {
-//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-        return getGroundTruthLinksOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
-    }
-
-    @Override
-    public int getNumberOfGroundTruthTrueLinks() {
-//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-        return getNumberOfGroundTruthTrueLinksOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
-    }
-
-    @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-//        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
     }
 }

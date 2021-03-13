@@ -4,62 +4,41 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.list;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.pair;
 
 public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public static void main(String[] args) throws BucketException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
-                );
-    }
-
     public static final String LINKAGE_TYPE = "death-groom-identity";
 
-    public DeathGroomOwnMarriageIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
-    }
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY))
+    );
 
-    @Override
-    public LinkStatus isTrueMatch(LXP death, LXP marriage) {
-
-        String deceasedID = death.getString(Death.DECEASED_IDENTITY).trim();
-        String groomID = marriage.getString(Marriage.GROOM_IDENTITY).trim();
-
-        if(deceasedID.isEmpty() || groomID.isEmpty()) {
-            return LinkStatus.UNKNOWN;
-        }
-
-        if (deceasedID.equals(groomID) ) {
-            return LinkStatus.TRUE_MATCH;
-        } else {
-            return LinkStatus.NOT_TRUE_MATCH;
-        }
+    public DeathGroomOwnMarriageIdentityLinkageRecipe(Storr storr) {
+        super(storr);
     }
 
     @Override
     public String getLinkageType() {
         return LINKAGE_TYPE;
+    }
+
+    @Override
+    public boolean isSiblingLinkage() {
+        return false;
     }
 
     @Override
@@ -95,13 +74,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-
-        return isViable(proposedLink);
-    }
-
-    public static boolean isViable(final RecordPair proposedLink) {
-
-        return deathMarriageIdentityLinkIsViable(proposedLink);
+        return ViableLink.deathMarriageIdentityLinkIsViable(proposedLink);
     }
 
     @Override
@@ -118,17 +91,8 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
-    }
-
-    public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
-    }
-
-    @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
+    public List<List<Pair>> getTrueMatchMappings() {
+        return TRUE_MATCH_ALTERNATIVES;
     }
 
     @Override

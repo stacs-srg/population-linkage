@@ -8,6 +8,9 @@ import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.TwoSourcesLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.ViableLink;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -19,6 +22,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation.list;
 
 /**
  * Performs linkage analysis on data from births and deaths.
@@ -68,12 +73,12 @@ public class UmeaBirthDeathIdentity extends TwoSourcesLinkageAnalysis {
 
     @Override
     public int getIdFieldIndex() {
-        return BirthDeathIdentityLinkageRecipe.ID_FIELD_INDEX1;
+        return Birth.STANDARDISED_ID;
     }
 
     @Override
     public int getIdFieldIndex2() {
-        return BirthDeathIdentityLinkageRecipe.ID_FIELD_INDEX2;
+        return Death.STANDARDISED_ID;
     }
 
     @Override
@@ -82,12 +87,12 @@ public class UmeaBirthDeathIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
-        return BirthDeathIdentityLinkageRecipe.trueMatch(record1, record2);
+        return Evaluation.trueMatch(record1, record2, BirthDeathIdentityLinkageRecipe.TRUE_MATCH_ALTERNATIVES, list());
     }
 
     @Override
     public boolean isViableLink( RecordPair proposedLink) {
-        return BirthDeathIdentityLinkageRecipe.isViable(proposedLink);
+        return ViableLink.birthDeathIdentityLinkIsViable(proposedLink);
     }
 
     @Override

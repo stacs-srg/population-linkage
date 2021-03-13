@@ -7,7 +7,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.umea.*;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -263,7 +263,7 @@ public class UmeaGroundTruthTest {
     }
 
     private int getRecordId(final LXP record) {
-        return Integer.parseInt(record.getString(LinkageRecipe.getRecordIdFieldNumber(record)));
+        return Integer.parseInt(record.getString(Evaluation.getRecordIdFieldNumber(record)));
     }
 
     private Map<Integer, Set<Integer>> getExpectedLinksForEachRecord(final List<List<Integer>> expected_links, final boolean symmetric) {

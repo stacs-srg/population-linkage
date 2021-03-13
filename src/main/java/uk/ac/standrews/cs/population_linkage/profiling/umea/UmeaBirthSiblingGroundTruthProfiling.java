@@ -7,7 +7,8 @@ package uk.ac.standrews.cs.population_linkage.profiling.umea;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.Pair;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.Evaluation;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -63,7 +64,7 @@ public class UmeaBirthSiblingGroundTruthProfiling {
 
                 final LXP record2 = record_list.get(j);
 
-                final LinkStatus linkStatus = BirthSiblingLinkageRecipe.trueMatch(record1, record2);
+                final LinkStatus linkStatus = Evaluation.trueMatch(record1, record2, BirthSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES, BirthSiblingLinkageRecipe.EXCLUDED_MATCH_MAPPINGS);
 
                 switch (linkStatus) {
                     case TRUE_MATCH: match_count++; break;
@@ -72,8 +73,8 @@ public class UmeaBirthSiblingGroundTruthProfiling {
                 }
 
                 int alternative_index = 0;
-                for (List<LinkageRecipe.Pair> alternative : BirthSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES) {
-                    if (!LinkageRecipe.allFieldsEmpty(record1, record2, alternative)) known_link_counts[alternative_index++]++;
+                for (List<Pair> alternative : BirthSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES) {
+                    if (!Evaluation.allFieldsEmpty(record1, record2, alternative)) known_link_counts[alternative_index++]++;
                 }
             }
 
@@ -100,12 +101,12 @@ public class UmeaBirthSiblingGroundTruthProfiling {
         System.out.println("total: " + total);
     }
 
-    private static List<Integer> getSymmetricLinkageFields(final List<List<LinkageRecipe.Pair>> alternatives) {
+    private static List<Integer> getSymmetricLinkageFields(final List<List<Pair>> alternatives) {
 
         final List<Integer> result = new ArrayList<>();
 
-        for (List<LinkageRecipe.Pair> alternative : alternatives) {
-            for (LinkageRecipe.Pair pair : alternative) {
+        for (List<Pair> alternative : alternatives) {
+            for (Pair pair : alternative) {
                 result.add(pair.first);
             }
         }

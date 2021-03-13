@@ -4,6 +4,8 @@
  */
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
+import java.nio.file.Path;
+
 public class LinkageConfig {
 
     public static long seed = 12345L;
@@ -22,4 +24,6 @@ public class LinkageConfig {
     public static Integer MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY = 10;
 
     public static Integer MAX_AGE_AT_DEATH = 120;
+
+    public static Path GT_COUNTS_FILE = null;
 }

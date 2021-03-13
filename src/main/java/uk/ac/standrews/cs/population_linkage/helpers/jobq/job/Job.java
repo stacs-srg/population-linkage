@@ -55,6 +55,38 @@ public class Job extends JobCore{
     }
 
     @Override
+    public Job clone() {
+        Job clone = new Job();
+        clone.threshold = this.threshold;
+        clone.preFilterRequiredFields = this.preFilterRequiredFields;
+        clone.birthsCacheSize = this.birthsCacheSize;
+        clone.marriagesCacheSize = this.marriagesCacheSize;
+        clone.deathsCacheSize = this.deathsCacheSize;
+        clone.ros = this.ros;
+        clone.maxSiblingAgeDiff = this.maxSiblingAgeDiff;
+        clone.minMarriageAge = this.minMarriageAge;
+        clone.minParentingAge = this.minParentingAge;
+        clone.maxParentingAge = this.maxParentingAge;
+        clone.maxMarriageAgeDiscrepancy = this.maxMarriageAgeDiscrepancy;
+        clone.maxDeathAge = this.maxDeathAge;
+        clone.linkageResultsFile = this.linkageResultsFile;
+        clone.reason = this.reason;
+        clone.priority = this.priority;
+        clone.requiredMemory = this.requiredMemory;
+        clone.seed = this.seed;
+        clone.population = this.population;
+        clone.size = this.size;
+        clone.popNumber = this.popNumber;
+        clone.corruptionProfile = this.corruptionProfile;
+        clone.metric = this.metric;
+        clone.linkageType = this.linkageType;
+        clone.preFilter = this.preFilter;
+        clone.persistLinks = this.persistLinks;
+        clone.evaluateQuality = this.evaluateQuality;
+        return clone;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

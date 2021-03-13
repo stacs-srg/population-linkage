@@ -18,6 +18,8 @@ public class LinkageQuality {
     private long fp;
     private long fn;
 
+    private Long linksLostOnPrefilter = null;
+
     private String message = null;
 
     public LinkageQuality(long tp, long fp, long fn) {
@@ -44,6 +46,7 @@ public class LinkageQuality {
             out.printf("precision: %.2f%n", precision);
             out.printf("recall: %.2f%n", recall);
             out.printf("f measure: %.2f%n", f_measure);
+            out.println("links lost on pre-filter: " + linksLostOnPrefilter);
         } else {
             out.println(message);
         }
@@ -92,5 +95,13 @@ public class LinkageQuality {
 
     public void setFn(int fn) {
         this.fn = fn;
+    }
+
+    public long getLinksLostOnPrefilter() {
+        return linksLostOnPrefilter;
+    }
+
+    public void setLinksLostOnPrefilter(long linksLostOnPrefilter) {
+        this.linksLostOnPrefilter = linksLostOnPrefilter;
     }
 }
