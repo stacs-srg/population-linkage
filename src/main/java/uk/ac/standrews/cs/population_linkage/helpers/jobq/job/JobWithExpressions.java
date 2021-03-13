@@ -25,6 +25,7 @@ public class JobWithExpressions extends JobCore {
     protected IntegerExpression maxParentingAge;
     protected IntegerExpression maxMarriageAgeDiscrepancy;
     protected IntegerExpression maxDeathAge;
+    protected IntegerExpression popNumber;
 
     @Override
     public String toString() {
@@ -87,6 +88,7 @@ public class JobWithExpressions extends JobCore {
         clone.maxParentingAge = (IntegerExpression) maxParentingAge.clone();
         clone.maxMarriageAgeDiscrepancy = (IntegerExpression) maxMarriageAgeDiscrepancy.clone();
         clone.maxDeathAge = (IntegerExpression) maxDeathAge.clone();
+        clone.popNumber = (IntegerExpression) popNumber.clone();
         return clone;
     }
 
@@ -107,6 +109,7 @@ public class JobWithExpressions extends JobCore {
                 Objects.equals(minParentingAge, that.minParentingAge) &&
                 Objects.equals(maxParentingAge, that.maxParentingAge) &&
                 Objects.equals(maxMarriageAgeDiscrepancy, that.maxMarriageAgeDiscrepancy) &&
+                Objects.equals(popNumber, that.popNumber) &&
                 Objects.equals(maxDeathAge, that.maxDeathAge);
     }
 
@@ -221,5 +224,14 @@ public class JobWithExpressions extends JobCore {
 
     public void setMaxDeathAge(IntegerExpression maxDeathAge) {
         this.maxDeathAge = maxDeathAge;
+    }
+
+    @JsonSerialize(converter = IntegerExpressionToStringConverter.class)
+    public IntegerExpression getPopNumber() {
+        return popNumber;
+    }
+
+    public void setPopNumber(IntegerExpression popNumber) {
+        this.popNumber = popNumber;
     }
 }

@@ -203,7 +203,7 @@ public class Result extends Job {
     }
 
     public String getRecordsRepo() {
-        if (getSize().equals("-") && getPopNumber().equals("-") && getCorruptionProfile().equals("-"))
+        if (getSize().equals("-") && getCorruptionProfile().equals("-"))
             return getPopulation();
 
         if (corrupted)

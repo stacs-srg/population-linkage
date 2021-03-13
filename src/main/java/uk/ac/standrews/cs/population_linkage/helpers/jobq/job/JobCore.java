@@ -20,7 +20,7 @@ public class JobCore {
     protected Long seed;
     protected String population;
     protected String size;
-    protected String popNumber;
+//    protected String popNumber;
     protected String corruptionProfile;
     protected String metric;
     protected String linkageType;
@@ -38,7 +38,7 @@ public class JobCore {
                 ", seed=" + seed +
                 ", population='" + population + '\'' +
                 ", size='" + size + '\'' +
-                ", popNumber='" + popNumber + '\'' +
+//                ", popNumber='" + popNumber + '\'' +
                 ", corruptionProfile='" + corruptionProfile + '\'' +
                 ", metric='" + metric + '\'' +
                 ", linkageType='" + linkageType + '\'' +
@@ -58,7 +58,7 @@ public class JobCore {
         clone.seed = seed;
         clone.population = population;
         clone.size = size;
-        clone.popNumber = popNumber;
+//        clone.popNumber = popNumber;
         clone.corruptionProfile = corruptionProfile;
         clone.metric = metric;
         clone.linkageType = linkageType;
@@ -83,7 +83,7 @@ public class JobCore {
                 Objects.equals(seed, jobCore.seed) &&
                 Objects.equals(population, jobCore.population) &&
                 Objects.equals(size, jobCore.size) &&
-                Objects.equals(popNumber, jobCore.popNumber) &&
+//                Objects.equals(popNumber, jobCore.popNumber) &&
                 Objects.equals(corruptionProfile, jobCore.corruptionProfile) &&
                 Objects.equals(metric, jobCore.metric) &&
                 Objects.equals(linkageType, jobCore.linkageType);
@@ -91,7 +91,8 @@ public class JobCore {
 
     @Override
     public int hashCode() {
-        return Objects.hash(linkageResultsFile, reason, priority, requiredMemory, seed, population, size, popNumber, corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality);
+        return Objects.hash(linkageResultsFile, reason, priority, requiredMemory, seed, population, size, // popNumber,
+                corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality);
     }
 
     public String getLinkageResultsFile() {
@@ -150,13 +151,13 @@ public class JobCore {
         this.size = size;
     }
 
-    public String getPopNumber() {
-        return popNumber;
-    }
-
-    public void setPopNumber(String popNumber) {
-        this.popNumber = popNumber;
-    }
+//    public String getPopNumber() {
+//        return popNumber;
+//    }
+//
+//    public void setPopNumber(String popNumber) {
+//        this.popNumber = popNumber;
+//    }
 
     public String getCorruptionProfile() {
         return corruptionProfile;

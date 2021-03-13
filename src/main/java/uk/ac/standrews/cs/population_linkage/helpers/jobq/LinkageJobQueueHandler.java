@@ -148,9 +148,9 @@ public class LinkageJobQueueHandler {
         jobs.releaseAndCloseFile(EntitiesList.Lock.JOBS);
     }
 
-    private static void validatePopulationRecordsAreInStorrAndIfNotImport(Path recordCountsFile, JobCore job) throws Exception {
+    private static void validatePopulationRecordsAreInStorrAndIfNotImport(Path recordCountsFile, Job job) throws Exception {
         // validate the data is in the storr (local scratch space on clusters - but either way it's defined in application.properties)
-        new ValidatePopulationInStorr(job.getPopulation(), job.getSize(), job.getPopNumber(), job.getCorruptionProfile())
+        new ValidatePopulationInStorr(job.getPopulation(), job.getSize(), String.valueOf(job.getPopNumber()), job.getCorruptionProfile())
                 .validate(recordCountsFile);
     }
 

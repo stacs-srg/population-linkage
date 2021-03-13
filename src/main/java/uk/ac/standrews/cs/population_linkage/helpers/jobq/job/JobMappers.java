@@ -19,7 +19,6 @@ public class JobMappers {
             job.setSeed(jobWithExpressions.getSeed());
             job.setPopulation(jobWithExpressions.getPopulation());
             job.setSize(jobWithExpressions.getSize());
-            job.setPopNumber(jobWithExpressions.getPopNumber());
             job.setCorruptionProfile(jobWithExpressions.getCorruptionProfile());
             job.setMetric(jobWithExpressions.getMetric());
             job.setLinkageType(jobWithExpressions.getLinkageType());
@@ -28,6 +27,7 @@ public class JobMappers {
             job.setEvaluateQuality(jobWithExpressions.isEvaluateQuality());
             job.setThreshold(jobWithExpressions.getThreshold().getValueIfSingular());
             job.setPreFilterRequiredFields(jobWithExpressions.getPreFilterRequiredFields().getValueIfSingular());
+            job.setPopNumber(jobWithExpressions.getPopNumber().getValueIfSingular());
             job.setBirthsCacheSize(jobWithExpressions.getBirthsCacheSize().getValueIfSingular());
             job.setMarriagesCacheSize(jobWithExpressions.getMarriagesCacheSize().getValueIfSingular());
             job.setDeathsCacheSize(jobWithExpressions.getDeathsCacheSize().getValueIfSingular());
@@ -53,7 +53,6 @@ public class JobMappers {
         jobWithExpressions.setSeed(job.getSeed());
         jobWithExpressions.setPopulation(job.getPopulation());
         jobWithExpressions.setSize(job.getSize());
-        jobWithExpressions.setPopNumber(job.getPopNumber());
         jobWithExpressions.setCorruptionProfile(job.getCorruptionProfile());
         jobWithExpressions.setMetric(job.getMetric());
         jobWithExpressions.setLinkageType(job.getLinkageType());
@@ -61,6 +60,7 @@ public class JobMappers {
         jobWithExpressions.setPersistLinks(job.isPersistLinks());
         jobWithExpressions.setEvaluateQuality(job.isEvaluateQuality());
         jobWithExpressions.setThreshold(new DoubleExpression(job.getThreshold()));
+        jobWithExpressions.setPopNumber(new IntegerExpression(job.getPopNumber()));
         jobWithExpressions.setPreFilterRequiredFields(new IntegerExpression(job.getPreFilterRequiredFields()));
         jobWithExpressions.setBirthsCacheSize(new IntegerExpression(job.getBirthsCacheSize()));
         jobWithExpressions.setMarriagesCacheSize(new IntegerExpression(job.getMarriagesCacheSize()));

@@ -21,6 +21,7 @@ public class Job extends JobCore{
     protected int maxParentingAge;
     protected int maxMarriageAgeDiscrepancy;
     protected int maxDeathAge;
+    protected int popNumber;
 
     @Override
     public String toString() {
@@ -104,12 +105,15 @@ public class Job extends JobCore{
                 minParentingAge == job.minParentingAge &&
                 maxParentingAge == job.maxParentingAge &&
                 maxMarriageAgeDiscrepancy == job.maxMarriageAgeDiscrepancy &&
+                popNumber == job.popNumber &&
                 maxDeathAge == job.maxDeathAge;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy, maxDeathAge);
+        return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize,
+                deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge,
+                maxMarriageAgeDiscrepancy, maxDeathAge, popNumber);
     }
 
     public BigDecimal getThreshold() {
@@ -206,5 +210,13 @@ public class Job extends JobCore{
 
     public void setMaxDeathAge(int maxDeathAge) {
         this.maxDeathAge = maxDeathAge;
+    }
+
+    public int getPopNumber() {
+        return popNumber;
+    }
+
+    public void setPopNumber(int popNumber) {
+        this.popNumber = popNumber;
     }
 }
