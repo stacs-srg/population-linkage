@@ -119,7 +119,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     public static boolean isViable(RecordPair proposedLink) {
-        return spouseBirthIdentityLinkIsViable(proposedLink, false);
+        return spouseBirthIdentityLinkIsViable(proposedLink, false); // TODO (al) this looks like the wrong method to me - what has spouse to do with it?
    }
 
     @Override

@@ -7,10 +7,12 @@ package uk.ac.standrews.cs.population_linkage.EndtoEnd.runners;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.MetaMarriage;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -63,21 +65,23 @@ public class BitBlasterSubsetOfDataEndtoEndBirthOwnMarriageAsGroomLinkageRunner 
 
         for (Link link : links) {
 
-            LXP rec1 = link.getRecord1().getReferend();
-            LXP rec2 = link.getRecord2().getReferend();
-            final LinkStatus linkStatus = trueMatch(rec1,rec2);
+            LXP birth = link.getRecord1().getReferend();  // birth
+            LXP marriage = link.getRecord2().getReferend();  // marriage
+            final LinkStatus linkStatus = trueMatch(birth, marriage);
 
-            switch (linkStatus) {
-                case TRUE_MATCH:
-                    tp++;
-                    break;
-                case NOT_TRUE_MATCH:
-                    fp++;
-                    break;
-                default:
-                    unknown++;
+            if ( isViable( birth,marriage ) ) {
+                switch (linkStatus) {
+                    case TRUE_MATCH:
+                        tp++;
+                        break;
+                    case NOT_TRUE_MATCH:
+                        fp++;
+                        break;
+                    default:
+                        unknown++;
+                }
+                BundleFamilies(link);
             }
-            BundleFamilies(link);
         }
 
         createMarriagesFromLinks();
@@ -92,6 +96,11 @@ public class BitBlasterSubsetOfDataEndtoEndBirthOwnMarriageAsGroomLinkageRunner 
         lq.print(System.out);
 
         return null; // TODO FIX THIS
+    }
+
+    private boolean isViable(LXP birth, LXP marriage) {
+        RecordPair rp = new RecordPair( marriage,birth,0.0 );  // TODO this is mad packaging in  a RecordPair unused with a distance unusedd - refactor.
+        return birth.getString(Birth.SEX).equals( "M" ) && BirthGroomIdentityLinkageRecipe.spouseBirthIdentityLinkIsViable( rp,false);
     }
 
     /**
@@ -148,26 +157,6 @@ public class BitBlasterSubsetOfDataEndtoEndBirthOwnMarriageAsGroomLinkageRunner 
         return f.getMarriageRecords();
     }
 
-    private ArrayList<LXP> filter(int prefilterRequiredFields, int REQUIRED, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
-        ArrayList<LXP> filtered_source_records = new ArrayList<>();
-        int count_rejected = 0;
-        int count_accepted = 0;
-        linkageRecipe.setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
-        for (LXP record : records_to_filter) {
-            if (linkageRecipe.passesFilter(record, linkageFields, prefilterRequiredFields)) {
-                filtered_source_records.add(record);
-                count_accepted++;
-            } else {
-                count_rejected++;
-            }
-            if (filtered_source_records.size() >= REQUIRED) {
-                break;
-            }
-        }
-        System.out.println( "Filtering: accepted: " + count_accepted + " rejected: " + count_rejected + " from " + ( count_rejected + count_accepted ) );
-        return filtered_source_records;
-    }
-
     private void showFamilies() throws BucketException {
 
         int family_count = 0;
@@ -183,9 +172,8 @@ public class BitBlasterSubsetOfDataEndtoEndBirthOwnMarriageAsGroomLinkageRunner 
     }
 
     private void showLXPMarriage(Set<LXP> marriages) throws BucketException {
-        System.out.println("MetaMarriage:");
+        System.out.println("Marriage: Multiple marriages, matching marriages: " );
         for (LXP marriage : marriages) {
-            System.out.println("Marriage:");
             DisplayMethods.showMarriage(marriage);
         }
     }
@@ -197,7 +185,7 @@ public class BitBlasterSubsetOfDataEndtoEndBirthOwnMarriageAsGroomLinkageRunner 
 
         for (LXP birth : births) {
             String child_id = birth.getString(Birth.CHILD_IDENTITY);
-            System.out.println( "Multiple marriages: " + marriages.size() );
+            System.out.println( "Birth: Multiple marriages: " + marriages.size() + ", matching births:" );
             for (LXP marriage : marriages) {
                 String groom_id = marriage.getString(Marriage.GROOM_IDENTITY);
                 boolean groom_matches_birth = groom_id.equals(child_id);
@@ -211,22 +199,18 @@ public class BitBlasterSubsetOfDataEndtoEndBirthOwnMarriageAsGroomLinkageRunner 
     }
 
     private void BundleFamilies(Link link) throws BucketException {
-        Birth rec_1 = (Birth) link.getRecord1().getReferend();
-        Marriage rec_2 = (Marriage) link.getRecord2().getReferend();
-
-        long id_1 = rec_1.getId();
-        long id_2 = rec_2.getId();
-
-        addLinktoFamily(id_1, link);
+        Birth birth = (Birth) link.getRecord1().getReferend();
+        long birth_id = birth.getId();
+        addLinktoFamily(birth_id, link);
     }
 
-    private void addLinktoFamily(long id, Link link) {
-        MetaMarriage f = familyBundles.get(id);
+    private void addLinktoFamily(long birth_id, Link link) {
+        MetaMarriage f = familyBundles.get(birth_id);
         if (f == null) {
             f = new MetaMarriage();
         }
         f.addBirthMarriageGroomLink(link);
-        familyBundles.put(id, f);
+        familyBundles.put(birth_id, f);
     }
 
 }

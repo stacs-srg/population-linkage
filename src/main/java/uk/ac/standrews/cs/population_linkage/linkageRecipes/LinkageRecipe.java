@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -190,7 +191,7 @@ public abstract class LinkageRecipe {
     }
 
     // TODO This method should not be in this class IMHO al
-    protected static boolean spouseBirthIdentityLinkIsViable(final RecordPair proposedLink, final boolean spouse_is_bride) {
+    public static boolean spouseBirthIdentityLinkIsViable(final RecordPair proposedLink, final boolean spouse_is_bride) {
 
         try {
             int marriage_day = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_DAY));
@@ -223,7 +224,9 @@ public abstract class LinkageRecipe {
 
             return age_at_marriage_calculated >= LinkageConfig.MIN_AGE_AT_MARRIAGE && age_discrepancy <= LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY;
 
-        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR or GROOM_AGE_OR_DATE_OF_BIRTH is invalid
+        } catch (NumberFormatException e ) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR or GROOM_AGE_OR_DATE_OF_BIRTH is invalid
+            return true;
+        } catch (DateTimeException e) { // getting a date we cannot parse like --/--/--
             return true;
         }
     }

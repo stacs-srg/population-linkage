@@ -153,26 +153,6 @@ public class HackedBitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunn
         System.out.println("No merge yet");
     }
 
-    private ArrayList<LXP> filter(int requiredFields, int number_of_fields_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
-        ArrayList<LXP> filtered_source_records = new ArrayList<>();
-        int count_rejected = 0;
-        int count_accepted = 0;
-        linkageRecipe.setPreFilteringRequiredPopulatedLinkageFields(requiredFields);
-        for (LXP record : records_to_filter) {
-            if (linkageRecipe.passesFilter(record, linkageFields, requiredFields)) {
-                filtered_source_records.add(record);
-                count_accepted++;
-            } else {
-                count_rejected++;
-            }
-            if (filtered_source_records.size() >= number_of_fields_required) {
-                break;
-            }
-        }
-        System.out.println( "Filtering: accepted: " + count_accepted + " rejected: " + count_rejected + " from " + ( count_rejected + count_accepted ) );
-        return filtered_source_records;
-    }
-
     static int father_errors = 0;   // hack
     static int mother_errors = 0;   // hack
 
