@@ -38,6 +38,8 @@ public class Job extends JobCore{
                 ", maxParentingAge=" + maxParentingAge +
                 ", maxMarriageAgeDiscrepancy=" + maxMarriageAgeDiscrepancy +
                 ", maxDeathAge=" + maxDeathAge +
+                ", popNumber=" + popNumber +
+                ", indirectEvaluationApproach='" + indirectEvaluationApproach + '\'' +
                 ", linkageResultsFile='" + linkageResultsFile + '\'' +
                 ", reason='" + reason + '\'' +
                 ", priority=" + priority +
@@ -45,13 +47,14 @@ public class Job extends JobCore{
                 ", seed=" + seed +
                 ", population='" + population + '\'' +
                 ", size='" + size + '\'' +
-                ", popNumber='" + popNumber + '\'' +
                 ", corruptionProfile='" + corruptionProfile + '\'' +
                 ", metric='" + metric + '\'' +
                 ", linkageType='" + linkageType + '\'' +
                 ", preFilter=" + preFilter +
                 ", persistLinks=" + persistLinks +
                 ", evaluateQuality=" + evaluateQuality +
+                ", experimentId='" + experimentId + '\'' +
+                ", linkagePhase='" + linkagePhase + '\'' +
                 '}';
     }
 
@@ -84,6 +87,7 @@ public class Job extends JobCore{
         clone.preFilter = this.preFilter;
         clone.persistLinks = this.persistLinks;
         clone.evaluateQuality = this.evaluateQuality;
+        clone.indirectEvaluationApproach = this.indirectEvaluationApproach;
         return clone;
     }
 
@@ -113,7 +117,7 @@ public class Job extends JobCore{
     public int hashCode() {
         return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize,
                 deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge,
-                maxMarriageAgeDiscrepancy, maxDeathAge, popNumber);
+                maxMarriageAgeDiscrepancy, maxDeathAge, popNumber, indirectEvaluationApproach);
     }
 
     public BigDecimal getThreshold() {

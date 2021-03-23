@@ -4,10 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
@@ -31,6 +31,10 @@ public class SinglePathIndirectLinkageRecipe extends IndirectLinkageRecipe {
         this.linkType = linkType;
     }
 
+    public SinglePathIndirectLinkageRecipe(LinkageRecipe recipe1, LinkageRecipe recipe2) {
+        this(recipe1, recipe2, String.join("-",recipe1.getLinkageType(), recipe2.getLinkageType()));
+    }
+
     public void runRecipe1(StringMetric baseMetric, double threshold,
             int prefilterRequiredFields, boolean generateMapOfLinks, boolean evaluateQuality,
             boolean persistLinks) throws BucketException {
@@ -47,12 +51,12 @@ public class SinglePathIndirectLinkageRecipe extends IndirectLinkageRecipe {
                 evaluateQuality, persistLinks);
     }
 
-    public LinkageQuality evaluateRecipe1() {
-        return recipe1Result.getLinkageEvaluations().get("ALL");
+    public Map<EvaluationApproach.Type, LinkageQuality> getRecipe1EvaluationResults() {
+        return recipe1Result.getLinkageEvaluations();
     }
 
-    public LinkageQuality evaluateRecipe2() {
-        return recipe2Result.getLinkageEvaluations().get("ALL");
+    public Map<EvaluationApproach.Type, LinkageQuality> getRecipe2EvaluationResults() {
+        return recipe2Result.getLinkageEvaluations();
     }
 
     public Map<String, Collection<DoubleLink>> getPotentialLinks() throws BucketException {
@@ -64,5 +68,13 @@ public class SinglePathIndirectLinkageRecipe extends IndirectLinkageRecipe {
             potentialLinks = combineLinks(recipe1Result.getMapOfLinks(), recipe2Result.getMapOfLinks(), linkType);
         }
         return potentialLinks;
+    }
+
+    public LinkageRecipe getRecipe1() {
+        return recipe1;
+    }
+
+    public LinkageRecipe getRecipe2() {
+        return recipe2;
     }
 }

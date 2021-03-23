@@ -25,6 +25,7 @@ public class JobMappers {
             job.setPreFilter(jobWithExpressions.isPreFilter());
             job.setPersistLinks(jobWithExpressions.isPersistLinks());
             job.setEvaluateQuality(jobWithExpressions.isEvaluateQuality());
+            job.setIndirectEvaluationApproach(jobWithExpressions.getIndirectEvaluationApproach());
             job.setThreshold(jobWithExpressions.getThreshold().getValueIfSingular());
             job.setPreFilterRequiredFields(jobWithExpressions.getPreFilterRequiredFields().getValueIfSingular());
             job.setPopNumber(jobWithExpressions.getPopNumber().getValueIfSingular());
@@ -59,6 +60,7 @@ public class JobMappers {
         jobWithExpressions.setPreFilter(job.isPreFilter());
         jobWithExpressions.setPersistLinks(job.isPersistLinks());
         jobWithExpressions.setEvaluateQuality(job.isEvaluateQuality());
+        jobWithExpressions.setIndirectEvaluationApproach(job.getIndirectEvaluationApproach());
         jobWithExpressions.setThreshold(new DoubleExpression(job.getThreshold()));
         jobWithExpressions.setPopNumber(new IntegerExpression(job.getPopNumber()));
         jobWithExpressions.setPreFilterRequiredFields(new IntegerExpression(job.getPreFilterRequiredFields()));

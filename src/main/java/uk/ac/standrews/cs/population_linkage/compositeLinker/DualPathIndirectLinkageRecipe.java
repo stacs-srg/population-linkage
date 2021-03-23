@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
-public class MultiPathIndirectLinkageRecipe extends IndirectLinkageRecipe {
+public class DualPathIndirectLinkageRecipe extends IndirectLinkageRecipe {
 
     private final SinglePathIndirectLinkageRecipe recipeA;
     private final SinglePathIndirectLinkageRecipe recipeB;
     private Map<String, Collection<DoubleLink>> combinedPotentialLinks = null;
 
-    public MultiPathIndirectLinkageRecipe(SinglePathIndirectLinkageRecipe recipeA, SinglePathIndirectLinkageRecipe recipeB) {
+    public DualPathIndirectLinkageRecipe(SinglePathIndirectLinkageRecipe recipeA, SinglePathIndirectLinkageRecipe recipeB) {
         this.recipeA = recipeA;
         this.recipeB = recipeB;
     }

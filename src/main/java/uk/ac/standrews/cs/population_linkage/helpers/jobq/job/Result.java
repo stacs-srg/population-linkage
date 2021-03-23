@@ -20,6 +20,7 @@ public class Result extends Job {
 
     private long startTime;
     private boolean corrupted;
+
     private long tp;
     private long fp;
     private long fn;
@@ -97,6 +98,7 @@ public class Result extends Job {
         clone.persistLinks = this.persistLinks;
         clone.evaluateQuality = this.evaluateQuality;
         clone.evaluationApproach = this.evaluationApproach;
+        clone.indirectEvaluationApproach = this.indirectEvaluationApproach;
         return clone;
     }
 
@@ -115,6 +117,7 @@ public class Result extends Job {
                 ", linkageClass='" + linkageClass + '\'' +
                 ", fieldsUsed1='" + fieldsUsed1 + '\'' +
                 ", fieldsUsed2='" + fieldsUsed2 + '\'' +
+                ", evaluationApproach=" + evaluationApproach +
                 ", recordsRepo='" + recordsRepo + '\'' +
                 ", resultsRepo='" + resultsRepo + '\'' +
                 ", linksSubRepo='" + linksSubRepo + '\'' +
@@ -133,6 +136,7 @@ public class Result extends Job {
                 ", maxParentingAge=" + maxParentingAge +
                 ", maxMarriageAgeDiscrepancy=" + maxMarriageAgeDiscrepancy +
                 ", maxDeathAge=" + maxDeathAge +
+                ", popNumber=" + popNumber +
                 ", linkageResultsFile='" + linkageResultsFile + '\'' +
                 ", reason='" + reason + '\'' +
                 ", priority=" + priority +
@@ -140,13 +144,15 @@ public class Result extends Job {
                 ", seed=" + seed +
                 ", population='" + population + '\'' +
                 ", size='" + size + '\'' +
-                ", popNumber='" + popNumber + '\'' +
                 ", corruptionProfile='" + corruptionProfile + '\'' +
                 ", metric='" + metric + '\'' +
                 ", linkageType='" + linkageType + '\'' +
                 ", preFilter=" + preFilter +
                 ", persistLinks=" + persistLinks +
                 ", evaluateQuality=" + evaluateQuality +
+                ", experimentId='" + experimentId + '\'' +
+                ", linkagePhase='" + linkagePhase + '\'' +
+                ", indirectEvaluationApproach='" + indirectEvaluationApproach + '\'' +
                 '}';
     }
 

@@ -15,8 +15,8 @@ public abstract class Expression<T> implements Serializable {
 
     private static final long serialVersionUID = -5673894763477710L;
 
-    private String expression;
-    private final HashSet<T> values;
+    protected String expression;
+    protected HashSet<T> values;
 
     public Expression(String expression) {
         this.expression = expression;
@@ -29,7 +29,11 @@ public abstract class Expression<T> implements Serializable {
         updateExpression();
     }
 
-    private HashSet<T> explodeExpression(String expression) {
+    protected Expression() {}
+    // need for StringExpression due to multiple super constructors
+    // with same signature
+
+    protected HashSet<T> explodeExpression(String expression) {
         if(expression.matches(getSingleRegex())) {
             return parseSingleExpression(expression);
         }
@@ -42,7 +46,8 @@ public abstract class Expression<T> implements Serializable {
             return parseRangeExpression(expression);
         }
 
-        throw new InvalidParameterException(String.format("(%s) (%s) did not match expected forms: (%s) OR (%s) OR (%s)", this.getClass().getSimpleName(), expression, getSingleRegex(), getAndRegex(), getRangeRegex()));
+        throw new InvalidParameterException(String.format("(%s) (%s) did not match expected forms: (%s) OR (%s) OR (%s)",
+                this.getClass().getSimpleName(), expression, getSingleRegex(), getAndRegex(), getRangeRegex()));
     }
 
     @Override

@@ -10,7 +10,12 @@ import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.DoubleExpr
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.DoubleExpressionToStringConverter;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.IntegerExpression;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.IntegerExpressionToStringConverter;
+import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.StringExpression;
+import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.StringExpressionToStringConverter;
 
+/*
+ If you add something to this class you likely want to add a related field (with the same name but simple type) to the Job class
+ */
 public class JobWithExpressions extends JobCore {
 
     protected DoubleExpression threshold;
@@ -42,6 +47,8 @@ public class JobWithExpressions extends JobCore {
                 ", maxParentingAge=" + maxParentingAge +
                 ", maxMarriageAgeDiscrepancy=" + maxMarriageAgeDiscrepancy +
                 ", maxDeathAge=" + maxDeathAge +
+                ", popNumber=" + popNumber +
+                ", indirectEvaluationApproach=" + indirectEvaluationApproach +
                 ", linkageResultsFile='" + linkageResultsFile + '\'' +
                 ", reason='" + reason + '\'' +
                 ", priority=" + priority +
@@ -49,13 +56,14 @@ public class JobWithExpressions extends JobCore {
                 ", seed=" + seed +
                 ", population='" + population + '\'' +
                 ", size='" + size + '\'' +
-                ", popNumber='" + popNumber + '\'' +
                 ", corruptionProfile='" + corruptionProfile + '\'' +
                 ", metric='" + metric + '\'' +
                 ", linkageType='" + linkageType + '\'' +
                 ", preFilter=" + preFilter +
                 ", persistLinks=" + persistLinks +
                 ", evaluateQuality=" + evaluateQuality +
+                ", experimentId='" + experimentId + '\'' +
+                ", linkagePhase='" + linkagePhase + '\'' +
                 '}';
     }
 
@@ -76,6 +84,7 @@ public class JobWithExpressions extends JobCore {
         clone.preFilter = preFilter;
         clone.persistLinks = persistLinks;
         clone.evaluateQuality = evaluateQuality;
+        clone.indirectEvaluationApproach = indirectEvaluationApproach;
         clone.threshold = (DoubleExpression) threshold.clone();
         clone.preFilterRequiredFields = (IntegerExpression) preFilterRequiredFields.clone();
         clone.birthsCacheSize = (IntegerExpression) birthsCacheSize.clone();
@@ -115,7 +124,9 @@ public class JobWithExpressions extends JobCore {
 
     @Override
     public int hashCode() {
-        return Objects.hash(threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy, maxDeathAge);
+        return Objects.hash(threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize,
+                ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy,
+                maxDeathAge, indirectEvaluationApproach);
     }
 
     @JsonSerialize(converter = DoubleExpressionToStringConverter.class)

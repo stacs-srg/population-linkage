@@ -20,13 +20,15 @@ public class JobCore {
     protected Long seed;
     protected String population;
     protected String size;
-//    protected String popNumber;
     protected String corruptionProfile;
     protected String metric;
     protected String linkageType;
     protected boolean preFilter;
     protected boolean persistLinks;
     protected boolean evaluateQuality;
+    protected String experimentId;
+    protected String linkagePhase;
+    protected String indirectEvaluationApproach = "";
 
     @Override
     public String toString() {
@@ -38,13 +40,15 @@ public class JobCore {
                 ", seed=" + seed +
                 ", population='" + population + '\'' +
                 ", size='" + size + '\'' +
-//                ", popNumber='" + popNumber + '\'' +
                 ", corruptionProfile='" + corruptionProfile + '\'' +
                 ", metric='" + metric + '\'' +
                 ", linkageType='" + linkageType + '\'' +
                 ", preFilter=" + preFilter +
                 ", persistLinks=" + persistLinks +
                 ", evaluateQuality=" + evaluateQuality +
+                ", experimentId='" + experimentId + '\'' +
+                ", linkagePhase='" + linkagePhase + '\'' +
+                ", indirectEvaluationApproach='" + indirectEvaluationApproach + '\'' +
                 '}';
     }
 
@@ -58,13 +62,15 @@ public class JobCore {
         clone.seed = seed;
         clone.population = population;
         clone.size = size;
-//        clone.popNumber = popNumber;
         clone.corruptionProfile = corruptionProfile;
         clone.metric = metric;
         clone.linkageType = linkageType;
         clone.preFilter = preFilter;
         clone.persistLinks = persistLinks;
         clone.evaluateQuality = evaluateQuality;
+        clone.experimentId = experimentId;
+        clone.linkagePhase = linkagePhase;
+        clone.indirectEvaluationApproach = indirectEvaluationApproach;
         return clone;
     }
 
@@ -83,16 +89,18 @@ public class JobCore {
                 Objects.equals(seed, jobCore.seed) &&
                 Objects.equals(population, jobCore.population) &&
                 Objects.equals(size, jobCore.size) &&
-//                Objects.equals(popNumber, jobCore.popNumber) &&
                 Objects.equals(corruptionProfile, jobCore.corruptionProfile) &&
                 Objects.equals(metric, jobCore.metric) &&
-                Objects.equals(linkageType, jobCore.linkageType);
+                Objects.equals(linkagePhase, jobCore.linkagePhase) &&
+                Objects.equals(experimentId, jobCore.experimentId) &&
+                Objects.equals(linkageType, jobCore.linkageType) &&
+                Objects.equals(indirectEvaluationApproach, jobCore.indirectEvaluationApproach);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(linkageResultsFile, reason, priority, requiredMemory, seed, population, size, // popNumber,
-                corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality);
+        return Objects.hash(linkageResultsFile, reason, priority, requiredMemory, seed, population, size,
+                corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality, linkagePhase, experimentId);
     }
 
     public String getLinkageResultsFile() {
@@ -151,14 +159,6 @@ public class JobCore {
         this.size = size;
     }
 
-//    public String getPopNumber() {
-//        return popNumber;
-//    }
-//
-//    public void setPopNumber(String popNumber) {
-//        this.popNumber = popNumber;
-//    }
-
     public String getCorruptionProfile() {
         return corruptionProfile;
     }
@@ -205,5 +205,29 @@ public class JobCore {
 
     public void setEvaluateQuality(boolean evaluateQuality) {
         this.evaluateQuality = evaluateQuality;
+    }
+
+    public String getExperimentId() {
+        return experimentId;
+    }
+
+    public void setExperimentId(String experimentId) {
+        this.experimentId = experimentId;
+    }
+
+    public String getLinkagePhase() {
+        return linkagePhase;
+    }
+
+    public void setLinkagePhase(String linkagePhase) {
+        this.linkagePhase = linkagePhase;
+    }
+
+    public String getIndirectEvaluationApproach() {
+        return indirectEvaluationApproach;
+    }
+
+    public void setIndirectEvaluationApproach(String indirectEvaluationApproach) {
+        this.indirectEvaluationApproach = indirectEvaluationApproach;
     }
 }

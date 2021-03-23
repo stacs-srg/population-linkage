@@ -126,4 +126,8 @@ public abstract class EvaluationApproach {
             throw new RuntimeException("Bucket exception from accessing referend - bucket no longer contains expected records", e);
         }
     }
+
+    public LinkageRecipe getLinkageRecipe() {
+        return linkageRecipe;
+    }
 }

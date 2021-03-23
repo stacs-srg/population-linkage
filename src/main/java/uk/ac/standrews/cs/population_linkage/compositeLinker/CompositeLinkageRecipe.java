@@ -95,7 +95,7 @@ public class CompositeLinkageRecipe {
 
         LinkageRecipe gt = new ReversedLinkageRecipe(new BirthDeathIdentityLinkageRecipe(storr));
 
-        MultiPathIndirectLinkageRecipe recipe = new MultiPathIndirectLinkageRecipe(recipeA, recipeB);
+        DualPathIndirectLinkageRecipe recipe = new DualPathIndirectLinkageRecipe(recipeA, recipeB);
         recipe.getRecipeA().runRecipe1(metric, 0.67, 5, true, true, false);
         recipe.getRecipeA().runRecipe2(metric, 0.67, 3, true, true, false);
         recipe.getRecipeB().runRecipe1(metric, 0.67, 3, true, true, false);

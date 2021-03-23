@@ -5,7 +5,12 @@
 package uk.ac.standrews.cs.population_linkage.helpers.jobq;
 
 import java.io.IOException;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import uk.ac.standrews.cs.population_linkage.compositeLinker.SinglePathIndirectLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.StringExpression;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.EntitiesList;
+import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.InvalidJobException;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.Job;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.JobCore;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.JobList;
@@ -34,6 +39,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.ReversedLinkageRecip
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Utils;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.StandardEvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -49,9 +55,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import static uk.ac.standrews.cs.population_linkage.helpers.StatusFileHandler.getStatus;
+import static uk.ac.standrews.cs.population_linkage.helpers.jobq.job.IndirectLinkageRecipeHelper.*;
 
 public class LinkageJobQueueHandler {
 
@@ -73,85 +81,225 @@ public class LinkageJobQueueHandler {
 
 
         while(getStatus(statusFile)) {
-
             JobList jobs = new JobList(jobQ);
-            Optional<Job> maybeJob = jobs.selectJobAndReleaseFile(assignedMemory);
+            Set<Job> maybeJobs = jobs.selectJobAndReleaseFile(assignedMemory);
+            validatePopulationRecordsAreInStorrAndIfNotImport(recordCountsFile, maybeJobs);
 
-            if (maybeJob.isPresent()) {
-                setLinkageConfig(maybeJob.get());
-                validatePopulationRecordsAreInStorrAndIfNotImport(recordCountsFile, maybeJob.get());
-                runLinkageExperiment(maybeJob.get(), jobQ, assignedMemory);
+            try {
+                if (maybeJobs.size() == 1) {
+                    Job job = maybeJobs.stream().findFirst().get();
+                    runLinkageExperiment(job);
 
-                MemoryLogger.reset();
-            } else {
-                System.out.println("No suitable jobs in job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                Thread.sleep(60000);
+                } else if (maybeJobs.size() > 1) {
+                    runCompositeLinkageExperiment(maybeJobs);
+
+                } else {
+                    System.out.println("No suitable jobs in job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    Thread.sleep(60000);
+                }
+            } catch (PreEmptiveOutOfMemoryWarning e) {
+                returnJobToJobList(maybeJobs, jobQ, assignedMemory);
             }
+            MemoryLogger.reset();
         }
     }
 
-    private static void runLinkageExperiment(Job job, String jobQ, int assignedMemory) throws BucketException, java.io.IOException, InterruptedException {
-        StringMetric chosenMetric = Constants.get(job.getMetric(), 8370);
+    private static final List<String> SINGLE_PATH_LINKAGE_PHASES = list("1","2");
+
+    private static void runCompositeLinkageExperiment(Set<Job> jobs) throws IOException, InterruptedException, BucketException, InvalidEvaluationApproachException, PersistentObjectException {
+
+        Set<Result> results = jobs.stream().map(Result::new).collect(Collectors.toSet());
+        if (containsExactlyLinkagePhases(results, SINGLE_PATH_LINKAGE_PHASES)) {
+            Result referenceJob = assertJobsShareKeyValuesElseThrow(results); // there's nothing special about this job, but given we've confirmed all the jobs share the same key values we'll just use the reference job for the common values
+            Storr storr = new Storr(referenceJob.getRecordsRepo(), referenceJob.getLinksSubRepo(), referenceJob.getResultsRepo());
+            assertValidEvaluationApproaches(referenceJob, storr);
+
+            Map<Result, LinkageRecipe> jobToLinkageRecipes = results.stream()
+                    .collect(Collectors.toMap(Function.identity(), job -> getLinkageRecipe(job.getLinkageType(), storr)));
+
+            Map<String, LinkageRecipe> phaseToLinkageRecipes = jobToLinkageRecipes.keySet().stream()
+                    .collect(Collectors.toMap(JobCore::getLinkagePhase, jobToLinkageRecipes::get));
+
+            Map<String, Result> phaseToJob = results.stream()
+                    .collect(Collectors.toMap(JobCore::getLinkagePhase, Function.identity()));
+
+            SinglePathIndirectLinkageRecipe compositeLinkageRecipe =
+                    new SinglePathIndirectLinkageRecipe(phaseToLinkageRecipes.get("1"), phaseToLinkageRecipes.get("2"));
+
+            // this runs the two linkage phases in the Indirect Linkage Recipe
+            Set<Result> linkageResults = runLinkagePhase("1", phaseToJob, compositeLinkageRecipe);
+            linkageResults.addAll(runLinkagePhase("2", phaseToJob, compositeLinkageRecipe));
+
+            // this evaluates the Indirect Linkage Recipe based on the evaluation approaches specified in the job file
+            for (String evaluationApproachString : getEvaluationApproaches(referenceJob)) {
+                linkageResults.add(evaluate(referenceJob, storr, compositeLinkageRecipe, evaluationApproachString));
+            }
+
+            saveResultsToFile(referenceJob, linkageResults);
+        } else if (containsExactlyLinkagePhases(jobs, list("1A", "1B", "2A", "2B"))) {
+
+        }
+    }
+
+    private static Set<String> getEvaluationApproaches(Result referenceJob) {
+        return new StringExpression(referenceJob.getIndirectEvaluationApproach()).getValues();
+    }
+
+    private static Result evaluate(Result referenceJob, Storr storr, SinglePathIndirectLinkageRecipe compositeLinkageRecipe, String evaluationApproachString) throws InvalidEvaluationApproachException, BucketException, PersistentObjectException {
+        Result result = referenceJob.clone();
+        result.setStartTime(System.currentTimeMillis());
+        EvaluationApproach evaluationApproach = convertToApproach(evaluationApproachString, storr);
+        LinkageQuality linkageQuality = compositeLinkageRecipe.evaluateIndirectLinkage(evaluationApproach);
+        setCoreResults(result, evaluationApproach.getLinkageRecipe());
+        setLinkageQualityResults(result, evaluationApproach.getEvaluationDescription(), linkageQuality);
+        return result;
+    }
+
+    private static void assertValidEvaluationApproaches(Result referenceJob, Storr storr) throws InvalidEvaluationApproachException {
+        for(String evaluationApproach : getEvaluationApproaches(referenceJob)) {
+            convertToApproach(evaluationApproach, storr);
+        }
+    }
+
+    private static EvaluationApproach convertToApproach(String indirectEvaluationApproachString, Storr storr) throws InvalidEvaluationApproachException {
+        String[] split = indirectEvaluationApproachString.split("\\.");
+        if(split.length != 2) {
+            throw new InvalidEvaluationApproachException("Evaluation approach not in known form: " + indirectEvaluationApproachString);
+        } else {
+            try {
+                LinkageRecipe linkageRecipe = getLinkageRecipe(split[0], storr);
+                switch (Enum.valueOf(EvaluationApproach.Type.class, split[1])) {
+                    case ALL:
+                        return new StandardEvaluationApproach(linkageRecipe);
+                }
+            } catch (UnsupportedOperationException | IllegalArgumentException e) {
+                throw new InvalidEvaluationApproachException(e);
+            }
+        }
+        throw new InvalidEvaluationApproachException("Evaluation approach not in found for: " + indirectEvaluationApproachString);
+    }
+
+    private static Set<Result> runLinkagePhase(String linkagePhase, Map<String, Result> phaseToJob, SinglePathIndirectLinkageRecipe compositeLinkageRecipe) throws BucketException {
+        Result phase = phaseToJob.get(linkagePhase);
+        setLinkageConfig(phase);
+        phase.setStartTime(System.currentTimeMillis());
+        runRecipe(linkagePhase, compositeLinkageRecipe, getChosenMetric(phase), phase.getThreshold().doubleValue(),
+                phase.getPreFilterRequiredFields(), true, phase.isEvaluateQuality(), phase.isPersistLinks());
+
+        setCoreResults(phase, getRecipe(linkagePhase, compositeLinkageRecipe));
+        return getResults(phase, getRecipeResults(linkagePhase, compositeLinkageRecipe));
+    }
+
+    private static Result assertJobsShareKeyValuesElseThrow(Set<Result> jobs) {
+        if(jobs.isEmpty()) throw new RuntimeException("No jobs found");
+        Result referenceJob = jobs.stream().findFirst().get();
+
+        jobs.forEach(job -> {
+            if(!(job.getRecordsRepo().equals(referenceJob.getRecordsRepo()) &&
+                    job.getLinksSubRepo().equals(referenceJob.getLinksSubRepo()) &&
+                    job.getResultsRepo().equals(referenceJob.getResultsRepo())) &&
+                    job.getIndirectEvaluationApproach().equals(referenceJob.getIndirectEvaluationApproach())) {
+                throw new InvalidJobException("Composite Linkage jobs must share same: RecordsRepo, LinksSubRepo, ResultsRepo, IndirectEvaluationApproaches");
+            }
+        });
+        return referenceJob;
+    }
+
+    private static boolean containsExactlyLinkagePhases(Set<? extends Job> job, Collection<String> phases) {
+        return job.size() == phases.size() && job.stream().map(JobCore::getLinkagePhase).allMatch(phases::contains);
+    }
+
+    private static List<String> list(String... strings) {
+        return Arrays.asList(strings);
+    }
+
+
+    private static void runLinkageExperiment(Job job) throws BucketException, java.io.IOException, InterruptedException {
 
         Result result = new Result(job);
         result.setStartTime(System.currentTimeMillis());
+
+        setLinkageConfig(job);
 
         Storr storr = new Storr(result.getRecordsRepo(), result.getLinksSubRepo(), result.getResultsRepo());
         LinkageRecipe linkageRecipe = getLinkageRecipe(job.getLinkageType(), storr);
 
         Map<EvaluationApproach.Type, LinkageQuality> evaluationResults;
-        try {
-            evaluationResults = new BitBlasterLinkageRunner().run(
-                    linkageRecipe, chosenMetric, job.getThreshold().doubleValue(), job.getPreFilterRequiredFields(),
-                    false, job.isEvaluateQuality(), job.isPersistLinks()).getLinkageEvaluations();
-        } catch(PreEmptiveOutOfMemoryWarning e) {
-            returnJobToJobList(JobMappers.map(job), jobQ, assignedMemory);
-            return;
-        }
+
+        evaluationResults = new BitBlasterLinkageRunner().run(
+                linkageRecipe, getChosenMetric(job), job.getThreshold().doubleValue(), job.getPreFilterRequiredFields(),
+                false, job.isEvaluateQuality(), job.isPersistLinks()).getLinkageEvaluations();
 
         storr.stopStoreWatcher();
 
-        result.calculateTimeTakeSeconds(System.currentTimeMillis());
+        setCoreResults(result, linkageRecipe);
+        saveResultsToFile(result, getResults(result, evaluationResults));
+    }
 
+    private static void setCoreResults(Result result, LinkageRecipe linkageRecipe) {
+        result.calculateTimeTakeSeconds(System.currentTimeMillis());
         result.setFieldsUsed1(getLinkageFields(1, linkageRecipe));
         result.setFieldsUsed2(getLinkageFields(2, linkageRecipe));
         result.setLinkageClass(Utils.getLinkageClassName(linkageRecipe));
+    }
 
-        Set<Result> jobResults = new HashSet<>();
+    private static StringMetric getChosenMetric(Job job) {
+        return Constants.get(job.getMetric(), 8370);
+    }
 
-        for(EvaluationApproach.Type type : evaluationResults.keySet()) {
-            LinkageQuality linkageQuality = evaluationResults.get(type);
-            Result temp = result.clone();
-            temp.setEvaluationApproach(type);
-            temp.setTp(linkageQuality.getTp());
-            temp.setFp(linkageQuality.getFp());
-            temp.setFn(linkageQuality.getFn());
-            temp.setPrecision(linkageQuality.getPrecision());
-            temp.setRecall(linkageQuality.getRecall());
-            temp.setfMeasure(linkageQuality.getF_measure());
-            jobResults.add(temp);
-        }
-
-        EntitiesList<Result> results = new EntitiesList(Result.class, result.getLinkageResultsFile(), EntitiesList.Lock.RESULTS);
+    private static void saveResultsToFile(Job reference, Set<Result> jobResults) throws IOException, InterruptedException {
+        EntitiesList<Result> results = new EntitiesList<>(Result.class, reference.getLinkageResultsFile(), EntitiesList.Lock.RESULTS);
         results.addAll(jobResults);
         results.writeEntriesToFile();
         results.releaseAndCloseFile(EntitiesList.Lock.RESULTS);
     }
 
-    private static void returnJobToJobList(JobWithExpressions job, String jobQ, int assignedMemory) throws IOException, InterruptedException {
-        int updatedMemoryRequirement = (int) Math.ceil(assignedMemory * 1.1);
-        job.setRequiredMemory(updatedMemoryRequirement);
+    private static Set<Result> getResults(Result result, Map<EvaluationApproach.Type, LinkageQuality> evaluationResults) {
+        Set<Result> jobResults = new HashSet<>();
 
-        JobList jobs = new JobList(jobQ);
-        jobs.add(job);
-        jobs.writeEntriesToFile();
-        jobs.releaseAndCloseFile(EntitiesList.Lock.JOBS);
+        for(EvaluationApproach.Type type : evaluationResults.keySet()) {
+            LinkageQuality linkageQuality = evaluationResults.get(type);
+            Result temp = result.clone();
+            setLinkageQualityResults(temp, type, linkageQuality);
+            jobResults.add(temp);
+        }
+        return jobResults;
     }
 
-    private static void validatePopulationRecordsAreInStorrAndIfNotImport(Path recordCountsFile, Job job) throws Exception {
+    private static void setLinkageQualityResults(Result result, EvaluationApproach.Type type, LinkageQuality linkageQuality) {
+        result.setEvaluationApproach(type);
+        result.setTp(linkageQuality.getTp());
+        result.setFp(linkageQuality.getFp());
+        result.setFn(linkageQuality.getFn());
+        result.setPrecision(linkageQuality.getPrecision());
+        result.setRecall(linkageQuality.getRecall());
+        result.setfMeasure(linkageQuality.getF_measure());
+    }
+
+    private static void returnJobToJobList(Set<Job> jobs, String jobQ, int assignedMemory) throws IOException, InterruptedException {
+        int updatedMemoryRequirement = (int) Math.ceil(assignedMemory * 1.1);
+        JobList jobList = new JobList(jobQ);
+
+        jobList.addAll(jobs.stream()
+                .map(JobMappers::map)
+                .map(job -> updateMemory(job, updatedMemoryRequirement))
+                .collect(Collectors.toSet()));
+
+        jobList.writeEntriesToFile();
+        jobList.releaseAndCloseFile(EntitiesList.Lock.JOBS);
+    }
+
+    private static JobWithExpressions updateMemory(JobWithExpressions job, int memory) {
+        job.setRequiredMemory(memory);
+        return job;
+    }
+
+    private static void validatePopulationRecordsAreInStorrAndIfNotImport(Path recordCountsFile, Set<Job> jobs) throws Exception {
         // validate the data is in the storr (local scratch space on clusters - but either way it's defined in application.properties)
-        new ValidatePopulationInStorr(job.getPopulation(), job.getSize(), String.valueOf(job.getPopNumber()), job.getCorruptionProfile())
-                .validate(recordCountsFile);
+        for(Job job : jobs) {
+            new ValidatePopulationInStorr(job.getPopulation(), job.getSize(), String.valueOf(job.getPopNumber()), job.getCorruptionProfile())
+                    .validate(recordCountsFile);
+        }
     }
 
     private static void setLinkageConfig(Job job) {
@@ -226,7 +374,7 @@ public class LinkageJobQueueHandler {
                 chosenLinkageRecipe = new GroomGroomSiblingLinkageRecipe(storr);
                 break;
             default:
-                throw new RuntimeException("LinkageType not found");
+                throw new UnsupportedOperationException("LinkageType not found");
         }
 
         if(reversed) {
@@ -236,7 +384,7 @@ public class LinkageJobQueueHandler {
         }
     }
 
-    private static String getLinkageFields(int n, LinkageRecipe linkageRecipe) { //String links_persistent_name, String gt_persistent_name, String sourceRepo, String resultsRepo) {
+    private static String getLinkageFields(int n, LinkageRecipe linkageRecipe) {
 
         Class<? extends LXP> record_type;
         List<Integer> fields;
