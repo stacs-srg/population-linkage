@@ -11,13 +11,15 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLinkageRecipe.trueMatch;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe.trueMatch;
 
 public class BitBlasterSubsetOfDataEndtoEndBirthDeathLinkageRunner extends BitBlasterLinkageRunner {
 
@@ -71,9 +73,11 @@ public class BitBlasterSubsetOfDataEndtoEndBirthDeathLinkageRunner extends BitBl
                     default:
                         unknown++;
                 }
-                procesViableLink(link);
+                processViableLink(link);
             }
         }
+
+        numberOfGroundTruthTrueLinks = countTrueLinks(filtered_birth_records,filtered_death_records);
 
         System.out.println( "Num GT true links = " + numberOfGroundTruthTrueLinks );
         int fn = numberOfGroundTruthTrueLinks - tp;
@@ -83,7 +87,33 @@ public class BitBlasterSubsetOfDataEndtoEndBirthDeathLinkageRunner extends BitBl
         return null; // TODO FIX THIS
     }
 
-    private void procesViableLink(Link link) {
+    private int countTrueLinks(ArrayList<LXP> birth_records,ArrayList<LXP> death_records) {
+        int num_links = 0;
+        for ( LXP birth : birth_records ) {
+            for (LXP death : death_records) {
+                final LinkStatus linkStatus = BirthDeathIdentityLinkageRecipe.trueMatch(birth, death);
+                if (linkStatus == LinkStatus.TRUE_MATCH) {
+                    num_links++;
+                }
+            }
+        }
+        return num_links;
+    }
+
+    private void processViableLink(Link link) throws BucketException {
+        LXP sibling = link.getRecord1().getReferend();
+        System.out.println( "For link found : should have: " + sibling.getString( Birth.CHILD_IDENTITY) );
+        System.out.println( "Sibling: " + sibling.getString( Birth.FORENAME) + " " + sibling.getString( Birth.SURNAME) + " M: " +
+                sibling.getString( Birth.MOTHER_FORENAME) + " " + sibling.getString( Birth.MOTHER_MAIDEN_SURNAME ) + " F: " +
+                sibling.getString( Birth.FATHER_FORENAME) + " " + sibling.getString( Birth.FATHER_SURNAME ) );
+
+        LXP deceased = link.getRecord2().getReferend();
+
+            String dist = String.format("%.2f", link.getDistance());
+            System.out.println( dist + ":" + deceased.getString( Death.DECEASED_IDENTITY ) + " : " );
+            System.out.println( "     Deceased: " + deceased.getString( Death.FORENAME ) + " " + deceased.getString( Death.SURNAME) + " M: " +
+                    deceased.getString( Death.MOTHER_FORENAME) + " " + deceased.getString( Death.MOTHER_MAIDEN_SURNAME ) + " F: " +
+                    deceased.getString( Death.FATHER_FORENAME) + " " + deceased.getString( Death.FATHER_SURNAME ) );
     }
 
     private boolean isViable(LXP birth, LXP death) {

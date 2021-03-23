@@ -7,19 +7,22 @@ package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.graph.model.Reference;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBirthIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.ParentsMarriageBirthLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.storr.impl.DynamicLXP;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
@@ -31,12 +34,13 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.Util.getBirthSiblings;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBirthIdentityLinkageRecipe.trueMatch;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
  * It creates a Map of families indexed (at the momement TODO) from birth ids to families
  */
-public class BirthSiblingBundleThenParentsExperiment {
+public class BirthSiblingBundleThenBirthDeathExperiment {
 
     private static final double THRESHOLD = 0.0000001;
     private static final double COMBINED_AVERAGE_DISTANCE_THRESHOLD = 0.2;
@@ -75,65 +79,124 @@ public class BirthSiblingBundleThenParentsExperiment {
              *
              **/
 
-            LinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE + "-links");
+            LinkageRecipe death_birth_recipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE + "-links");
 
             LinkageConfig.numberOfROs = 20;
 
-            Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();  // TODO We have no requirement on number of fields here - we should have!
+            Iterable<LXP> death_records = death_birth_recipe.getStoredRecords();  // TODO We have no requirement on number of fields here - we should have!
 
             StringMetric baseMetric = new JensenShannon(2048);
 
-            Metric<LXP> composite_metric = getCompositeMetric(parents_recipe, baseMetric);
+            Metric<LXP> composite_metric = getCompositeMetric(death_birth_recipe, baseMetric);
 
-            bb = new BitBlasterSearchStructure(composite_metric, marriage_records);
+            bb = new BitBlasterSearchStructure(composite_metric, death_records);
 
-            int[] number_of_marriages_per_family = new int[20]; // 20 is far too big!
+            int tp = 0;
+            int fp = 0;
+            int unknown = 0;
 
             Set<Long> birth_keys = families.keySet();
             for (long key : birth_keys) {
 
                 List<Link> siblings = families.get(key);
-                Set<LXP> sib_records = getBirthSiblings(siblings);
+                Set<LXP> sib_births = getBirthSiblings(siblings);
 
-                List<SiblingParentsMarriage> sibling_parents_marriages = new ArrayList<>();
+                System.out.println( siblings.size() + " siblings in family" );
 
-                for (LXP sibling : sib_records) {
-                    LXP search_record = parents_recipe.convertToOtherRecordType(sibling);
+                List<SiblingDeath> sibling_deaths = new ArrayList<>();
 
-                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_record, 0.67);
-                    sibling_parents_marriages.add(new SiblingParentsMarriage(sibling, distances));
+                for (LXP sibling : sib_births) {
+                    LXP search_deathrecord = convert(death_birth_recipe, sibling);  // converts birth to death
+
+                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_deathrecord, 0.65); // Finds deaths record based on ID on each sibling
+                    System.out.println( "  For sibling n: found " + distances.size() + " deaths: should have: " + sibling.getString( Birth.CHILD_IDENTITY) );
+                    System.out.println( "Sibling: " + sibling.getString( Birth.FORENAME) + " " + sibling.getString( Birth.SURNAME) + " M: " +
+                            sibling.getString( Birth.MOTHER_FORENAME) + " " + sibling.getString( Birth.MOTHER_MAIDEN_SURNAME ) + " F: " +
+                            sibling.getString( Birth.FATHER_FORENAME) + " " + sibling.getString( Birth.FATHER_SURNAME ) );
+
+                    System.out.println( "SibDeth: " + search_deathrecord.getString( Death.FORENAME ) + " " + search_deathrecord.getString( Death.SURNAME) + " M: " +
+                            search_deathrecord.getString( Death.MOTHER_FORENAME) + " " + search_deathrecord.getString( Death.MOTHER_MAIDEN_SURNAME ) + " F: " +
+                            search_deathrecord.getString( Death.FATHER_FORENAME) + " " + search_deathrecord.getString( Death.FATHER_SURNAME ) );
+
+                    System.out.print( "Death ids found: " );
+                    for( DataDistance<LXP> d : distances ) {
+                        String dist = String.format("%.2f", d.distance);
+                        LXP deceased = d.value;
+                        System.out.println( dist + ":" + deceased.getString( Death.DECEASED_IDENTITY ) + " : " );
+                        System.out.println( "     Deceased: " + deceased.getString( Death.FORENAME ) + " " + deceased.getString( Death.SURNAME) + " M: " +
+                                deceased.getString( Death.MOTHER_FORENAME) + " " + deceased.getString( Death.MOTHER_MAIDEN_SURNAME ) + " F: " +
+                                deceased.getString( Death.FATHER_FORENAME) + " " + deceased.getString( Death.FATHER_SURNAME ) );
+                    }
+                    sibling_deaths.add(new SiblingDeath(sibling, distances));
                 }
 
-                int count = countDifferentMarriagesInGrouping(sibling_parents_marriages);
+                // We expect the siblings in this group to have the same set of parents on death records - so try and get agreement.
+
+                int count = countDifferentMarriagesInGrouping(sibling_deaths);
+                System.out.println( "Got " + count + " different marriages in bundle" );
                 if (count > 1) {
-                    adjustMarriagesInGrouping(sibling_parents_marriages);
+                    adjustMarriagesInGrouping(sibling_deaths);
                 }
 
-                addChildParentsMarriageToNeo4J(session, siblings, sib_records, sibling_parents_marriages);
+                for (SiblingDeath sb : sibling_deaths) {
 
+                    LXP birth = sb.sibling_birth_record;
 
-                number_of_marriages_per_family[count]++;
+                    for (DataDistance<LXP> dd_death : sb.deaths) {
+
+                        LXP death = dd_death.value;
+                        final LinkStatus linkStatus = trueMatch(death,birth);
+
+                        switch (linkStatus) {
+                            case TRUE_MATCH:
+                                tp++;
+                                break;
+                            case NOT_TRUE_MATCH:
+                                fp++;
+                                break;
+                            default:
+                                unknown++;
+                        }
+                    }
+                }
+
+                // addBirthDeathToNeo4J(session, sibling_deaths);
+
             }
-
-            System.out.println("Sibling references made = " + sibling_references_made);
-            System.out.println("Mother references made = " + mother_references_made);
-            System.out.println("Father references made = " + father_references_made);
 
             bb.terminate(); // shut down the metric search threads
             bridge.close();
 
-            int sum = 0;
-            for (int i = 1; i < number_of_marriages_per_family.length; i++) {
-                final int no_of_marriages = number_of_marriages_per_family[i];
-                if (no_of_marriages != 0) {
-                    System.out.println("Number of marriages per family for size " + i + " = " + no_of_marriages);
-                    sum = sum + no_of_marriages;
-                }
-            }
-            System.out.println("Total number of families = " + sum);
+            System.out.println( "Final Birth-Death Quality" );
+            System.out.println( "Num TP  links = " + tp );
+            System.out.println( "Num FP  links = " + fp ); // fields to do full linkage quality are buried in other runner.
+            System.out.println( "Num unknown links = " + unknown );
+            int total = tp + fp + unknown;
+            System.out.println( "Total = " + total );
+
         } finally {
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
             if( bridge != null ) { bridge.close(); }
+        }
+    }
+
+    /**
+     * performs conversion from birth to death and is tolerant of DynamicLXPs which are created during linkage.
+     * @param death_birth_recipe - the recipe being used
+     * @param birth - a record to convert
+     * @return a death record
+     */
+    private static LXP convert(LinkageRecipe death_birth_recipe, LXP birth) {
+        if( birth instanceof Birth ) {
+            return death_birth_recipe.convertToOtherRecordType(birth);
+        } else if( birth instanceof DynamicLXP) {
+            LXP result = new Death();
+            for (int i = 0; i < death_birth_recipe.getLinkageFields().size(); i++) {
+                result.put(death_birth_recipe.getLinkageFields().get(i), birth.get(death_birth_recipe.getQueryMappingFields().get(i)));
+            }
+            return result;
+        } else {
+            throw new RuntimeException( "convert encountered an unexpected LXP type." );
         }
     }
 
@@ -142,47 +205,38 @@ public class BirthSiblingBundleThenParentsExperiment {
      *      adding a link from each child to the siblings
      *      adding a link from each child to all the parents marriage records
      * @param session - the neo4J session currently open
-     * @param siblings - the links containing the birth records for all babies in this family.
-     * @param sib_records
-     * @param sibling_parents_marriages - a record containing 1 sibling the Marriage records of that sibling.
+     * @param sibling_deaths - a record containing the sibling Death records of that sibling.
      * @throws Exception
      */
-    private static void addChildParentsMarriageToNeo4J(Session session, List<Link> siblings, Set<LXP> sib_records, List<SiblingParentsMarriage> sibling_parents_marriages) throws Exception {
+    private static void addBirthDeathToNeo4J(Session session, List<SiblingDeath> sibling_deaths) throws Exception {
 
-        List<LXP> processed_siblings = new ArrayList<>();
+        // TODO not written yet
+        System.out.println( "NOT WRITTEN THIS YET addBirthDeathToNeo4J - don't call!");
+        System.exit(0);
+        // TODO do not commit siblings on BD on assumption that they have been done already!
+
         Transaction tx = session.beginTransaction();
 
+        String provenance = getThisClassName(); // TODO This is not really enough but will do for now, need tied to git version and some narrative - JSON perhaps?
+
         int count = 0;
-        for (SiblingParentsMarriage spm : sibling_parents_marriages) {
+        for (SiblingDeath sd : sibling_deaths) {
 
-            final LXP sibling = spm.sibling;
-            processed_siblings.add(sibling);
+            LXP birth = sd.sibling_birth_record;
 
-            String provenance = getThisClassName(); // TODO This is not really enough but will do for now, need tied to git version and some narrative - JSON perhaps?
+            for( DataDistance<LXP> dd_death : sd.deaths ) { // TODO could get closest and filter out far ones?
 
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
-                final LXP marriage = distance.value;
-                double dist = distance.distance;
-                String id = marriage.getString(Marriage.STANDARDISED_ID);
+                LXP death = dd_death.value;
+                double dist = dd_death.distance;
 
-                mother_references_made += Reference.createBMMotherReference(tx, session, sibling.getString( Birth.STANDARDISED_ID ), marriage.getString( Marriage.STANDARDISED_ID ), provenance, PREFILTER_REQUIRED_FIELDS,  dist);
-                father_references_made += Reference.createBMFatherReference(tx, session, sibling.getString( Birth.STANDARDISED_ID ), marriage.getString( Marriage.STANDARDISED_ID ), provenance, PREFILTER_REQUIRED_FIELDS,  dist);
-            }
+                sibling_references_made += Reference.createBDReference(tx, session, birth.getString(Birth.STANDARDISED_ID), death.getString(Death.STANDARDISED_ID), provenance, PREFILTER_REQUIRED_FIELDS, dist);
 
-            for( LXP other_sibling : sib_records ) {
-                if( ! processed_siblings.contains( other_sibling ) ) { // if we haven't already processed the other sibling
-                    // add a sibling link.
-                    // TODO this is one way - does that work ok in neo?
-                    // TODO what happens in neo OMG with direction of references?
-                    sibling_references_made += Reference.createBBSiblingReference(tx, session, sibling.getString( Birth.STANDARDISED_ID ), other_sibling.getString( Birth.STANDARDISED_ID ), provenance, PREFILTER_REQUIRED_FIELDS, getDistance(sibling,other_sibling,siblings)  );
-
+                System.out.print("."); // trace
+                count++;
+                if (count == 80) {
+                    System.out.println();
+                    count = 0;
                 }
-            }
-            System.out.print("."); // trace
-            count++;
-            if( count == 80 ) {
-                System.out.println();
-                count = 0;
             }
         }
         tx.commit();
@@ -204,16 +258,21 @@ public class BirthSiblingBundleThenParentsExperiment {
         return main.getClassName();
     }
 
-    private static int countDifferentMarriagesInGrouping(List<SiblingParentsMarriage> sibling_parents_marriages) {
+    private static int countDifferentMarriagesInGrouping(List<SiblingDeath> sibling_deaths) {
 
-        Map<LXP, Integer> counts = new HashMap<>();
-        for (SiblingParentsMarriage spm : sibling_parents_marriages) {
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
-                LXP marriage = distance.value;
-                if (counts.containsKey(marriage)) {
-                    counts.put(marriage, counts.get(marriage) + 1);
+        Map<String, Integer> counts = new HashMap<>();
+        for (SiblingDeath sd : sibling_deaths) {
+            for (DataDistance<LXP> distance : sd.deaths) {
+                LXP death = distance.value;
+
+                // Now create a key of parental information.
+
+                String key = createParentsKeyFromBirth( death );
+
+                if (counts.containsKey(key)) {
+                    counts.put(key, counts.get(key) + 1);
                 } else {
-                    counts.put(marriage, 1);
+                    counts.put(key, 1);
                 }
             }
         }
@@ -221,7 +280,21 @@ public class BirthSiblingBundleThenParentsExperiment {
         return counts.keySet().size();
     }
 
-    private static List<SiblingParentsMarriage> adjustMarriagesInGrouping(List <SiblingParentsMarriage> sibling_parents_marriages) throws BucketException {
+    private static String createParentsKeyFromBirth(LXP death) {
+        StringBuilder sb = new StringBuilder();
+        sb.append( death.getString(Death.FATHER_FORENAME ) );
+        sb.append( "-" );
+        sb.append( death.getString(Death.FATHER_SURNAME ) );
+        sb.append( "-" );
+        sb.append( death.getString(Death.MOTHER_FORENAME ) );
+        sb.append( "-" );
+        sb.append( death.getString(Death.MOTHER_SURNAME ) );
+//        sb.append( "-" );
+//        sb.append( death.getString(Death.FATHER_OCCUPATION ) );
+        return sb.toString();
+    }
+
+    private static List<SiblingDeath> adjustMarriagesInGrouping(List<SiblingDeath> sibling_deaths) throws BucketException {
 
         TreeMap<String, Integer> marriage_counts = new TreeMap<>();     // map from the marriages to number of occurances.
 
@@ -229,11 +302,12 @@ public class BirthSiblingBundleThenParentsExperiment {
 
         // build a map from marriage id to number of occurences of that marriage in the set.
 
-        for (SiblingParentsMarriage spm : sibling_parents_marriages) {
+        for (SiblingDeath sd : sibling_deaths) {  // TODO fix this - this code is repeated from countDifferentMarriagesInGrouping above.
 
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
-                final LXP marriage = distance.value;
-                String id = marriage.getString(Marriage.STANDARDISED_ID);
+            for (DataDistance<LXP> distance : sd.deaths) {
+                final LXP death = distance.value;
+
+                String id = createParentsKeyFromBirth( death );
                 if (marriage_counts.keySet().contains(id)) {
                     int count = marriage_counts.get(id);
                     marriage_counts.put(id, count + 1);
@@ -245,7 +319,7 @@ public class BirthSiblingBundleThenParentsExperiment {
 
         // if there is one set of parents they all agree, then on use that.
 
-        int num_siblings = sibling_parents_marriages.size();
+        int num_siblings = sibling_deaths.size();
         if( marriage_counts.values().contains( num_siblings ) ) {
             // then there is at least one set of parents on which they all agree!
             // so find them.
@@ -260,11 +334,12 @@ public class BirthSiblingBundleThenParentsExperiment {
                 // all the siblings can agree on exactly one parent pair.
                 String standard_agreed_id = all_agree_ids.get(0);
 
-                return replaceAllInExcept( standard_agreed_id,sibling_parents_marriages );
+                System.out.println( "All agree on parents" );
+                return replaceAllInExcept( standard_agreed_id,sibling_deaths );
 
             } else {
 
-                return findLowestCombinedIfExistsOrAll( all_agree_ids,sibling_parents_marriages );
+                return findLowestCombinedIfExistsOrAll( all_agree_ids,sibling_deaths );
                 // TODO Need more code here not sure what!!! - the above method will return multiples if there is no agreement - maybe this is OK.
             }
 
@@ -274,26 +349,25 @@ public class BirthSiblingBundleThenParentsExperiment {
         }
 
         //TODO if we get here there is no one list of siblings that share a single set of parents - WHAT TO DO?? - MAYBE OK.
-        return sibling_parents_marriages;
+        return sibling_deaths;
     }
 
     /**
      * Tries to find a list of sibling marriages on which the siblings all agree, and whose combined distance is close to zero.
      * TODO this is policy!
      * @param all_agree_ids
-     * @param sibling_parents_marriages
+     * @param sibling_deaths
      * @return a list of sibling marriages that are the best and close to zero
      */
-    private static List<SiblingParentsMarriage> findLowestCombinedIfExistsOrAll(List<String> all_agree_ids, List<SiblingParentsMarriage> sibling_parents_marriages) {
+    private static List<SiblingDeath> findLowestCombinedIfExistsOrAll(List<String> all_agree_ids, List<SiblingDeath> sibling_deaths) {
 
         // try and find the lowest combined distance in the family.
         double lowest = Double.MAX_VALUE;
-        SiblingParentsMarriage best_so_far = null;
+        SiblingDeath best_so_far = null;
 
-        for (SiblingParentsMarriage spm : sibling_parents_marriages) {
-            LXP sibling = spm.sibling;
+        for (SiblingDeath spm : sibling_deaths) {
             double total = 0.0;
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
+            for (DataDistance<LXP> distance : spm.deaths) {
                 total += distance.distance;
             }
             if (total < lowest) {
@@ -304,38 +378,38 @@ public class BirthSiblingBundleThenParentsExperiment {
 
         // See if there is a winner!
 
-        double average_distance = lowest / best_so_far.parents_marriages.size();
+        double average_distance = lowest / best_so_far.deaths.size();
 
         if (  average_distance < COMBINED_AVERAGE_DISTANCE_THRESHOLD ) {
 
             System.out.println("Found clear winner for set of parents !!!! - average distance = " + average_distance);
-            List<SiblingParentsMarriage> result = new ArrayList<>();
+            List<SiblingDeath> result = new ArrayList<>();
             result.add(best_so_far);
             return result;
 
         } else {
             System.out.println("Could not find a clear winner for set of parents ##### - average distance = " + average_distance); // TODO now what???????????
-            return sibling_parents_marriages;
+            return sibling_deaths;
         }
     }
 
     /**
      * Filters out all of the marriages from the various lists except from the one one which they all agree
      * @param standard_agreed_id
-     * @param sibling_parents_marriages
+     * @param sibling_deaths
      * @return
      */
-    private static List<SiblingParentsMarriage> replaceAllInExcept(String standard_agreed_id, List<SiblingParentsMarriage> sibling_parents_marriages) {
-        List<SiblingParentsMarriage> result = new ArrayList<>();
-        for( SiblingParentsMarriage spm : sibling_parents_marriages ) {
-            LXP sibling = spm.sibling;
-            for( DataDistance<LXP> distance : spm.parents_marriages ) {
+    private static List<SiblingDeath> replaceAllInExcept(String standard_agreed_id, List<SiblingDeath> sibling_deaths) {
+        List<SiblingDeath> result = new ArrayList<>();
+        for( SiblingDeath sd : sibling_deaths ) {
+            LXP sibling = sd.sibling_birth_record;
+            for( DataDistance<LXP> distance : sd.deaths ) {
                 final LXP marriage = distance.value;
                 String id = marriage.getString(Marriage.STANDARDISED_ID);
                 if(standard_agreed_id.equals(id)) {
                     List<DataDistance<LXP>> new_list = new ArrayList<>();
                     new_list.add( new DataDistance<>(marriage,distance.distance) );
-                    SiblingParentsMarriage new_entry = new SiblingParentsMarriage( sibling,new_list );
+                    SiblingDeath new_entry = new SiblingDeath( sibling,new_list );
                     result.add( new_entry );
                 }
             }

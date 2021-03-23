@@ -49,7 +49,7 @@ public class BitBlasterSubsetOfDataEndtoEndBirthOwnMarriageAsGroomLinkageRunner 
         // This only manifests the first REQUIRED fields.
 
         ArrayList<LXP> filtered_birth_records = filter(prefilterRequiredFields, NUMBER_OF_BIRTHS, linkageRecipe.getStoredRecords(), linkageRecipe.getLinkageFields());
-        ArrayList<LXP> filtered_marriage_records = filter(prefilterRequiredFields, EVERYTHING, linkageRecipe.getQueryRecords(), linkageRecipe.getQueryMappingFields()); // do not filter these - will reduce what we can find otherwise!
+        ArrayList<LXP> filtered_marriage_records = filter(0, EVERYTHING, linkageRecipe.getQueryRecords(), linkageRecipe.getQueryMappingFields()); // do not filter these - will reduce what we can find otherwise!
 
         linker.addRecords(filtered_birth_records, filtered_marriage_records);
 

@@ -4,6 +4,7 @@ package uk.ac.standrews.cs.population_linkage.graph.model.Test;
 import org.neo4j.ogm.config.Configuration;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
+import org.neo4j.ogm.transaction.Transaction;
 import uk.ac.standrews.cs.population_linkage.graph.model.BirthRecord;
 import uk.ac.standrews.cs.population_linkage.graph.model.DeathRecord;
 import uk.ac.standrews.cs.population_linkage.graph.model.Reference;
@@ -51,7 +52,9 @@ public class Tester implements AutoCloseable {
         session.save( alice_birth_record );
         session.save( fiona_birth_record );
 
-        Reference.createMotherReference(session, fiona_birth_record.STANDARDISED_ID, alice_birth_record.STANDARDISED_ID, "provenance", 8, 0.983  );
+        Transaction tx = session.beginTransaction();
+        Reference.createBMMotherReference(tx, session, fiona_birth_record.STANDARDISED_ID, alice_birth_record.STANDARDISED_ID, "provenance", 8, 0.983  );
+        tx.commit();
     }
 
 

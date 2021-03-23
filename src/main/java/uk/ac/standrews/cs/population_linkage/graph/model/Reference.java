@@ -27,9 +27,13 @@ public class Reference {
     private double distance;
 
     // Standard queries
-    private static final String CREATE_SIBLING_REFERENCE_QUERY = "MATCH (a:VitalEventRecord), (b:VitalEventRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
-    private static final String CREATE_FATHER_REFERENCE_QUERY = "MATCH (a:VitalEventRecord), (b:VitalEventRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:FATHER { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
-    public static final String CREATE_MOTHER_REFERENCE_QUERY = "MATCH (a:VitalEventRecord), (b:VitalEventRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:MOTHER { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    // BB, BM etc. refer to Births Deaths and Marriages NOT babies, mothers etc.
+
+    private static final String CREATE_BB_SIBLING_REFERENCE_QUERY = "MATCH (a:BirthRecord), (b:BirthRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    private static final String CREATE_BM_FATHER_REFERENCE_QUERY = "MATCH (a:BirthRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:FATHER { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    public static final String CREATE_BM_MOTHER_REFERENCE_QUERY = "MATCH (a:BirthRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:MOTHER { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    private static final String CREATE_DEATH_REFERENCE_QUERY = "MATCH (a:BirthRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:MOTHER { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+
 
     // Constructors
 
@@ -79,31 +83,46 @@ public class Reference {
     }
 
     /**
-     * Creates a mother reference between node with standardid:standard_id_from and standardid:standard_id_to and returns the number of relationships created
+     * Creates a mother reference between node with standard_id_from and standard_id_to and returns the number of relationships create
+     * The first parameter should be the id of a Birth and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
-    public static int createMotherReference(Session session, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        return createReference( session, CREATE_MOTHER_REFERENCE_QUERY,  standard_id_from,  standard_id_to,  provenance,  fields_matched,  distance);
+    public static int createBMMotherReference(Transaction tx, Session session, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        return createReference( tx, session, CREATE_BM_MOTHER_REFERENCE_QUERY,  standard_id_from,  standard_id_to,  provenance,  fields_matched,  distance);
     }
 
     /**
-     * Creates a father reference between node with standardid:standard_id_from and standardid:standard_id_to and returns the number of relationships created
+     * Creates a father reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Birth and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
-    public static int createFatherReference(Session session, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        return createReference( session, CREATE_FATHER_REFERENCE_QUERY,  standard_id_from,  standard_id_to,  provenance,  fields_matched,  distance);
+    public static int createBMFatherReference(Transaction tx, Session session, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        return createReference( tx, session, CREATE_BM_FATHER_REFERENCE_QUERY,  standard_id_from,  standard_id_to,  provenance,  fields_matched,  distance);
     }
 
     /**
-     * Creates a sibling reference between node with standardid:standard_id_from and standardid:standard_id_to and returns the number of relationships created
+     * Creates a sibling reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Birth and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
-    public static int createSiblingReference(Session session, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        return createReference( session, CREATE_SIBLING_REFERENCE_QUERY,  standard_id_from,  standard_id_to,  provenance,  fields_matched,  distance);
+    public static int createBBSiblingReference(Transaction tx, Session session, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        return createReference( tx, session, CREATE_BB_SIBLING_REFERENCE_QUERY,  standard_id_from,  standard_id_to,  provenance,  fields_matched,  distance);
     }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Birth and the second a Death - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static int createBDReference(Transaction tx, Session session, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        return createReference( tx, session, CREATE_DEATH_REFERENCE_QUERY,  standard_id_from,  standard_id_to,  provenance,  fields_matched,  distance);
+    }
+
+
 
     /**
      * This is the code that runs the neo4J query and returns the number of relationships created
+     * @param tx - the current transaction
      * @param session - the neo4J session object currently being used.
      * @param query - the paramterised query to be used.
      * @param standard_id_from - the STANDARDISED_ID of the node from which we are creating a reference (note some labels are directed - e.g. MOTHER, FATHER etc.)
@@ -113,7 +132,7 @@ public class Reference {
      * @param distance - the distance between the two nodes being linked
      * @return the number of relationships created
      */
-    private static int createReference(Session session, String query, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+    private static int createReference(Transaction tx, Session session, String query, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
@@ -121,11 +140,8 @@ public class Reference {
         parameters.put("prov", provenance);
         parameters.put("distance", distance);
 
-        try( Transaction tx = session.beginTransaction() ) {
-            Result r = session.query(query, parameters);
-            int count = r.queryStatistics().getRelationshipsCreated();
-            tx.commit();
-            return count;
-        }
+        Result r = session.query(query, parameters);
+        int count = r.queryStatistics().getRelationshipsCreated();
+        return count;
     }
 }

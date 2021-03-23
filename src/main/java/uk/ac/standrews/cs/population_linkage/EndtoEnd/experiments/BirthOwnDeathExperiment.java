@@ -25,7 +25,7 @@ public class BirthOwnDeathExperiment {
         LinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthDeathIdentityLinkageRecipe.LINKAGE_TYPE + "-links");
 
         LinkageConfig.numberOfROs = 20;
-
-        new BitBlasterSubsetOfDataEndtoEndBirthDeathLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, 6, false, false, false, false);
+        // was 0.67
+        new BitBlasterSubsetOfDataEndtoEndBirthDeathLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.38, true, 6, false, false, false, false);
     }
 }
