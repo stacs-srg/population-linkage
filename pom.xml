@@ -80,7 +80,7 @@
 
         <dependency>
             <groupId>uk.ac.standrews.cs</groupId>
-            <artifactId>valipop-synthetic-populations</artifactId>
+            <artifactId>valipop-synthetic-populations-dominican-republic</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

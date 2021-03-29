@@ -30,6 +30,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -352,8 +353,8 @@ public abstract class LinkageRecipe {
         LXP resultingRecord;
 
         try {
-            resultingRecord = getStoredType().newInstance(); // create an instance of the stored type
-        } catch (InstantiationException | IllegalAccessException e) {
+            resultingRecord = getStoredType().getDeclaredConstructor().newInstance(); // create an instance of the stored type
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage());
         }
 

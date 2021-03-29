@@ -20,8 +20,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.ac.standrews.cs.population_linkage.supportClasses.Constants.*;
-
 /**
  * Performs linkage analysis on data from births.
  * It compares the parents' names, date and place of marriage on two birth records.
@@ -48,7 +46,7 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
 
     private final Metric<LXP> metric;
 
-    UmeaBirthSiblingWeighted(Path store_path, String repo_name, final List<Integer> fields, final List<Metric> metrics, final List<Float> weights, final int number_of_records_to_be_checked, final int number_of_runs,
+    UmeaBirthSiblingWeighted(Path store_path, String repo_name, final List<Integer> fields, final List<Metric<String>> metrics, final List<Float> weights, final int number_of_records_to_be_checked, final int number_of_runs,
                              double threshold) throws IOException {
         super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true, threshold);
         this.metric = new SigmaWeighted(fields, metrics, weights, getIdFieldIndex());
@@ -110,7 +108,7 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
      * @param weights  - an empty list of the weights to be initialised.
      * @return the threshold for the program
      */
-    public static double processParams(String[] args, List<Integer> fields, List<Metric> metrics, List<Float> weights ) {
+    public static double processParams(String[] args, List<Integer> fields, List<Metric<String>> metrics, List<Float> weights ) {
 
         if( args.length < 2 ) {
             throw new RuntimeException( "Error in args: expect list plus threshold like this: Cosine.FATHER_FORENAME=0.3 Damerau-Levenshtein.MOTHER_FORENAME=0.7 0.62");
@@ -125,21 +123,17 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
         }
         System.out.println( "Threshold = " + threshold );
 
-        if( args.length - 1 <= 0 ) {
-            throw new RuntimeException( "Argument length insufficient to specify params" );
-        }
-
         for( int i = 0; i < args.length - 1; i++ ) { // parse the triples looks like this: Cosine.FATHER_FORENAME=0.3
 
             String[] split_front_weight = args[i].split("=");
             String[] metric_name_field = split_front_weight[0].split("\\.");
 
-            Metric m = metricNameToMetric( metric_name_field[0] );
+            Metric<String> m = Constants.get( metric_name_field[0] );
             int field_index = fieldNametoIndex( metric_name_field[1] );
 
             metrics.add( m );
             fields.add( field_index );
-            weights.add( new Float( split_front_weight[1] ) );
+            weights.add(Float.parseFloat( split_front_weight[1] ) );
         }
 
         float total_weights = 0;
@@ -155,44 +149,6 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
     private static int fieldNametoIndex(String s) {
 
         return new Birth().getMetaData().getSlot(s);
-
-    }
-
-    private static Metric metricNameToMetric(String name) {
-
-         if( name.equals( "BagDistance" ) ) {
-            return BAG_DISTANCE;
-         } else if( name.equals( "Cosine" ) ) {
-             return COSINE;
-         } else if( name.equals( "Damerau-Levenshtein" ) ) {
-             return DAMERAU_LEVENSHTEIN;
-         } else if( name.equals( "Dice" ) ) {
-            return DICE;
-         } else if( name.equals( "Jaccard" ) ) {
-            return JACCARD;
-         } else if( name.equals( "Jaro" ) ) {
-            return JARO;
-         } else if( name.equals( "JaroWinkler" ) ) {
-            return JARO_WINKLER;
-         } else if( name.equals( "JensenShannon" ) ) {
-             return JENSEN_SHANNON;
-         } else if( name.equals( "Levenshtein" ) ) {
-             return LEVENSHTEIN;
-         } else if( name.equals( "LongestCommonSubstring" ) ) {
-             return LONGEST_COMMON_SUBSTRING;
-         } else if( name.equals( "NeedlemanWunsch" ) ) {
-             return NEEDLEMAN_WUNSCH;
-         } else if( name.equals( "SED" ) ) {
-             return Constants.SED;
-         } else if( name.equals( "SmithWaterman" ) ) {
-             return SMITH_WATERMAN;
-         } else if( name.equals( "Metaphone-Levenshtein" ) ) {
-            return METAPHONE;
-         } else if( name.equals( "NYSIIS-Levenshtein" ) ) {
-             return NYSIIS;
-         } else {
-             throw new RuntimeException( "Metric name: " + name + " unrecognised" );
-         }
     }
 
     public static void main(String[] args) throws Exception {
@@ -201,7 +157,7 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
         String repo_name = "umea";
 
         List<Integer> fields = new ArrayList<>();
-        List<Metric> metrics = new ArrayList<>();
+        List<Metric<String>> metrics = new ArrayList<>();
         List<Float> weights = new ArrayList<>();
 
         double threshold = processParams( args, fields, metrics, weights );

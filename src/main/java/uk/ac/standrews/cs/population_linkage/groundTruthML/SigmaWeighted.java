@@ -19,19 +19,17 @@ public class SigmaWeighted extends Metric<LXP> {
 
     private final String name;
     private final int id_field_index;
-    private List<Integer> field_list;
-    private final List<Metric> metrics;
+    private final List<Integer> field_list;
+    private final List<Metric<String>> metrics;
     private final List<Float> weights;
 
-
-    public SigmaWeighted(final List<Integer> fields, final List<Metric> metrics, final List<Float> weights, final int id_field_index) {
+    public SigmaWeighted(final List<Integer> fields, final List<Metric<String>> metrics, final List<Float> weights, final int id_field_index) {
 
         this.field_list = fields;
         this.metrics = metrics;
         this.weights = weights;
         this.id_field_index = id_field_index;
         this.name = combineNames();
-
     }
 
     private String combineNames() {
@@ -54,7 +52,7 @@ public class SigmaWeighted extends Metric<LXP> {
         for( int i = 0; i < field_list.size(); i++ ) {
 
             int field_index = field_list.get(i);
-            Metric m = metrics.get(i);
+            Metric<String> m = metrics.get(i);
             float weight = weights.get(i);
 
             try {
