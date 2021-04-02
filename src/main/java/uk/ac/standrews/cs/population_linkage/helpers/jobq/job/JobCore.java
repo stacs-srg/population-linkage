@@ -21,14 +21,17 @@ public class JobCore {
     protected String population;
     protected String size;
     protected String corruptionProfile;
+
     protected String metric;
+
     protected String linkageType;
     protected boolean preFilter;
     protected boolean persistLinks;
     protected boolean evaluateQuality;
     protected String experimentId;
     protected String linkagePhase;
-    protected String indirectEvaluationApproach = "";
+    protected String singlePathIndirectEvaluationApproach = "";
+    protected String dualPathIndirectEvaluationApproach = "";
 
     @Override
     public String toString() {
@@ -48,7 +51,8 @@ public class JobCore {
                 ", evaluateQuality=" + evaluateQuality +
                 ", experimentId='" + experimentId + '\'' +
                 ", linkagePhase='" + linkagePhase + '\'' +
-                ", indirectEvaluationApproach='" + indirectEvaluationApproach + '\'' +
+                ", singlePathIndirectEvaluationApproach='" + singlePathIndirectEvaluationApproach + '\'' +
+                ", dualPathIndirectEvaluationApproach='" + dualPathIndirectEvaluationApproach + '\'' +
                 '}';
     }
 
@@ -70,7 +74,8 @@ public class JobCore {
         clone.evaluateQuality = evaluateQuality;
         clone.experimentId = experimentId;
         clone.linkagePhase = linkagePhase;
-        clone.indirectEvaluationApproach = indirectEvaluationApproach;
+        clone.singlePathIndirectEvaluationApproach = singlePathIndirectEvaluationApproach;
+        clone.dualPathIndirectEvaluationApproach = dualPathIndirectEvaluationApproach;
         return clone;
     }
 
@@ -91,16 +96,18 @@ public class JobCore {
                 Objects.equals(size, jobCore.size) &&
                 Objects.equals(corruptionProfile, jobCore.corruptionProfile) &&
                 Objects.equals(metric, jobCore.metric) &&
-                Objects.equals(linkagePhase, jobCore.linkagePhase) &&
-                Objects.equals(experimentId, jobCore.experimentId) &&
                 Objects.equals(linkageType, jobCore.linkageType) &&
-                Objects.equals(indirectEvaluationApproach, jobCore.indirectEvaluationApproach);
+                Objects.equals(experimentId, jobCore.experimentId) &&
+                Objects.equals(linkagePhase, jobCore.linkagePhase) &&
+                Objects.equals(singlePathIndirectEvaluationApproach, jobCore.singlePathIndirectEvaluationApproach) &&
+                Objects.equals(dualPathIndirectEvaluationApproach, jobCore.dualPathIndirectEvaluationApproach);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(linkageResultsFile, reason, priority, requiredMemory, seed, population, size,
-                corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality, linkagePhase, experimentId);
+                corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality, experimentId,
+                linkagePhase, singlePathIndirectEvaluationApproach, dualPathIndirectEvaluationApproach);
     }
 
     public String getLinkageResultsFile() {
@@ -223,11 +230,19 @@ public class JobCore {
         this.linkagePhase = linkagePhase;
     }
 
-    public String getIndirectEvaluationApproach() {
-        return indirectEvaluationApproach;
+    public String getSinglePathIndirectEvaluationApproach() {
+        return singlePathIndirectEvaluationApproach;
     }
 
-    public void setIndirectEvaluationApproach(String indirectEvaluationApproach) {
-        this.indirectEvaluationApproach = indirectEvaluationApproach;
+    public void setSinglePathIndirectEvaluationApproach(String singlePathIndirectEvaluationApproach) {
+        this.singlePathIndirectEvaluationApproach = singlePathIndirectEvaluationApproach;
+    }
+
+    public String getDualPathIndirectEvaluationApproach() {
+        return dualPathIndirectEvaluationApproach;
+    }
+
+    public void setDualPathIndirectEvaluationApproach(String dualPathIndirectEvaluationApproach) {
+        this.dualPathIndirectEvaluationApproach = dualPathIndirectEvaluationApproach;
     }
 }

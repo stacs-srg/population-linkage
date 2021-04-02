@@ -7,6 +7,9 @@ package uk.ac.standrews.cs.population_linkage.helpers.jobq;
 import java.io.IOException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import uk.ac.standrews.cs.population_linkage.compositeLinker.DualPathIndirectLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.compositeLinker.IndirectLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.compositeLinker.SinglePathIndirectLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.StringExpression;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.EntitiesList;
@@ -105,58 +108,110 @@ public class LinkageJobQueueHandler {
     }
 
     private static final List<String> SINGLE_PATH_LINKAGE_PHASES = list("1","2");
+    private static final List<String> DUAL_PATH_A_LINKAGE_PHASES = list("A1","A2");
+    private static final List<String> DUAL_PATH_B_LINKAGE_PHASES = list("B1","B2");
+    private static final List<String> DUAL_PATH_LINKAGE_PHASES = list("A1","A2","B1","B2");
+
 
     private static void runCompositeLinkageExperiment(Set<Job> jobs) throws IOException, InterruptedException, BucketException, InvalidEvaluationApproachException, PersistentObjectException {
 
-        Set<Result> results = jobs.stream().map(Result::new).collect(Collectors.toSet());
+        Set<Result> results = jobs.stream().map(JobMappers::toResult).collect(Collectors.toSet());
+
+        Result referenceJob = assertJobsShareKeyValuesElseThrow(results); // there's nothing special about this job, but given we've confirmed all the jobs share the same key values we'll just use the reference job for the common values
+        Storr storr = new Storr(referenceJob.getRecordsRepo(), referenceJob.getLinksSubRepo(), referenceJob.getResultsRepo());
+        assertValidEvaluationApproaches(referenceJob, storr);
+
+        Map<Result, LinkageRecipe> jobToLinkageRecipes = results.stream()
+                .collect(Collectors.toMap(Function.identity(), job -> getLinkageRecipe(job.getLinkageType(), storr)));
+
+        Map<String, LinkageRecipe> phaseToLinkageRecipes = jobToLinkageRecipes.keySet().stream()
+                .collect(Collectors.toMap(JobCore::getLinkagePhase, jobToLinkageRecipes::get));
+
+        Map<String, Result> phaseToJob = results.stream()
+                .collect(Collectors.toMap(JobCore::getLinkagePhase, Function.identity()));
+
         if (containsExactlyLinkagePhases(results, SINGLE_PATH_LINKAGE_PHASES)) {
-            Result referenceJob = assertJobsShareKeyValuesElseThrow(results); // there's nothing special about this job, but given we've confirmed all the jobs share the same key values we'll just use the reference job for the common values
-            Storr storr = new Storr(referenceJob.getRecordsRepo(), referenceJob.getLinksSubRepo(), referenceJob.getResultsRepo());
-            assertValidEvaluationApproaches(referenceJob, storr);
-
-            Map<Result, LinkageRecipe> jobToLinkageRecipes = results.stream()
-                    .collect(Collectors.toMap(Function.identity(), job -> getLinkageRecipe(job.getLinkageType(), storr)));
-
-            Map<String, LinkageRecipe> phaseToLinkageRecipes = jobToLinkageRecipes.keySet().stream()
-                    .collect(Collectors.toMap(JobCore::getLinkagePhase, jobToLinkageRecipes::get));
-
-            Map<String, Result> phaseToJob = results.stream()
-                    .collect(Collectors.toMap(JobCore::getLinkagePhase, Function.identity()));
 
             SinglePathIndirectLinkageRecipe compositeLinkageRecipe =
                     new SinglePathIndirectLinkageRecipe(phaseToLinkageRecipes.get("1"), phaseToLinkageRecipes.get("2"));
 
-            // this runs the two linkage phases in the Indirect Linkage Recipe
-            Set<Result> linkageResults = runLinkagePhase("1", phaseToJob, compositeLinkageRecipe);
-            linkageResults.addAll(runLinkagePhase("2", phaseToJob, compositeLinkageRecipe));
+            Set<Result> linkageResults = runSinglePathIndirectLinkage(phaseToJob, SINGLE_PATH_LINKAGE_PHASES, compositeLinkageRecipe, referenceJob, storr);
 
-            // this evaluates the Indirect Linkage Recipe based on the evaluation approaches specified in the job file
-            for (String evaluationApproachString : getEvaluationApproaches(referenceJob)) {
-                linkageResults.add(evaluate(referenceJob, storr, compositeLinkageRecipe, evaluationApproachString));
+            saveResultsToFile(referenceJob, linkageResults);
+        } else if (containsExactlyLinkagePhases(results, DUAL_PATH_LINKAGE_PHASES)) {
+
+            SinglePathIndirectLinkageRecipe compositeLinkageRecipeA =
+                    new SinglePathIndirectLinkageRecipe(phaseToLinkageRecipes.get("A1"), phaseToLinkageRecipes.get("A2"));
+
+            Set<Result> linkageResults = runSinglePathIndirectLinkage(phaseToJob, DUAL_PATH_A_LINKAGE_PHASES, compositeLinkageRecipeA, referenceJob, storr);
+
+            SinglePathIndirectLinkageRecipe compositeLinkageRecipeB =
+                    new SinglePathIndirectLinkageRecipe(phaseToLinkageRecipes.get("B1"), phaseToLinkageRecipes.get("B2"));
+
+            linkageResults.addAll(runSinglePathIndirectLinkage(phaseToJob, DUAL_PATH_B_LINKAGE_PHASES, compositeLinkageRecipeB, referenceJob, storr));
+
+            DualPathIndirectLinkageRecipe dualPathIndirectLinkageRecipe = new DualPathIndirectLinkageRecipe(compositeLinkageRecipeA, compositeLinkageRecipeB);
+
+            int combinedLinkageConfigHashes = phaseToJob.values()
+                    .stream()
+                    .map(Result::getLinkageConfigurationHash)
+                    .collect(Collectors.toList())
+                    .hashCode();
+
+            for (String evaluationApproachString : getDualPathEvaluationApproaches(referenceJob)) {
+                linkageResults.add(evaluate(referenceJob, storr, dualPathIndirectLinkageRecipe, evaluationApproachString, "DUAL_PATH_INDIRECT", combinedLinkageConfigHashes));
             }
 
             saveResultsToFile(referenceJob, linkageResults);
-        } else if (containsExactlyLinkagePhases(jobs, list("1A", "1B", "2A", "2B"))) {
-
         }
     }
 
-    private static Set<String> getEvaluationApproaches(Result referenceJob) {
-        return new StringExpression(referenceJob.getIndirectEvaluationApproach()).getValues();
+    private static Set<Result> runSinglePathIndirectLinkage(Map<String, Result> phaseToJob, List<String> chosenLinkagePhases,
+            SinglePathIndirectLinkageRecipe compositeLinkageRecipe, Result referenceJob, Storr storr) throws BucketException, InvalidEvaluationApproachException, PersistentObjectException {
+
+        // this runs the two linkage phases in the Indirect Linkage Recipe
+        Set<Result> linkageResults = runLinkagePhase(chosenLinkagePhases.get(0), phaseToJob, compositeLinkageRecipe);
+        linkageResults.addAll(runLinkagePhase(chosenLinkagePhases.get(1), phaseToJob, compositeLinkageRecipe));
+
+        int combinedLinkageConfigHashes = phaseToJob.values().stream().map(Result::getLinkageConfigurationHash).collect(Collectors.toList()).hashCode();
+
+        // this evaluates the Indirect Linkage Recipe based on the evaluation approaches specified in the job file
+        for (String evaluationApproachString : getSinglePathEvaluationApproaches(referenceJob)) {
+            linkageResults.add(evaluate(referenceJob, storr, compositeLinkageRecipe, evaluationApproachString, "SINGLE_PATH_INDIRECT", combinedLinkageConfigHashes));
+        }
+        return linkageResults;
     }
 
-    private static Result evaluate(Result referenceJob, Storr storr, SinglePathIndirectLinkageRecipe compositeLinkageRecipe, String evaluationApproachString) throws InvalidEvaluationApproachException, BucketException, PersistentObjectException {
+    private static Set<String> getSinglePathEvaluationApproaches(Result referenceJob) {
+        String approach = referenceJob.getSinglePathIndirectEvaluationApproach();
+        if("".equals(approach)) {
+            return new HashSet<>();
+        }
+        return new StringExpression(approach).getValues();
+    }
+
+    private static Set<String> getDualPathEvaluationApproaches(Result referenceJob) {
+        String approach = referenceJob.getDualPathIndirectEvaluationApproach();
+        if("".equals(approach)) {
+            return new HashSet<>();
+        }
+        return new StringExpression(approach).getValues();
+    }
+
+    private static Result evaluate(Result referenceJob, Storr storr, IndirectLinkageRecipe compositeLinkageRecipe, String evaluationApproachString, String evaluationPhase, int overrideHash) throws InvalidEvaluationApproachException, BucketException, PersistentObjectException {
         Result result = referenceJob.clone();
         result.setStartTime(System.currentTimeMillis());
         EvaluationApproach evaluationApproach = convertToApproach(evaluationApproachString, storr);
         LinkageQuality linkageQuality = compositeLinkageRecipe.evaluateIndirectLinkage(evaluationApproach);
         setCoreResults(result, evaluationApproach.getLinkageRecipe());
         setLinkageQualityResults(result, evaluationApproach.getEvaluationDescription(), linkageQuality);
+        result.setLinkagePhase(evaluationPhase);
+        result.setLinkageConfigurationHash(overrideHash);
         return result;
     }
 
     private static void assertValidEvaluationApproaches(Result referenceJob, Storr storr) throws InvalidEvaluationApproachException {
-        for(String evaluationApproach : getEvaluationApproaches(referenceJob)) {
+        for(String evaluationApproach : getSinglePathEvaluationApproaches(referenceJob)) {
             convertToApproach(evaluationApproach, storr);
         }
     }
@@ -196,10 +251,12 @@ public class LinkageJobQueueHandler {
 
         jobs.forEach(job -> {
             if(!(job.getRecordsRepo().equals(referenceJob.getRecordsRepo()) &&
-                    job.getLinksSubRepo().equals(referenceJob.getLinksSubRepo()) &&
-                    job.getResultsRepo().equals(referenceJob.getResultsRepo())) &&
-                    job.getIndirectEvaluationApproach().equals(referenceJob.getIndirectEvaluationApproach())) {
-                throw new InvalidJobException("Composite Linkage jobs must share same: RecordsRepo, LinksSubRepo, ResultsRepo, IndirectEvaluationApproaches");
+                    job.getSinglePathIndirectEvaluationApproach().equals(referenceJob.getSinglePathIndirectEvaluationApproach()))) {
+                throw new InvalidJobException(String.format("Composite Linkage jobs must share same: " +
+                        "RecordsRepo(%s=?%s), " +
+                        "IndirectEvaluationApproaches(%s=?%s)",
+                        referenceJob.getRecordsRepo(), job.getRecordsRepo(),
+                        referenceJob.getSinglePathIndirectEvaluationApproach(), job.getSinglePathIndirectEvaluationApproach()));
             }
         });
         return referenceJob;
@@ -216,7 +273,7 @@ public class LinkageJobQueueHandler {
 
     private static void runLinkageExperiment(Job job) throws BucketException, java.io.IOException, InterruptedException {
 
-        Result result = new Result(job);
+        Result result = JobMappers.toResult(job);
         result.setStartTime(System.currentTimeMillis());
 
         setLinkageConfig(job);
@@ -274,6 +331,7 @@ public class LinkageJobQueueHandler {
         result.setPrecision(linkageQuality.getPrecision());
         result.setRecall(linkageQuality.getRecall());
         result.setfMeasure(linkageQuality.getF_measure());
+        result.setLinksLostOnPreFilter(linkageQuality.getLinksLostOnPrefilter());
     }
 
     private static void returnJobToJobList(Set<Job> jobs, String jobQ, int assignedMemory) throws IOException, InterruptedException {

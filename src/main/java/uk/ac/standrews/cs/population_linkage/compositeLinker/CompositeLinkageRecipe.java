@@ -32,7 +32,7 @@ public class CompositeLinkageRecipe {
 
         String source_repository_name = "synthetic-scotland_13k_1_corrupted_A";
 
-        reversed(metric, links_persistent_name, results_repository_name, source_repository_name);
+        runIndirectBirthFatherLinkage(metric, links_persistent_name, results_repository_name, source_repository_name);
 
 //        TreeMap<Double, LinkageQuality> thresholdResults = new BirthDeathIdentityLinkageRunner().evaluateThresholds(source_repository_name, metric, true, 5, 0.0, 0.1, 1.0);
 

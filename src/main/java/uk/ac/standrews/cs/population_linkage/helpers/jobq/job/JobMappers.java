@@ -25,7 +25,8 @@ public class JobMappers {
             job.setPreFilter(jobWithExpressions.isPreFilter());
             job.setPersistLinks(jobWithExpressions.isPersistLinks());
             job.setEvaluateQuality(jobWithExpressions.isEvaluateQuality());
-            job.setIndirectEvaluationApproach(jobWithExpressions.getIndirectEvaluationApproach());
+            job.setSinglePathIndirectEvaluationApproach(jobWithExpressions.getSinglePathIndirectEvaluationApproach());
+            job.setDualPathIndirectEvaluationApproach(jobWithExpressions.getDualPathIndirectEvaluationApproach());
             job.setThreshold(jobWithExpressions.getThreshold().getValueIfSingular());
             job.setPreFilterRequiredFields(jobWithExpressions.getPreFilterRequiredFields().getValueIfSingular());
             job.setPopNumber(jobWithExpressions.getPopNumber().getValueIfSingular());
@@ -39,6 +40,8 @@ public class JobMappers {
             job.setMaxParentingAge(jobWithExpressions.getMaxParentingAge().getValueIfSingular());
             job.setMaxMarriageAgeDiscrepancy(jobWithExpressions.getMaxMarriageAgeDiscrepancy().getValueIfSingular());
             job.setMaxDeathAge(jobWithExpressions.getMaxDeathAge().getValueIfSingular());
+            job.setExperimentId(jobWithExpressions.getExperimentId());
+            job.setLinkagePhase(jobWithExpressions.getLinkagePhase());
             return job;
         } else {
             throw new NotSingularJobException(String.format("Job not singular: %s", jobWithExpressions));
@@ -60,7 +63,8 @@ public class JobMappers {
         jobWithExpressions.setPreFilter(job.isPreFilter());
         jobWithExpressions.setPersistLinks(job.isPersistLinks());
         jobWithExpressions.setEvaluateQuality(job.isEvaluateQuality());
-        jobWithExpressions.setIndirectEvaluationApproach(job.getIndirectEvaluationApproach());
+        jobWithExpressions.setSinglePathIndirectEvaluationApproach(job.getSinglePathIndirectEvaluationApproach());
+        jobWithExpressions.setDualPathIndirectEvaluationApproach(job.getDualPathIndirectEvaluationApproach());
         jobWithExpressions.setThreshold(new DoubleExpression(job.getThreshold()));
         jobWithExpressions.setPopNumber(new IntegerExpression(job.getPopNumber()));
         jobWithExpressions.setPreFilterRequiredFields(new IntegerExpression(job.getPreFilterRequiredFields()));
@@ -74,7 +78,43 @@ public class JobMappers {
         jobWithExpressions.setMaxParentingAge(new IntegerExpression(job.getMaxParentingAge()));
         jobWithExpressions.setMaxMarriageAgeDiscrepancy(new IntegerExpression(job.getMaxMarriageAgeDiscrepancy()));
         jobWithExpressions.setMaxDeathAge(new IntegerExpression(job.getMaxDeathAge()));
+        jobWithExpressions.setExperimentId(job.getExperimentId());
+        jobWithExpressions.setLinkagePhase(job.getLinkagePhase());
         return jobWithExpressions;
     }
 
+    public static Result toResult(Job job) {
+        Result result = new Result();
+        result.setLinkageResultsFile(job.getLinkageResultsFile());
+        result.setReason(job.getReason());
+        result.setPriority(job.getPriority());
+        result.setRequiredMemory(job.getRequiredMemory());
+        result.setSeed(job.getSeed());
+        result.setPopulation(job.getPopulation());
+        result.setSize(job.getSize());
+        result.setCorruptionProfile(job.getCorruptionProfile());
+        result.setMetric(job.getMetric());
+        result.setLinkageType(job.getLinkageType());
+        result.setPreFilter(job.isPreFilter());
+        result.setPersistLinks(job.isPersistLinks());
+        result.setEvaluateQuality(job.isEvaluateQuality());
+        result.setSinglePathIndirectEvaluationApproach(job.getSinglePathIndirectEvaluationApproach());
+        result.setDualPathIndirectEvaluationApproach(job.getDualPathIndirectEvaluationApproach());
+        result.setThreshold(job.getThreshold());
+        result.setPreFilterRequiredFields(job.getPreFilterRequiredFields());
+        result.setPopNumber(job.getPopNumber());
+        result.setBirthsCacheSize(job.getBirthsCacheSize());
+        result.setMarriagesCacheSize(job.getMarriagesCacheSize());
+        result.setDeathsCacheSize(job.getDeathsCacheSize());
+        result.setRos(job.getRos());
+        result.setMaxSiblingAgeDiff(job.getMaxSiblingAgeDiff());
+        result.setMinMarriageAge(job.getMinMarriageAge());
+        result.setMinParentingAge(job.getMinParentingAge());
+        result.setMaxParentingAge(job.getMaxParentingAge());
+        result.setMaxMarriageAgeDiscrepancy(job.getMaxMarriageAgeDiscrepancy());
+        result.setMaxDeathAge(job.getMaxDeathAge());
+        result.setExperimentId(job.getExperimentId());
+        result.setLinkagePhase(job.getLinkagePhase());
+        return result;
+    }
 }

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMappingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Streams;
 import java.io.BufferedOutputStream;
@@ -53,6 +54,7 @@ public class EntitiesList<T> extends ArrayList<T> {
         this.type = type;
         this.fileName = jobListFile;
         this.jobListFile = jobListFile;
+        this.csvMapper.registerModule(new JavaTimeModule());
         lockFile(lock);
         addAll(readEntriesFromFile());
     }
@@ -73,18 +75,15 @@ public class EntitiesList<T> extends ArrayList<T> {
     protected void lockFile(Lock lock) throws InterruptedException {
         System.out.println("Locking " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-        Thread.sleep(rand.nextInt(1000));
-
         File lockFile = new File(String.format("lock-%s.txt", lock));
         while(!aquiredLock(lockFile, lock)) {
-            Thread.sleep(rand.nextInt(10000));
+            Thread.sleep(10000);
             System.out.println("Sleeping on " + lock.name() + " file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         }
         System.out.println("Locked " + lock.name() + " file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 
     private boolean aquiredLock(File lockFile, Lock lock) throws InterruptedException {
-        Thread.sleep(5000);
         try {
             System.out.println("Trying to lock file on " + lock.name() + " lock file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             boolean createdNewFile = lockFile.createNewFile();
@@ -149,7 +148,7 @@ public class EntitiesList<T> extends ArrayList<T> {
         if(randomAccessFile != null) {
             randomAccessFile.getChannel().close();
         }
-        Thread.sleep(10000);
+        Thread.sleep(1000);
         lockFile.delete();
         System.out.println("Released lock for " + lock.name() + " job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }

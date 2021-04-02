@@ -32,7 +32,7 @@ public class SinglePathIndirectLinkageRecipe extends IndirectLinkageRecipe {
     }
 
     public SinglePathIndirectLinkageRecipe(LinkageRecipe recipe1, LinkageRecipe recipe2) {
-        this(recipe1, recipe2, String.join("-",recipe1.getLinkageType(), recipe2.getLinkageType()));
+        this(recipe1, recipe2, String.join("+",recipe1.getLinkageType(), recipe2.getLinkageType()));
     }
 
     public void runRecipe1(StringMetric baseMetric, double threshold,

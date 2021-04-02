@@ -54,7 +54,7 @@ public class StringExpression extends Expression<String> {
 
     @Override
     protected String getAndRegex() {
-        return "[a-zA-Z]+\\.[a-zA-Z]+&([a-zA-Z]+\\.[a-zA-Z]+&?)+";
+        return "[^&]+&([^&]+&?)+";
     }
 
     @Override
@@ -66,7 +66,7 @@ public class StringExpression extends Expression<String> {
 
     @Override
     protected String getSingleRegex() {
-        return "[a-zA-Z]+\\.[a-zA-Z]+";
+        return "[^&]+";
     }
 
     @Override

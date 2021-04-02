@@ -9,18 +9,21 @@ import java.util.Objects;
 
 public class Job extends JobCore{
 
-    protected BigDecimal threshold;
-    protected int preFilterRequiredFields;
     protected int birthsCacheSize;
     protected int marriagesCacheSize;
     protected int deathsCacheSize;
+
     protected int ros;
+
+    protected BigDecimal threshold;
+    protected int preFilterRequiredFields;
     protected int maxSiblingAgeDiff;
     protected int minMarriageAge;
     protected int minParentingAge;
     protected int maxParentingAge;
     protected int maxMarriageAgeDiscrepancy;
     protected int maxDeathAge;
+
     protected int popNumber;
 
     @Override
@@ -39,7 +42,7 @@ public class Job extends JobCore{
                 ", maxMarriageAgeDiscrepancy=" + maxMarriageAgeDiscrepancy +
                 ", maxDeathAge=" + maxDeathAge +
                 ", popNumber=" + popNumber +
-                ", indirectEvaluationApproach='" + indirectEvaluationApproach + '\'' +
+                ", indirectEvaluationApproach='" + singlePathIndirectEvaluationApproach + '\'' +
                 ", linkageResultsFile='" + linkageResultsFile + '\'' +
                 ", reason='" + reason + '\'' +
                 ", priority=" + priority +
@@ -87,7 +90,8 @@ public class Job extends JobCore{
         clone.preFilter = this.preFilter;
         clone.persistLinks = this.persistLinks;
         clone.evaluateQuality = this.evaluateQuality;
-        clone.indirectEvaluationApproach = this.indirectEvaluationApproach;
+        clone.singlePathIndirectEvaluationApproach = this.singlePathIndirectEvaluationApproach;
+        clone.dualPathIndirectEvaluationApproach = this.dualPathIndirectEvaluationApproach;
         return clone;
     }
 
@@ -97,27 +101,24 @@ public class Job extends JobCore{
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Job job = (Job) o;
-        return super.equals(o) &&
-                job.threshold.compareTo(threshold) == 0 &&
-                preFilterRequiredFields == job.preFilterRequiredFields &&
-                birthsCacheSize == job.birthsCacheSize &&
+        return birthsCacheSize == job.birthsCacheSize &&
                 marriagesCacheSize == job.marriagesCacheSize &&
                 deathsCacheSize == job.deathsCacheSize &&
                 ros == job.ros &&
+                preFilterRequiredFields == job.preFilterRequiredFields &&
                 maxSiblingAgeDiff == job.maxSiblingAgeDiff &&
                 minMarriageAge == job.minMarriageAge &&
                 minParentingAge == job.minParentingAge &&
                 maxParentingAge == job.maxParentingAge &&
                 maxMarriageAgeDiscrepancy == job.maxMarriageAgeDiscrepancy &&
+                maxDeathAge == job.maxDeathAge &&
                 popNumber == job.popNumber &&
-                maxDeathAge == job.maxDeathAge;
+                Objects.equals(threshold, job.threshold);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize,
-                deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge,
-                maxMarriageAgeDiscrepancy, maxDeathAge, popNumber, indirectEvaluationApproach);
+        return Objects.hash(super.hashCode(), threshold, birthsCacheSize, marriagesCacheSize, deathsCacheSize, ros, preFilterRequiredFields, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy, maxDeathAge, popNumber);
     }
 
     public BigDecimal getThreshold() {

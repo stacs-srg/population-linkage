@@ -10,27 +10,29 @@ import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.DoubleExpr
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.DoubleExpressionToStringConverter;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.IntegerExpression;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.IntegerExpressionToStringConverter;
-import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.StringExpression;
-import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.StringExpressionToStringConverter;
 
 /*
  If you add something to this class you likely want to add a related field (with the same name but simple type) to the Job class
  */
 public class JobWithExpressions extends JobCore {
 
-    protected DoubleExpression threshold;
-    protected IntegerExpression preFilterRequiredFields;
+    protected IntegerExpression popNumber;
     protected IntegerExpression birthsCacheSize;
     protected IntegerExpression marriagesCacheSize;
     protected IntegerExpression deathsCacheSize;
+
     protected IntegerExpression ros;
+
+    protected DoubleExpression threshold;
+    protected IntegerExpression preFilterRequiredFields;
     protected IntegerExpression maxSiblingAgeDiff;
     protected IntegerExpression minMarriageAge;
     protected IntegerExpression minParentingAge;
     protected IntegerExpression maxParentingAge;
     protected IntegerExpression maxMarriageAgeDiscrepancy;
     protected IntegerExpression maxDeathAge;
-    protected IntegerExpression popNumber;
+
+
 
     @Override
     public String toString() {
@@ -48,7 +50,7 @@ public class JobWithExpressions extends JobCore {
                 ", maxMarriageAgeDiscrepancy=" + maxMarriageAgeDiscrepancy +
                 ", maxDeathAge=" + maxDeathAge +
                 ", popNumber=" + popNumber +
-                ", indirectEvaluationApproach=" + indirectEvaluationApproach +
+                ", indirectEvaluationApproach=" + singlePathIndirectEvaluationApproach +
                 ", linkageResultsFile='" + linkageResultsFile + '\'' +
                 ", reason='" + reason + '\'' +
                 ", priority=" + priority +
@@ -84,7 +86,8 @@ public class JobWithExpressions extends JobCore {
         clone.preFilter = preFilter;
         clone.persistLinks = persistLinks;
         clone.evaluateQuality = evaluateQuality;
-        clone.indirectEvaluationApproach = indirectEvaluationApproach;
+        clone.singlePathIndirectEvaluationApproach = singlePathIndirectEvaluationApproach;
+        clone.dualPathIndirectEvaluationApproach = dualPathIndirectEvaluationApproach;
         clone.threshold = (DoubleExpression) threshold.clone();
         clone.preFilterRequiredFields = (IntegerExpression) preFilterRequiredFields.clone();
         clone.birthsCacheSize = (IntegerExpression) birthsCacheSize.clone();
@@ -98,6 +101,8 @@ public class JobWithExpressions extends JobCore {
         clone.maxMarriageAgeDiscrepancy = (IntegerExpression) maxMarriageAgeDiscrepancy.clone();
         clone.maxDeathAge = (IntegerExpression) maxDeathAge.clone();
         clone.popNumber = (IntegerExpression) popNumber.clone();
+        clone.linkagePhase = linkagePhase;
+        clone.experimentId = experimentId;
         return clone;
     }
 
@@ -105,9 +110,9 @@ public class JobWithExpressions extends JobCore {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         JobWithExpressions that = (JobWithExpressions) o;
-        return super.equals(o) &&
-                Objects.equals(threshold, that.threshold) &&
+        return Objects.equals(threshold, that.threshold) &&
                 Objects.equals(preFilterRequiredFields, that.preFilterRequiredFields) &&
                 Objects.equals(birthsCacheSize, that.birthsCacheSize) &&
                 Objects.equals(marriagesCacheSize, that.marriagesCacheSize) &&
@@ -118,15 +123,13 @@ public class JobWithExpressions extends JobCore {
                 Objects.equals(minParentingAge, that.minParentingAge) &&
                 Objects.equals(maxParentingAge, that.maxParentingAge) &&
                 Objects.equals(maxMarriageAgeDiscrepancy, that.maxMarriageAgeDiscrepancy) &&
-                Objects.equals(popNumber, that.popNumber) &&
-                Objects.equals(maxDeathAge, that.maxDeathAge);
+                Objects.equals(maxDeathAge, that.maxDeathAge) &&
+                Objects.equals(popNumber, that.popNumber);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize,
-                ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy,
-                maxDeathAge, indirectEvaluationApproach);
+        return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy, maxDeathAge, popNumber);
     }
 
     @JsonSerialize(converter = DoubleExpressionToStringConverter.class)

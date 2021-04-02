@@ -9,8 +9,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
+import java.util.Objects;
 import uk.ac.standrews.cs.population_linkage.helpers.memorylogger.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 
@@ -21,6 +20,7 @@ public class Result extends Job {
     private long startTime;
     private boolean corrupted;
 
+    private long linksLostOnPreFilter;
     private long tp;
     private long fp;
     private long fn;
@@ -28,9 +28,11 @@ public class Result extends Job {
     private double recall;
     private double fMeasure;
     private int timeTakeSeconds;
+
     private String linkageClass;
     private String fieldsUsed1;
     private String fieldsUsed2;
+
     private EvaluationApproach.Type evaluationApproach;
 
     // defined for CSV mapper to work
@@ -41,18 +43,11 @@ public class Result extends Job {
     private String codeVersion;
     private String hostname;
 
-    public Result() {
-    }
-
-    public Result(Job job) {
-        ModelMapper mapper = new ModelMapper();
-        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        mapper.map(job, this);
-        corrupted = !getCorruptionProfile().equals("0");
-    }
+    private Integer linkageConfigurationHash = null;
 
     public Result clone() {
         Result clone = new Result();
+        clone.linksLostOnPreFilter = this.linksLostOnPreFilter;
         clone.startTime = this.startTime;
         clone.corrupted = this.corrupted;
         clone.tp = this.tp;
@@ -98,7 +93,11 @@ public class Result extends Job {
         clone.persistLinks = this.persistLinks;
         clone.evaluateQuality = this.evaluateQuality;
         clone.evaluationApproach = this.evaluationApproach;
-        clone.indirectEvaluationApproach = this.indirectEvaluationApproach;
+        clone.singlePathIndirectEvaluationApproach = this.singlePathIndirectEvaluationApproach;
+        clone.dualPathIndirectEvaluationApproach = this.dualPathIndirectEvaluationApproach;
+        clone.linkagePhase = this.linkagePhase;
+        clone.experimentId = this.experimentId;
+        clone.linkageConfigurationHash = this.linkageConfigurationHash;
         return clone;
     }
 
@@ -107,6 +106,7 @@ public class Result extends Job {
         return "Result{" +
                 "startTime=" + startTime +
                 ", corrupted=" + corrupted +
+                ", linksLostOnPreFilter=" + linksLostOnPreFilter +
                 ", tp=" + tp +
                 ", fp=" + fp +
                 ", fn=" + fn +
@@ -152,8 +152,42 @@ public class Result extends Job {
                 ", evaluateQuality=" + evaluateQuality +
                 ", experimentId='" + experimentId + '\'' +
                 ", linkagePhase='" + linkagePhase + '\'' +
-                ", indirectEvaluationApproach='" + indirectEvaluationApproach + '\'' +
+                ", singlePathIndirectEvaluationApproach='" + singlePathIndirectEvaluationApproach + '\'' +
+                ", dualPathIndirectEvaluationApproach='" + dualPathIndirectEvaluationApproach + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Result result = (Result) o;
+        return startTime == result.startTime &&
+                corrupted == result.corrupted &&
+                linksLostOnPreFilter == result.linksLostOnPreFilter &&
+                tp == result.tp &&
+                fp == result.fp &&
+                fn == result.fn &&
+                Double.compare(result.precision, precision) == 0 &&
+                Double.compare(result.recall, recall) == 0 &&
+                Double.compare(result.fMeasure, fMeasure) == 0 &&
+                timeTakeSeconds == result.timeTakeSeconds &&
+                Objects.equals(linkageClass, result.linkageClass) &&
+                Objects.equals(fieldsUsed1, result.fieldsUsed1) &&
+                Objects.equals(fieldsUsed2, result.fieldsUsed2) &&
+                evaluationApproach == result.evaluationApproach &&
+                Objects.equals(recordsRepo, result.recordsRepo) &&
+                Objects.equals(resultsRepo, result.resultsRepo) &&
+                Objects.equals(linksSubRepo, result.linksSubRepo) &&
+                Objects.equals(maxMemoryUsage, result.maxMemoryUsage) &&
+                Objects.equals(codeVersion, result.codeVersion) &&
+                Objects.equals(hostname, result.hostname);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), startTime, corrupted, linksLostOnPreFilter, tp, fp, fn, precision, recall, fMeasure, timeTakeSeconds, linkageClass, fieldsUsed1, fieldsUsed2, evaluationApproach, recordsRepo, resultsRepo, linksSubRepo, maxMemoryUsage, codeVersion, hostname);
     }
 
     public String getCodeVersion() {
@@ -201,7 +235,7 @@ public class Result extends Job {
     }
 
     public boolean isCorrupted() {
-        return corrupted;
+        return !getCorruptionProfile().equals("0");
     }
 
     public void setCorrupted(boolean corrupted) {
@@ -212,11 +246,22 @@ public class Result extends Job {
         if (getSize().equals("-") && getCorruptionProfile().equals("-"))
             return getPopulation();
 
-        if (corrupted)
+        if (isCorrupted())
             return getPopulation() + "_" + getSize() + "_" + getPopNumber() + "_corrupted_" + getCorruptionProfile();
         else {
             return getPopulation() + "_" + getSize() + "_" + getPopNumber() + "_clean";
         }
+    }
+
+    public int getLinkageConfigurationHash() {
+        if(linkageConfigurationHash == null) {
+            return Objects.hash(linkageClass, fieldsUsed1, fieldsUsed2, metric,threshold,preFilterRequiredFields,maxSiblingAgeDiff,minMarriageAge,minParentingAge,maxParentingAge,maxMarriageAgeDiscrepancy,maxDeathAge);
+        }
+        return linkageConfigurationHash;
+    }
+
+    public void setLinkageConfigurationHash(int linkageConfigurationHash) {
+        this.linkageConfigurationHash = linkageConfigurationHash;
     }
 
     public long getTp() {
@@ -322,5 +367,13 @@ public class Result extends Job {
     private static String execCmd(String cmd) throws java.io.IOException {
         java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(cmd).getInputStream()).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
+    }
+
+    public long getLinksLostOnPreFilter() {
+        return linksLostOnPreFilter;
+    }
+
+    public void setLinksLostOnPreFilter(long linksLostOnPreFilter) {
+        this.linksLostOnPreFilter = linksLostOnPreFilter;
     }
 }

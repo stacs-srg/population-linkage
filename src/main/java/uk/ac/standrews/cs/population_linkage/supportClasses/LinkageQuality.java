@@ -98,7 +98,7 @@ public class LinkageQuality {
     }
 
     public long getLinksLostOnPrefilter() {
-        return linksLostOnPrefilter;
+        return linksLostOnPrefilter == null ? -1 : linksLostOnPrefilter;
     }
 
     public void setLinksLostOnPrefilter(long linksLostOnPrefilter) {

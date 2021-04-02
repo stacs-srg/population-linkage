@@ -11,8 +11,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.codec.binary.Hex;
@@ -38,19 +41,23 @@ public class JobList extends EntitiesList<JobWithExpressions> {
             return Collections.emptySet();
         }
 
-        Set<Job> topJob = selectJob(assignedMemory);
+        Set<Job> topJobs = selectJob(assignedMemory);
 
-        System.out.println("Job taken: " + topJob);
+        System.out.println("Job taken: " + topJobs);
 
         writeEntriesToFile();
         releaseAndCloseFile(Lock.JOBS);
-        return topJob;
+        return topJobs;
     }
 
     public Set<Job> selectJob(int assignedMemory) {
         Optional<JobWithExpressions> topJob = takeTopJob(assignedMemory);
 
-        if(topJob.isPresent() && !JobListHelper.isSingularJob(topJob.get())) {
+        if(topJob.isPresent()) { // TODO singular check needs to have a pre check for experiment ID
+            if(!JobListHelper.isSingularJob(topJob.get()) && !isPartOfMultiPhaseLinkage(topJob)) {
+                return setOf(topJob.map(JobMappers::map));
+            }
+
             if(!topJob.get().getExperimentId().equals("-")) {
                 // then get rest of set
                 Set<JobWithExpressions> jobsInExperiment = getAllJobsWithExperimentId(topJob.get().getExperimentId());
@@ -68,6 +75,10 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         }
 
         return setOf(topJob.map(JobMappers::map));
+    }
+
+    private boolean isPartOfMultiPhaseLinkage(Optional<JobWithExpressions> topJob) {
+        return !topJob.get().getExperimentId().equals("-");
     }
 
     private Set<Job> setOf(Optional<Job> job) {
@@ -114,36 +125,91 @@ public class JobList extends EntitiesList<JobWithExpressions> {
 
         Set<JobWithExpressions> explodedJobSet = new HashSet<>();
 
-        for(Set<JobWithExpressions> jobsForPhase : phaseJobsMap.values()) {
+        for(String phase : phaseJobsMap.keySet()) {
+            Set<JobWithExpressions> jobsForPhase = phaseJobsMap.get(phase);
             if(explodedJobSet.isEmpty()) {
                 explodedJobSet.addAll(updateIds(jobsForPhase));
             } else {
+                Set<JobWithExpressions> newExplodedJobs = new HashSet<>();
                 for(JobWithExpressions explodedJob : explodedJobSet) {
                     for(JobWithExpressions job : jobsForPhase) {
                         JobWithExpressions exJob = job.clone();
                         exJob.setExperimentId(explodedJob.getExperimentId());
-                        explodedJobSet.add(exJob);
+                        newExplodedJobs.add(exJob);
+                    }
+                }
+                explodedJobSet.addAll(newExplodedJobs);
+
+                for(String experimentId : getExperimentIds(explodedJobSet)) {
+                    Set<JobWithExpressions> jobsWithExperimentId = getJobsWithExperimentId(explodedJobSet, experimentId);
+                    Set<JobWithExpressions> jobsWithPhase = getJobsWithPhase(jobsWithExperimentId, phase);
+                    if(jobsWithPhase.size() > 1) { // can we just do this for all?
+                        explodedJobSet.removeAll(jobsWithExperimentId);
+                        jobsWithExperimentId.removeAll(jobsWithPhase);
+                        for(JobWithExpressions job : jobsWithPhase) {
+                            assertNoDuplicatePhases(jobsWithExperimentId); // this should pass because we're removed the offending duplicates two lines above.
+                            String newExperimentId = generateRandomString();
+                            Set<JobWithExpressions> newJobs = cloneJobs(jobsWithExperimentId);
+                            newJobs.add(job);
+                            newJobs.forEach(j -> j.setExperimentId(newExperimentId));
+                            explodedJobSet.addAll(newJobs);
+                        }
                     }
                 }
             }
         }
 
-        Set<String> experimentIds = explodedJobSet.stream().map(JobCore::getExperimentId).collect(Collectors.toSet());
+        Set<String> experimentIds = getExperimentIds(explodedJobSet);
 
         for(String id : experimentIds) {
-            Stream<JobWithExpressions> jobs = explodedJobSet
+            Set<JobWithExpressions> jobs = explodedJobSet
                     .stream()
-                    .filter(job -> job.getExperimentId().equals(id));
+                    .filter(job -> job.getExperimentId().equals(id))
+                    .collect(Collectors.toSet());
 
-            if(jobs.allMatch(JobListHelper::isSingularJob)) {
-                Set<JobWithExpressions> chosenJobSet = jobs.collect(Collectors.toSet());
-                explodedJobSet.removeAll(chosenJobSet);
+            if(jobs.stream().allMatch(JobListHelper::isSingularJob)) {
+                explodedJobSet.removeAll(jobs);
                 addAll(explodedJobSet);
-                return chosenJobSet.stream().map(JobMappers::map).collect(Collectors.toSet());
+                return jobs.stream().map(JobMappers::map).collect(Collectors.toSet());
             }
         }
 
-        throw new RuntimeException("Could not found singular job set");
+        throw new RuntimeException("Could not find singular job set");
+    }
+
+    private Set<JobWithExpressions> cloneJobs(Set<JobWithExpressions> jobs) {
+        return jobs.stream().map(JobWithExpressions::clone).collect(Collectors.toSet());
+    }
+
+    private void assertNoDuplicatePhases(Set<JobWithExpressions> jobs) throws InvalidJobException {
+        Set<String> phases = jobs.stream().map(JobCore::getLinkagePhase).collect(Collectors.toSet());
+        phases.forEach(phase -> {
+            Set<JobWithExpressions> jobsInPhase = jobs.stream().filter(job -> Objects.equals(job.linkagePhase, phase)).collect(Collectors.toSet());
+            if(jobsInPhase.size() > 1) {
+                throw new InvalidJobException(String.format("Expected no duplicate phases but found %s in set: %s", jobs.size(), jobsInPhase));
+            }
+        });
+    }
+
+    private Set<JobWithExpressions> getJobsWithExperimentId(Set<JobWithExpressions> jobs, String experimentId) {
+        return jobs
+                .stream()
+                .filter(job -> Objects.equals(job.getExperimentId(), experimentId))
+                .collect(Collectors.toSet());
+    }
+
+    private Set<JobWithExpressions> getJobsWithPhase(Set<JobWithExpressions> jobs, String phase) {
+        return jobs
+                .stream()
+                .filter(job -> Objects.equals(job.linkagePhase, phase))
+                .collect(Collectors.toSet());
+    }
+
+    private Set<String> getExperimentIds(Set<JobWithExpressions> explodedJobSet) {
+        return explodedJobSet
+                .stream()
+                .map(JobCore::getExperimentId)
+                .collect(Collectors.toSet());
     }
 
     private Collection<JobWithExpressions> updateIds(Set<JobWithExpressions> jobs) {
