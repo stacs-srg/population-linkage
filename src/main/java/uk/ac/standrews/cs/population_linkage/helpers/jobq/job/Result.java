@@ -255,7 +255,7 @@ public class Result extends Job {
 
     public int getLinkageConfigurationHash() {
         if(linkageConfigurationHash == null) {
-            return Objects.hash(linkageClass, fieldsUsed1, fieldsUsed2, metric,threshold,preFilterRequiredFields,maxSiblingAgeDiff,minMarriageAge,minParentingAge,maxParentingAge,maxMarriageAgeDiscrepancy,maxDeathAge);
+            return Objects.hash(linkageType, fieldsUsed1, fieldsUsed2, metric,threshold,preFilterRequiredFields,maxSiblingAgeDiff,minMarriageAge,minParentingAge,maxParentingAge,maxMarriageAgeDiscrepancy,maxDeathAge);
         }
         return linkageConfigurationHash;
     }
