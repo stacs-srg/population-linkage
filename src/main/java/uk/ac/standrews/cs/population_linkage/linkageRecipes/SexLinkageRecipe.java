@@ -1,27 +1,47 @@
 /*
- * Copyright 2020 Systems Research Group, University of St Andrews:
- * <https://github.com/stacs-srg>
+ * ************************************************************************
+ *
+ * Copyright 2021 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ * ************************************************************************
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import java.util.List;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.StandardEvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.LXP;
 
-public class ReversedLinkageRecipe extends LinkageRecipe {
+public class SexLinkageRecipe extends LinkageRecipe {
+
+    public enum Sex {
+        male,
+        female
+    }
 
     private final LinkageRecipe originalLinkageRecipe;
+    private final Sex sex;
 
-    public ReversedLinkageRecipe(LinkageRecipe originalLinkageRecipe) {
+    public SexLinkageRecipe(LinkageRecipe originalLinkageRecipe, Sex sex) {
         this.originalLinkageRecipe = originalLinkageRecipe;
         this.storr = originalLinkageRecipe.getStorr();
+        this.sex = sex;
         addEvaluationsApproach(new StandardEvaluationApproach(this));
     }
 
     @Override
     public String getLinkageType() {
-        return "reversed-" + originalLinkageRecipe.getLinkageType();
+        return sex.name() + "-" + originalLinkageRecipe.getLinkageType();
     }
 
     @Override
@@ -72,5 +92,25 @@ public class ReversedLinkageRecipe extends LinkageRecipe {
     @Override
     public String getLinkageClassCanonicalName() {
         return originalLinkageRecipe.getLinkageClassCanonicalName();
+    }
+
+    @Override
+    public Iterable<LXP> getPreFilteredStoredRecords() {
+        return filterBySex(super.getPreFilteredStoredRecords(), Birth.SEX, mapSex(sex));
+    }
+
+    @Override
+    public Iterable<LXP> getPreFilteredSearchRecords() {
+        return filterBySex(super.getPreFilteredSearchRecords(), Birth.SEX, mapSex(sex));
+    }
+
+    private String mapSex(Sex sex) {
+        switch(sex) {
+            case male:
+                return "m";
+            case female:
+                return "f";
+        }
+        throw new IllegalStateException("Non-existent sex chosen");
     }
 }

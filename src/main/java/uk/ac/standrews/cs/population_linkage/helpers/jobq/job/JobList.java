@@ -11,14 +11,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.codec.binary.Hex;
+import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.IntegerExpression;
 
 import static uk.ac.standrews.cs.population_linkage.helpers.jobq.job.JobListHelper.isSingularJob;
 
@@ -35,12 +33,6 @@ public class JobList extends EntitiesList<JobWithExpressions> {
 
     public Set<Job> selectJobAndReleaseFile(int assignedMemory) throws IOException, InterruptedException {
 
-//      this is a hack as processes keep busting through the lock and emptying the job file
-        if(isEmpty()) {
-            releaseAndCloseFile(Lock.JOBS);
-            return Collections.emptySet();
-        }
-
         Set<Job> topJobs = selectJob(assignedMemory);
 
         System.out.println("Job taken: " + topJobs);
@@ -53,28 +45,101 @@ public class JobList extends EntitiesList<JobWithExpressions> {
     public Set<Job> selectJob(int assignedMemory) {
         Optional<JobWithExpressions> topJob = takeTopJob(assignedMemory);
 
-        if(topJob.isPresent()) { // TODO singular check needs to have a pre check for experiment ID
+        if(topJob.isPresent()) {
             if(!JobListHelper.isSingularJob(topJob.get()) && !isPartOfMultiPhaseLinkage(topJob)) {
+                topJob = explodePopulationNumber(topJob);
                 return setOf(topJob.map(JobMappers::map));
             }
 
-            if(!topJob.get().getExperimentId().equals("-")) {
-                // then get rest of set
-                Set<JobWithExpressions> jobsInExperiment = getAllJobsWithExperimentId(topJob.get().getExperimentId());
-                removeAll(jobsInExperiment);
-                jobsInExperiment.add(topJob.get());
-
-                return extractSingularJobSet(jobsInExperiment);
-            } else {
+            if(topJob.get().getExperimentId().equals("-")) {
                 Set<JobWithExpressions> partiallyExplodedJobs =
                         topJob.map(JobListHelper::explodeJobWithExpressions)
                                 .orElse(Collections.emptySet());
                 addAll(partiallyExplodedJobs);
                 topJob = takeTopJob(assignedMemory); // this time the top job will be the singular job we created in the explosion
+                topJob = explodePopulationNumber(topJob);
+                return setOf(topJob.map(JobMappers::map));
+            } else {
+                Set<JobWithExpressions> jobsInExperiment = getAllJobsWithExperimentId(topJob.get().getExperimentId());
+                removeAll(jobsInExperiment);
+                jobsInExperiment.add(topJob.get());
+                Set<JobWithExpressions> chosenJobs = extractSingularJobSet(jobsInExperiment);
+                chosenJobs = explodePopulationNumber(chosenJobs);
+                return chosenJobs.stream().map(JobMappers::map).collect(Collectors.toSet());
             }
         }
+        return new HashSet<>(); // i.e empty set as no suitable jobs
+    }
 
-        return setOf(topJob.map(JobMappers::map));
+    private Set<JobWithExpressions> explodePopulationNumber(Set<JobWithExpressions> jobs) {
+        if(jobs.isEmpty()) {
+            return jobs;
+        } else {
+            // check all jobs have same population numbers
+            assertAllJobsHaveSamePopulationNumbersElseThrow(jobs);
+
+            // choose a popNumber
+            IntegerExpression popNumbers = getReferenceExpression(jobs);
+            String chosenPopNumber = String.valueOf(popNumbers.takeValue().getValueIfSingular());
+
+            addAll(jobs.stream()
+                    .map(job -> updatePopNumber(job, popNumbers.getExpression()))
+                    .collect(Collectors.toSet()));
+
+            String newExperimentId = generateRandomString();
+            return jobs.stream()
+                    .map(JobWithExpressions::clone)
+                    .map(job -> updateExperimentIds(job, newExperimentId))
+                    .map(job -> updatePopNumber(job, chosenPopNumber))
+                    .collect(Collectors.toSet());
+        }
+    }
+
+    private JobWithExpressions updatePopNumber(JobWithExpressions job, String popNumber) {
+        job.setPopNumber(popNumber);
+        return job;
+    }
+
+    private Optional<JobWithExpressions> explodePopulationNumber(Optional<JobWithExpressions> topJob) {
+        if(!topJob.isPresent()) {
+            return Optional.empty();
+        } else {
+            JobWithExpressions job = topJob.get();
+            IntegerExpression popNumbers = new IntegerExpression(job.getPopNumber());
+
+            if(popNumbers.isSingular()) {
+                return topJob;
+            } else {
+                Integer chosenPopNumber = popNumbers.takeValue().getValueIfSingular();
+
+                // return non-selected popNumbers job to list
+                JobWithExpressions otherJobs = job.clone();
+                otherJobs.setPopNumber(popNumbers.getExpression());
+                add(otherJobs);
+
+                // update selected popNumber job with new experimentId
+                JobWithExpressions chosenJob = job.clone();
+                chosenJob.setPopNumber(String.valueOf(chosenPopNumber));
+                chosenJob.setExperimentId(generateRandomString());
+
+                return Optional.of(chosenJob);
+            }
+        }
+    }
+
+    private void assertAllJobsHaveSamePopulationNumbersElseThrow(Set<JobWithExpressions> chosenJobs) {
+        IntegerExpression referenceExpression = getReferenceExpression(chosenJobs);
+
+        if(!chosenJobs.stream().map(JobCore::getPopNumber).map(IntegerExpression::new)
+                .allMatch(exp -> exp.equals(referenceExpression))) {
+            throw new InvalidJobException("Mismatch in popNumbers for jobs in experiment");
+        }
+    }
+
+    private IntegerExpression getReferenceExpression(Set<JobWithExpressions> chosenJobs) {
+        return chosenJobs.stream()
+                .findFirst().map(JobCore::getPopNumber).map(IntegerExpression::new)
+                .orElseThrow(() -> new IllegalStateException("Executed method with unexpected empty set"));
     }
 
     private boolean isPartOfMultiPhaseLinkage(Optional<JobWithExpressions> topJob) {
@@ -82,17 +147,22 @@ public class JobList extends EntitiesList<JobWithExpressions> {
     }
 
     private Set<Job> setOf(Optional<Job> job) {
-        HashSet<Job> set = new HashSet<Job>();
+        HashSet<Job> set = new HashSet<>();
         job.ifPresent(set::add);
         return set;
     }
 
     public static void main(String[] args) {
-        System.out.println(Stream.of("A","A","B").distinct().collect(Collectors.toList()));
-        System.out.println(Stream.of("A","A","B").collect(Collectors.toSet()));
+        HashSet<String> values = new HashSet<>();
+        values.add("1");values.add("2");values.add("3");
+
+        HashSet<String> values2 = new HashSet<>();
+        values2.add("1");values2.add("3");values2.add("2");
+
+        System.out.println(Objects.equals(values, values2));
     }
 
-    private Set<Job> extractSingularJobSet(Set<JobWithExpressions> jobsInExperiment) {
+    private Set<JobWithExpressions> extractSingularJobSet(Set<JobWithExpressions> jobsInExperiment) {
 
         HashMap<String, Set<JobWithExpressions>> phaseJobsMap = new HashMap<>();
 
@@ -128,7 +198,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         for(String phase : phaseJobsMap.keySet()) {
             Set<JobWithExpressions> jobsForPhase = phaseJobsMap.get(phase);
             if(explodedJobSet.isEmpty()) {
-                explodedJobSet.addAll(updateIds(jobsForPhase));
+                explodedJobSet.addAll(updateExperimentIds(jobsForPhase));
             } else {
                 Set<JobWithExpressions> newExplodedJobs = new HashSet<>();
                 for(JobWithExpressions explodedJob : explodedJobSet) {
@@ -170,7 +240,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
             if(jobs.stream().allMatch(JobListHelper::isSingularJob)) {
                 explodedJobSet.removeAll(jobs);
                 addAll(explodedJobSet);
-                return jobs.stream().map(JobMappers::map).collect(Collectors.toSet());
+                return jobs;
             }
         }
 
@@ -212,9 +282,14 @@ public class JobList extends EntitiesList<JobWithExpressions> {
                 .collect(Collectors.toSet());
     }
 
-    private Collection<JobWithExpressions> updateIds(Set<JobWithExpressions> jobs) {
+    private Collection<JobWithExpressions> updateExperimentIds(Set<JobWithExpressions> jobs) {
         jobs.forEach(job -> job.setExperimentId(generateRandomString()));
         return jobs;
+    }
+
+    private JobWithExpressions updateExperimentIds(JobWithExpressions job, String experimentId) {
+        job.setExperimentId(experimentId);
+        return job;
     }
 
     private static String generateRandomString() {

@@ -33,7 +33,7 @@ public class Result extends Job {
     private String fieldsUsed1;
     private String fieldsUsed2;
 
-    private EvaluationApproach.Type evaluationApproach;
+    private String evaluationApproach;
 
     // defined for CSV mapper to work
     private String recordsRepo;
@@ -255,7 +255,8 @@ public class Result extends Job {
 
     public int getLinkageConfigurationHash() {
         if(linkageConfigurationHash == null) {
-            return Objects.hash(linkageType, fieldsUsed1, fieldsUsed2, metric,threshold,preFilterRequiredFields,maxSiblingAgeDiff,minMarriageAge,minParentingAge,maxParentingAge,maxMarriageAgeDiscrepancy,maxDeathAge);
+            return Objects.hash(linkageType, fieldsUsed1, fieldsUsed2, metric,threshold,preFilterRequiredFields,
+                    maxSiblingAgeDiff,minMarriageAge,minParentingAge,maxParentingAge,maxMarriageAgeDiscrepancy,maxDeathAge);
         }
         return linkageConfigurationHash;
     }
@@ -340,11 +341,11 @@ public class Result extends Job {
         }
     }
 
-    public EvaluationApproach.Type getEvaluationApproach() {
+    public String getEvaluationApproach() {
         return evaluationApproach;
     }
 
-    public void setEvaluationApproach(EvaluationApproach.Type evaluationApproach) {
+    public void setEvaluationApproach(String evaluationApproach) {
         this.evaluationApproach = evaluationApproach;
     }
 

@@ -51,11 +51,11 @@ public class SinglePathIndirectLinkageRecipe extends IndirectLinkageRecipe {
                 evaluateQuality, persistLinks);
     }
 
-    public Map<EvaluationApproach.Type, LinkageQuality> getRecipe1EvaluationResults() {
+    public Map<String, LinkageQuality> getRecipe1EvaluationResults() {
         return recipe1Result.getLinkageEvaluations();
     }
 
-    public Map<EvaluationApproach.Type, LinkageQuality> getRecipe2EvaluationResults() {
+    public Map<String, LinkageQuality> getRecipe2EvaluationResults() {
         return recipe2Result.getLinkageEvaluations();
     }
 

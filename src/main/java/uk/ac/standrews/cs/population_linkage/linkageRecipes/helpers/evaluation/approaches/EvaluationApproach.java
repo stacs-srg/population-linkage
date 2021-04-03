@@ -110,7 +110,7 @@ public abstract class EvaluationApproach {
     }
 
     public String getLinkageRecipeClassName() {
-        return Utils.getLinkageClassName(linkageRecipe);
+        return linkageRecipe.getLinkageClassCanonicalName();
     }
 
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {

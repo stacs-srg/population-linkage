@@ -12,14 +12,14 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.a
 public class LinkageResult {
 
     private Map<String, Collection<Link>> mapOfLinks = null;
-    private Map<EvaluationApproach.Type, LinkageQuality> linkageEvaluations;
+    private Map<String, LinkageQuality> linkageEvaluations;
 
-    public LinkageResult(Map<EvaluationApproach.Type, LinkageQuality> linkageEvaluations, Map<String, Collection<Link>> mapOfLinks) {
+    public LinkageResult(Map<String, LinkageQuality> linkageEvaluations, Map<String, Collection<Link>> mapOfLinks) {
         this.mapOfLinks = mapOfLinks;
         this.linkageEvaluations = linkageEvaluations;
     }
 
-    public LinkageResult(Map<EvaluationApproach.Type, LinkageQuality> linkageEvaluations) {
+    public LinkageResult(Map<String, LinkageQuality> linkageEvaluations) {
         this.linkageEvaluations = linkageEvaluations;
     }
 
@@ -30,7 +30,7 @@ public class LinkageResult {
         return mapOfLinks;
     }
 
-    public Map<EvaluationApproach.Type, LinkageQuality> getLinkageEvaluations() {
+    public Map<String, LinkageQuality> getLinkageEvaluations() {
         return linkageEvaluations;
     }
 }

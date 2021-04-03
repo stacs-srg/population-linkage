@@ -30,6 +30,9 @@ public class JobCore {
     protected boolean evaluateQuality;
     protected String experimentId;
     protected String linkagePhase;
+
+    protected String popNumber = "";
+
     protected String singlePathIndirectEvaluationApproach = "";
     protected String dualPathIndirectEvaluationApproach = "";
 
@@ -76,6 +79,7 @@ public class JobCore {
         clone.linkagePhase = linkagePhase;
         clone.singlePathIndirectEvaluationApproach = singlePathIndirectEvaluationApproach;
         clone.dualPathIndirectEvaluationApproach = dualPathIndirectEvaluationApproach;
+        clone.popNumber = popNumber;
         return clone;
     }
 
@@ -99,15 +103,14 @@ public class JobCore {
                 Objects.equals(linkageType, jobCore.linkageType) &&
                 Objects.equals(experimentId, jobCore.experimentId) &&
                 Objects.equals(linkagePhase, jobCore.linkagePhase) &&
+                Objects.equals(popNumber, jobCore.popNumber) &&
                 Objects.equals(singlePathIndirectEvaluationApproach, jobCore.singlePathIndirectEvaluationApproach) &&
                 Objects.equals(dualPathIndirectEvaluationApproach, jobCore.dualPathIndirectEvaluationApproach);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(linkageResultsFile, reason, priority, requiredMemory, seed, population, size,
-                corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality, experimentId,
-                linkagePhase, singlePathIndirectEvaluationApproach, dualPathIndirectEvaluationApproach);
+        return Objects.hash(linkageResultsFile, reason, priority, requiredMemory, seed, population, size, corruptionProfile, metric, linkageType, preFilter, persistLinks, evaluateQuality, experimentId, linkagePhase, popNumber, singlePathIndirectEvaluationApproach, dualPathIndirectEvaluationApproach);
     }
 
     public String getLinkageResultsFile() {
@@ -244,5 +247,13 @@ public class JobCore {
 
     public void setDualPathIndirectEvaluationApproach(String dualPathIndirectEvaluationApproach) {
         this.dualPathIndirectEvaluationApproach = dualPathIndirectEvaluationApproach;
+    }
+
+    public String getPopNumber() {
+        return popNumber;
+    }
+
+    public void setPopNumber(String popNumber) {
+        this.popNumber = popNumber;
     }
 }

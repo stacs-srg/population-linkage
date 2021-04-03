@@ -25,7 +25,7 @@ import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 public class IndirectLinkageRecipeHelper {
-    public static Map<EvaluationApproach.Type, LinkageQuality> getRecipeResults(String linkagePhase, SinglePathIndirectLinkageRecipe compositeLinkageRecipe) {
+    public static Map<String, LinkageQuality> getRecipeResults(String linkagePhase, SinglePathIndirectLinkageRecipe compositeLinkageRecipe) {
         switch (linkagePhase) {
             case "1":
             case "A1":

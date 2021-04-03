@@ -93,10 +93,10 @@ public abstract class LinkageRunner {
         MemoryLogger.update();
         Utils.nextTimeStamp(time_stamp, "perform and evaluate linkageRecipe");
 
-        Map<EvaluationApproach.Type, LinkageQuality> lq = new HashMap<>();
+        Map<String, LinkageQuality> lq = new HashMap<>();
 
         for(EvaluationApproach evaluationApproach : linkageRecipe.getEvaluationsApproaches().values()) {
-            lq.put(evaluationApproach.getEvaluationDescription(), evaluationApproach.calculateLinkageQuality());
+            lq.put(linkageRecipe.getLinkageType() + "." + evaluationApproach.getEvaluationDescription(), evaluationApproach.calculateLinkageQuality());
         }
 
         if(generateMapOfLinks) {

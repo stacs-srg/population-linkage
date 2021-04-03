@@ -154,4 +154,7 @@ public abstract class LinkageRecipe {
         return storr.getSize(getStoredType());
     }
 
+    public String getLinkageClassCanonicalName() {
+        return this.getClass().getCanonicalName();
+    };
 }

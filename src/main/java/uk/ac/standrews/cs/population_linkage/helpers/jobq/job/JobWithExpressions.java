@@ -16,7 +16,6 @@ import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.IntegerExp
  */
 public class JobWithExpressions extends JobCore {
 
-    protected IntegerExpression popNumber;
     protected IntegerExpression birthsCacheSize;
     protected IntegerExpression marriagesCacheSize;
     protected IntegerExpression deathsCacheSize;
@@ -100,7 +99,7 @@ public class JobWithExpressions extends JobCore {
         clone.maxParentingAge = (IntegerExpression) maxParentingAge.clone();
         clone.maxMarriageAgeDiscrepancy = (IntegerExpression) maxMarriageAgeDiscrepancy.clone();
         clone.maxDeathAge = (IntegerExpression) maxDeathAge.clone();
-        clone.popNumber = (IntegerExpression) popNumber.clone();
+        clone.popNumber = popNumber;
         clone.linkagePhase = linkagePhase;
         clone.experimentId = experimentId;
         return clone;
@@ -123,13 +122,12 @@ public class JobWithExpressions extends JobCore {
                 Objects.equals(minParentingAge, that.minParentingAge) &&
                 Objects.equals(maxParentingAge, that.maxParentingAge) &&
                 Objects.equals(maxMarriageAgeDiscrepancy, that.maxMarriageAgeDiscrepancy) &&
-                Objects.equals(maxDeathAge, that.maxDeathAge) &&
-                Objects.equals(popNumber, that.popNumber);
+                Objects.equals(maxDeathAge, that.maxDeathAge);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy, maxDeathAge, popNumber);
+        return Objects.hash(super.hashCode(), threshold, preFilterRequiredFields, birthsCacheSize, marriagesCacheSize, deathsCacheSize, ros, maxSiblingAgeDiff, minMarriageAge, minParentingAge, maxParentingAge, maxMarriageAgeDiscrepancy, maxDeathAge);
     }
 
     @JsonSerialize(converter = DoubleExpressionToStringConverter.class)
@@ -238,14 +236,5 @@ public class JobWithExpressions extends JobCore {
 
     public void setMaxDeathAge(IntegerExpression maxDeathAge) {
         this.maxDeathAge = maxDeathAge;
-    }
-
-    @JsonSerialize(converter = IntegerExpressionToStringConverter.class)
-    public IntegerExpression getPopNumber() {
-        return popNumber;
-    }
-
-    public void setPopNumber(IntegerExpression popNumber) {
-        this.popNumber = popNumber;
     }
 }

@@ -29,7 +29,7 @@ public class JobMappers {
             job.setDualPathIndirectEvaluationApproach(jobWithExpressions.getDualPathIndirectEvaluationApproach());
             job.setThreshold(jobWithExpressions.getThreshold().getValueIfSingular());
             job.setPreFilterRequiredFields(jobWithExpressions.getPreFilterRequiredFields().getValueIfSingular());
-            job.setPopNumber(jobWithExpressions.getPopNumber().getValueIfSingular());
+            job.setPopNumber(jobWithExpressions.getPopNumber());
             job.setBirthsCacheSize(jobWithExpressions.getBirthsCacheSize().getValueIfSingular());
             job.setMarriagesCacheSize(jobWithExpressions.getMarriagesCacheSize().getValueIfSingular());
             job.setDeathsCacheSize(jobWithExpressions.getDeathsCacheSize().getValueIfSingular());
@@ -66,7 +66,7 @@ public class JobMappers {
         jobWithExpressions.setSinglePathIndirectEvaluationApproach(job.getSinglePathIndirectEvaluationApproach());
         jobWithExpressions.setDualPathIndirectEvaluationApproach(job.getDualPathIndirectEvaluationApproach());
         jobWithExpressions.setThreshold(new DoubleExpression(job.getThreshold()));
-        jobWithExpressions.setPopNumber(new IntegerExpression(job.getPopNumber()));
+        jobWithExpressions.setPopNumber(job.getPopNumber());
         jobWithExpressions.setPreFilterRequiredFields(new IntegerExpression(job.getPreFilterRequiredFields()));
         jobWithExpressions.setBirthsCacheSize(new IntegerExpression(job.getBirthsCacheSize()));
         jobWithExpressions.setMarriagesCacheSize(new IntegerExpression(job.getMarriagesCacheSize()));

@@ -7,7 +7,6 @@ package uk.ac.standrews.cs.population_linkage.helpers.jobq;
 import java.io.IOException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import uk.ac.standrews.cs.population_linkage.compositeLinker.DualPathIndirectLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.compositeLinker.IndirectLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.compositeLinker.SinglePathIndirectLinkageRecipe;
@@ -39,6 +38,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLi
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.ReversedLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.SexLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Utils;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
@@ -135,7 +135,7 @@ public class LinkageJobQueueHandler {
             SinglePathIndirectLinkageRecipe compositeLinkageRecipe =
                     new SinglePathIndirectLinkageRecipe(phaseToLinkageRecipes.get("1"), phaseToLinkageRecipes.get("2"));
 
-            Set<Result> linkageResults = runSinglePathIndirectLinkage(phaseToJob, SINGLE_PATH_LINKAGE_PHASES, compositeLinkageRecipe, referenceJob, storr);
+            Set<Result> linkageResults = runSinglePathIndirectLinkage(phaseToJob, SINGLE_PATH_LINKAGE_PHASES, compositeLinkageRecipe, referenceJob, storr, "");
 
             saveResultsToFile(referenceJob, linkageResults);
         } else if (containsExactlyLinkagePhases(results, DUAL_PATH_LINKAGE_PHASES)) {
@@ -143,12 +143,12 @@ public class LinkageJobQueueHandler {
             SinglePathIndirectLinkageRecipe compositeLinkageRecipeA =
                     new SinglePathIndirectLinkageRecipe(phaseToLinkageRecipes.get("A1"), phaseToLinkageRecipes.get("A2"));
 
-            Set<Result> linkageResults = runSinglePathIndirectLinkage(phaseToJob, DUAL_PATH_A_LINKAGE_PHASES, compositeLinkageRecipeA, referenceJob, storr);
+            Set<Result> linkageResults = runSinglePathIndirectLinkage(phaseToJob, DUAL_PATH_A_LINKAGE_PHASES, compositeLinkageRecipeA, referenceJob, storr, "_A");
 
             SinglePathIndirectLinkageRecipe compositeLinkageRecipeB =
                     new SinglePathIndirectLinkageRecipe(phaseToLinkageRecipes.get("B1"), phaseToLinkageRecipes.get("B2"));
 
-            linkageResults.addAll(runSinglePathIndirectLinkage(phaseToJob, DUAL_PATH_B_LINKAGE_PHASES, compositeLinkageRecipeB, referenceJob, storr));
+            linkageResults.addAll(runSinglePathIndirectLinkage(phaseToJob, DUAL_PATH_B_LINKAGE_PHASES, compositeLinkageRecipeB, referenceJob, storr, "_B"));
 
             DualPathIndirectLinkageRecipe dualPathIndirectLinkageRecipe = new DualPathIndirectLinkageRecipe(compositeLinkageRecipeA, compositeLinkageRecipeB);
 
@@ -167,7 +167,7 @@ public class LinkageJobQueueHandler {
     }
 
     private static Set<Result> runSinglePathIndirectLinkage(Map<String, Result> phaseToJob, List<String> chosenLinkagePhases,
-            SinglePathIndirectLinkageRecipe compositeLinkageRecipe, Result referenceJob, Storr storr) throws BucketException, InvalidEvaluationApproachException, PersistentObjectException {
+            SinglePathIndirectLinkageRecipe compositeLinkageRecipe, Result referenceJob, Storr storr, String path) throws BucketException, InvalidEvaluationApproachException, PersistentObjectException {
 
         // this runs the two linkage phases in the Indirect Linkage Recipe
         Set<Result> linkageResults = runLinkagePhase(chosenLinkagePhases.get(0), phaseToJob, compositeLinkageRecipe);
@@ -177,7 +177,7 @@ public class LinkageJobQueueHandler {
 
         // this evaluates the Indirect Linkage Recipe based on the evaluation approaches specified in the job file
         for (String evaluationApproachString : getSinglePathEvaluationApproaches(referenceJob)) {
-            linkageResults.add(evaluate(referenceJob, storr, compositeLinkageRecipe, evaluationApproachString, "SINGLE_PATH_INDIRECT", combinedLinkageConfigHashes));
+            linkageResults.add(evaluate(referenceJob, storr, compositeLinkageRecipe, evaluationApproachString, "SINGLE_PATH" + path + "_INDIRECT", combinedLinkageConfigHashes));
         }
         return linkageResults;
     }
@@ -204,7 +204,7 @@ public class LinkageJobQueueHandler {
         EvaluationApproach evaluationApproach = convertToApproach(evaluationApproachString, storr);
         LinkageQuality linkageQuality = compositeLinkageRecipe.evaluateIndirectLinkage(evaluationApproach);
         setCoreResults(result, evaluationApproach.getLinkageRecipe());
-        setLinkageQualityResults(result, evaluationApproach.getEvaluationDescription(), linkageQuality);
+        setLinkageQualityResults(result, evaluationApproachString, linkageQuality);
         result.setLinkagePhase(evaluationPhase);
         result.setLinkageConfigurationHash(overrideHash);
         return result;
@@ -251,12 +251,13 @@ public class LinkageJobQueueHandler {
 
         jobs.forEach(job -> {
             if(!(job.getRecordsRepo().equals(referenceJob.getRecordsRepo()) &&
-                    job.getSinglePathIndirectEvaluationApproach().equals(referenceJob.getSinglePathIndirectEvaluationApproach()))) {
+                    job.getDualPathIndirectEvaluationApproach().equals(referenceJob.getDualPathIndirectEvaluationApproach())
+            )) {
                 throw new InvalidJobException(String.format("Composite Linkage jobs must share same: " +
                         "RecordsRepo(%s=?%s), " +
-                        "IndirectEvaluationApproaches(%s=?%s)",
+                        "DualPathIndirectEvaluationApproaches(%s=?%s)",
                         referenceJob.getRecordsRepo(), job.getRecordsRepo(),
-                        referenceJob.getSinglePathIndirectEvaluationApproach(), job.getSinglePathIndirectEvaluationApproach()));
+                        referenceJob.getDualPathIndirectEvaluationApproach(), job.getDualPathIndirectEvaluationApproach()));
             }
         });
         return referenceJob;
@@ -281,7 +282,7 @@ public class LinkageJobQueueHandler {
         Storr storr = new Storr(result.getRecordsRepo(), result.getLinksSubRepo(), result.getResultsRepo());
         LinkageRecipe linkageRecipe = getLinkageRecipe(job.getLinkageType(), storr);
 
-        Map<EvaluationApproach.Type, LinkageQuality> evaluationResults;
+        Map<String, LinkageQuality> evaluationResults;
 
         evaluationResults = new BitBlasterLinkageRunner().run(
                 linkageRecipe, getChosenMetric(job), job.getThreshold().doubleValue(), job.getPreFilterRequiredFields(),
@@ -297,7 +298,7 @@ public class LinkageJobQueueHandler {
         result.calculateTimeTakeSeconds(System.currentTimeMillis());
         result.setFieldsUsed1(getLinkageFields(1, linkageRecipe));
         result.setFieldsUsed2(getLinkageFields(2, linkageRecipe));
-        result.setLinkageClass(Utils.getLinkageClassName(linkageRecipe));
+        result.setLinkageClass(linkageRecipe.getLinkageClassCanonicalName());
     }
 
     private static StringMetric getChosenMetric(Job job) {
@@ -311,10 +312,10 @@ public class LinkageJobQueueHandler {
         results.releaseAndCloseFile(EntitiesList.Lock.RESULTS);
     }
 
-    private static Set<Result> getResults(Result result, Map<EvaluationApproach.Type, LinkageQuality> evaluationResults) {
+    private static Set<Result> getResults(Result result, Map<String, LinkageQuality> evaluationResults) {
         Set<Result> jobResults = new HashSet<>();
 
-        for(EvaluationApproach.Type type : evaluationResults.keySet()) {
+        for(String type : evaluationResults.keySet()) {
             LinkageQuality linkageQuality = evaluationResults.get(type);
             Result temp = result.clone();
             setLinkageQualityResults(temp, type, linkageQuality);
@@ -323,8 +324,8 @@ public class LinkageJobQueueHandler {
         return jobResults;
     }
 
-    private static void setLinkageQualityResults(Result result, EvaluationApproach.Type type, LinkageQuality linkageQuality) {
-        result.setEvaluationApproach(type);
+    private static void setLinkageQualityResults(Result result, String evaluationApproach, LinkageQuality linkageQuality) {
+        result.setEvaluationApproach(evaluationApproach);
         result.setTp(linkageQuality.getTp());
         result.setFp(linkageQuality.getFp());
         result.setFn(linkageQuality.getFn());
@@ -380,10 +381,19 @@ public class LinkageJobQueueHandler {
 
         String basicLinkageType = linkageType;
         boolean reversed = false;
+        SexLinkageRecipe.Sex sex = null;
 
-        if(Objects.equals(linkageType.split("-")[0], "reversed")) {
-            basicLinkageType = linkageType.split("-", 2)[1];
+        if(Objects.equals(basicLinkageType.split("-")[0], "reversed")) {
+            basicLinkageType = basicLinkageType.split("-", 2)[1];
             reversed = true;
+        }
+
+        if(Objects.equals(basicLinkageType.split("-")[0], "male")) {
+            basicLinkageType = basicLinkageType.split("-", 2)[1];
+            sex = SexLinkageRecipe.Sex.male;
+        } else if (Objects.equals(basicLinkageType.split("-")[0], "female")) {
+            basicLinkageType = basicLinkageType.split("-", 2)[1];
+            sex = SexLinkageRecipe.Sex.female;
         }
 
         LinkageRecipe chosenLinkageRecipe;
@@ -435,11 +445,15 @@ public class LinkageJobQueueHandler {
                 throw new UnsupportedOperationException("LinkageType not found");
         }
 
-        if(reversed) {
-            return new ReversedLinkageRecipe(chosenLinkageRecipe);
-        } else {
-            return chosenLinkageRecipe;
+        if(sex != null) {
+            chosenLinkageRecipe = new SexLinkageRecipe(chosenLinkageRecipe, sex);
         }
+
+        if(reversed) {
+            chosenLinkageRecipe = new ReversedLinkageRecipe(chosenLinkageRecipe);
+        }
+
+        return chosenLinkageRecipe;
     }
 
     private static String getLinkageFields(int n, LinkageRecipe linkageRecipe) {

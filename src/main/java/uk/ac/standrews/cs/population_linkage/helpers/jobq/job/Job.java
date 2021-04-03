@@ -24,8 +24,6 @@ public class Job extends JobCore{
     protected int maxMarriageAgeDiscrepancy;
     protected int maxDeathAge;
 
-    protected int popNumber;
-
     @Override
     public String toString() {
         return "Job{" +
@@ -215,13 +213,5 @@ public class Job extends JobCore{
 
     public void setMaxDeathAge(int maxDeathAge) {
         this.maxDeathAge = maxDeathAge;
-    }
-
-    public int getPopNumber() {
-        return popNumber;
-    }
-
-    public void setPopNumber(int popNumber) {
-        this.popNumber = popNumber;
     }
 }

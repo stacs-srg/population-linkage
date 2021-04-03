@@ -33,12 +33,4 @@ public class Utils {
         System.out.println(prettyPrint(Duration.between(previous_time_stamp, next)) + " to " + step_description);
         return next;
     }
-
-    public static String getLinkageClassName(LinkageRecipe linkageRecipe) {
-        if(linkageRecipe instanceof ReversedLinkageRecipe) {
-            return ((ReversedLinkageRecipe) linkageRecipe).getOriginalLinkageClassCanonicalName();
-        } else {
-            return linkageRecipe.getClass().getCanonicalName();
-        }
-    }
 }
