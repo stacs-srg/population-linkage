@@ -4,4 +4,4 @@
 #
 
 cd population-linkage
-sh src/main/scripts/experiments/synthetic/run_linkage_job_q_instance.sh 12 "12 cluster-runs/jobQ/split/`hostname`-job-list.csv cluster-runs/record-counts-`hostname`.csv cluster-runs/status.txt cluster-runs/gt-link-counts-`hostname`.csv" > runs/job-run-`hostname`.txt
+sh src/main/scripts/experiments/synthetic/run_linkage_job_q_instance.sh 12 "12 cluster-runs/jobQ/split/`hostname`-job-list.csv cluster-runs/record-counts.csv cluster-runs/status.txt cluster-runs/gt-link-counts.csv" > runs/job-run-`hostname`.txt
