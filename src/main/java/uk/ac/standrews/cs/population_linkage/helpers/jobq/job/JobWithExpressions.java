@@ -31,8 +31,6 @@ public class JobWithExpressions extends JobCore {
     protected IntegerExpression maxMarriageAgeDiscrepancy;
     protected IntegerExpression maxDeathAge;
 
-
-
     @Override
     public String toString() {
         return "JobWithExpressions{" +

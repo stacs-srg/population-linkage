@@ -21,7 +21,7 @@ public class JobListTest {
         Set<Job> allJobs = new HashSet<>();
 
         while(!JOB_LIST_MULTIPLE.isEmpty()) {
-            allJobs.addAll(JOB_LIST_MULTIPLE.selectJob(8));
+            allJobs.addAll(JOB_LIST_MULTIPLE.selectJob(8, false));
         }
 
         assertThat(allJobs).hasSize(2400);
@@ -34,7 +34,7 @@ public class JobListTest {
 
         Set<Job> allJobs = new HashSet<>();
 
-        allJobs.addAll(JOB_LIST_MULTIPLE.selectJob(8));
+        allJobs.addAll(JOB_LIST_MULTIPLE.selectJob(8, false));
 
         assertThat(allJobs).hasSize(1);
         assertThat(JOB_LIST_MULTIPLE).hasSize(7);
@@ -47,7 +47,7 @@ public class JobListTest {
         Set<Job> allJobs = new HashSet<>();
 
         while(!JOB_LIST_SINGLE.isEmpty()) {
-            allJobs.addAll(JOB_LIST_SINGLE.selectJob(8));
+            allJobs.addAll(JOB_LIST_SINGLE.selectJob(8, false));
         }
 
         assertThat(allJobs).hasSize(1);

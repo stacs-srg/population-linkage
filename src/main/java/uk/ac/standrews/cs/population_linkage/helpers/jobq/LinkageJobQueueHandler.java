@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import uk.ac.standrews.cs.population_linkage.compositeLinker.DualPathIndirectLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.compositeLinker.IndirectLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.compositeLinker.SinglePathIndirectLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.helpers.StatusFileHandler;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.expressions.StringExpression;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.EntitiesList;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.InvalidJobException;
@@ -75,11 +76,13 @@ public class LinkageJobQueueHandler {
     // Linkage type defines the 'type' of linkage to be performed - the provided string should be the same as the
     // linkageType field in the relevant linkage runner class
 
+    static Path statusFile;
+
     public static void main(String[] args) throws Exception {
         int assignedMemory = Integer.parseInt(args[0]);
         String jobQ = args[1];
         Path recordCountsFile = Paths.get(args[2]);
-        Path statusFile = Paths.get(args[3]);
+        statusFile = Paths.get(args[3]);
         LinkageConfig.GT_COUNTS_FILE = Paths.get(args[4]);
 
 
@@ -306,6 +309,11 @@ public class LinkageJobQueueHandler {
     }
 
     private static void saveResultsToFile(Job reference, Set<Result> jobResults) throws IOException, InterruptedException {
+        // will block if paused - this means any new results that have occured since pausing won't get written until
+        // the status is no longer pause - with the git handling for results this prevents getting into a merge mess on
+        // 22 different cluster nodes...
+        StatusFileHandler.getStatus(statusFile);
+
         EntitiesList<Result> results = new EntitiesList<>(Result.class, reference.getLinkageResultsFile(), EntitiesList.Lock.RESULTS);
         results.addAll(jobResults);
         results.writeEntriesToFile();

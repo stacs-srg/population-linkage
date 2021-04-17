@@ -8,6 +8,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,19 +17,24 @@ public class StatusFileHandler {
 
     private static final String COMMENT_INDICATOR = "#";
 
-    public static boolean getStatus(Path statusPath) throws IOException {
-        // read in file
-        ArrayList<String> lines = new ArrayList<>(getAllLines(statusPath));
+    public static boolean getStatus(Path statusPath) throws IOException, InterruptedException {
 
-        if (!lines.isEmpty()) {
-            switch (lines.get(0)) {
-                case "run":
-                    return true;
-                case "terminate":
-                    return false;
+        do {
+            ArrayList<String> lines = new ArrayList<>(getAllLines(statusPath));
+
+            if (!lines.isEmpty()) {
+                switch (lines.get(0)) {
+                    case "run":
+                        return true;
+                    case "terminate":
+                        return false;
+                    case "pause":
+                        System.out.println("Status job file indicates pause @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        Thread.sleep(10000);
+                        break;
+                }
             }
-        }
-        return true;
+        } while (true);
     }
 
     private static List<String> getAllLines(Path path) throws IOException {

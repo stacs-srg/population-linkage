@@ -46,7 +46,7 @@ public abstract class Expression<T> implements Serializable {
             return parseRangeExpression(expression);
         }
 
-        throw new InvalidParameterException(String.format("(%s) (%s) did not match expected forms: (%s) OR (%s) OR (%s)",
+        throw new InvalidParameterException(String.format("%s (%s) did not match expected forms: (%s) OR (%s) OR (%s)",
                 this.getClass().getSimpleName(), expression, getSingleRegex(), getAndRegex(), getRangeRegex()));
     }
 

@@ -6,11 +6,13 @@ package uk.ac.standrews.cs.population_linkage.helpers.jobq.job;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -26,14 +28,67 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         super(JobWithExpressions.class, jobListFile, Lock.JOBS);
     }
 
+    public JobList(String jobListFile, Lock lock) throws IOException, InterruptedException {
+        super(JobWithExpressions.class, jobListFile, lock);
+    }
+
     // for testing only
     JobList() {
         super(JobWithExpressions.class);
     }
 
+    public void explodeAllJobs() {
+        Set<Job> allJobs = new HashSet<>();
+        while(!isEmpty()) {
+            allJobs.addAll(selectJob(Integer.MAX_VALUE, false));
+        }
+        addAll(allJobs.stream().map(JobMappers::map).collect(Collectors.toSet()));
+    }
+
+    public List<Set<JobWithExpressions>> splitJobList(int partitions) {
+        List<Set<JobWithExpressions>> sets = new ArrayList<>();
+
+        int initialSize = size();
+        int jobsPerPartition = (initialSize) / partitions;
+        Collections.shuffle(this);
+
+        for(int partition = 0; partition < partitions; partition++) {
+            int jobsTaken = 0;
+            Set<JobWithExpressions> jobSet = new HashSet<>();
+
+            do {
+                Set<JobWithExpressions> jobs = stream()
+                        .findFirst()
+                        .map(chosenJob -> {
+                            if (chosenJob.getExperimentId().equals("-")) {
+                                return setOf(chosenJob);
+                            } else {
+                                return stream()
+                                        .filter(job -> job.getExperimentId().equals(chosenJob.getExperimentId()))
+                                        .collect(Collectors.toSet());
+                            }
+                        }).orElseThrow(() -> new InvalidJobException("Split failed"));
+
+                removeAll(jobs);
+                jobSet.addAll(jobs);
+                jobsTaken += jobs.size();
+
+            } while (!isEmpty() && jobsTaken < jobsPerPartition);
+
+            if(partition == partitions - 1 && !isEmpty()) {
+                Set<JobWithExpressions> jobs = new HashSet<>(this);
+                this.removeAll(jobs);
+                jobSet.addAll(jobs);
+            }
+
+            sets.add(jobSet);
+        }
+        return sets;
+    }
+
     public Set<Job> selectJobAndReleaseFile(int assignedMemory) throws IOException, InterruptedException {
 
-        Set<Job> topJobs = selectJob(assignedMemory);
+        Set<Job> topJobs = selectJob(assignedMemory, false);
 
         System.out.println("Job taken: " + topJobs);
 
@@ -42,7 +97,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         return topJobs;
     }
 
-    public Set<Job> selectJob(int assignedMemory) {
+    public Set<Job> selectJob(int assignedMemory, boolean bypassPopulationNumberExplosion) {
         Optional<JobWithExpressions> topJob = takeTopJob(assignedMemory);
 
         if(topJob.isPresent()) {
@@ -60,14 +115,19 @@ public class JobList extends EntitiesList<JobWithExpressions> {
                 topJob = explodePopulationNumber(topJob);
                 return setOf(topJob.map(JobMappers::map));
             } else {
+                check(this);
                 Set<JobWithExpressions> jobsInExperiment = getAllJobsWithExperimentId(topJob.get().getExperimentId());
                 removeAll(jobsInExperiment);
                 jobsInExperiment.add(topJob.get());
                 Set<JobWithExpressions> chosenJobs = extractSingularJobSet(jobsInExperiment);
-                chosenJobs = explodePopulationNumber(chosenJobs);
+                if(!bypassPopulationNumberExplosion) {
+                    chosenJobs = explodePopulationNumber(chosenJobs);
+                }
                 return chosenJobs.stream().map(JobMappers::map).collect(Collectors.toSet());
             }
         }
+
+        getReferenceExpression(this);
         return new HashSet<>(); // i.e empty set as no suitable jobs
     }
 
@@ -82,16 +142,20 @@ public class JobList extends EntitiesList<JobWithExpressions> {
             IntegerExpression popNumbers = getReferenceExpression(jobs);
             String chosenPopNumber = String.valueOf(popNumbers.takeValue().getValueIfSingular());
 
-            addAll(jobs.stream()
-                    .map(job -> updatePopNumber(job, popNumbers.getExpression()))
-                    .collect(Collectors.toSet()));
+            if(!popNumbers.getValues().isEmpty()) {
+                addAll(jobs.stream()
+                        .map(job -> updatePopNumber(job, popNumbers.getExpression()))
+                        .collect(Collectors.toSet()));
+            }
 
             String newExperimentId = generateRandomString();
-            return jobs.stream()
+            Set<JobWithExpressions> temp = jobs.stream()
                     .map(JobWithExpressions::clone)
                     .map(job -> updateExperimentIds(job, newExperimentId))
                     .map(job -> updatePopNumber(job, chosenPopNumber))
                     .collect(Collectors.toSet());
+
+            return temp;
         }
     }
 
@@ -136,10 +200,17 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         }
     }
 
-    private IntegerExpression getReferenceExpression(Set<JobWithExpressions> chosenJobs) {
+    private IntegerExpression getReferenceExpression(Collection<JobWithExpressions> chosenJobs) {
         return chosenJobs.stream()
-                .findFirst().map(JobCore::getPopNumber).map(IntegerExpression::new)
+                .findFirst()
+                .map(JobCore::getPopNumber)
+                .map(IntegerExpression::new)
                 .orElseThrow(() -> new IllegalStateException("Executed method with unexpected empty set"));
+    }
+
+    private void check(Collection<JobWithExpressions> chosenJobs) {
+        chosenJobs.forEach(job -> new IntegerExpression(job.getPopNumber()) );
+//                .orElseThrow(() -> new IllegalStateException("Executed method with unexpected empty set"));
     }
 
     private boolean isPartOfMultiPhaseLinkage(Optional<JobWithExpressions> topJob) {
@@ -149,6 +220,12 @@ public class JobList extends EntitiesList<JobWithExpressions> {
     private Set<Job> setOf(Optional<Job> job) {
         HashSet<Job> set = new HashSet<>();
         job.ifPresent(set::add);
+        return set;
+    }
+
+    private Set<JobWithExpressions> setOf(JobWithExpressions job) {
+        HashSet<JobWithExpressions> set = new HashSet<>();
+        set.add(job);
         return set;
     }
 
@@ -328,6 +405,9 @@ public class JobList extends EntitiesList<JobWithExpressions> {
     private Optional<JobWithExpressions> takeTopJob(int assignedMemory) { // this needs to be thinking in terms of a JobSet
         Optional<JobWithExpressions> topJobWithExpressions = getTopJobWithExpression(assignedMemory);
         Optional<JobWithExpressions> topSingularJob = getTopSingularJob(assignedMemory);
+
+        check(topJobWithExpressions.map(this::setOf).orElse(new HashSet<>()));
+        check(topSingularJob.map(this::setOf).orElse(new HashSet<>()));
 
         if(!topSingularJob.isPresent() && !topJobWithExpressions.isPresent()) {
             return Optional.empty();

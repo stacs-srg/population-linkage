@@ -69,7 +69,8 @@ public class EntitiesList<T> extends ArrayList<T> {
 
     public enum Lock {
         RESULTS,
-        JOBS
+        JOBS,
+        BYPASS
     }
 
     protected void lockFile(Lock lock) throws InterruptedException {
