@@ -101,13 +101,8 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         Optional<JobWithExpressions> topJob = takeTopJob(assignedMemory);
 
         if(topJob.isPresent()) {
-            if(!JobListHelper.isSingularJob(topJob.get()) && !isPartOfMultiPhaseLinkage(topJob)) {
-                return explodePopulationNumber(setOf(topJob.get())).stream()
-                        .map(JobMappers::map)
-                        .collect(Collectors.toSet());
-            }
 
-            if(topJob.get().getExperimentId().equals("-")) {
+            if(!isPartOfMultiPhaseLinkage(topJob)) {
                 Set<JobWithExpressions> partiallyExplodedJobs =
                         topJob.map(JobListHelper::explodeJobWithExpressions)
                                 .orElse(Collections.emptySet());
@@ -116,7 +111,6 @@ public class JobList extends EntitiesList<JobWithExpressions> {
                 topJob = explodePopulationNumber(topJob);
                 return setOf(topJob.map(JobMappers::map));
             } else {
-                check(this);
                 Set<JobWithExpressions> jobsInExperiment = getAllJobsWithExperimentId(topJob.get().getExperimentId());
                 removeAll(jobsInExperiment);
                 jobsInExperiment.add(topJob.get());
