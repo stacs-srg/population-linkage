@@ -102,8 +102,9 @@ public class JobList extends EntitiesList<JobWithExpressions> {
 
         if(topJob.isPresent()) {
             if(!JobListHelper.isSingularJob(topJob.get()) && !isPartOfMultiPhaseLinkage(topJob)) {
-                topJob = explodePopulationNumber(topJob);
-                return setOf(topJob.map(JobMappers::map));
+                return explodePopulationNumber(setOf(topJob.get())).stream()
+                        .map(JobMappers::map)
+                        .collect(Collectors.toSet());
             }
 
             if(topJob.get().getExperimentId().equals("-")) {
@@ -214,7 +215,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
     }
 
     private boolean isPartOfMultiPhaseLinkage(Optional<JobWithExpressions> topJob) {
-        return !topJob.get().getExperimentId().equals("-");
+        return !topJob.get().getLinkagePhase().equals("");
     }
 
     private Set<Job> setOf(Optional<Job> job) {
