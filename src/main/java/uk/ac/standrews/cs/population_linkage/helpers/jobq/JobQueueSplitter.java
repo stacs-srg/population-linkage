@@ -5,8 +5,8 @@
 package uk.ac.standrews.cs.population_linkage.helpers.jobq;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,15 +32,12 @@ public class JobQueueSplitter {
 
         int partitions = hosts.size() * nodesPerHost;
 
-        int jobsRemaining = checkRemainingJobs(outputDir, hosts, nodesPerHost, wipeExistingJobs);
+        ArrayList<Integer> jobsRemaining = checkRemainingJobs(outputDir, hosts, nodesPerHost, wipeExistingJobs);
 
         JobList jobs = new JobList(jobQ);
 
         jobs.explodeAllJobs();
-        List<Set<JobWithExpressions>> jobSets = jobs.splitJobList(partitions);
-
-        int totalJobs = Math.toIntExact(jobSets.stream().mapToLong(Collection::size).sum()) + jobsRemaining;
-        int finalPartitionSize = totalJobs / partitions;
+        List<Set<JobWithExpressions>> jobSets = jobs.splitJobList(jobsRemaining);
 
         int partition = 0;
 
@@ -63,23 +60,26 @@ public class JobQueueSplitter {
         jobs.releaseAndCloseFile(EntitiesList.Lock.JOBS);
     }
 
-    private static int checkRemainingJobs(String outputDir, Set<String> hosts, int nodesPerHost, boolean wipeExistingJobs) throws IOException, InterruptedException {
-        int remainingJobs = 0;
+    private static ArrayList<Integer> checkRemainingJobs(String outputDir, Set<String> hosts, int nodesPerHost, boolean wipeExistingJobs) throws IOException, InterruptedException {
 
         if(wipeExistingJobs) {
-            return remainingJobs;
+            return new ArrayList<>();
         }
 
+        ArrayList<Integer> remainingJobCounts = new ArrayList<>();
+
+        int h = 0;
         for(String host : hosts) {
             for(int node = 1; node <= nodesPerHost; node++) {
                 String jobFileName = outputDir.concat("/").concat(host).concat("-").concat(String.valueOf(node)).concat("-job-list.csv");
                 JobList jobList = new JobList(jobFileName, EntitiesList.Lock.BYPASS);
-                remainingJobs += jobList.size();
+                remainingJobCounts.add(h * nodesPerHost + node - 1, jobList.size());
                 jobList.releaseAndCloseFile(EntitiesList.Lock.BYPASS);
             }
+            h++;
         }
 
-        return remainingJobs;
+        return remainingJobCounts;
     }
 
     private static JobWithExpressions modifyResultFilePath(JobWithExpressions job, String hostname, int node) {

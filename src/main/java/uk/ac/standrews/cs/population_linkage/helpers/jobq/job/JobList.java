@@ -45,14 +45,12 @@ public class JobList extends EntitiesList<JobWithExpressions> {
         addAll(allJobs.stream().map(JobMappers::map).collect(Collectors.toSet()));
     }
 
-    public List<Set<JobWithExpressions>> splitJobList(int partitions) {
+    public List<Set<JobWithExpressions>> splitJobList(ArrayList<Integer> jobCountsByPartition) {
         List<Set<JobWithExpressions>> sets = new ArrayList<>();
 
-        int initialSize = size();
-        int jobsPerPartition = (initialSize) / partitions;
         Collections.shuffle(this);
 
-        for(int partition = 0; partition < partitions; partition++) {
+        for(int partition = 0; partition < jobCountsByPartition.size(); partition++) {
             int jobsTaken = 0;
             Set<JobWithExpressions> jobSet = new HashSet<>();
 
@@ -73,9 +71,9 @@ public class JobList extends EntitiesList<JobWithExpressions> {
                 jobSet.addAll(jobs);
                 jobsTaken += jobs.size();
 
-            } while (!isEmpty() && jobsTaken < jobsPerPartition);
+            } while (!isEmpty() && jobsTaken < jobCountsByPartition.get(partition));
 
-            if(partition == partitions - 1 && !isEmpty()) {
+            if(partition == jobCountsByPartition.size() - 1 && !isEmpty()) {
                 Set<JobWithExpressions> jobs = new HashSet<>(this);
                 this.removeAll(jobs);
                 jobSet.addAll(jobs);
