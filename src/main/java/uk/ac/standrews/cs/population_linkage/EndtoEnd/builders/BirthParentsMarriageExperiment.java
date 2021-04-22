@@ -2,11 +2,12 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.Recipies.BirthParentsMarriageSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
@@ -17,15 +18,17 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
  */
 public class BirthParentsMarriageExperiment {
 
+    private static final int PREFILTER_FIELDS = 8;
+
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        LinkageRecipe linkageRecipe = new BirthParentsMarriageLinkageRecipe(sourceRepo, resultsRepo, BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE + "-links");
+        LinkageRecipe linkageRecipe = new BirthParentsMarriageSubsetLinkageRecipe(sourceRepo, resultsRepo, BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE + "-links",PREFILTER_FIELDS);
 
         LinkageConfig.numberOfROs = 20;
 
-        new BitBlasterSubsetOfDataEndtoEndBirthParentsMarriageLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, 8, false, false, false, false);
+        new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), 0.67, true, PREFILTER_FIELDS, false, false, false, false);
     }
 }

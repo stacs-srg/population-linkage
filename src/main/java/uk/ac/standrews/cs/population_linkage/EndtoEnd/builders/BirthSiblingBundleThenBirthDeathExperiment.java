@@ -2,14 +2,13 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
-import org.neo4j.ogm.session.Session;
-import org.neo4j.ogm.transaction.Transaction;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.Recipies.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.graph.model.Reference;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbBridge;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBirthIdentityLinkageRecipe;
@@ -33,12 +32,12 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.Util.getBirthSiblings;
+import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.getBirthSiblings;
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBirthIdentityLinkageRecipe.trueMatch;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
- * It creates a Map of families indexed (at the momement TODO) from birth ids to families
+ * It creates a Map of families indexed (at the moment) from birth ids to families
  */
 public class BirthSiblingBundleThenBirthDeathExperiment {
 
@@ -46,38 +45,20 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
     private static final double COMBINED_AVERAGE_DISTANCE_THRESHOLD = 0.2;
     public static final int PREFILTER_REQUIRED_FIELDS = 8;
 
-    private static int sibling_references_made = 0;    // nasty hack
-    private static int mother_references_made = 0; // nasty hack
-    private static int father_references_made = 0; // nasty hack
-
     public static void main(String[] args) throws Exception {
 
         BitBlasterSearchStructure bb = null;        // initialised in try block - decl is here so we can finally shut it.
-        NeoDbBridge bridge = new NeoDbBridge();
-        Session session = bridge.getSession();
 
-        try {
+        try( NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String resultsRepo = args[1]; // e.g. synth_results
 
-            LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingLinkageRecipe.LINKAGE_TYPE + "-links");
+            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,BirthSiblingLinkageRecipe.LINKAGE_TYPE + "-links",PREFILTER_REQUIRED_FIELDS);
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), 0.67, true, PREFILTER_REQUIRED_FIELDS, true, false, false, false);
+            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), 0.67, true, PREFILTER_REQUIRED_FIELDS, true, false, false, true);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
-
-            /**
-             *  Map<String, Collection<Link>> al_lynx = lr.getMapOfLinks();  // from ORIGINAL_ID to Links - not currently built.
-             *
-             * This is pretty much the same as the families map above - could fold in and make the runners return maps
-             * TODO I am not happy about this filtering thing and how the runners actually get the source records - don't know what to do.
-             * I would also like more composibility of these runners - it is not clear that this is possible (at least at the moment)
-             * but all the use of BB below is a bit messy.
-             * Would be nice to abstract out more code.
-             * The recipies have makeLinksPersistent which could be used to link in neo persistence stuff (with more parameters).
-             *
-             **/
 
             LinkageRecipe death_birth_recipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE + "-links");
 
@@ -95,6 +76,9 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
             int fp = 0;
             int unknown = 0;
 
+            List<String> seen_already = new ArrayList<>(); // keys of the sibling-marriage pairs we have already seen.
+            // TODO This is inefficient but safe - consider doing something else?
+
             Set<Long> birth_keys = families.keySet();
             for (long key : birth_keys) {
 
@@ -108,24 +92,21 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
                 for (LXP sibling : sib_births) {
                     LXP search_deathrecord = convert(death_birth_recipe, sibling);  // converts birth to death
 
-                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_deathrecord, 0.65); // Finds deaths record based on ID on each sibling
-                    System.out.println( "  For sibling n: found " + distances.size() + " deaths: should have: " + sibling.getString( Birth.CHILD_IDENTITY) );
-                    System.out.println( "Sibling: " + sibling.getString( Birth.FORENAME) + " " + sibling.getString( Birth.SURNAME) + " M: " +
-                            sibling.getString( Birth.MOTHER_FORENAME) + " " + sibling.getString( Birth.MOTHER_MAIDEN_SURNAME ) + " F: " +
-                            sibling.getString( Birth.FATHER_FORENAME) + " " + sibling.getString( Birth.FATHER_SURNAME ) );
+                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_deathrecord, 0.45); // Finds deaths record based on ID on each sibling
+                    System.out.println("Seaching for birth, child_id:" + sibling.getString(Birth.CHILD_IDENTITY) + " B: " + sibling.getString(Birth.FORENAME) + " " + sibling.getString(Birth.SURNAME) + " M: " +
+                            sibling.getString(Birth.MOTHER_FORENAME) + " " + sibling.getString(Birth.MOTHER_MAIDEN_SURNAME) + " F: " +
+                            sibling.getString(Birth.FATHER_FORENAME) + " " + sibling.getString(Birth.FATHER_SURNAME));
+                    System.out.println("  Found " + distances.size() + " matching deaths found: ");
+                    distances = restrictDeaths( distances ); // there should be only 1 - returning 3 is conservative
+                    System.out.println("  Found " + distances.size() + " matching deaths after restricting deaths found: ");
 
-                    System.out.println( "SibDeth: " + search_deathrecord.getString( Death.FORENAME ) + " " + search_deathrecord.getString( Death.SURNAME) + " M: " +
-                            search_deathrecord.getString( Death.MOTHER_FORENAME) + " " + search_deathrecord.getString( Death.MOTHER_MAIDEN_SURNAME ) + " F: " +
-                            search_deathrecord.getString( Death.FATHER_FORENAME) + " " + search_deathrecord.getString( Death.FATHER_SURNAME ) );
-
-                    System.out.print( "Death ids found: " );
-                    for( DataDistance<LXP> d : distances ) {
-                        String dist = String.format("%.2f", d.distance);
+                    for (DataDistance<LXP> d : distances) {
+                        String dist = String.format("At distance = %.2f", d.distance);
                         LXP deceased = d.value;
-                        System.out.println( dist + ":" + deceased.getString( Death.DECEASED_IDENTITY ) + " : " );
-                        System.out.println( "     Deceased: " + deceased.getString( Death.FORENAME ) + " " + deceased.getString( Death.SURNAME) + " M: " +
-                                deceased.getString( Death.MOTHER_FORENAME) + " " + deceased.getString( Death.MOTHER_MAIDEN_SURNAME ) + " F: " +
-                                deceased.getString( Death.FATHER_FORENAME) + " " + deceased.getString( Death.FATHER_SURNAME ) );
+                        System.out.println(dist + " found deceased_id: " + deceased.getString(Death.DECEASED_IDENTITY) + " D: " +
+                                deceased.getString(Death.FORENAME) + " " + deceased.getString(Death.SURNAME) + " M: " +
+                                deceased.getString(Death.MOTHER_FORENAME) + " " + deceased.getString(Death.MOTHER_MAIDEN_SURNAME) + " F: " +
+                                deceased.getString(Death.FATHER_FORENAME) + " " + deceased.getString(Death.FATHER_SURNAME));
                     }
                     sibling_deaths.add(new SiblingDeath(sibling, distances));
                 }
@@ -160,7 +141,7 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
                     }
                 }
 
-                // addBirthDeathToNeo4J(session, sibling_deaths);
+               addBirthDeathToNeo4J(bridge, sibling_deaths,seen_already);
 
             }
 
@@ -176,9 +157,64 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
 
         } finally {
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
-            if( bridge != null ) { bridge.close(); }
         }
     }
+
+    /**
+     * if there is are exact matches use only them
+     * If there are more than three take top 3.
+     * @param distances - a list of data distances
+     * @return that list with only exact matches or top 3 preserved.
+     */
+    private static List<DataDistance<LXP>> restrictDeaths(List<DataDistance<LXP>> distances) {
+        List<DataDistance<LXP>> results = new ArrayList<>();
+        boolean found_zero = false;
+
+        for( DataDistance<LXP> dd : distances ) {
+            if (found_zero) { // already found a distance of zero
+                if (closeTo(dd.distance, 0.0)) {
+                    results = new ArrayList<>(); // get rid of any we have already found
+                    results.add(dd);
+                }
+            } else {
+                if (closeTo(dd.distance, 0.0)) {
+                    results = new ArrayList<>(); // get rid of any we have already found
+                    results.add(dd);
+                    found_zero = true;
+                } else { // add this distance if one of the three closest.
+                    if (results.size() < 3) {
+                        results.add(dd);
+                    } else {
+                        double highest = highestIn(results);
+                        if (dd.distance < highest) {
+                            removeDistanceWith(highest,results);
+                            results.add(dd);
+                        }
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
+    private static void removeDistanceWith(double some_val, List<DataDistance<LXP>> list) {
+        for( int i = 0; i < list.size(); i++ ) {
+            if( list.get(i).distance == some_val) {
+                list.remove( i );
+                return;
+            }
+        }
+    }
+
+    private static double highestIn(List<DataDistance<LXP>> list) {
+        double highest = Double.MIN_VALUE;
+        for( DataDistance<LXP> dd : list ) {
+            highest = Double.max(highest, dd.distance);
+        }
+        return highest;
+    }
+
+
 
     /**
      * performs conversion from birth to death and is tolerant of DynamicLXPs which are created during linkage.
@@ -204,22 +240,14 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
      * Adds a 'family' to Neo4J; this involves:
      *      adding a link from each child to the siblings
      *      adding a link from each child to all the parents marriage records
-     * @param session - the neo4J session currently open
+     * @param bridge - a neo4J bridge
      * @param sibling_deaths - a record containing the sibling Death records of that sibling.
      * @throws Exception
      */
-    private static void addBirthDeathToNeo4J(Session session, List<SiblingDeath> sibling_deaths) throws Exception {
-
-        // TODO not written yet
-        System.out.println( "NOT WRITTEN THIS YET addBirthDeathToNeo4J - don't call!");
-        System.exit(0);
-        // TODO do not commit siblings on BD on assumption that they have been done already!
-
-        Transaction tx = session.beginTransaction();
+    private static void addBirthDeathToNeo4J(NeoDbCypherBridge bridge, List<SiblingDeath> sibling_deaths, List<String> seen_already) {
 
         String provenance = getThisClassName(); // TODO This is not really enough but will do for now, need tied to git version and some narrative - JSON perhaps?
 
-        int count = 0;
         for (SiblingDeath sd : sibling_deaths) {
 
             LXP birth = sd.sibling_birth_record;
@@ -228,18 +256,16 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
 
                 LXP death = dd_death.value;
                 double dist = dd_death.distance;
+                String sibling_std_id = birth.getString( Birth.STANDARDISED_ID );
+                String death_std_id = death.getString( Marriage.STANDARDISED_ID );
 
-                sibling_references_made += Reference.createBDReference(tx, session, birth.getString(Birth.STANDARDISED_ID), death.getString(Death.STANDARDISED_ID), provenance, PREFILTER_REQUIRED_FIELDS, dist);
-
-                System.out.print("."); // trace
-                count++;
-                if (count == 80) {
-                    System.out.println();
-                    count = 0;
+                String pair_key = sibling_std_id+death_std_id;
+                if( ! seen_already.contains(pair_key) ) {
+                    Query.createBDReference(bridge, birth.getString(Birth.STANDARDISED_ID), death.getString(Death.STANDARDISED_ID), provenance, PREFILTER_REQUIRED_FIELDS, dist);
+                    seen_already.add(pair_key);
                 }
             }
         }
-        tx.commit();
     }
 
     private static double getDistance(LXP sibling1, LXP sibling2, List<Link> siblings) {

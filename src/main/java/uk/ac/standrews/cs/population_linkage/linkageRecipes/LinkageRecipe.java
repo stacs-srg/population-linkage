@@ -16,6 +16,7 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.BucketKind;
+import uk.ac.standrews.cs.storr.impl.DynamicLXP;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.Store;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
@@ -36,6 +37,8 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.toArray;
 
 /**
  * EvidencePair Recipe
@@ -74,19 +77,48 @@ public abstract class LinkageRecipe {
     protected Iterable<LXP> death_records;
 
     private Iterable<LXP> pre_filtered_records = null;
-    private int pre_filtering_required_populated_linkage_fields = 0;
+    protected int prefilterRequiredFields = 0;
     private Map<String, IBucket> storeRepoBucketLookUp = new HashMap<>();
 
-    public LinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+    public LinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name, int prefilterRequiredFields) {
 
         this.results_repository_name = results_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.source_repository_name = source_repository_name;
+        setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
 
         store_path = ApplicationProperties.getStorePath();
         this.record_repository = new RecordRepository(store_path, source_repository_name);
 
         createRecordIterables();
+    }
+
+    protected ArrayList<LXP> filter(int requiredFields, int number_of_fields_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+        ArrayList<LXP> filtered_source_records = new ArrayList<>();
+        int count_rejected = 0;
+        int count_accepted = 0;
+
+        for (LXP record : records_to_filter) {
+            if (passesFilter(record, linkageFields, requiredFields)) {
+                filtered_source_records.add(record);
+                count_accepted++;
+            } else {
+                // Trace
+                if( count_rejected < 50 ) {
+                    System.out.print( "Rejected: " );
+                    for( int i : linkageFields ) {
+                        System.out.print(record.getMetaData().getFieldName(i) + ":" + record.getString(i) + "/ ");
+                    }
+                    System.out.println();
+                }
+                count_rejected++;
+            }
+            if (filtered_source_records.size() >= number_of_fields_required) {
+                break;
+            }
+        }
+        System.out.println( "Filtering: accepted: " + count_accepted + " rejected: " + count_rejected + " from " + ( count_rejected + count_accepted ) );
+        return filtered_source_records;
     }
 
     public static LinkStatus trueMatch(final LXP record1, final LXP record2, final List<List<Pair>> true_match_alternatives) {
@@ -160,6 +192,15 @@ public abstract class LinkageRecipe {
         if (record instanceof Birth) return Birth.STANDARDISED_ID;
         if (record instanceof Marriage) return Marriage.STANDARDISED_ID;
         if (record instanceof Death) return Death.STANDARDISED_ID;
+        if( record instanceof DynamicLXP ) {
+            DynamicLXP lxp = (DynamicLXP) record;
+            Integer slot = record.getMetaData().getSlot("STANDARDISED_ID");
+            if( slot == null ) {
+                throw new RuntimeException("unexpected record type - can't find STANDARDISED_ID in DynamicLXP");
+            } else {
+                return lxp.getInt(slot);
+            }
+        }
 
         throw new RuntimeException("unexpected record type");
     }
@@ -294,11 +335,12 @@ public abstract class LinkageRecipe {
                 // we do this for symmetric linkage recipes as it ensures the iterables
                 // returned by this method and the one for records 2 is the same object - this is required by the
                 // implementation of similarity search - otherwise we link to people to themselves
-                pre_filtered_records = filterStoredRecords(getStoredRecords(), getLinkageFields());
+                pre_filtered_records = filterRecords(getStoredRecords(), getLinkageFields());
             }
             return pre_filtered_records;
         } else {
-            return filterStoredRecords(getStoredRecords(), getLinkageFields());
+            // why no caching in this case?
+            return filterRecords(getStoredRecords(), getLinkageFields());
         }
     }
 
@@ -306,7 +348,7 @@ public abstract class LinkageRecipe {
         if (isSymmetric()) {
             return getPreFilteredStoredRecords();
         } else {
-            return filterStoredRecords(getQueryRecords(), getQueryMappingFields());
+            return filterRecords(getQueryRecords(), getQueryMappingFields());
         }
     }
 
@@ -668,14 +710,38 @@ public abstract class LinkageRecipe {
     private void initIterable(Class<? extends LXP> sourceType) {
 
         if (sourceType.equals(Birth.class)) {
-            birth_records = Utilities.getBirthRecords(record_repository);
+            birth_records = getBirthRecords();
         } else if (sourceType.equals(Marriage.class)) {
-            marriage_records = Utilities.getMarriageRecords(record_repository);
+            marriage_records = getMarriageRecords();
         } else if (sourceType.equals(Death.class)) {
-            death_records = Utilities.getDeathRecords(record_repository);
+            death_records = getDeathRecords();
         } else {
             throw new RuntimeException("Invalid source type");
         }
+    }
+
+    /**
+     * Note - May be overridden by subclass
+     * @return the birth records to be used in this recipe
+     */
+    protected Iterable<LXP> getBirthRecords() {
+        return Utilities.getBirthRecords(record_repository);
+    }
+
+    /**
+     * Note - May be overridden by subclass
+     * @return the death records to be used in this recipe
+     */
+    protected Iterable<LXP> getDeathRecords() {
+        return Utilities.getDeathRecords(record_repository);
+    }
+
+    /**
+     * Note - May be overwritten by subclass
+     * @return the marriage records to be used in this recipe
+     */
+    protected Iterable<LXP> getMarriageRecords() {
+        return Utilities.getMarriageRecords(record_repository);
     }
 
     private Iterable<LXP> getIterable(Class<? extends LXP> sourceType) {
@@ -697,16 +763,18 @@ public abstract class LinkageRecipe {
 
     private int getSize(Class<? extends LXP> sourceType) throws BucketException {
 
+        //TODO rewrite with stream to avoid allocation?
+
         if (sourceType.equals(Birth.class)) {
-            return record_repository.getNumberOfBirths();
+            return toArray( birth_records ).size();
         }
 
         if (sourceType.equals(Marriage.class)) {
-            return record_repository.getNumberOfMarriages();
+            return toArray( marriage_records ).size();
         }
 
         if (sourceType.equals(Death.class)) {
-            return record_repository.getNumberOfDeaths();
+            return toArray( death_records ).size();
         }
 
         throw new Error("Invalid source type");
@@ -716,7 +784,7 @@ public abstract class LinkageRecipe {
     ------- PERSISTENCE CODE ------------
      */
 
-    protected Iterable<LXP> filterStoredRecords(Iterable<LXP> records, List<Integer> filterOn, int reqPopulatedFields) {
+    protected Iterable<LXP> filterRecords(Iterable<LXP> records, List<Integer> filterOn, int reqPopulatedFields) {
         Collection<LXP> filteredRecords = new HashSet<>();
 
         for (LXP record : records) {
@@ -759,25 +827,23 @@ public abstract class LinkageRecipe {
         return filteredRecords;
     }
 
-    protected Iterable<LXP> filterStoredRecords(Iterable<LXP> records, List<Integer> filterOn) {
-        return filterStoredRecords(records, filterOn, pre_filtering_required_populated_linkage_fields);
+    protected Iterable<LXP> filterRecords(Iterable<LXP> records, List<Integer> filterOn) {
+        return filterRecords(records, filterOn, prefilterRequiredFields);
     }
 
-    public int getPreFilteringRequiredPopulatedLinkageFields() {
-        return pre_filtering_required_populated_linkage_fields;
-    }
-
-    public void setPreFilteringRequiredPopulatedLinkageFields(int preFilteringRequiredPopulatedLinkageFields) {
-        if (preFilteringRequiredPopulatedLinkageFields > getLinkageFields().size()) {
+    public void setPreFilteringRequiredPopulatedLinkageFields(int prefilterRequiredFields) {
+        if (prefilterRequiredFields > getLinkageFields().size()) {
             System.out.printf("Requested more linkage fields to be populated than are present - setting to number of linkage fields - %d \n", getLinkageFields().size());
-            this.pre_filtering_required_populated_linkage_fields = getLinkageFields().size();
+            this.prefilterRequiredFields = getLinkageFields().size();
         } else {
-            this.pre_filtering_required_populated_linkage_fields = preFilteringRequiredPopulatedLinkageFields;
+            this.prefilterRequiredFields = prefilterRequiredFields;
         }
     }
 
     public void makeLinksPersistent(Iterable<Link> links) {
-        makePersistentUsingStorr(store_path, results_repository_name, links_persistent_name, links);
+        for( Link link : links ) {
+            makeLinkPersistent(link);
+        }
     }
 
     public void makeLinkPersistent(Link link) {
@@ -801,7 +867,7 @@ public abstract class LinkageRecipe {
             makePersistentUsingStorr(store_path, results_repo_name, bucket_name, link);
     }
 
-    protected void makePersistentUsingFile(String name, Iterable<Link> links) {
+    protected void makePersistentUsingFile(String name, Iterable<Link> links) { // TODO Move all of these out of here - al
 
         try {
             File f = new File(name);

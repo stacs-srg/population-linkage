@@ -16,7 +16,7 @@ import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
  * This is a transcription of the LXP model used elsewhere and may be constructed from trhat representation
  */
 @NodeEntity
-public class BirthRecord extends VitalEventRecord {
+class BirthRecord extends VitalEventRecord {
 
     @Property
     public String ORIGINAL_ID;

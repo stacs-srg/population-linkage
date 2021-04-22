@@ -38,7 +38,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "birth-death-sibling";
 
     public BirthDeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+        super(source_repository_name, results_repository_name, links_persistent_name, 0);
     }
 
     @Override

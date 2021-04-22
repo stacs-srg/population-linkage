@@ -61,7 +61,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "birth-mother-identity";
 
     public BirthMotherIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+        super(source_repository_name, results_repository_name, links_persistent_name, 0);
     }
 
     @Override
@@ -122,20 +122,17 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
+        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY);
     }
 
     @Override

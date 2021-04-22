@@ -5,7 +5,6 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.LinkageRunner;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 
 import java.io.IOException;
@@ -60,8 +59,7 @@ public class GroundTruthLinkCounter {
             }
 
             // check if count in file
-            int numberOfGTLinks = getCountFromLog(gtCountsFile, populationName, populationSize, populationNumber,
-                    corruptionNumber, linkageApproach);
+            int numberOfGTLinks = getCountFromLog(gtCountsFile, populationName, populationSize, populationNumber, corruptionNumber, linkageApproach);
 
             if(numberOfGTLinks == -1) { // if count not already done then do count
                 System.out.println("Ground truth links count not in file will count from repo: " + sourceRepoName);

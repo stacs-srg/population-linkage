@@ -2,12 +2,12 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
 import org.neo4j.ogm.model.Result;
 import org.neo4j.ogm.session.Session;
-import uk.ac.standrews.cs.population_linkage.graph.model.modelV1.BirthRecord;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbBridge;
+import uk.ac.standrews.cs.population_linkage.graph.model.BirthRecord;
+import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbOGMBridge;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -16,11 +16,11 @@ import java.util.Map;
 
 public class Lookup implements AutoCloseable {
 
-    private final NeoDbBridge bridge = new NeoDbBridge();
+    private final NeoDbOGMBridge bridge = new NeoDbOGMBridge();
     private final Session session;
 
     public Lookup() {
-        session = bridge.getSession();
+        session = bridge.getNewSession();
 
     }
 

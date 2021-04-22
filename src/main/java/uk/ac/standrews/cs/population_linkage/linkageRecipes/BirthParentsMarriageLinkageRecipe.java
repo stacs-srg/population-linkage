@@ -48,7 +48,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "birth-parents-marriage-identity";
 
     public BirthParentsMarriageLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+        super(source_repository_name, results_repository_name, links_persistent_name, 0);
     }
 
     @Override

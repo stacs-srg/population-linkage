@@ -4,7 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.runners;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments.DisplayMethods;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -20,7 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import static uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.Util.getBirthSiblings;
+import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.getBirthSiblings;
+import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.toArray;
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe.trueMatch;
 
 public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends BitBlasterLinkageRunner {
@@ -47,8 +48,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
         // This is alternative to the code in LinkageRunner which requires the whole set to be manifested.
         // This only manifests the first REQUIRED fields.
 
-        ArrayList<LXP> filtered_source_records = filter(prefilterRequiredFields, NUMBER_OF_BIRTHS, linkageRecipe.getStoredRecords(), linkageRecipe.getLinkageFields());    // TODO Are these just the same?
-        // ArrayList<LXP> filtered_search_records = filter(prefilterRequiredFields, NUMBER_OF_BIRTHS, linkageRecipe.getSearchRecords()); // TODO - yes for Birth-Birth but not in general
+        Iterable<LXP> filtered_source_records = linkageRecipe.getStoredRecords(); // in this recipe source and search are the same but not in general
 
         linker.addRecords(filtered_source_records, filtered_source_records);
 
@@ -89,14 +89,14 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
             showFamilies();
         }
 
-        numberOfGroundTruthTrueLinks = countTrueLinks(filtered_source_records);
+        numberOfGroundTruthTrueLinks = countTrueLinks(toArray( filtered_source_records) );
 
         report( "Num GT true links = " + numberOfGroundTruthTrueLinks );
         int fn = numberOfGroundTruthTrueLinks - tp;
         LinkageQuality lq = new LinkageQuality(tp, fp, fn);
         lq.print(System.out);
 
-        return null; // TODO FIX THIS
+        return null; // TODO FIX THIS - should be LinkageResult
     }
 
     private List<Link> dedupSymmetricAndSelfPairs(Iterable<Link> links) throws BucketException {

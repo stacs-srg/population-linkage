@@ -142,9 +142,9 @@ public class LinkageJobQueueHandler {
 
         switch (linkageType) {
             case BirthSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name, 0);
             case BirthDeathIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name, 0);
             case BirthDeathSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new BirthDeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case BirthFatherIdentityLinkageRecipe.LINKAGE_TYPE:
@@ -162,7 +162,7 @@ public class LinkageJobQueueHandler {
             case DeathBrideOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case DeathSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name,0);
             case DeathGroomOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case FatherGroomIdentityLinkageRecipe.LINKAGE_TYPE:

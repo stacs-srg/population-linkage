@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathBrideOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathGroomOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.FatherGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -96,7 +96,7 @@ public class CompositeLinkageRecipe {
         Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, birthBrideLinks, "death-birth-via-bride-id");
         deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)
 
-        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name), true);
+        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, 0), true);
     }
 
     private static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, PersistentObjectException {

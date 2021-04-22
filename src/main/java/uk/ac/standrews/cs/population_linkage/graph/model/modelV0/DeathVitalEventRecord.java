@@ -9,7 +9,7 @@ import org.neo4j.ogm.annotation.Property;
 import uk.ac.standrews.cs.population_linkage.graph.model.modelV1.VitalEventRecord;
 
 @NodeEntity
-public class DeathVitalEventRecord extends VitalEventRecord {
+class DeathVitalEventRecord extends VitalEventRecord {
 
     @Property
     private String first_names;

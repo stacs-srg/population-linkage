@@ -36,7 +36,7 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
 
     @Override
     public List<Integer> getComparisonFields() {
-        return DeathSiblingLinkageRecipe.COMPARISON_FIELDS;
+        return DeathSiblingLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override

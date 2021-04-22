@@ -30,13 +30,14 @@ import java.util.Map;
  */
 public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
 
+    private static final int REQUIRED_FIELDS = 8;
+
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        LinkageRecipe linkageRecipe = new FatherGroomIdentityLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
+        LinkageRecipe linkageRecipe = new FatherGroomIdentityLinkageRecipe(sourceRepo, resultsRepo, LINKAGE_TYPE + "-links");
 
         new BitBlasterLinkageRunner()
                 .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
@@ -46,7 +47,7 @@ public class FatherGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "father-groom-identity";
 
     public FatherGroomIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+        super(source_repository_name, results_repository_name, links_persistent_name, 0);
     }
 
     @Override

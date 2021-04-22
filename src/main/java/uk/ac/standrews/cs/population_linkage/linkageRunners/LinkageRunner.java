@@ -4,7 +4,6 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
-import uk.ac.standrews.cs.population_linkage.helpers.GroundTruthLinkCounter;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
@@ -51,7 +50,7 @@ public abstract class LinkageRunner {
 
         int numberOGroundTruthLinks = 0;
         if(evaluateQuality) {
-            numberOGroundTruthLinks = new GroundTruthLinkCounter(linkageRecipe.getSource_repository_name(), gtLinksCountFile).count(linkageRecipe);
+            numberOGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();  // was this: new GroundTruthLinkCounter(linkageRecipe.getSource_repository_name(), gtLinksCountFile).count(linkageRecipe);
         }
 
         MemoryLogger.update();

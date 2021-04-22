@@ -4,39 +4,25 @@
  */
 package uk.ac.standrews.cs.population_linkage.graph.util;
 
-import org.neo4j.ogm.config.Configuration;
-import org.neo4j.ogm.session.Session;
-import org.neo4j.ogm.session.SessionFactory;
+public abstract class NeoDbBridge implements AutoCloseable {
 
-public class NeoDbBridge {
+    protected static final String default_url = "bolt://localhost:7687";
+    protected static final String default_user = "neo4j";
+    protected static final String default_password = "password";
 
-    private final Session session;
-    private SessionFactory sessionFactory;
-
-    private static final String default_url = "bolt://localhost:7687";
-    private static final String default_user = "neo4j";
-    private static final String default_password = "password";
+    protected final String uri;
+    protected final String user;
+    protected final String password;
 
     public NeoDbBridge() {
         this( default_url,default_user,default_password );
     }
 
     public NeoDbBridge(String uri, String user, String password) {
-        Configuration conf = new Configuration.Builder()
-                .uri(uri)
-                .credentials(user, password)
-                .build();
-        sessionFactory = new SessionFactory(conf,
-                "uk.ac.standrews.cs.population_linkage.graph.model");
-        session = sessionFactory.openSession();
+        this.uri = uri;
+        this.user = user;
+        this.password = password;
     }
 
-    public void close() throws Exception
-    {
-        sessionFactory.close();
-    }
-
-    public Session getSession() {
-        return session;
-    }
+    public abstract void close() throws Exception;
 }

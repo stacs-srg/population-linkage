@@ -6,9 +6,9 @@ package uk.ac.standrews.cs.population_linkage.graph.util;
 
 import org.neo4j.ogm.session.Session;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
-import uk.ac.standrews.cs.population_linkage.graph.model.modelV1.BirthRecord;
-import uk.ac.standrews.cs.population_linkage.graph.model.modelV1.DeathRecord;
-import uk.ac.standrews.cs.population_linkage.graph.model.modelV1.MarriageRecord;
+import uk.ac.standrews.cs.population_linkage.graph.model.BirthRecord;
+import uk.ac.standrews.cs.population_linkage.graph.model.DeathRecord;
+import uk.ac.standrews.cs.population_linkage.graph.model.MarriageRecord;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -18,7 +18,7 @@ import java.nio.file.Path;
 
 public class LoadNeo4JVitalEventsFromStorr implements AutoCloseable {
 
-    private final NeoDbBridge bridge = new NeoDbBridge();
+    private final NeoDbOGMBridge bridge = new NeoDbOGMBridge();
     private final Session session;
 
     protected Iterable<LXP> birth_records;
@@ -30,7 +30,7 @@ public class LoadNeo4JVitalEventsFromStorr implements AutoCloseable {
 
     public LoadNeo4JVitalEventsFromStorr(String source_repository_name )
     {
-        session = bridge.getSession();
+        session = bridge.getNewSession();
         this.source_repository_name = source_repository_name;
 
         store_path = ApplicationProperties.getStorePath();

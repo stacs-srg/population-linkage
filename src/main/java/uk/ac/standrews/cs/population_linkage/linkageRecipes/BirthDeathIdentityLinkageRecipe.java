@@ -63,7 +63,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         String resultsRepo = args[1]; // e.g. synth_results
 
         LinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
+                LINKAGE_TYPE + "-links", 0);
 
         new BitBlasterLinkageRunner()
                 .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
@@ -72,8 +72,8 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "birth-death-identity";
 
-    public BirthDeathIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BirthDeathIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name, int prefilterRequiredFields) {
+        super(source_repository_name, results_repository_name, links_persistent_name,prefilterRequiredFields);
     }
 
     @Override
@@ -140,19 +140,16 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        throw new RuntimeException("ground truth implementation not consistent with trueMatch()");
-//        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
     }
 }

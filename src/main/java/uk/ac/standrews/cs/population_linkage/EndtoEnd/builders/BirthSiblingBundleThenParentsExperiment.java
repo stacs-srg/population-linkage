@@ -2,13 +2,12 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd.experiments;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
-import org.neo4j.ogm.session.Session;
-import org.neo4j.ogm.transaction.Transaction;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.Recipies.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.graph.model.Reference;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbBridge;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
@@ -30,7 +29,8 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.Util.getBirthSiblings;
+import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.closeTo;
+import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.getBirthSiblings;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
@@ -38,7 +38,6 @@ import static uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.Util.getBir
  */
 public class BirthSiblingBundleThenParentsExperiment {
 
-    private static final double THRESHOLD = 0.0000001;
     private static final double COMBINED_AVERAGE_DISTANCE_THRESHOLD = 0.2;
     public static final int PREFILTER_REQUIRED_FIELDS = 8;
 
@@ -46,34 +45,22 @@ public class BirthSiblingBundleThenParentsExperiment {
     private static int mother_references_made = 0; // nasty hack
     private static int father_references_made = 0; // nasty hack
 
+    private static final double DISTANCE_THRESHOLD = 0.67;
+
     public static void main(String[] args) throws Exception {
 
         BitBlasterSearchStructure bb = null;        // initialised in try block - decl is here so we can finally shut it.
-        NeoDbBridge bridge = new NeoDbBridge();
-        Session session = bridge.getSession();
 
-        try {
+        try( NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String resultsRepo = args[1]; // e.g. synth_results
 
-            LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingLinkageRecipe.LINKAGE_TYPE + "-links");
+            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingLinkageRecipe.LINKAGE_TYPE + "-links",PREFILTER_REQUIRED_FIELDS);
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), 0.67, true, PREFILTER_REQUIRED_FIELDS, true, false, false, false);
+            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), DISTANCE_THRESHOLD, true, PREFILTER_REQUIRED_FIELDS, true, false, false, false);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
-
-            /**
-             *  Map<String, Collection<Link>> al_lynx = lr.getMapOfLinks();  // from ORIGINAL_ID to Links - not currently built.
-             *
-             * This is pretty much the same as the families map above - could fold in and make the runners return maps
-             * TODO I am not happy about this filtering thing and how the runners actually get the source records - don't know what to do.
-             * I would also like more composibility of these runners - it is not clear that this is possible (at least at the moment)
-             * but all the use of BB below is a bit messy.
-             * Would be nice to abstract out more code.
-             * The recipies have makeLinksPersistent which could be used to link in neo persistence stuff (with more parameters).
-             *
-             **/
 
             LinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE + "-links");
 
@@ -89,18 +76,21 @@ public class BirthSiblingBundleThenParentsExperiment {
 
             int[] number_of_marriages_per_family = new int[20]; // 20 is far too big!
 
-            Set<Long> birth_keys = families.keySet();
-            for (long key : birth_keys) {
+            List<String> seen_already = new ArrayList<>(); // keys of the sibling-marriage pairs we have already seen.
+            // TODO This is inefficient but safe - consider doing something else?
 
-                List<Link> siblings = families.get(key);
+            Collection<List<Link>> all_families = families.values(); // all the families: links from siblings to marriages.
+            for( List<Link> siblings : all_families ) {
+
                 Set<LXP> sib_records = getBirthSiblings(siblings);
 
-                List<SiblingParentsMarriage> sibling_parents_marriages = new ArrayList<>();
+                Set<SiblingParentsMarriage> sibling_parents_marriages = new TreeSet<>();
 
                 for (LXP sibling : sib_records) {
                     LXP search_record = parents_recipe.convertToOtherRecordType(sibling);
 
                     List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_record, 0.67);
+
                     sibling_parents_marriages.add(new SiblingParentsMarriage(sibling, distances));
                 }
 
@@ -109,18 +99,16 @@ public class BirthSiblingBundleThenParentsExperiment {
                     adjustMarriagesInGrouping(sibling_parents_marriages);
                 }
 
-                addChildParentsMarriageToNeo4J(session, siblings, sib_records, sibling_parents_marriages);
-
+                addChildParentsMarriageToNeo4J(bridge, sibling_parents_marriages,seen_already);
 
                 number_of_marriages_per_family[count]++;
             }
 
+            //---------------------
+
             System.out.println("Sibling references made = " + sibling_references_made);
             System.out.println("Mother references made = " + mother_references_made);
             System.out.println("Father references made = " + father_references_made);
-
-            bb.terminate(); // shut down the metric search threads
-            bridge.close();
 
             int sum = 0;
             for (int i = 1; i < number_of_marriages_per_family.length; i++) {
@@ -133,7 +121,7 @@ public class BirthSiblingBundleThenParentsExperiment {
             System.out.println("Total number of families = " + sum);
         } finally {
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
-            if( bridge != null ) { bridge.close(); }
+            System.exit(1); // TODO fix me: not elegant but will shut things down!
         }
     }
 
@@ -141,51 +129,33 @@ public class BirthSiblingBundleThenParentsExperiment {
      * Adds a 'family' to Neo4J; this involves:
      *      adding a link from each child to the siblings
      *      adding a link from each child to all the parents marriage records
-     * @param session - the neo4J session currently open
-     * @param siblings - the links containing the birth records for all babies in this family.
-     * @param sib_records
+     * @param bridge - the neo4J session currently open
      * @param sibling_parents_marriages - a record containing 1 sibling the Marriage records of that sibling.
+     * @param seen_already
      * @throws Exception
      */
-    private static void addChildParentsMarriageToNeo4J(Session session, List<Link> siblings, Set<LXP> sib_records, List<SiblingParentsMarriage> sibling_parents_marriages) throws Exception {
+    private static void addChildParentsMarriageToNeo4J(NeoDbCypherBridge bridge, Set<SiblingParentsMarriage> sibling_parents_marriages, List<String> seen_already) {
 
-        List<LXP> processed_siblings = new ArrayList<>();
-        Transaction tx = session.beginTransaction();
+        String provenance = getThisClassName(); // TODO This is not really enough but will do for now, need tied to git version and some narrative - JSON perhaps?
 
-        int count = 0;
         for (SiblingParentsMarriage spm : sibling_parents_marriages) {
 
             final LXP sibling = spm.sibling;
-            processed_siblings.add(sibling);
-
-            String provenance = getThisClassName(); // TODO This is not really enough but will do for now, need tied to git version and some narrative - JSON perhaps?
 
             for (DataDistance<LXP> distance : spm.parents_marriages) {
                 final LXP marriage = distance.value;
                 double dist = distance.distance;
-                String id = marriage.getString(Marriage.STANDARDISED_ID);
+                String sibling_std_id = sibling.getString( Birth.STANDARDISED_ID );
+                String marriage_std_id = marriage.getString( Marriage.STANDARDISED_ID );
 
-                mother_references_made += Reference.createBMMotherReference(tx, session, sibling.getString( Birth.STANDARDISED_ID ), marriage.getString( Marriage.STANDARDISED_ID ), provenance, PREFILTER_REQUIRED_FIELDS,  dist);
-                father_references_made += Reference.createBMFatherReference(tx, session, sibling.getString( Birth.STANDARDISED_ID ), marriage.getString( Marriage.STANDARDISED_ID ), provenance, PREFILTER_REQUIRED_FIELDS,  dist);
-            }
-
-            for( LXP other_sibling : sib_records ) {
-                if( ! processed_siblings.contains( other_sibling ) ) { // if we haven't already processed the other sibling
-                    // add a sibling link.
-                    // TODO this is one way - does that work ok in neo?
-                    // TODO what happens in neo OMG with direction of references?
-                    sibling_references_made += Reference.createBBSiblingReference(tx, session, sibling.getString( Birth.STANDARDISED_ID ), other_sibling.getString( Birth.STANDARDISED_ID ), provenance, PREFILTER_REQUIRED_FIELDS, getDistance(sibling,other_sibling,siblings)  );
-
+                String pair_key = sibling_std_id+marriage_std_id;
+                if( ! seen_already.contains(pair_key) ) {
+                    Query.createBMMotherReference(bridge, sibling_std_id, marriage_std_id, provenance, PREFILTER_REQUIRED_FIELDS, dist);
+                    Query.createBMFatherReference(bridge, sibling_std_id, marriage_std_id, provenance, PREFILTER_REQUIRED_FIELDS, dist);
+                    seen_already.add(pair_key);
                 }
             }
-            System.out.print("."); // trace
-            count++;
-            if( count == 80 ) {
-                System.out.println();
-                count = 0;
-            }
         }
-        tx.commit();
     }
 
     private static double getDistance(LXP sibling1, LXP sibling2, List<Link> siblings) {
@@ -204,7 +174,7 @@ public class BirthSiblingBundleThenParentsExperiment {
         return main.getClassName();
     }
 
-    private static int countDifferentMarriagesInGrouping(List<SiblingParentsMarriage> sibling_parents_marriages) {
+    private static int countDifferentMarriagesInGrouping(Set<SiblingParentsMarriage> sibling_parents_marriages) {
 
         Map<LXP, Integer> counts = new HashMap<>();
         for (SiblingParentsMarriage spm : sibling_parents_marriages) {
@@ -221,7 +191,7 @@ public class BirthSiblingBundleThenParentsExperiment {
         return counts.keySet().size();
     }
 
-    private static List<SiblingParentsMarriage> adjustMarriagesInGrouping(List <SiblingParentsMarriage> sibling_parents_marriages) throws BucketException {
+    private static Set<SiblingParentsMarriage> adjustMarriagesInGrouping(Set<SiblingParentsMarriage> sibling_parents_marriages) throws BucketException {
 
         TreeMap<String, Integer> marriage_counts = new TreeMap<>();     // map from the marriages to number of occurances.
 
@@ -231,8 +201,8 @@ public class BirthSiblingBundleThenParentsExperiment {
 
         for (SiblingParentsMarriage spm : sibling_parents_marriages) {
 
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
-                final LXP marriage = distance.value;
+            for (DataDistance<LXP> distance_and_marriage : spm.parents_marriages) {
+                final LXP marriage = distance_and_marriage.value;
                 String id = marriage.getString(Marriage.STANDARDISED_ID);
                 if (marriage_counts.keySet().contains(id)) {
                     int count = marriage_counts.get(id);
@@ -284,7 +254,7 @@ public class BirthSiblingBundleThenParentsExperiment {
      * @param sibling_parents_marriages
      * @return a list of sibling marriages that are the best and close to zero
      */
-    private static List<SiblingParentsMarriage> findLowestCombinedIfExistsOrAll(List<String> all_agree_ids, List<SiblingParentsMarriage> sibling_parents_marriages) {
+    private static Set<SiblingParentsMarriage> findLowestCombinedIfExistsOrAll(List<String> all_agree_ids, Set<SiblingParentsMarriage> sibling_parents_marriages) {
 
         // try and find the lowest combined distance in the family.
         double lowest = Double.MAX_VALUE;
@@ -309,7 +279,7 @@ public class BirthSiblingBundleThenParentsExperiment {
         if (  average_distance < COMBINED_AVERAGE_DISTANCE_THRESHOLD ) {
 
             System.out.println("Found clear winner for set of parents !!!! - average distance = " + average_distance);
-            List<SiblingParentsMarriage> result = new ArrayList<>();
+            TreeSet<SiblingParentsMarriage> result = new TreeSet<>();
             result.add(best_so_far);
             return result;
 
@@ -325,8 +295,8 @@ public class BirthSiblingBundleThenParentsExperiment {
      * @param sibling_parents_marriages
      * @return
      */
-    private static List<SiblingParentsMarriage> replaceAllInExcept(String standard_agreed_id, List<SiblingParentsMarriage> sibling_parents_marriages) {
-        List<SiblingParentsMarriage> result = new ArrayList<>();
+    private static Set<SiblingParentsMarriage> replaceAllInExcept(String standard_agreed_id, Set<SiblingParentsMarriage> sibling_parents_marriages) {
+        TreeSet<SiblingParentsMarriage> result = new TreeSet<>();
         for( SiblingParentsMarriage spm : sibling_parents_marriages ) {
             LXP sibling = spm.sibling;
             for( DataDistance<LXP> distance : spm.parents_marriages ) {
@@ -386,9 +356,6 @@ public class BirthSiblingBundleThenParentsExperiment {
         System.out.println("---");
     }
 
-    private static boolean closeTo(double distance, double target) {
-        return Math.abs(target - distance) < THRESHOLD;
-    }
 
     protected static Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe, StringMetric baseMetric) {
         return new Sigma(baseMetric, linkageRecipe.getLinkageFields(), 0);
