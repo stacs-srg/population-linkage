@@ -43,7 +43,7 @@ public class DeathGroomIdentitySubsetLinkageRecipe extends DeathGroomOwnMarriage
      */
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        return filterBySex(filter(prefilterRequiredFields, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields()), Death.SEX, "m");
+        return filter( prefilterRequiredFields, NUMBER_OF_DEATHS, filterBySex( super.getDeathRecords(), Death.SEX, "m"), getLinkageFields() );
     }
 
     // NOTE Marriage not filtered in this recipe

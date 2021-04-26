@@ -42,7 +42,7 @@ public class BirthGroomIdentitySubsetLinkageRecipe extends BirthGroomIdentityLin
      */
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filterBySex(filter(prefilterRequiredFields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields()), Birth.SEX, "m");
+        return filter( prefilterRequiredFields, NUMBER_OF_BIRTHS, filterBySex( super.getBirthRecords(), Birth.SEX, "m"), getLinkageFields() );
     }
 
     // NOTE Marriage not filtered in this recipe

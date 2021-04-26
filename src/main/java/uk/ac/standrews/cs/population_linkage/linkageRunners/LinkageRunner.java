@@ -50,7 +50,7 @@ public abstract class LinkageRunner {
 
         int numberOGroundTruthLinks = 0;
         if(evaluateQuality) {
-            numberOGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();  // was this: new GroundTruthLinkCounter(linkageRecipe.getSource_repository_name(), gtLinksCountFile).count(linkageRecipe);
+            numberOGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
         }
 
         MemoryLogger.update();
@@ -261,10 +261,10 @@ public abstract class LinkageRunner {
             lq = new LinkageQuality("Evaluation not requested");
         }
 
-        final boolean printFNs = false;
+        final boolean printFNs = false; // this does not appear to work - values yields an empty set!!!
         if(printFNs) {
-            for (Link missingLinks : groundTruthLinks.values()) {
-                printLink(missingLinks, "FN");
+            for (Link missingLink : groundTruthLinks.values()) {
+                printLink(missingLink, "FN");
             }
         }
 
@@ -338,7 +338,7 @@ public abstract class LinkageRunner {
                 String isEquals = "≠";
                 if(r1FieldContent.equals(r2FieldContent)) isEquals = "=";
 
-                System.out.printf("%30s | %20s |%s| %-20s | %-30s \n", r1FieldName, r1FieldContent, isEquals, r2FieldContent, r2FieldName);
+                System.out.printf("%30s | %20s |%s| %-20s | %-30s %.2f \n", r1FieldName, r1FieldContent, isEquals, r2FieldContent, r2FieldName, link.getDistance());
             }
 
             System.out.println("---------------------------------------------------------------------------------------------------------------");

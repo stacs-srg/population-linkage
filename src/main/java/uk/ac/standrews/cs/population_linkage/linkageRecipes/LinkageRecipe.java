@@ -93,7 +93,7 @@ public abstract class LinkageRecipe {
         createRecordIterables();
     }
 
-    protected ArrayList<LXP> filter(int requiredFields, int number_of_fields_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+    protected ArrayList<LXP> filter(int requiredFields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
         ArrayList<LXP> filtered_source_records = new ArrayList<>();
         int count_rejected = 0;
         int count_accepted = 0;
@@ -113,7 +113,7 @@ public abstract class LinkageRecipe {
                 }
                 count_rejected++;
             }
-            if (filtered_source_records.size() >= number_of_fields_required) {
+            if (filtered_source_records.size() >= number_of_records_required) {
                 break;
             }
         }
@@ -798,23 +798,17 @@ public abstract class LinkageRecipe {
     }
 
     public boolean passesFilter(LXP record, List<Integer> filterOn, int reqPopulatedFields) {
-        int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields + 1;
+        int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
+        int numberOfEmptyFields = 0;
 
         for (int attribute : filterOn) {
             String value = record.getString(attribute).toLowerCase().trim();
             if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----") ) {  // TODO could make this field specific (or standardise empty).
-                numberOfEmptyFieldsPermitted--;
-            }
-
-            if (numberOfEmptyFieldsPermitted == 0) {
-                break;
+                numberOfEmptyFields++;
             }
         }
 
-        if (numberOfEmptyFieldsPermitted > 0) { // this is a data-full record that we want to keep
-            return true;
-        }
-        return false;
+        return numberOfEmptyFields <= numberOfEmptyFieldsPermitted;
     }
 
     protected Iterable<LXP> filterBySex(Iterable<LXP> records, int sexField, String keepSex) {

@@ -32,7 +32,7 @@ public class BirthBrideOwnMarriageExperiment {
 
             LinkageConfig.numberOfROs = 20;
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), DISTANCE_THRESHOLD, true, PREFILTER_REQUIRED_FIELDS, false, false, true, true);
+            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), DISTANCE_THRESHOLD, false, PREFILTER_REQUIRED_FIELDS, false, false, true, false);
         } catch (Exception e) {
             System.out.println( "Exception closing bridge" );
         } finally {

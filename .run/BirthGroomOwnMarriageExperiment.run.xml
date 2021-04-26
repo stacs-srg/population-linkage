@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BirthGroomOwnMarriageExperiment" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthGroomOwnMarriageExperiment" />
+    <module name="population-linkage" />
+    <option name="PROGRAM_PARAMETERS" value="umea umea_results" />
+    <option name="VM_PARAMETERS" value="-Xmx16G" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

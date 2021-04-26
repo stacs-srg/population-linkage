@@ -25,6 +25,7 @@ public class Query {
     private static final String DD_SIBLING_QUERY = "MATCH (a:DeathRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
     private static final String DD_DEATH_QUERY = "MATCH (a:BirthRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:DEATH { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
     private static final String BM_DEATH_GROOM_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    private static final String BM_DEATH_BRIDE_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";;
 
     /**
      * Creates a bride reference between node with standard_id_from and standard_id_to and returns the number of relationships created
@@ -98,6 +99,15 @@ public class Query {
     public static void createDeathGroomOwnMarriageReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
         createReference(bridge, BM_DEATH_GROOM_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
     }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createDeathBrideOwnMarriageReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        createReference(bridge, BM_DEATH_BRIDE_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+     }
 
     /**
      * This is the code that runs the neo4J query and returns the number of relationships created
