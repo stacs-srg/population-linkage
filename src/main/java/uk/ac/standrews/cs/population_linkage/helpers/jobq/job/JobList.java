@@ -50,15 +50,18 @@ public class JobList extends EntitiesList<JobWithExpressions> {
 
         Collections.shuffle(this);
 
+        int totalJobs = (jobCountsByPartition.stream().mapToInt(Integer::intValue).filter(value -> value > size() / jobCountsByPartition.size()).sum() + size());
+        int jobsPerPartition = (int) Math.ceil( totalJobs / (double) jobCountsByPartition.size());
+
         for(int partition = 0; partition < jobCountsByPartition.size(); partition++) {
             int jobsTaken = 0;
             Set<JobWithExpressions> jobSet = new HashSet<>();
 
-            do {
+            while (!isEmpty() && jobsTaken < jobsPerPartition - jobCountsByPartition.get(partition)) {
                 Set<JobWithExpressions> jobs = stream()
                         .findFirst()
                         .map(chosenJob -> {
-                            if (chosenJob.getExperimentId().equals("-")) {
+                            if (!isPartOfMultiPhaseLinkage(Optional.of(chosenJob))) {
                                 return setOf(chosenJob);
                             } else {
                                 return stream()
@@ -71,7 +74,7 @@ public class JobList extends EntitiesList<JobWithExpressions> {
                 jobSet.addAll(jobs);
                 jobsTaken += jobs.size();
 
-            } while (!isEmpty() && jobsTaken < jobCountsByPartition.get(partition));
+            };
 
             if(partition == jobCountsByPartition.size() - 1 && !isEmpty()) {
                 Set<JobWithExpressions> jobs = new HashSet<>(this);
