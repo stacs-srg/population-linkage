@@ -31,26 +31,20 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
     HashMap<Long, List<Link>> familyBundles = new HashMap();  // maps from id on birth record to MetaMarriage
 
     private static final int NUMBER_OF_BIRTHS = 10000;
-//    private HashMap<String, List<LXP>> gt;
-
 
     @Override
-    public LinkageResult link(boolean pre_filter, boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, int prefilterRequiredFields, boolean generateMapOfLinks, boolean reverseMap) throws BucketException {
+    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException {
 
         // NOTE - cannot use numberOfGroundTruthTrueLinks - not been initialised properly.
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
 
-        if (!pre_filter) {
-            throw new RuntimeException("This code only works with filtering - need to fix selection of sub region");
-        }
-
         // This is alternative to the code in LinkageRunner which requires the whole set to be manifested.
         // This only manifests the first REQUIRED fields.
 
-        Iterable<LXP> filtered_source_records = linkageRecipe.getStoredRecords(); // in this recipe source and search are the same but not in general
+        Iterable<LXP> stored_records = linkageRecipe.getStoredRecords(); // in this recipe source and search are the same but not in general
 
-        linker.addRecords(filtered_source_records, filtered_source_records);
+        linker.addRecords(stored_records, stored_records);
 
         System.out.println("Records added records to linker @ " + LocalDateTime.now().toString());
 
@@ -89,7 +83,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
             showFamilies();
         }
 
-        numberOfGroundTruthTrueLinks = countTrueLinks(toArray( filtered_source_records) );
+        numberOfGroundTruthTrueLinks = countTrueLinks(toArray( stored_records) );
 
         report( "Num GT true links = " + numberOfGroundTruthTrueLinks );
         int fn = numberOfGroundTruthTrueLinks - tp;

@@ -34,6 +34,8 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
             Death.MOTHER_MAIDEN_SURNAME
     );
 
+    private static final double DISTANCE_THRESHOLD = 0.53;
+
     public static final int ID_FIELD_INDEX = Death.STANDARDISED_ID;
 
     /**
@@ -51,8 +53,8 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
 
 
-    public DeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name, int prefilterRequiredFields) {
-        super(source_repository_name, results_repository_name, links_persistent_name, prefilterRequiredFields);
+    public DeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -132,8 +134,8 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+    public double getTheshold() {
+        return DISTANCE_THRESHOLD;
     }
 
 }

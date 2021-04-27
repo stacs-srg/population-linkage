@@ -46,6 +46,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Birth.FATHER_BIRTH_RECORD_IDENTITY))
     );
+    private static final double DISTANCE_THESHOLD = 0;
 
     public static void main(String[] args) throws BucketException {
 
@@ -58,15 +59,13 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
         LinkageConfig.numberOfROs = 20;
 
         new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.2, true,
-                        2, false, false, true, false
-                );
+                .run(linkageRecipe, new JensenShannon(2048), false, false, true, false);
     }
 
     public static final String LINKAGE_TYPE = "birth-father-identity";
 
     public BirthFatherIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -136,12 +135,14 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
+    public double getTheshold() {
+        System.out.println( "THESHOLD set to zero - fix me"); // TODO 666
+        System.exit(1);
+        return DISTANCE_THESHOLD;
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredStoredRecords() {
-        return filterBySex(super.getPreFilteredStoredRecords(), Birth.SEX, "m");
+    public Iterable<LXP> getStoredRecords() {
+        return filterBySex(super.getStoredRecords(), Birth.SEX, "m");
     }
 }

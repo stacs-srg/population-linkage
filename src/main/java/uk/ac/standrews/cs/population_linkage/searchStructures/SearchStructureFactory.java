@@ -8,5 +8,5 @@ public interface SearchStructureFactory<T> {
 
     SearchStructure<T> newSearchStructure(Iterable<T> records);
 
-    String getSearchStructureType();
+    public String getSearchStructureType();
 }

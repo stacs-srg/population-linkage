@@ -27,18 +27,12 @@ import uk.ac.standrews.cs.storr.interfaces.IRepository;
 import uk.ac.standrews.cs.storr.interfaces.IStore;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.toArray;
 
 /**
  * EvidencePair Recipe
@@ -67,39 +61,38 @@ public abstract class LinkageRecipe {
     protected static final boolean TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN = false;
 
     protected final String results_repository_name;
-    protected final String links_persistent_name;
+    protected String links_persistent_name;
     protected final String source_repository_name;
-    protected final RecordRepository record_repository;
+    private final RecordRepository record_repository;
     protected Path store_path;
 
-    protected Iterable<LXP> birth_records;
-    protected Iterable<LXP> marriage_records;
-    protected Iterable<LXP> death_records;
+    private Iterable<LXP> birth_records;
+    private Iterable<LXP> marriage_records;
+    private Iterable<LXP> death_records;
 
-    private Iterable<LXP> pre_filtered_records = null;
-    protected int prefilterRequiredFields = 0;
+    private  Integer birth_records_size = null;
+    private  Integer death_records_size = null;
+    private  Integer marriage_records_size = null;
+
     private Map<String, IBucket> storeRepoBucketLookUp = new HashMap<>();
 
-    public LinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name, int prefilterRequiredFields) {
+    public LinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
 
         this.results_repository_name = results_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.source_repository_name = source_repository_name;
-        setPreFilteringRequiredPopulatedLinkageFields(prefilterRequiredFields);
 
         store_path = ApplicationProperties.getStorePath();
         this.record_repository = new RecordRepository(store_path, source_repository_name);
-
-        createRecordIterables();
     }
 
-    protected ArrayList<LXP> filter(int requiredFields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+    protected ArrayList<LXP> filter(int number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
         ArrayList<LXP> filtered_source_records = new ArrayList<>();
         int count_rejected = 0;
         int count_accepted = 0;
 
         for (LXP record : records_to_filter) {
-            if (passesFilter(record, linkageFields, requiredFields)) {
+            if (passesFilter(record, linkageFields, number_of_required_fields)) {
                 filtered_source_records.add(record);
                 count_accepted++;
             } else {
@@ -321,35 +314,25 @@ public abstract class LinkageRecipe {
         return false;
     }
 
+    Iterable<LXP> getByType(Class<? extends LXP> type) {
+        if (type.equals(Birth.class)) {
+            return getBirthRecords();
+        }
+        if (type.equals(Marriage.class)) {
+            return getMarriageRecords();
+        }
+        if (type.equals(Death.class)) {
+            return getDeathRecords();
+        }
+        throw new RuntimeException("Invalid source type");
+    }
+
     public Iterable<LXP> getStoredRecords() {
-        return getIterable(getStoredType());
+        return getByType(getStoredType());
     }
 
     public Iterable<LXP> getQueryRecords() {
-        return getIterable(getQueryType());
-    }
-
-    public synchronized Iterable<LXP> getPreFilteredStoredRecords() {
-        if (isSymmetric()) {
-            if (pre_filtered_records == null) {
-                // we do this for symmetric linkage recipes as it ensures the iterables
-                // returned by this method and the one for records 2 is the same object - this is required by the
-                // implementation of similarity search - otherwise we link to people to themselves
-                pre_filtered_records = filterRecords(getStoredRecords(), getLinkageFields());
-            }
-            return pre_filtered_records;
-        } else {
-            // why no caching in this case?
-            return filterRecords(getStoredRecords(), getLinkageFields());
-        }
-    }
-
-    public Iterable<LXP> getPreFilteredQueryRecords() {
-        if (isSymmetric()) {
-            return getPreFilteredStoredRecords();
-        } else {
-            return filterRecords(getQueryRecords(), getQueryMappingFields());
-        }
+        return getByType(getQueryType());
     }
 
     public abstract LinkStatus isTrueMatch(LXP record1, LXP record2);
@@ -417,10 +400,8 @@ public abstract class LinkageRecipe {
 
     public abstract int getNumberOfGroundTruthTrueLinks();
 
-    public abstract int getNumberOfGroundTruthTrueLinksPostFilter();
-
     /**
-     * This method gets the set of group truth links for the two sets of source records based on the record fields
+     * This method gets the set of ground truth links for the two sets of source records based on the record fields
      * given by the parameters - in the LXP scheme the call will likely be Birth.FAMILY or Birth.CHILD_IDENTITY as these
      * are really ints that correspond to a field in the LXP.
      * <p>
@@ -498,10 +479,6 @@ public abstract class LinkageRecipe {
         return getNumberOfGroundTruthTrueLinksOn(record1LinkageID, record2LinkageID, getStoredRecords(), getQueryRecords());
     }
 
-    protected int getNumberOfGroundTruthTrueLinksPostFilterOn(int record1LinkageID, int record2LinkageID) {
-        return getNumberOfGroundTruthTrueLinksOn(record1LinkageID, record2LinkageID, getPreFilteredStoredRecords(), getPreFilteredQueryRecords());
-    }
-
     /**
      * Returns the set of ground truth links for symmetric sibling linkage.
      * A map of group/family ID to count of group size is created by the first loop
@@ -576,16 +553,10 @@ public abstract class LinkageRecipe {
         return c.get();
     }
 
-    /*
-    --------- ABSTRACTION HELPER CODE -----------
-     */
+    /*--------- ABSTRACTION HELPER CODE -----------*/
 
     protected int getNumberOfGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID) {
         return getNumberOfGroundTruthLinksOnSiblingSymmetric(fatherID, motherID, getStoredRecords());
-    }
-
-    protected int getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(int fatherID, int motherID) {
-        return getNumberOfGroundTruthLinksOnSiblingSymmetric(fatherID, motherID, getPreFilteredStoredRecords());
     }
 
     protected Map<String, Link> getGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID, Iterable<LXP> sourceRecords1, Iterable<LXP> sourceRecords2) {
@@ -667,9 +638,6 @@ public abstract class LinkageRecipe {
         return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getStoredRecords(), getQueryRecords());
     }
 
-    protected int getNumberOfGroundTruthLinksPostFilterOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
-        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getPreFilteredStoredRecords(), getPreFilteredQueryRecords());
-    }
 
     public String toKey(LXP query_record, LXP stored_record) {
         String s1 = Utilities.originalId(query_record);
@@ -699,33 +667,22 @@ public abstract class LinkageRecipe {
         }
     }
 
-    private void createRecordIterables() {
-
-        initIterable(getStoredType());
-
-        if (!isSymmetric()) // if symmetric linkage then source type two will be same as source type 1 - thus waste of time to init it twice!
-            initIterable(getQueryType());
-    }
-
-    private void initIterable(Class<? extends LXP> sourceType) {
-
-        if (sourceType.equals(Birth.class)) {
-            birth_records = getBirthRecords();
-        } else if (sourceType.equals(Marriage.class)) {
-            marriage_records = getMarriageRecords();
-        } else if (sourceType.equals(Death.class)) {
-            death_records = getDeathRecords();
-        } else {
-            throw new RuntimeException("Invalid source type");
-        }
-    }
-
     /**
      * Note - May be overridden by subclass
-     * @return the birth records to be used in this recipe
+     * @return
      */
     protected Iterable<LXP> getBirthRecords() {
-        return Utilities.getBirthRecords(record_repository);
+        if( birth_records == null ) {
+            birth_records = Utilities.getBirthRecords(record_repository);
+        }
+        return birth_records;
+    }
+
+    protected int getBirthRecordsSize() {
+        if( birth_records_size == null ) {
+            birth_records_size = getSize( birth_records );
+        }
+        return birth_records_size;
     }
 
     /**
@@ -733,7 +690,17 @@ public abstract class LinkageRecipe {
      * @return the death records to be used in this recipe
      */
     protected Iterable<LXP> getDeathRecords() {
-        return Utilities.getDeathRecords(record_repository);
+        if( death_records == null ) {
+            death_records = Utilities.getDeathRecords(record_repository);
+        }
+        return death_records;
+    }
+
+    protected int getDeathRecordsSize() {
+        if( death_records_size == null ) {
+            death_records_size = getSize( death_records );
+        }
+        return death_records_size;
     }
 
     /**
@@ -741,43 +708,40 @@ public abstract class LinkageRecipe {
      * @return the marriage records to be used in this recipe
      */
     protected Iterable<LXP> getMarriageRecords() {
-        return Utilities.getMarriageRecords(record_repository);
+        if( marriage_records == null ) {
+            marriage_records = Utilities.getMarriageRecords(record_repository);
+        }
+        return marriage_records;
     }
 
-    private Iterable<LXP> getIterable(Class<? extends LXP> sourceType) {
-
-        if (sourceType.equals(Birth.class)) {
-            return birth_records;
+    protected int getMarriageRecordsSize() {
+        if (marriage_records_size == null) {
+            marriage_records_size = getSize(marriage_records);
         }
+        return marriage_records_size;
+    }
 
-        if (sourceType.equals(Marriage.class)) {
-            return marriage_records;
+
+
+    private int getSize(Iterable<LXP> records ) {
+        int size = 0;
+        for(LXP value : records) {
+            size++;
         }
+        return size;
+    }
 
-        if (sourceType.equals(Death.class)) {
-            return death_records;
+    protected int getSizeByType( Class<? extends LXP> type ) {
+        if (type.equals(Birth.class)) {
+            return getBirthRecordsSize();
         }
-
+        if (type.equals(Marriage.class)) {
+            return getMarriageRecordsSize();
+        }
+        if (type.equals(Death.class)) {
+            return getDeathRecordsSize();
+        }
         throw new RuntimeException("Invalid source type");
-    }
-
-    private int getSize(Class<? extends LXP> sourceType) throws BucketException {
-
-        //TODO rewrite with stream to avoid allocation?
-
-        if (sourceType.equals(Birth.class)) {
-            return toArray( birth_records ).size();
-        }
-
-        if (sourceType.equals(Marriage.class)) {
-            return toArray( marriage_records ).size();
-        }
-
-        if (sourceType.equals(Death.class)) {
-            return toArray( death_records ).size();
-        }
-
-        throw new Error("Invalid source type");
     }
 
     /*
@@ -821,18 +785,20 @@ public abstract class LinkageRecipe {
         return filteredRecords;
     }
 
-    protected Iterable<LXP> filterRecords(Iterable<LXP> records, List<Integer> filterOn) {
-        return filterRecords(records, filterOn, prefilterRequiredFields);
-    }
+//    protected Iterable<LXP> filterRecords(Iterable<LXP> records, List<Integer> filterOn) {
+//        return filterRecords(records, filterOn, prefilterRequiredFields);
+//    }
 
-    public void setPreFilteringRequiredPopulatedLinkageFields(int prefilterRequiredFields) {
-        if (prefilterRequiredFields > getLinkageFields().size()) {
-            System.out.printf("Requested more linkage fields to be populated than are present - setting to number of linkage fields - %d \n", getLinkageFields().size());
-            this.prefilterRequiredFields = getLinkageFields().size();
-        } else {
-            this.prefilterRequiredFields = prefilterRequiredFields;
-        }
-    }
+    // TODO 666
+
+//    public void setPreFilteringRequiredPopulatedLinkageFields(int prefilterRequiredFields) {
+//        if (prefilterRequiredFields > getLinkageFields().size()) {
+//            System.out.printf("Requested more linkage fields to be populated than are present - setting to number of linkage fields - %d \n", getLinkageFields().size());
+//            this.prefilterRequiredFields = getLinkageFields().size();
+//        } else {
+//            this.prefilterRequiredFields = prefilterRequiredFields;
+//        }
+//    }
 
     public void makeLinksPersistent(Iterable<Link> links) {
         for( Link link : links ) {
@@ -840,46 +806,48 @@ public abstract class LinkageRecipe {
         }
     }
 
-    public void makeLinkPersistent(Link link) {
-        makePersistentUsingStorr(store_path, results_repository_name, links_persistent_name, link);
+    public void makeLinkPersistent(Link link) { // TODO should be abstract - where to get params like bridge, file, storr etc??
+        System.out.println( "TODO makeLinkPersistent");
+        System.exit(-1);
     }
 
-    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Link link) {
-
-        try {
-            //noinspection unchecked
-            getBucket(store_path, results_repo_name, bucket_name).makePersistent(link);
-
-        } catch (BucketException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
-
-        for (Link link : links)
-            makePersistentUsingStorr(store_path, results_repo_name, bucket_name, link);
-    }
-
-    protected void makePersistentUsingFile(String name, Iterable<Link> links) { // TODO Move all of these out of here - al
-
-        try {
-            File f = new File(name);
-            if (!f.exists()) {
-                //noinspection ResultOfMethodCallIgnored
-                f.createNewFile();
-            }
-            BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-            for (Link l : links) {
-                bw.write("Role1:\t" + l.getRole1() + "\tRole2:\t" + l.getRole2() + "\tid1:\t" + l.getRecord1().getReferend().getId() + "\tid2:\t" + l.getRecord2().getReferend().getId() + "\tprovenance:\t" + combineProvenance(l.getProvenance()));
-                bw.newLine();
-                bw.flush();
-            }
-            bw.close();
-        } catch (IOException | BucketException e) {
-            throw new RuntimeException(e);
-        }
-    }
+// Move these elsewhere -
+//    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Link link) {
+//
+//        try {
+//            //noinspection unchecked
+//            getBucket(store_path, results_repo_name, bucket_name).makePersistent(link);
+//
+//        } catch (BucketException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
+//
+//        for (Link link : links)
+//            makePersistentUsingStorr(store_path, results_repo_name, bucket_name, link);
+//    }
+//
+//    protected void makePersistentUsingFile(String name, Iterable<Link> links) { // TODO Move all of these out of here - al
+//
+//        try {
+//            File f = new File(name);
+//            if (!f.exists()) {
+//                //noinspection ResultOfMethodCallIgnored
+//                f.createNewFile();
+//            }
+//            BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+//            for (Link l : links) {
+//                bw.write("Role1:\t" + l.getRole1() + "\tRole2:\t" + l.getRole2() + "\tid1:\t" + l.getRecord1().getReferend().getId() + "\tid2:\t" + l.getRecord2().getReferend().getId() + "\tprovenance:\t" + combineProvenance(l.getProvenance()));
+//                bw.newLine();
+//                bw.flush();
+//            }
+//            bw.close();
+//        } catch (IOException | BucketException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private String combineProvenance(final List<String> provenance) {
 
@@ -935,28 +903,24 @@ public abstract class LinkageRecipe {
         return links_persistent_name;
     }
 
-    public String getSource_repository_name() {
-        return source_repository_name;
-    }
-
-    public RecordRepository getRecord_repository() {
-        return record_repository;
-    }
-
     public int getQuerySetSize() {
-        try {
-            return getSize(getQueryType());
-        } catch (BucketException e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        return getSizeByType(getQueryType());
     }
 
     public int getStoredSetSize() {
-        try {
-            return getSize(getStoredType());
-        } catch (BucketException e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        return getSizeByType(getQueryType());
+    }
+
+    public void stopStoreWatcher() {
+            record_repository.stopStoreWatcher();
+    }
+
+    public abstract double getTheshold();
+
+    public void setCacheSizes(int birthCacheSize, int deathCacheSize, int marriageCacheSize) {
+        record_repository.setBirthsCacheSize(birthCacheSize);
+        record_repository.setDeathsCacheSize(deathCacheSize);
+        record_repository.setMarriagesCacheSize(marriageCacheSize);
     }
 
     public static class Pair {

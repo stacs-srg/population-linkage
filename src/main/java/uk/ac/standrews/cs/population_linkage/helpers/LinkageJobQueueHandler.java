@@ -6,7 +6,6 @@ package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.*;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -114,9 +113,7 @@ public class LinkageJobQueueHandler {
                 LinkageRecipe linkageRecipe = getLinkageRecipe(linkageType, resultsRepo, links_persistent_name, sourceRepo);
                 String linkageApproach = linkageRecipe.getLinkageType();
 
-                LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run(
-                        linkageRecipe, chosenMetric, threshold, preFilter, preFilterRequiredFields,
-                        false, false, evaluate_quality, persist_links).getLinkageQuality();
+                LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run( linkageRecipe, chosenMetric, false, false, evaluate_quality, persist_links).getLinkageQuality();
 
                 String fieldsUsed1 = getLinkageFields(1, linkageRecipe, sourceRepo);
                 String fieldsUsed2 = getLinkageFields(2, linkageRecipe, sourceRepo);
@@ -142,9 +139,9 @@ public class LinkageJobQueueHandler {
 
         switch (linkageType) {
             case BirthSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name, 0);
+                return new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case BirthDeathIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name, 0);
+                return new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case BirthDeathSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new BirthDeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case BirthFatherIdentityLinkageRecipe.LINKAGE_TYPE:
@@ -162,7 +159,7 @@ public class LinkageJobQueueHandler {
             case DeathBrideOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case DeathSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name,0);
+                return new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case DeathGroomOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case FatherGroomIdentityLinkageRecipe.LINKAGE_TYPE:

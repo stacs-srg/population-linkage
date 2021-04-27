@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="DeathGroomOwnMarriageBuilder" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathGroomOwnMarriageBuilder" />
+  <configuration default="false" name="BrideBrideSiblingBuilder" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BrideBrideSiblingBuilder" />
     <module name="population-linkage" />
     <option name="PROGRAM_PARAMETERS" value="umea umea_results" />
     <option name="VM_PARAMETERS" value="-Xmx16G" />

@@ -4,12 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.Recipies.BirthSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.ParentsMarriageBirthLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
@@ -36,16 +35,15 @@ import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.getBirthS
  * This class attempts to perform birth-birth sibling linkage.
  * It creates a Map of families indexed (at the momement TODO) from birth ids to families
  */
-public class BirthSiblingBundleThenParentsExperiment {
+public class BirthSiblingBundleThenParentsBuilder {
 
     private static final double COMBINED_AVERAGE_DISTANCE_THRESHOLD = 0.2;
     public static final int PREFILTER_REQUIRED_FIELDS = 8;
+    private static final double DISTANCE_THRESHOLD = 0.67;
 
     private static int sibling_references_made = 0;    // nasty hack
     private static int mother_references_made = 0; // nasty hack
     private static int father_references_made = 0; // nasty hack
-
-    private static final double DISTANCE_THRESHOLD = 0.67;
 
     public static void main(String[] args) throws Exception {
 
@@ -55,10 +53,10 @@ public class BirthSiblingBundleThenParentsExperiment {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String resultsRepo = args[1]; // e.g. synth_results
 
-            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingLinkageRecipe.LINKAGE_TYPE + "-links",PREFILTER_REQUIRED_FIELDS);
+            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,BirthSiblingBundleThenParentsBuilder.class.getCanonicalName() );
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), DISTANCE_THRESHOLD, true, PREFILTER_REQUIRED_FIELDS, true, false, false, false);
+            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, true, false);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 
@@ -89,7 +87,7 @@ public class BirthSiblingBundleThenParentsExperiment {
                 for (LXP sibling : sib_records) {
                     LXP search_record = parents_recipe.convertToOtherRecordType(sibling);
 
-                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_record, 0.67);
+                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_record, DISTANCE_THRESHOLD);
 
                     sibling_parents_marriages.add(new SiblingParentsMarriage(sibling, distances));
                 }
@@ -99,7 +97,7 @@ public class BirthSiblingBundleThenParentsExperiment {
                     adjustMarriagesInGrouping(sibling_parents_marriages);
                 }
 
-                addChildParentsMarriageToNeo4J(bridge, sibling_parents_marriages,seen_already);
+                // addChildParentsMarriageToNeo4J(bridge, sibling_parents_marriages,seen_already);
 
                 number_of_marriages_per_family[count]++;
             }
@@ -121,7 +119,7 @@ public class BirthSiblingBundleThenParentsExperiment {
             System.out.println("Total number of families = " + sum);
         } finally {
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
-            System.exit(1); // TODO fix me: not elegant but will shut things down!
+            System.exit(0); // TODO fix me: not elegant but will shut things down!
         }
     }
 

@@ -5,14 +5,11 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +25,9 @@ import java.util.Map;
  *
  */
 public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
+
+    public static final String LINKAGE_TYPE = "bride-bride-sibling";
+    private static final double DISTANCE_THESHOLD = 0.15;
 
     public static List<Integer> COMPARISON_FIELDS = Arrays.asList(
 
@@ -50,23 +50,8 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
                     list(pair(Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY), pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
             );
 
-    public static void main(String[] args) throws BucketException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new BrideBrideSiblingLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
-                );
-    }
-
-    public static final String LINKAGE_TYPE = "bride-bride-sibling";
-
     public BrideBrideSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name,0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -128,6 +113,10 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
+        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links. TODO maybe do this elsewhere?
+            return false;
+        }
+
         if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
@@ -156,7 +145,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY);
+    public double getTheshold() {
+        return DISTANCE_THESHOLD;
     }
 }

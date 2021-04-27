@@ -27,9 +27,10 @@ import java.util.*;
 public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "parents-marriage-birth-identity";
+    private static final double DISTANCE_THESHOLD = 0;
 
     public ParentsMarriageBirthLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getQueryType() {
+    public Class<? extends LXP> getQueryType() {
         return Birth.class;
     }
 
@@ -100,11 +101,11 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
         final Map<String, Link> links = new HashMap<>();
 
-        for (LXP marriage_record : record_repository.getMarriages()) {
+        for (LXP marriage_record : getMarriageRecords()) {
 
             String marriage_key_from_marriage = toKeyFromMarriage( marriage_record );
 
-            for (LXP birth_record : birth_records) {
+            for (LXP birth_record : getBirthRecords()) {
 
                 String birth_key_from_marriage = toKeyFromBirth( birth_record );
 
@@ -137,11 +138,11 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
         int count = 0;
 
-        for(LXP marriage : record_repository.getMarriages()) {
+        for(LXP marriage : getMarriageRecords()) {
 
             String marriage_key_from_marriage = toKeyFromMarriage( marriage );
 
-            for (LXP birth : record_repository.getBirths()) {
+            for (LXP birth : getBirthRecords()) {
 
                 String birth_key_from_marriage = toKeyFromBirth( birth );
 
@@ -153,17 +154,11 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return 0;
-    }
-
-    @Override
-    public Iterable<LXP> getPreFilteredQueryRecords() {
+    public Iterable<LXP> getQueryRecords() {
 
         Collection<LXP> filteredMarriageRecords = new HashSet<>();
 
-        for(LXP record : marriage_records) {
+        for(LXP record : getMarriageRecords()) {
 
             String groomForename = record.getString(Marriage.GROOM_FORENAME).trim();
             String groomSurname = record.getString(Marriage.GROOM_SURNAME).trim();
@@ -216,11 +211,11 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
 
     @Override
-    public Iterable<LXP> getPreFilteredStoredRecords() {
+    public Iterable<LXP> getStoredRecords() {
 
         HashSet<LXP> filteredBirthRecords = new HashSet<>();
 
-        for (LXP record : birth_records) {
+        for (LXP record : getBirthRecords()) {
 
             String fatherForename = record.getString(Birth.FATHER_FORENAME).trim();
             String fatherSurname = record.getString(Birth.FATHER_SURNAME).trim();
@@ -275,6 +270,13 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
         else
             return s2 + "-" + s1;
 
+    }
+
+    @Override
+    public double getTheshold() {
+        System.out.println( "THESHOLD set to zero - fix me"); // TODO 666
+        System.exit(1);
+        return DISTANCE_THESHOLD;
     }
 
     public static LinkStatus trueMatch(LXP birth, LXP marriage) {

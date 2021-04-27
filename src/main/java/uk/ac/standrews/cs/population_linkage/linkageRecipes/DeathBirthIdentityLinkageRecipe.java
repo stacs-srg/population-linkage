@@ -57,6 +57,7 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Death.BIRTH_RECORD_IDENTITY,Birth.STANDARDISED_ID)),
             list(pair(Death.STANDARDISED_ID,Birth.DEATH_RECORD_IDENTITY))
     );
+    private static final double DISTANCE_THESHOLD = 0;
 
     public static void main(String[] args) throws BucketException {
 
@@ -67,14 +68,14 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
                 LINKAGE_TYPE + "-links");
 
         new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
+                .run(linkageRecipe, new JensenShannon(2048), false, false, true, false
                 );
     }
 
     public static final String LINKAGE_TYPE = "death-birth-identity";
 
     public DeathBirthIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -151,7 +152,9 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+    public double getTheshold() {
+        System.out.println( "THESHOLD set to zero - fix me"); // TODO 666
+        System.exit(1);
+        return DISTANCE_THESHOLD;
     }
 }

@@ -2,10 +2,9 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRecipes.unused;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -22,6 +21,8 @@ import java.util.Map;
 
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
+    private static final double DISTANCE_THESHOLD = 0;
+
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
@@ -31,14 +32,13 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
                 LINKAGE_TYPE + "-links");
 
         new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), 0.67, true, 5, false, false, true, false
-                );
+                .run(linkageRecipe, new JensenShannon(2048),  false, false, true, false);
     }
 
     public static final String LINKAGE_TYPE = "birth-death-sibling";
 
     public BirthDeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getQueryType() {
+    public Class<? extends LXP> getQueryType() {
         return Death.class;
     }
 
@@ -131,8 +131,9 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthLinksPostFilterOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+    public double getTheshold() {
+        System.out.println( "THESHOLD set to zero - fix me"); // TODO 666
+        System.exit(1);
+        return DISTANCE_THESHOLD;
     }
-
 }

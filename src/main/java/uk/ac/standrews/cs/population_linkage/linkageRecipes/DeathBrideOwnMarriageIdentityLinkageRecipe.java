@@ -2,10 +2,9 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRecipes.unused;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -26,6 +25,8 @@ import java.util.Map;
  *
  */
 public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
+
+    public static final double DISTANCE_THESHOLD = 0.49;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FATHER_FORENAME,
@@ -52,7 +53,7 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     );
 
     public DeathBrideOwnMarriageIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -76,7 +77,7 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getQueryType() {
+    public Class<? extends LXP> getQueryType() {
         return Marriage.class;
     }
 
@@ -114,14 +115,19 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY);
+    public double getTheshold() {
+        return DISTANCE_THESHOLD;
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredStoredRecords() {
+    public Iterable<LXP> getStoredRecords() {
         return filterBySex(
-                super.getPreFilteredStoredRecords(),
+                super.getStoredRecords(),
                 Birth.SEX, "f");
+    }
+
+    @Override
+    public Iterable<LXP> getDeathRecords() {
+        return filterBySex(super.getDeathRecords(), Death.SEX, "f");
     }
 }

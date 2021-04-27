@@ -25,12 +25,14 @@ import java.util.Map;
  */
 public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
+    private static final double DISTANCE_THRESHOLD = 0.49;
+
     public static final String LINKAGE_TYPE = "birth-bride-identity";
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public BirthBrideIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     public static final List<Integer> LINKAGE_FIELDS = list(
@@ -97,6 +99,16 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
+    protected Iterable<LXP> getBirthRecords() {
+        return filterBySex(super.getBirthRecords(), Birth.SEX, "f");
+    }
+
+    @Override
+    public double getTheshold() {
+        return DISTANCE_THRESHOLD;
+    }
+
+    @Override
     public List<Integer> getQueryMappingFields() {
         return SEARCH_FIELDS;
     }
@@ -113,16 +125,12 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
+        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY,Marriage.BRIDE_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY,Marriage.BRIDE_IDENTITY);
     }
 
-    @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Marriage.BRIDE_IDENTITY, Birth.CHILD_IDENTITY);
-    }
 }

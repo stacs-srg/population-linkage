@@ -25,6 +25,8 @@ import java.util.Map;
  */
 public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
+    public static final double DISTANCE_THESHOLD = 0.49;
+
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FORENAME,
             Death.SURNAME,
@@ -50,7 +52,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     );
 
     public DeathGroomOwnMarriageIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -73,7 +75,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getQueryType() {
+    public Class<? extends LXP> getQueryType() {
         return Marriage.class;
     }
 
@@ -114,14 +116,20 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
+    public double getTheshold() {
+        return DISTANCE_THESHOLD;
     }
 
     @Override
-    public Iterable<LXP> getPreFilteredStoredRecords() {
+    public Iterable<LXP> getStoredRecords() {
         return filterBySex(
-                super.getPreFilteredStoredRecords(),
-                Death.SEX, "m");
+                super.getStoredRecords(),
+                Death.SEX,
+                "m");
+    }
+
+    @Override
+    public Iterable<LXP> getDeathRecords() {
+        return filterBySex(super.getDeathRecords(), Death.SEX, "m");
     }
 }

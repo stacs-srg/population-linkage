@@ -5,9 +5,9 @@
 package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.unused.FatherGroomIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -57,11 +57,11 @@ public class CompositeLinkageRecipe {
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
                 new BirthGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
-                metric, 0.2, true, 6, true, false, true, false).getMapOfLinks();
+                metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> fatherGroomLinks = new BitBlasterLinkageRunner().run(
                 new FatherGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
-                metric, 0.75, true, 5, true, false, true, false).getMapOfLinks();
+                metric,  true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> fatherBirthLinksViaGroom = combineLinks(fatherGroomLinks, groomBirthLinks, "father-birth-via-groom-id");
 
@@ -78,25 +78,25 @@ public class CompositeLinkageRecipe {
 
         Map<String, Collection<Link>> deathGroomLinks = new BitBlasterLinkageRunner().run(
                 new DeathGroomOwnMarriageIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
-                metric, 0.67, true, 5, true, false, true, false).getMapOfLinks();
+                metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
                 new BirthGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
-                metric, 0.67, true, 3, true, false, true, false).getMapOfLinks();
+                metric,  true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> deathBrideLinks = new BitBlasterLinkageRunner().run(
                 new DeathBrideOwnMarriageIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
-                metric, 0.67, true, 3, true, false, true, false).getMapOfLinks();
+                metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> birthBrideLinks = new BitBlasterLinkageRunner().run(
                 new BirthBrideIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
-                metric, 0.67, true, 5, true, false, true, false).getMapOfLinks();
+                metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks, "death-birth-via-groom-id");
         Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, birthBrideLinks, "death-birth-via-bride-id");
         deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)
 
-        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name, 0), true);
+        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name), true);
     }
 
     private static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, PersistentObjectException {

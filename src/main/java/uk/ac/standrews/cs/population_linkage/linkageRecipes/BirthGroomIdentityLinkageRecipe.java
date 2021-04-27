@@ -53,9 +53,10 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Marriage.GROOM_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Marriage.GROOM_BIRTH_RECORD_IDENTITY))
     );
+    private static final double DISTANCE_THRESHOLD = 0.49;
 
     public BirthGroomIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -78,7 +79,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getQueryType() {
+    public Class<? extends LXP> getQueryType() {
         return Marriage.class;
     }
 
@@ -104,7 +105,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
         return spouseBirthIdentityLinkIsViable(proposedLink, false); // TODO (al) this looks like the wrong method to me - what has spouse to do with it?
-   }
+    }
 
     @Override
     public List<Integer> getQueryMappingFields() {
@@ -113,16 +114,21 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Marriage.GROOM_IDENTITY, Birth.CHILD_IDENTITY);
+        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Marriage.GROOM_IDENTITY, Birth.CHILD_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY, Marriage.GROOM_IDENTITY);
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthTrueLinksPostFilterOn(Marriage.GROOM_IDENTITY, Birth.CHILD_IDENTITY);
+    public double getTheshold() {
+        return DISTANCE_THRESHOLD;
+    }
+
+    @Override
+    protected Iterable<LXP> getBirthRecords() {
+        return filterBySex( super.getBirthRecords(),Birth.SEX,"m");
     }
 }

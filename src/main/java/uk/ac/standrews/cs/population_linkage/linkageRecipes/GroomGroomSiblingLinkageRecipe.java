@@ -25,6 +25,9 @@ import java.util.Map;
  */
 public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
+    public static final String LINKAGE_TYPE = "groom-groom-sibling";
+    private static final double DISTANCE_THESHOLD = 0.14;
+
     public static final List<Integer> LINKAGE_FIELDS = list(
             Marriage.GROOM_FATHER_FORENAME,
             Marriage.GROOM_FATHER_SURNAME,
@@ -41,14 +44,15 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
      */
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY), pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY)),
-            list(pair(Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY), pair(Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY))
+            list(   pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY),
+                    pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY)),
+            list(   pair(Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY),
+                    pair(Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public static final String LINKAGE_TYPE = "groom-groom-sibling";
 
     public GroomGroomSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name, 0);
+        super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     @Override
@@ -104,6 +108,9 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
+        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links. TODO maybe do this elsewhere?
+            return false;
+        }
         if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
@@ -133,7 +140,12 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinksPostFilter() {
-        return getNumberOfGroundTruthLinksPostFilterOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
+    public void makeLinkPersistent(Link link) {
+        System.out.println( "TODO makeLinkPersistent"); // TODO 333
+    }
+
+    @Override
+    public double getTheshold() {
+        return DISTANCE_THESHOLD;
     }
 }
