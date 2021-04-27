@@ -50,8 +50,12 @@ public class JobList extends EntitiesList<JobWithExpressions> {
 
         Collections.shuffle(this);
 
-        int totalJobs = (jobCountsByPartition.stream().mapToInt(Integer::intValue).filter(value -> value > size() / jobCountsByPartition.size()).sum() + size());
-        int jobsPerPartition = (int) Math.ceil( totalJobs / (double) jobCountsByPartition.size());
+        int totalJobs = (jobCountsByPartition.stream()
+                .filter(value -> value < size() / jobCountsByPartition.size())
+                .mapToInt(Integer::intValue)
+                .sum()
+                + size());
+        int jobsPerPartition = (int) Math.ceil( totalJobs / (double) (int) jobCountsByPartition.stream().filter(value -> value < size() / jobCountsByPartition.size()).count());
 
         for(int partition = 0; partition < jobCountsByPartition.size(); partition++) {
             int jobsTaken = 0;
