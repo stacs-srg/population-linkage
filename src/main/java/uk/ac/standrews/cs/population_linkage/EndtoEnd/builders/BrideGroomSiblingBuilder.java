@@ -26,10 +26,14 @@ public class BrideGroomSiblingBuilder {
             BrideGroomSubsetSiblingLinkageRecipe linkageRecipe = new BrideGroomSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, BrideGroomSiblingBuilder.class.getCanonicalName());
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-            LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, true, false);
+            LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, false, true);
 
             LinkageQuality quality = lr.getLinkageQuality();
             quality.print(System.out);
+        }
+        finally {
+            System.out.println( "Run finished" );
+            System.exit(0); // make sure process dies.
         }
     }
 }

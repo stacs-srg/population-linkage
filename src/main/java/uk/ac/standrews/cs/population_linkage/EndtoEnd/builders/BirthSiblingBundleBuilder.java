@@ -30,16 +30,10 @@ public class BirthSiblingBundleBuilder {
 
             LinkageQuality quality = lr.getLinkageQuality();
             quality.print(System.out);
+        } finally {
+            System.out.println("Run finished");
+            System.exit(0); // make sure process dies.
         }
-
-        // 8 fields is all of them => very conservative.
-//        Birth.FATHER_FORENAME,
-//        Birth.FATHER_SURNAME,
-//        Birth.MOTHER_FORENAME,
-//        Birth.MOTHER_MAIDEN_SURNAME,
-//        Birth.PARENTS_PLACE_OF_MARRIAGE,
-//        Birth.PARENTS_DAY_OF_MARRIAGE,
-//        Birth.PARENTS_MONTH_OF_MARRIAGE,
-//        Birth.PARENTS_YEAR_OF_MARRIAGE
     }
+
 }

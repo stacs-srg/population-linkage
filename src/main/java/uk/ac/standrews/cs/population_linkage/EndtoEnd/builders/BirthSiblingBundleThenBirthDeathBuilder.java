@@ -37,7 +37,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBirthIde
  * This class attempts to perform birth-birth sibling linkage.
  * It creates a Map of families indexed (at the moment) from birth ids to families
  */
-public class BirthSiblingBundleThenBirthDeathExperiment {
+public class BirthSiblingBundleThenBirthDeathBuilder {
 
     private static final double THRESHOLD = 0.0000001;
     private static final double COMBINED_AVERAGE_DISTANCE_THRESHOLD = 0.2;
@@ -51,14 +51,14 @@ public class BirthSiblingBundleThenBirthDeathExperiment {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String resultsRepo = args[1]; // e.g. synth_results
 
-            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,BirthSiblingBundleThenBirthDeathExperiment.class.getCanonicalName());
+            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
             LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, true, true);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 
-            LinkageRecipe death_birth_recipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenBirthDeathExperiment.class.getCanonicalName());
+            LinkageRecipe death_birth_recipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 

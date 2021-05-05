@@ -15,7 +15,6 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.BucketKind;
 import uk.ac.standrews.cs.storr.impl.DynamicLXP;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.Store;
@@ -24,7 +23,6 @@ import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.storr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import uk.ac.standrews.cs.storr.interfaces.IRepository;
-import uk.ac.standrews.cs.storr.interfaces.IStore;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.lang.reflect.InvocationTargetException;
@@ -267,7 +265,7 @@ public abstract class LinkageRecipe {
     }
 
     // TODO This method should not be in this class IMHO al
-    protected static boolean deathMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
+    protected static boolean  deathMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
 
         try {
             int year_of_death = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
@@ -785,114 +783,14 @@ public abstract class LinkageRecipe {
         return filteredRecords;
     }
 
-//    protected Iterable<LXP> filterRecords(Iterable<LXP> records, List<Integer> filterOn) {
-//        return filterRecords(records, filterOn, prefilterRequiredFields);
-//    }
-
-    // TODO 666
-
-//    public void setPreFilteringRequiredPopulatedLinkageFields(int prefilterRequiredFields) {
-//        if (prefilterRequiredFields > getLinkageFields().size()) {
-//            System.out.printf("Requested more linkage fields to be populated than are present - setting to number of linkage fields - %d \n", getLinkageFields().size());
-//            this.prefilterRequiredFields = getLinkageFields().size();
-//        } else {
-//            this.prefilterRequiredFields = prefilterRequiredFields;
-//        }
-//    }
-
     public void makeLinksPersistent(Iterable<Link> links) {
         for( Link link : links ) {
             makeLinkPersistent(link);
         }
     }
 
-    public void makeLinkPersistent(Link link) { // TODO should be abstract - where to get params like bridge, file, storr etc??
-        System.out.println( "TODO makeLinkPersistent");
-        System.exit(-1);
-    }
-
-// Move these elsewhere -
-//    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Link link) {
-//
-//        try {
-//            //noinspection unchecked
-//            getBucket(store_path, results_repo_name, bucket_name).makePersistent(link);
-//
-//        } catch (BucketException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-//
-//    protected void makePersistentUsingStorr(Path store_path, String results_repo_name, String bucket_name, Iterable<Link> links) {
-//
-//        for (Link link : links)
-//            makePersistentUsingStorr(store_path, results_repo_name, bucket_name, link);
-//    }
-//
-//    protected void makePersistentUsingFile(String name, Iterable<Link> links) { // TODO Move all of these out of here - al
-//
-//        try {
-//            File f = new File(name);
-//            if (!f.exists()) {
-//                //noinspection ResultOfMethodCallIgnored
-//                f.createNewFile();
-//            }
-//            BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-//            for (Link l : links) {
-//                bw.write("Role1:\t" + l.getRole1() + "\tRole2:\t" + l.getRole2() + "\tid1:\t" + l.getRecord1().getReferend().getId() + "\tid2:\t" + l.getRecord2().getReferend().getId() + "\tprovenance:\t" + combineProvenance(l.getProvenance()));
-//                bw.newLine();
-//                bw.flush();
-//            }
-//            bw.close();
-//        } catch (IOException | BucketException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
-    private String combineProvenance(final List<String> provenance) {
-
-        final StringBuilder builder = new StringBuilder();
-
-        for (String s : provenance) {
-            if (builder.length() > 0) builder.append("/");
-            builder.append(s);
-        }
-
-        return builder.toString();
-    }
-
-    private IBucket getBucket(Path store_path, String results_repo_name, String bucket_name) {
-
-        IBucket bucket = storeRepoBucketLookUp.get(getSRBString(store_path, results_repo_name, bucket_name));
-        if (bucket == null) {
-
-            try {
-                IStore store = new Store(store_path);
-
-                IRepository results_repository;
-                try {
-                    results_repository = store.getRepository(results_repo_name);
-                } catch (RepositoryException e) {
-                    results_repository = store.makeRepository(results_repo_name);
-                }
-
-                try {
-                    bucket = results_repository.getBucket(bucket_name);
-                } catch (RepositoryException e) {
-                    bucket = results_repository.makeBucket(bucket_name, BucketKind.DIRECTORYBACKED, Link.class);
-                }
-
-                storeRepoBucketLookUp.put(getSRBString(store_path, results_repo_name, bucket_name), bucket);
-
-            } catch (RepositoryException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return bucket;
-    }
-
-    private String getSRBString(Path store_path, String results_repo_name, String bucket_name) {
-        return store_path.toString() + "|" + results_repo_name + "|" + bucket_name;
+    public void makeLinkPersistent(Link link) {
+        throw new RuntimeException( "makeLinkPersistent unimplemented");
     }
 
     public String getResults_repository_name() {

@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public static final double DISTANCE_THESHOLD = 0.49;
+    public static final double DISTANCE_THESHOLD = 0.35;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FORENAME,
@@ -118,14 +118,6 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public double getTheshold() {
         return DISTANCE_THESHOLD;
-    }
-
-    @Override
-    public Iterable<LXP> getStoredRecords() {
-        return filterBySex(
-                super.getStoredRecords(),
-                Death.SEX,
-                "m");
     }
 
     @Override

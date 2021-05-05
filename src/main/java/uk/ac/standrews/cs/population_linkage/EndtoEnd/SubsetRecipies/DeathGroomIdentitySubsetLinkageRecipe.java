@@ -13,6 +13,11 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 /**
  * EvidencePair Recipe
  * In all linkage recipies the naming convention is:
@@ -45,7 +50,15 @@ public class DeathGroomIdentitySubsetLinkageRecipe extends DeathGroomOwnMarriage
         return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields() );
     }
 
-    // NOTE Marriage not filtered in this recipe
+    private Iterable<LXP> reverse(Iterable<LXP> records) {
+        Iterator<LXP> iterator = StreamSupport.stream(records.spliterator(), true)
+                .collect(Collectors.toCollection(ArrayDeque::new))
+                .descendingIterator();
+        return () -> iterator;
+    }
+
+
+    // NOTE Marriage are not filtered in this recipe
 
     @Override
     public void makeLinkPersistent(Link link) {

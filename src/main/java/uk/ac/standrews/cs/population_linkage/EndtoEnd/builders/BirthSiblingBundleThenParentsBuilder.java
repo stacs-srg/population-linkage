@@ -8,7 +8,6 @@ import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthSiblin
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.ParentsMarriageBirthLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
@@ -60,7 +59,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 
-            LinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE + "-links");
+            LinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
@@ -97,7 +96,7 @@ public class BirthSiblingBundleThenParentsBuilder {
                     adjustMarriagesInGrouping(sibling_parents_marriages);
                 }
 
-                // addChildParentsMarriageToNeo4J(bridge, sibling_parents_marriages,seen_already);
+                addChildParentsMarriageToNeo4J(bridge, sibling_parents_marriages,seen_already);
 
                 number_of_marriages_per_family[count]++;
             }
@@ -119,7 +118,7 @@ public class BirthSiblingBundleThenParentsBuilder {
             System.out.println("Total number of families = " + sum);
         } finally {
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
-            System.exit(0); // TODO fix me: not elegant but will shut things down!
+            System.exit(0); // make sure it all shuts down.
         }
     }
 

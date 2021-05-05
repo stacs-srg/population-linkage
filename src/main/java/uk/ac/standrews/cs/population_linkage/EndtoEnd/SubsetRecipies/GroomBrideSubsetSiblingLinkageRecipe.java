@@ -46,7 +46,7 @@ public class GroomBrideSubsetSiblingLinkageRecipe extends GroomBrideSiblingLinka
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createMMSiblingReference(
+            Query.createMMGroomBrideReference(
                     bridge,
                     link.getRecord1().getReferend().getString( Marriage.STANDARDISED_ID ),
                     link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID ),

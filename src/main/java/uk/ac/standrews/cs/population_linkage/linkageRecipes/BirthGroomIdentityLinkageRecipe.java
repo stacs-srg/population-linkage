@@ -25,6 +25,8 @@ import java.util.Map;
  */
 public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
 
+    private static final double DISTANCE_THRESHOLD = 0.49;
+
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
             Birth.SURNAME,
@@ -53,7 +55,6 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Marriage.GROOM_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Marriage.GROOM_BIRTH_RECORD_IDENTITY))
     );
-    private static final double DISTANCE_THRESHOLD = 0.49;
 
     public BirthGroomIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);

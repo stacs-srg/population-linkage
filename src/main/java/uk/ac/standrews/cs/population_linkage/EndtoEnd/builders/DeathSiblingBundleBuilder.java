@@ -15,10 +15,9 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
  * This class attempts to perform birth-birth sibling linkage.
  * It creates a Map of families indexed (at the momement TODO) from birth ids to families
  */
-public class DeathSiblingBundleExperiment {
+public class DeathSiblingBundleBuilder {
 
     public static final int PREFILTER_REQUIRED_FIELDS = 4;
-    private static final double DISTANCE_THRESHOLD = 0.53;
 
     public static void main(String[] args) throws Exception {
 
@@ -27,10 +26,10 @@ public class DeathSiblingBundleExperiment {
 
         try( NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
 
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathSiblingBundleExperiment.class.getCanonicalName());
+            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-            LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048), false, false, true, true);
+            LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
 
             LinkageQuality quality = lr.getLinkageQuality();
             quality.print(System.out);

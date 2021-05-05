@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="DeathSiblingBundleBuilder" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathSiblingBundleExperiment" />
+    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathSiblingBundleBuilder" />
     <module name="population-linkage" />
     <option name="PROGRAM_PARAMETERS" value="umea umea_results" />
     <option name="VM_PARAMETERS" value="-Xmx16G" />

@@ -33,6 +33,7 @@ public class BirthGroomOwnMarriageBuilder {
             System.out.println( "Exception closing bridge" );
         } finally {
             System.out.println( "Run finished" );
+            System.exit(0); // Make sure it all shuts down properly.
         }
     }
 }

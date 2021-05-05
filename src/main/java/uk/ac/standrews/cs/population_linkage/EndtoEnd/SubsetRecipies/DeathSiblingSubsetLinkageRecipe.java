@@ -49,7 +49,7 @@ public class DeathSiblingSubsetLinkageRecipe extends DeathSiblingLinkageRecipe {
                     bridge,
                     link.getRecord1().getReferend().getString( Death.STANDARDISED_ID ),
                     link.getRecord2().getReferend().getString( Death.STANDARDISED_ID ),
-                    String.join( "-",link.getProvenance() ),
+                    links_persistent_name,
                     PREFILTER_REQUIRED_FIELDS,
                     link.getDistance() );
         } catch (BucketException e) {

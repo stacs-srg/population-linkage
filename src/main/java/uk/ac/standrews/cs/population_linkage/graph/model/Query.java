@@ -1,11 +1,13 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.graph.model;
 
 
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbBridge;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbOGMBridge;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,12 +26,15 @@ public class Query {
     private static final String BM_BIRTH_BRIDE_QUERY = "MATCH (a:BirthRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
 
     private static final String DD_SIBLING_QUERY = "MATCH (a:DeathRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
-    private static final String MM_SIBLING_QUERY = "MATCH (a:MarriageRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
 
-    private static final String DD_DEATH_QUERY = "MATCH (a:BirthRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:DEATH { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
-    private static final String BM_DEATH_GROOM_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
-    private static final String BM_DEATH_BRIDE_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";;
+    private static final String BD_DEATH_QUERY = "MATCH (a:BirthRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:DEATH { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
 
+    private static final String DM_DEATH_GROOM_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    private static final String DM_DEATH_BRIDE_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";;
+
+    private static final String MM_BB_SIBLING_QUERY = "MATCH (a:MarriageRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BB\", provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    private static final String MM_GG_SIBLING_QUERY = "MATCH (a:MarriageRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GG\", provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
+    private static final String MM_GB_SIBLING_QUERY = "MATCH (a:MarriageRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GB\", provenance: $prov, fields_matched: $fields, distance: $distance } ]->(b)";
 
     /**
      * Creates a bride reference between node with standard_id_from and standard_id_to and returns the number of relationships created
@@ -92,7 +97,7 @@ public class Query {
      * See createReference for param details
      */
     public static void createBDReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        createReference(bridge, DD_DEATH_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+        createReference(bridge, BD_DEATH_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
     }
 
     /**
@@ -101,7 +106,7 @@ public class Query {
      * See createReference for param details
      */
     public static void createDeathGroomOwnMarriageReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        createReference(bridge, BM_DEATH_GROOM_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+        createReference(bridge, DM_DEATH_GROOM_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
     }
 
     /**
@@ -110,11 +115,43 @@ public class Query {
      * See createReference for param details
      */
     public static void createDeathBrideOwnMarriageReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        createReference(bridge, BM_DEATH_BRIDE_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+        createReference(bridge, DM_DEATH_BRIDE_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
      }
 
-    public static void createMMSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        createReference(bridge, MM_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createMMGroomBrideReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+    }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createMMGroomGroomReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        createReference(bridge, MM_GG_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+    }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createMMBrideBrideReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        createReference(bridge, MM_BB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_matched, distance);
+    }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createMMBrideGroomReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+        createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_to, standard_id_from, provenance, fields_matched, distance);
     }
 
     /**
@@ -145,17 +182,5 @@ public class Query {
         parameters.put("prov", provenance);
         parameters.put("distance", distance);
         return parameters;
-    }
-
-    // TODO try and integrate the NeoDbCypherBridge and NeoDbOGMBridge interfaces.
-    private static void createRef(NeoDbBridge bridge, String query, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
-        if (bridge instanceof NeoDbCypherBridge) {
-
-        } else if (bridge instanceof NeoDbOGMBridge) {
-
-        } else {
-            throw new RuntimeException("createRef passed unknown NeoDbBridge class: " + bridge.getClass().getName());
-        }
-
     }
 }
