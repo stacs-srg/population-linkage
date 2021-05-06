@@ -41,7 +41,7 @@ public class DeathBrideIdentitySubsetLinkageRecipe extends DeathBrideOwnMarriage
      */
     @Override
     public Iterable<LXP> getDeathRecords() {
-        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields() );
+        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
     }
 
     // NOTE Marriage not filtered in this recipe

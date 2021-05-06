@@ -30,7 +30,7 @@ public class BirthParentsMarriageBuilder {
 
             LinkageConfig.numberOfROs = 20;
 
-            LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, true);
+            LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
 
             LinkageQuality quality = lr.getLinkageQuality();
             quality.print(System.out);

@@ -6,7 +6,9 @@ package uk.ac.standrews.cs.population_linkage.graph.util;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
-import org.neo4j.driver.Transaction;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class Index {
 
@@ -19,18 +21,27 @@ public class Index {
 
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
 
-        doQuery(bridge,CREATE_CONSTRAINT_QUERY);
-        doQuery(bridge,BIRTHS_INDEX_QUERY);
-        doQuery(bridge,MARRIAGE_INDEX_QUERY);
-        doQuery(bridge,DEATH_INDEX_QUERY);
+        List<String> queries = Arrays.asList( CREATE_CONSTRAINT_QUERY,BIRTHS_INDEX_QUERY,MARRIAGE_INDEX_QUERY,DEATH_INDEX_QUERY );
+
+        doQueries(bridge,queries);
     }
 
-    private static void doQuery(NeoDbCypherBridge bridge, String query) {
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            Result result = tx.run(query);
-            result.stream().forEach( r -> System.out.println(r) );
-            tx.commit();
+    private static void doQueries(NeoDbCypherBridge bridge, List<String> queries) {
+        try (Session session = bridge.getNewSession(); ) {
+            for( String query : queries ) {
+                try {
+                    Result result = session.run(query);
+                    System.out.println("Established constraint: " + query);
+                } catch ( RuntimeException e ) {
+                    System.out.println("Exception in constraint: " + e.getMessage() );
+                }
+            }
         }
+        finally {
+            System.out.println( "Run finished" );
+            System.exit(0);
+        }
+
     }
 
 }

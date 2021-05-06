@@ -47,7 +47,7 @@ public class DeathGroomIdentitySubsetLinkageRecipe extends DeathGroomOwnMarriage
      */
     @Override
     public Iterable<LXP> getDeathRecords() {
-        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields() );
+        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, getDeathRecords() , getLinkageFields() );
     }
 
     private Iterable<LXP> reverse(Iterable<LXP> records) {
@@ -56,7 +56,6 @@ public class DeathGroomIdentitySubsetLinkageRecipe extends DeathGroomOwnMarriage
                 .descendingIterator();
         return () -> iterator;
     }
-
 
     // NOTE Marriage are not filtered in this recipe
 

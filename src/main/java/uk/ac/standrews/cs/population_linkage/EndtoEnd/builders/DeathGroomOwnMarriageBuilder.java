@@ -27,7 +27,7 @@ public class DeathGroomOwnMarriageBuilder {
 
             LinkageConfig.numberOfROs = 20;
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, false);
+            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // Make sure it all shuts down properly.

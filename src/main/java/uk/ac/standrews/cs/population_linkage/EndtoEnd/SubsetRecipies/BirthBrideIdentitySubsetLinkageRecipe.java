@@ -42,7 +42,7 @@ public class BirthBrideIdentitySubsetLinkageRecipe extends BirthBrideIdentityLin
      */
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filter( PREFILTER_REQUIRED_FIELDS, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields() );
+        return filter( PREFILTER_REQUIRED_FIELDS, NUMBER_OF_BIRTHS, super.getBirthRecords() , getLinkageFields() );
     }
 
     // NOTE Marriage not filtered in this recipe

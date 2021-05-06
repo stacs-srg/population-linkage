@@ -12,11 +12,11 @@ COPYDIR=/Users/al/Desktop/NEOCOPY/
 
 export MAVEN_OPTS="-Xmx16G"
 
-echo "1. Loading records from Storr"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.util.LoadNeo4JVitalEventsFromStorr" -e
-$COPY $COPYDIR/records
-echo "2. Indexing records in Neo4J"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.util.Index" -e
+#echo "1. Loading records from Storr"
+#mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.util.LoadNeo4JVitalEventsFromStorr" -e
+#$COPY $COPYDIR/records
+#echo "2. Indexing records in Neo4J"
+#mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.util.Index" -e
 echo "3. Performing birth sibling bundling"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthSiblingBundleBuilder" -e -Dexec.args="umea umea_results"
 $COPY $COPYDIR/siblings

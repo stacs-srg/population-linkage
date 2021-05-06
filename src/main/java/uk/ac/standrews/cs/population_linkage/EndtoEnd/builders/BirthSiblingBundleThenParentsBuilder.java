@@ -55,7 +55,7 @@ public class BirthSiblingBundleThenParentsBuilder {
             LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,BirthSiblingBundleThenParentsBuilder.class.getCanonicalName() );
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, true, false);
+            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, false, false);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 

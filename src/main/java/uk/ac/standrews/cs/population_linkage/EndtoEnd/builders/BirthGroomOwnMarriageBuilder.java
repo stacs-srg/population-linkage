@@ -28,7 +28,7 @@ public class BirthGroomOwnMarriageBuilder {
 
             LinkageConfig.numberOfROs = 20;
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, true);
+            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
         } catch (Exception e) {
             System.out.println( "Exception closing bridge" );
         } finally {

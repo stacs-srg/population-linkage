@@ -7,7 +7,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
@@ -117,13 +116,6 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public double getTheshold() {
         return DISTANCE_THESHOLD;
-    }
-
-    @Override
-    public Iterable<LXP> getStoredRecords() {
-        return filterBySex(
-                super.getStoredRecords(),
-                Birth.SEX, "f");
     }
 
     @Override

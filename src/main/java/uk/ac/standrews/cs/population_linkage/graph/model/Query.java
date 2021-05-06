@@ -166,7 +166,7 @@ public class Query {
      * @param distance         - the distance between the two nodes being linked
      * @return the number of relationships created
      */
-    private static void createReference(NeoDbCypherBridge bridge, String query, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
+    public static void createReference(NeoDbCypherBridge bridge, String query, String standard_id_from, String standard_id_to, String provenance, int fields_matched, double distance) {
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
             Map<String, Object> parameters = getparams(standard_id_from, standard_id_to, provenance, fields_matched, distance);
             tx.run(query, parameters);

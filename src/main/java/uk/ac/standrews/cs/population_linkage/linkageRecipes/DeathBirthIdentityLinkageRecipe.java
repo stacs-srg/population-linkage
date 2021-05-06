@@ -5,15 +5,12 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.List;
 import java.util.Map;
@@ -58,19 +55,6 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Death.STANDARDISED_ID,Birth.DEATH_RECORD_IDENTITY))
     );
     private static final double DISTANCE_THESHOLD = 0;
-
-    public static void main(String[] args) throws BucketException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), false, false, true, false
-                );
-    }
 
     public static final String LINKAGE_TYPE = "death-birth-identity";
 
