@@ -1,2 +1,2 @@
 births-cache-size,marriages-cache-size,deaths-cache-size,ros,threshold,"pre-filter-required-fields",max-sibling-age-diff,min-marriage-age,min-parenting-age,max-parenting-age,"max-marriage-age-discrepancy",max-death-age,linkage-results-file,reason,priority,required-memory,seed,population,size,corruption-profile,metric,linkage-type,pre-filter,persist-links,evaluate-quality,experiment-id,linkage-phase,pop-number,"single-path-indirect-evaluation-approach","dual-path-indirect-evaluation-approach"
-90000,90000,90000,70,0.20,6,50,15,15,55,20,120,"cluster-runs/results/linkage-BDI-indirect-hogun-11.csv",initial,8,12,12345,"synthetic-dominican-republic",235k,0,JENSEN_SHANNON,death-bride-identity,true,false,true,-,,4,,
+,,,,,,,,,,,,,,0,0,,,,,,,false,false,false,,,,,
