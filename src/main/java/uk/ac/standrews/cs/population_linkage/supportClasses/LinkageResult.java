@@ -5,9 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 
 public class LinkageResult {
 

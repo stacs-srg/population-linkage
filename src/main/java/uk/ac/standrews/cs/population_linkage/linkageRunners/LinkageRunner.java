@@ -12,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.supportClasses.*;
-import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -96,7 +95,9 @@ public abstract class LinkageRunner {
         Map<String, LinkageQuality> lq = new HashMap<>();
 
         for(EvaluationApproach evaluationApproach : linkageRecipe.getEvaluationsApproaches().values()) {
-            lq.put(linkageRecipe.getLinkageType() + "." + evaluationApproach.getEvaluationDescription(), evaluationApproach.calculateLinkageQuality());
+            evaluationApproach.calculateLinkageQuality().forEach((evaluationGroup, result) -> {
+                lq.put(linkageRecipe.getLinkageType() + "." + evaluationApproach.getEvaluationDescription() + "." + evaluationGroup, result);
+            });
         }
 
         if(generateMapOfLinks) {

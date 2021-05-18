@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.EntitiesList;
 import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.JobList;
@@ -29,8 +30,6 @@ public class JobQueueSplitter {
         Set<String> hosts = setOf(args[2]);
         int nodesPerHost = Integer.parseInt(args[3]);
         boolean wipeExistingJobs = Boolean.parseBoolean(args[4]);
-
-        int partitions = hosts.size() * nodesPerHost;
 
         ArrayList<Integer> jobsRemaining = checkRemainingJobs(outputDir, hosts, nodesPerHost, wipeExistingJobs);
 
@@ -63,7 +62,9 @@ public class JobQueueSplitter {
     private static ArrayList<Integer> checkRemainingJobs(String outputDir, Set<String> hosts, int nodesPerHost, boolean wipeExistingJobs) throws IOException, InterruptedException {
 
         if(wipeExistingJobs) {
-            return new ArrayList<>();
+            return Arrays.stream(new int[hosts.size() * nodesPerHost])
+                    .boxed()
+                    .collect(Collectors.toCollection(ArrayList<Integer>::new));
         }
 
         ArrayList<Integer> remainingJobCounts = new ArrayList<>();

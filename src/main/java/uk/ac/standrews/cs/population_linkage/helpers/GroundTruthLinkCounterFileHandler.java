@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import org.apache.commons.lang.StringUtils;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.StandardEvaluationApproach;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class GroundTruthLinkCounterFileHandler {
     private static final String GT_LINKS = "gt-links";
     private static final String TIME = "count-time-seconds";
 
-    public long getOrCalcCount(EvaluationApproach evaluationApproach) {
+    public long getOrCalcCount(StandardEvaluationApproach evaluationApproach) {
         System.out.printf("Count ground truth links in population: %s using evaluation approach: %s\n",
                 evaluationApproach.getDataSetName(), evaluationApproach.getEvaluationDescription());
 

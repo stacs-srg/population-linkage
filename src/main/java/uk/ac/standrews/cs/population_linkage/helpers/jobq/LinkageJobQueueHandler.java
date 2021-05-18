@@ -23,6 +23,7 @@ import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.Result;
 import uk.ac.standrews.cs.population_linkage.helpers.memorylogger.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.helpers.ValidatePopulationInStorr;
 import uk.ac.standrews.cs.population_linkage.helpers.memorylogger.PreEmptiveOutOfMemoryWarning;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthMotherIdentityWithAddressLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
@@ -32,6 +33,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideIdentityLi
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityWithOccupationsLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
@@ -41,8 +43,8 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.ReversedLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.SexLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Utils;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.ParentalStatusEvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.StandardEvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -185,6 +187,15 @@ public class LinkageJobQueueHandler {
         return linkageResults;
     }
 
+    private static Set<String> getEvaluationApproaches(Result referenceJob) {
+        String approach = referenceJob.getEvaluationApproach();
+        if("".equals(approach)) {
+            return new HashSet<>();
+        }
+        return new StringExpression(approach).getValues();
+    }
+
+
     private static Set<String> getSinglePathEvaluationApproaches(Result referenceJob) {
         String approach = referenceJob.getSinglePathIndirectEvaluationApproach();
         if("".equals(approach)) {
@@ -204,7 +215,10 @@ public class LinkageJobQueueHandler {
     private static Result evaluate(Result referenceJob, Storr storr, IndirectLinkageRecipe compositeLinkageRecipe, String evaluationApproachString, String evaluationPhase, int overrideHash) throws InvalidEvaluationApproachException, BucketException, PersistentObjectException {
         Result result = referenceJob.clone();
         result.setStartTime(System.currentTimeMillis());
-        EvaluationApproach evaluationApproach = convertToApproach(evaluationApproachString, storr);
+        StandardEvaluationApproach evaluationApproach = (StandardEvaluationApproach) convertToApproach(evaluationApproachString, storr);
+        // this is for indirect linkage and I'm pretty sure the way I've gone is bad, so this cast is just to make stuff
+        // compile given there's little value in making new stuff work with bad stuff - I'll delete the indirect stuff
+        // once I've fully convinced myself its a bad way to go
         LinkageQuality linkageQuality = compositeLinkageRecipe.evaluateIndirectLinkage(evaluationApproach);
         setCoreResults(result, evaluationApproach.getLinkageRecipe());
         setLinkageQualityResults(result, evaluationApproachString, linkageQuality);
@@ -229,6 +243,8 @@ public class LinkageJobQueueHandler {
                 switch (Enum.valueOf(EvaluationApproach.Type.class, split[1])) {
                     case ALL:
                         return new StandardEvaluationApproach(linkageRecipe);
+                    case PARENTAL_STATUS:
+                        return new ParentalStatusEvaluationApproach(linkageRecipe);
                 }
             } catch (UnsupportedOperationException | IllegalArgumentException e) {
                 throw new InvalidEvaluationApproachException(e);
@@ -275,7 +291,7 @@ public class LinkageJobQueueHandler {
     }
 
 
-    private static void runLinkageExperiment(Job job) throws BucketException, java.io.IOException, InterruptedException {
+    private static void runLinkageExperiment(Job job) throws BucketException, java.io.IOException, InterruptedException, InvalidEvaluationApproachException {
 
         Result result = JobMappers.toResult(job);
         result.setStartTime(System.currentTimeMillis());
@@ -284,6 +300,10 @@ public class LinkageJobQueueHandler {
 
         Storr storr = new Storr(result.getRecordsRepo(), result.getLinksSubRepo(), result.getResultsRepo());
         LinkageRecipe linkageRecipe = getLinkageRecipe(job.getLinkageType(), storr);
+
+        for(String evaluationApproachName : getEvaluationApproaches(result)) {
+            linkageRecipe.addEvaluationsApproach(convertToApproach(evaluationApproachName, storr));
+        }
 
         Map<String, LinkageQuality> evaluationResults;
 
@@ -448,6 +468,12 @@ public class LinkageJobQueueHandler {
                 break;
             case GroomGroomSiblingLinkageRecipe.LINKAGE_TYPE:
                 chosenLinkageRecipe = new GroomGroomSiblingLinkageRecipe(storr);
+                break;
+            case DeathGroomOwnMarriageIdentityWithOccupationsLinkageRecipe.LINKAGE_TYPE:
+                chosenLinkageRecipe = new DeathGroomOwnMarriageIdentityWithOccupationsLinkageRecipe(storr);
+                break;
+            case BirthMotherIdentityWithAddressLinkageRecipe.LINKAGE_TYPE:
+                chosenLinkageRecipe = new BirthMotherIdentityWithAddressLinkageRecipe(storr);
                 break;
             default:
                 throw new UnsupportedOperationException("LinkageType not found");

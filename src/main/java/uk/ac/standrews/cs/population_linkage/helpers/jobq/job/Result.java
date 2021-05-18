@@ -11,7 +11,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import uk.ac.standrews.cs.population_linkage.helpers.memorylogger.MemoryLogger;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 
 import static java.lang.String.valueOf;
 

@@ -7,7 +7,6 @@ package uk.ac.standrews.cs.population_linkage.compositeLinker;
 import java.util.Collection;
 import java.util.Map;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
