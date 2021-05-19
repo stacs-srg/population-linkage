@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-births-cache-size,marriages-cache-size,deaths-cache-size,ros,threshold,"pre-filter-required-fields",max-sibling-age-diff,min-marriage-age,min-parenting-age,max-parenting-age,"max-marriage-age-discrepancy",max-death-age,linkage-results-file,reason,priority,required-memory,seed,population,size,corruption-profile,metric,linkage-type,pre-filter,persist-links,evaluate-quality,experiment-id,linkage-phase,pop-number,"single-path-indirect-evaluation-approach","dual-path-indirect-evaluation-approach"
-,,,,,,,,,,,,,,0,0,,,,,,,false,false,false,,,,,
-=======
 births-cache-size,marriages-cache-size,deaths-cache-size,ros,threshold,"pre-filter-required-fields",max-sibling-age-diff,min-marriage-age,min-parenting-age,max-parenting-age,"max-marriage-age-discrepancy",max-death-age,linkage-results-file,reason,priority,required-memory,seed,population,size,corruption-profile,metric,linkage-type,pre-filter,persist-links,evaluate-quality,experiment-id,linkage-phase,pop-number,evaluation-approach,"single-path-indirect-evaluation-approach","dual-path-indirect-evaluation-approach"
 90000,90000,90000,70,0.5,6,50,15,15,55,20,120,"cluster-runs/results/thesis-1-sif-3.csv",blue,8,12,12345,"synthetic-dominican-republic",2390k,A,JENSEN_SHANNON,death-groom-identity,true,false,true,"126CF54C71788DD7B2815CA4AE8D1F01E560C0F4A2072EC47E36B6E8F7A04AD2",,2,,,
 90000,90000,90000,70,0.60,6,50,15,15,55,20,120,"cluster-runs/results/thesis-1-sif-3.csv",yellow,4,12,12345,synthetic-scotland,531k,B,JENSEN_SHANNON,death-groom-identity,true,false,true,"B2C0375BC98906E58B5F36D7A32FFDF22E00FD6BAC21CC51EF236FCE69780C85",,1,,,
@@ -48,4 +44,3 @@ births-cache-size,marriages-cache-size,deaths-cache-size,ros,threshold,"pre-filt
 90000,90000,90000,70,0.1,8,50,15,15,55,20,120,"cluster-runs/results/thesis-1-sif-3.csv",green,13,12,12345,synthetic-scotland,1222k,A,JENSEN_SHANNON,"death-groom-identity-with-occupations",true,false,true,"D3CCA6CD7734BE4C3C5E9EAD71554FBD53197193C096BC5ABD0650E350DAF857",,3,,,
 90000,90000,90000,70,0.50,2,50,15,15,55,20,120,"cluster-runs/results/thesis-1-sif-3.csv",brown,5,12,12345,synthetic-scotland,133k,0,JENSEN_SHANNON,birth-mother-identity,true,false,true,"4B2780915234E1133FB184E71AECD3BA0B0DC5761093E2DEF7BFA278BEE446D9",,3,,,
 90000,90000,90000,70,0.3,6,50,15,15,55,20,120,"cluster-runs/results/thesis-1-sif-3.csv",blue,14,12,12345,synthetic-scotland,5003k,0,JENSEN_SHANNON,death-groom-identity,true,false,true,-,,4,,,
->>>>>>> fe087ce233307525fabc5b6da4fe83848f4ac5e5
