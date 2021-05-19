@@ -127,7 +127,6 @@ public class JobList extends EntitiesList<JobWithExpressions> {
             }
         }
 
-        getReferenceExpression(this);
         return new HashSet<>(); // i.e empty set as no suitable jobs
     }
 

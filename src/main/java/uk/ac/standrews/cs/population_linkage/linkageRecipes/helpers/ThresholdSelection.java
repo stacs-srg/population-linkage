@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.LinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
@@ -23,7 +22,8 @@ public class ThresholdSelection {
         TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
 
         for(double threshold = minThreshold; threshold < maxThreshold; threshold += step) {
-            LinkageQuality lq = linkageRunner.run(linkageRecipe, baseMetric, threshold, preFilterRequiredFields, false, true, false).getLinkageEvaluations().get(EvaluationApproach.Type.ALL);
+            LinkageQuality lq = linkageRunner.run(linkageRecipe, baseMetric, threshold, preFilterRequiredFields, false, true, false)
+                    .getLinkageEvaluations().values().stream().findAny().get(); // this is bad, need this class to support/ know about multiple evaluation types
             thresholdToLinkageQuality.put(threshold, lq);
         }
         return thresholdToLinkageQuality;
@@ -36,8 +36,10 @@ public class ThresholdSelection {
         TreeMap<Double, LinkageQuality> thresholdToLinkageQualityAll = new TreeMap<>();
         double current_threshold = starting_threshold_estimate;
 
-        LinkageQuality t_0 = linkageRunner.run(linkageRecipe, baseMetric, 0.67, preFilterRequiredFields, false, true, false).getLinkageEvaluations().get(EvaluationApproach.Type.ALL);
-        LinkageQuality t_1 = linkageRunner.run(linkageRecipe, baseMetric, 0.67, preFilterRequiredFields, false, true, false).getLinkageEvaluations().get(EvaluationApproach.Type.ALL);
+        LinkageQuality t_0 = linkageRunner.run(linkageRecipe, baseMetric, 0.67, preFilterRequiredFields, false, true, false)
+                .getLinkageEvaluations().values().stream().findAny().get(); // this is bad, need this class to support/ know about multiple evaluation types
+        LinkageQuality t_1 = linkageRunner.run(linkageRecipe, baseMetric, 0.67, preFilterRequiredFields, false, true, false)
+                .getLinkageEvaluations().values().stream().findAny().get(); // this is bad, need this class to support/ know about multiple evaluation types
 
         for(int n = 0 ; n < nRandomRestarts; n++) {
             double bestF = 0;
@@ -49,7 +51,8 @@ public class ThresholdSelection {
 
             while (bestF < 0.99 && count < maxAttempts) {
 
-                LinkageQuality lq = linkageRunner.run(linkageRecipe, baseMetric, 0.67, preFilterRequiredFields, false, true, false).getLinkageEvaluations().get(EvaluationApproach.Type.ALL);
+                LinkageQuality lq = linkageRunner.run(linkageRecipe, baseMetric, 0.67, preFilterRequiredFields, false, true, false)
+                        .getLinkageEvaluations().values().stream().findAny().get(); // this is bad, need this class to support/ know about multiple evaluation types
                 thresholdToLinkageQuality.put(current_threshold, lq);
 
                 if (lq.getF_measure() > bestF) {

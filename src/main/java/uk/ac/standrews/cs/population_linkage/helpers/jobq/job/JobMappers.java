@@ -25,6 +25,7 @@ public class JobMappers {
             job.setPreFilter(jobWithExpressions.isPreFilter());
             job.setPersistLinks(jobWithExpressions.isPersistLinks());
             job.setEvaluateQuality(jobWithExpressions.isEvaluateQuality());
+            job.setEvaluationApproach(jobWithExpressions.getEvaluationApproach());
             job.setSinglePathIndirectEvaluationApproach(jobWithExpressions.getSinglePathIndirectEvaluationApproach());
             job.setDualPathIndirectEvaluationApproach(jobWithExpressions.getDualPathIndirectEvaluationApproach());
             job.setThreshold(jobWithExpressions.getThreshold().getValueIfSingular());
@@ -63,6 +64,7 @@ public class JobMappers {
         jobWithExpressions.setPreFilter(job.isPreFilter());
         jobWithExpressions.setPersistLinks(job.isPersistLinks());
         jobWithExpressions.setEvaluateQuality(job.isEvaluateQuality());
+        jobWithExpressions.setEvaluationApproach(job.getEvaluationApproach());
         jobWithExpressions.setSinglePathIndirectEvaluationApproach(job.getSinglePathIndirectEvaluationApproach());
         jobWithExpressions.setDualPathIndirectEvaluationApproach(job.getDualPathIndirectEvaluationApproach());
         jobWithExpressions.setThreshold(new DoubleExpression(job.getThreshold()));
@@ -98,6 +100,7 @@ public class JobMappers {
         result.setPreFilter(job.isPreFilter());
         result.setPersistLinks(job.isPersistLinks());
         result.setEvaluateQuality(job.isEvaluateQuality());
+        result.setEvaluationApproach(job.getEvaluationApproach());
         result.setSinglePathIndirectEvaluationApproach(job.getSinglePathIndirectEvaluationApproach());
         result.setDualPathIndirectEvaluationApproach(job.getDualPathIndirectEvaluationApproach());
         result.setThreshold(job.getThreshold());

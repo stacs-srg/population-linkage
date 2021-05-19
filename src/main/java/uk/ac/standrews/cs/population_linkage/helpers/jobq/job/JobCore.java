@@ -33,6 +33,7 @@ public class JobCore {
 
     protected String popNumber = "";
 
+    protected String evaluationApproach = "";
     protected String singlePathIndirectEvaluationApproach = "";
     protected String dualPathIndirectEvaluationApproach = "";
 
@@ -231,6 +232,14 @@ public class JobCore {
 
     public void setLinkagePhase(String linkagePhase) {
         this.linkagePhase = linkagePhase;
+    }
+
+    public String getEvaluationApproach() {
+        return evaluationApproach;
+    }
+
+    public void setEvaluationApproach(String evaluationApproach) {
+        this.evaluationApproach = evaluationApproach;
     }
 
     public String getSinglePathIndirectEvaluationApproach() {

@@ -8,10 +8,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.StandardEvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -25,11 +24,11 @@ public abstract class IndirectLinkageRecipe {
 
     public abstract Map<String, Collection<DoubleLink>> getPotentialLinks() throws BucketException;
 
-    public LinkageQuality evaluateIndirectLinkage(EvaluationApproach directLinkerForGT) throws BucketException, PersistentObjectException {
+    public LinkageQuality evaluateIndirectLinkage(StandardEvaluationApproach directLinkerForGT) throws BucketException, PersistentObjectException {
         return selectAndAssessIndirectLinks(getPotentialLinks(), directLinkerForGT);
     }
 
-    protected static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, EvaluationApproach directLinkageForGT) throws BucketException, PersistentObjectException {
+    protected static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, StandardEvaluationApproach directLinkageForGT) throws BucketException, PersistentObjectException {
 
         long numberOfGroundTruthTrueLinks = directLinkageForGT.getNumberOfGroundTruthTrueLinks();
 
@@ -66,7 +65,7 @@ public abstract class IndirectLinkageRecipe {
         return bestLink;
     }
 
-    protected static boolean trueMatch(Link link, EvaluationApproach directLinkageForGT) throws BucketException {
+    protected static boolean trueMatch(Link link, StandardEvaluationApproach directLinkageForGT) throws BucketException {
         return directLinkageForGT.isTrueMatch(link.getRecord1().getReferend(), link.getRecord2().getReferend()).equals(TRUE_MATCH);
     }
 
