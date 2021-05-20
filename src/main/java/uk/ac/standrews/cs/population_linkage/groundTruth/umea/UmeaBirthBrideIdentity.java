@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideIdentityLi
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -97,7 +97,7 @@ public class UmeaBirthBrideIdentity extends TwoSourcesLinkageAnalysis {
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
         int NUMBER_OF_RUNS = 1;
 
         new UmeaBirthBrideIdentity(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();

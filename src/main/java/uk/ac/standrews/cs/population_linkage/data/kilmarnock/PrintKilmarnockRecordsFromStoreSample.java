@@ -29,7 +29,7 @@ public class PrintKilmarnockRecordsFromStoreSample {
 
     public void run() throws Exception {
 
-        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        RecordRepository record_repository = new RecordRepository(repo_name);
 
         System.out.println("Reading records from repository: " + repo_name);
         System.out.println();

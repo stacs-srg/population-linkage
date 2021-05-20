@@ -24,11 +24,20 @@ public class BirthBrideOwnMarriageBuilder {
         String resultsRepo = args[1]; // e.g. synth_results
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            LinkageRecipe linkageRecipe = new BirthBrideIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthBrideOwnMarriageBuilder.class.getCanonicalName());
+            BirthBrideIdentitySubsetLinkageRecipe linkageRecipe = new BirthBrideIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthBrideOwnMarriageBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
+
+            while( linkage_fields >= half_fields ) {
+                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+
+                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+
+                linkage_fields--;
+            }
         } catch (Exception e) {
             System.out.println( "Exception closing bridge" );
         } finally {

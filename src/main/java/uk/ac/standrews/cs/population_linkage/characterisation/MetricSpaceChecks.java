@@ -9,7 +9,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageR
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
@@ -49,7 +49,7 @@ public class MetricSpaceChecks {
 
     public void run() throws Exception {
 
-        checkTriangleInequality(new RecordRepository(store_path, repo_name));
+        checkTriangleInequality(new RecordRepository(repo_name));
     }
 
     private List<Metric<LXP>> getCombinedMetrics() {

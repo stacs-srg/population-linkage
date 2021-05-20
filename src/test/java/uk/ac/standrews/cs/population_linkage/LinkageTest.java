@@ -10,12 +10,12 @@ import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.LXPMetadata;
-import uk.ac.standrews.cs.storr.impl.LXPReference;
-import uk.ac.standrews.cs.storr.impl.StaticLXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXPMetadata;
+import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
+import uk.ac.standrews.cs.neoStorr.impl.StaticLXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
@@ -260,7 +260,7 @@ public abstract class LinkageTest {
 
         String rep = "";
         int number_of_fields;
-        IStoreReference store_reference = new LXPReference(null, "dummy-repo", "dummy-bucket", lxp_id++);
+        IStoreReference store_reference = new LXPReference( "dummy-repo", "dummy-bucket", lxp_id++);
 
         DummyLXP(String... values) {
 

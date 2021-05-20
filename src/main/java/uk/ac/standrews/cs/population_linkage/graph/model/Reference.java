@@ -20,7 +20,7 @@ public class Reference {
     @Property
     private String provenance;
     @Property
-    private int fields_matched;
+    private int fields_populated;
     @Property
     private double distance;
 
@@ -29,11 +29,11 @@ public class Reference {
     public Reference() {
     }
 
-    public Reference(VitalEventRecord start, VitalEventRecord end, String provenance, int fields_matched, double distance) {
+    public Reference(VitalEventRecord start, VitalEventRecord end, String provenance, int fields_populated, double distance) {
         this.start = start;
         this.end = end;
         this.provenance = provenance;
-        this.fields_matched = fields_matched;
+        this.fields_populated = fields_populated;
         this.distance = distance;
     }
 

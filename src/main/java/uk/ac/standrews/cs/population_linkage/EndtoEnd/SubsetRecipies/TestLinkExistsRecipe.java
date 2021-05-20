@@ -4,16 +4,18 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
 
-import org.neo4j.driver.Result;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -26,7 +28,7 @@ import java.util.stream.StreamSupport;
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  *
  */
-public class TestRecipe extends DeathGroomOwnMarriageIdentityLinkageRecipe {
+public class TestLinkExistsRecipe extends DeathGroomOwnMarriageIdentityLinkageRecipe {
 
     private final NeoDbCypherBridge bridge;
 
@@ -36,7 +38,7 @@ public class TestRecipe extends DeathGroomOwnMarriageIdentityLinkageRecipe {
     private static final int PREFILTER_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
 
 
-    public TestRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
+    public TestLinkExistsRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
         super( source_repository_name,results_repository_name,links_persistent_name );
         this.bridge = bridge;
     }
@@ -46,7 +48,7 @@ public class TestRecipe extends DeathGroomOwnMarriageIdentityLinkageRecipe {
      */
     @Override
     public Iterable<LXP> getDeathRecords() {
-        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, getDeathRecords() , getLinkageFields() );
+        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
     }
 
     private Iterable<LXP> reverse(Iterable<LXP> records) {
@@ -74,36 +76,45 @@ public class TestRecipe extends DeathGroomOwnMarriageIdentityLinkageRecipe {
 //    }
 
         try {
-            String link1_id = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
-            String link2_id = link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID );
-            if( linkExists( bridge,link1_id,link2_id, links_persistent_name ) ) {
-                System.out.printf("Link exists from %s %s %s\n", link1_id,link2_id, links_persistent_name );
+            String link1_std_id = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
+            String link2_std_id = link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID );
+            if( Query.DMDeathGroomOwnMarriageReferenceExists( bridge,link1_std_id,link2_std_id, links_persistent_name ) ) {
+                System.out.printf("Link exists from (std_ids): %s %s %s\n", link1_std_id, link2_std_id, links_persistent_name );
             } else {
-                System.out.println("Link does not exist");
+                System.out.printf("Link does not exist from (std_ids): %s %s %s\n", link1_std_id, link2_std_id, links_persistent_name );
             }
-        } catch (BucketException e) {
+        } catch (BucketException | RepositoryException e) {
             e.printStackTrace();
         }
-
     }
 
-    private static final String DM_DEATH_GROOM_QUERY_EXISTS = "MATCH (a:DeathRecord)-[r:GROOM]-(b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov RETURN r";
+    public static void main(String[] args) {
 
-    private boolean linkExists( NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
-        Map<String, Object> parameters = getparams(standard_id_from, standard_id_to, provenance);
-        Result result = bridge.getNewSession().run(DM_DEATH_GROOM_QUERY_EXISTS,parameters);
-        List<Integer> field = result.list(r -> r.get("r").asRelationship().get("fields_matched").asInt());
-        if( field == null ) {
-            return false;
+        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String resultsRepo = args[1]; // e.g. synth_results
+
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+            TestLinkExistsRecipe linkageRecipe = new TestLinkExistsRecipe(sourceRepo, resultsRepo, bridge,"");
+
+            boolean exists = Query.DMDeathGroomOwnMarriageReferenceExists( bridge, "9395194","9389272","uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathGroomOwnMarriageBuilder" );
+
+            if( exists ) {
+                System.out.println( "Found it and should have");
+            } else {
+                System.out.println( "Did not find it and should have");
+            }
+
+            exists = Query.DMDeathGroomOwnMarriageReferenceExists( bridge, "5194","9389272","uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathGroomOwnMarriageBuilder" );
+
+            if( exists ) {
+                System.out.println( "Did not find it and should not have");
+            } else {
+                System.out.println( "Found it and should not have");
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return true;
-    }
-
-    private static Map<String, Object> getparams(String standard_id_from, String standard_id_to, String provenance) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("standard_id_from", standard_id_from);
-        parameters.put("standard_id_to", standard_id_to);
-        parameters.put("prov", provenance);
-        return parameters;
     }
 }

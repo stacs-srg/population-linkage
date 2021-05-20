@@ -6,7 +6,6 @@ package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.DeathBrideIdentitySubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
@@ -22,13 +21,21 @@ public class DeathBrideOwnMarriageBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            LinkageRecipe linkageRecipe = new DeathBrideIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,DeathBrideOwnMarriageBuilder.class.getCanonicalName());
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
+            DeathBrideIdentitySubsetLinkageRecipe linkageRecipe = new DeathBrideIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathBrideOwnMarriageBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048),false, false, true, true);
-        } finally {
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2) + 1;
+
+            while (linkage_fields >= half_fields) {
+                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, true);
+
+                linkage_fields--;
+            }
+    } finally {
             System.out.println( "Run finished" );
             System.exit(0);
         }

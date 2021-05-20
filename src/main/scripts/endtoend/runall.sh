@@ -12,11 +12,12 @@ COPYDIR=/Users/al/Desktop/NEOCOPY/
 
 export MAVEN_OPTS="-Xmx16G"
 
+echo "1. Load records from Storr - not used"
 #echo "1. Loading records from Storr"
 #mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.util.LoadNeo4JVitalEventsFromStorr" -e
 #$COPY $COPYDIR/records
-#echo "2. Indexing records in Neo4J"
-#mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.util.Index" -e
+echo "2. Indexing records in Neo4J"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.util.Index" -e
 echo "3. Performing birth sibling bundling"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthSiblingBundleBuilder" -e -Dexec.args="umea umea_results"
 $COPY $COPYDIR/siblings
@@ -45,7 +46,7 @@ echo "11. Marriage sibling (GG) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.GroomGroomSiblingBuilder" -e -Dexec.args="umea umea_results"
 $COPY $COPYDIR/grooms2
 echo "12. Marriage sibling (BB) linkage"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BrideBrideiblingBuilder" -e -Dexec.args="umea umea_results"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BrideBrideSiblingBuilder" -e -Dexec.args="umea umea_results"
 $COPY $COPYDIR/brides2
 echo "13. Marriage sibling (BG) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BrideGroomSiblingBuilder" -e -Dexec.args="umea umea_results"
@@ -53,6 +54,6 @@ $COPY $COPYDIR/bridegroom2
 echo "14. Marriage sibling (GB) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.GroomBrideSiblingBuilder" -e -Dexec.args="umea umea_results"
 $COPY $COPYDIR/groombride2
-echo "14. Death siblings (indirect) linkage"
+echo "15. Death siblings (indirect) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathSiblingBundleBuilder" -e -Dexec.args="umea umea_results"
 $COPY $COPYDIR/deathsiblings

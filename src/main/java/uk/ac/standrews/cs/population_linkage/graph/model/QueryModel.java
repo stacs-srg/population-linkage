@@ -15,51 +15,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Query {
+public class QueryModel {
 
-    // Standard creation queries
+    // Standard queries
     // BB, BM etc. refer to Births Deaths and Marriages NOT babies, mothers etc.
 
-    private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BB_SIBLING_QUERY = "MATCH (a:BirthRecord), (b:BirthRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
-    private static final String BM_FATHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:FATHER { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String BM_MOTHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:MOTHER { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_FATHER_QUERY = "MATCH (a:BirthRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:FATHER { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_MOTHER_QUERY = "MATCH (a:BirthRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:MOTHER { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
-    private static final String BM_BIRTH_GROOM_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String BM_BIRTH_BRIDE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_BIRTH_GROOM_QUERY = "MATCH (a:BirthRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_BIRTH_BRIDE_QUERY = "MATCH (a:BirthRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
-    private static final String DD_SIBLING_QUERY = "MATCH (a:Death), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String DD_SIBLING_QUERY = "MATCH (a:DeathRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
-    private static final String BD_DEATH_QUERY = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:DEATH { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BD_DEATH_QUERY = "MATCH (a:BirthRecord), (b:DeathRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:DEATH { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
-    private static final String DM_DEATH_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String DM_DEATH_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";;
+    private static final String DM_DEATH_GROOM_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String DM_DEATH_BRIDE_QUERY = "MATCH (a:DeathRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";;
 
-    private static final String MM_BB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String MM_GG_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String MM_GB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String MM_BB_SIBLING_QUERY = "MATCH (a:MarriageRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String MM_GG_SIBLING_QUERY = "MATCH (a:MarriageRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String MM_GB_SIBLING_QUERY = "MATCH (a:MarriageRecord), (b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
     // queries for use in predicates - return a relationship if it exists
 
-    private static final String BB_SIBLING_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-
-    private static final String BM_FATHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:FATHER]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String BM_MOTHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:MOTHER]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-
-    private static final String BM_BIRTH_GROOM_EXISTS_QUERY = "MATCH (a:Birth)-[r:GROOM]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String BM_BIRTH_BRIDE_EXISTS_QUERY = "MATCH (a:Birth)-[r:BRIDE]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-
-    private static final String DD_SIBLING_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-
-    private static final String BD_DEATH_EXISTS_QUERY = "MATCH (a:Birth)-[r:DEATH]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to  RETURN r";
-
-    private static final String DM_DEATH_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:GROOM]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov RETURN r";
-    private static final String DM_DEATH_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:BRIDE]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-
-    private static final String MM_BB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_GG_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_GB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-
+    private static final String DM_DEATH_GROOM_QUERY_EXISTS = "MATCH (a:DeathRecord)-[r:GROOM]-(b:MarriageRecord) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov RETURN r";
 
 
     /**
@@ -182,52 +164,8 @@ public class Query {
 
     // predicates
 
-    public static boolean BBBirthSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, BB_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean BMBirthFatherReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, BM_FATHER_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean BMBirthMotherReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, BM_MOTHER_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean BMBirthGroomReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, BM_BIRTH_GROOM_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean BMBirthBrideReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, BM_BIRTH_BRIDE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean DDSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, DD_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean BDDeathReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, BD_DEATH_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean DMDeathGroomOwnMarriageReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, DM_DEATH_GROOM_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean DMDeathBrideOwnMarriageReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, DM_DEATH_BRIDE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean MMBrideBrideSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, MM_BB_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean MMGroomGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, MM_GG_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
-    }
-
-    public static boolean MMGroomBrideSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, MM_GB_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
+    public static boolean deathGroomOwnMarriageReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
+        return linkExists( bridge,DM_DEATH_GROOM_QUERY_EXISTS, standard_id_from, standard_id_to, provenance );
     }
 
     //=====================// private methods //=====================//

@@ -26,7 +26,7 @@ public class ImportUmeaRecordsToStore {
 
     public void run() throws Exception {
 
-        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        RecordRepository record_repository = new RecordRepository(repo_name);
 
         System.out.println("Importing Umea records into repository: " + repo_name);
         System.out.println();

@@ -4,10 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
@@ -16,7 +17,7 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
  */
 public class BirthSiblingBundleExperimentDifferentFieldsRequred {
 
-    public static void main(String[] args) throws BucketException {
+    public static void main(String[] args) throws BucketException, RepositoryException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results

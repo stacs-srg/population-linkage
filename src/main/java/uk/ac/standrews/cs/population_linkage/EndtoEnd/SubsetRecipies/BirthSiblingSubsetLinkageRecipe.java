@@ -4,13 +4,14 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 /**
  * EvidencePair Recipe
@@ -26,12 +27,17 @@ public class BirthSiblingSubsetLinkageRecipe extends BirthSiblingLinkageRecipe {
     private static final int NUMBER_OF_BIRTHS = 10000;
     private static final int EVERYTHING = Integer.MAX_VALUE;
     private final NeoDbCypherBridge bridge;
+    public static final int ALL_LINKAGE_FIELDS = 8;
 
-    public static final int PREFILTER_REQUIRED_FIELDS = 8;
+    public int linkage_fields = ALL_LINKAGE_FIELDS;
 
     public BirthSiblingSubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,results_repository_name,links_persistent_name );
         this.bridge = bridge;
+    }
+
+    public void setNumberLinkageFieldsRequired( int number ) {
+        linkage_fields = number;
     }
 
     /**
@@ -39,20 +45,29 @@ public class BirthSiblingSubsetLinkageRecipe extends BirthSiblingLinkageRecipe {
      */
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filter(PREFILTER_REQUIRED_FIELDS, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+        return filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
     }
 
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createBBSiblingReference(
-                    bridge,
-                    link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID ),
-                    link.getRecord2().getReferend().getString( Birth.STANDARDISED_ID ),
-                    String.join( "-",link.getProvenance() ),
-                    PREFILTER_REQUIRED_FIELDS,
-                    link.getDistance() );
-        } catch (BucketException e) {
+
+            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend().getString( Death.STANDARDISED_ID );
+
+            if( !std_id1.equals(std_id2 ) ) {
+
+                if (!Query.BBBirthSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+                    Query.createBBSiblingReference(
+                            bridge,
+                            std_id1,
+                            std_id2,
+                            getLinks_persistent_name(),
+                            linkage_fields,
+                            link.getDistance());
+                }
+            }
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }

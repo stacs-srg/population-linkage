@@ -4,6 +4,9 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
+import uk.ac.standrews.cs.neoStorr.impl.DynamicLXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
@@ -19,9 +22,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.DynamicLXP;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -42,6 +42,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
     private static final double THRESHOLD = 0.0000001;
     private static final double COMBINED_AVERAGE_DISTANCE_THRESHOLD = 0.2;
     public static final int PREFILTER_REQUIRED_FIELDS = 8;
+    public static final double DISTANCE_THRESHOLD = 0.45;
 
     public static void main(String[] args) throws Exception {
 
@@ -90,7 +91,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
                 for (LXP sibling : sib_births) {
                     LXP search_deathrecord = convert(death_birth_recipe, sibling);  // converts birth to death
 
-                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_deathrecord, 0.45); // Finds deaths record based on ID on each sibling
+                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_deathrecord, DISTANCE_THRESHOLD); // Finds deaths record based on ID on each sibling
                     System.out.println("Seaching for birth, child_id:" + sibling.getString(Birth.CHILD_IDENTITY) + " B: " + sibling.getString(Birth.FORENAME) + " " + sibling.getString(Birth.SURNAME) + " M: " +
                             sibling.getString(Birth.MOTHER_FORENAME) + " " + sibling.getString(Birth.MOTHER_MAIDEN_SURNAME) + " F: " +
                             sibling.getString(Birth.FATHER_FORENAME) + " " + sibling.getString(Birth.FATHER_SURNAME));
@@ -155,6 +156,8 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
         } finally {
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
+            System.out.println( "Run complete" );
+            System.exit(0);
         }
     }
 
@@ -224,7 +227,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
         if( birth instanceof Birth ) {
             return death_birth_recipe.convertToOtherRecordType(birth);
         } else if( birth instanceof DynamicLXP) {
-            LXP result = new Death();
+            uk.ac.standrews.cs.neoStorr.impl.LXP result = new Death();
             for (int i = 0; i < death_birth_recipe.getLinkageFields().size(); i++) {
                 result.put(death_birth_recipe.getLinkageFields().get(i), birth.get(death_birth_recipe.getQueryMappingFields().get(i)));
             }

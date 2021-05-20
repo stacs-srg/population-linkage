@@ -4,14 +4,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 /**
  * EvidencePair Recipe
@@ -29,11 +30,17 @@ public class DeathBrideIdentitySubsetLinkageRecipe extends DeathBrideOwnMarriage
     private static final int NUMBER_OF_DEATHS = 10000;
     private static final int EVERYTHING = Integer.MAX_VALUE;
 
-    private static final int PREFILTER_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
+    public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
+
+    public int linkage_fields = ALL_LINKAGE_FIELDS;
 
     public DeathBrideIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
         super( source_repository_name,results_repository_name,links_persistent_name );
         this.bridge = bridge;
+    }
+
+    public void setNumberLinkageFieldsRequired( int number ) {
+        linkage_fields = number;
     }
 
     /**
@@ -41,7 +48,7 @@ public class DeathBrideIdentitySubsetLinkageRecipe extends DeathBrideOwnMarriage
      */
     @Override
     public Iterable<LXP> getDeathRecords() {
-        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
+        return filter( linkage_fields, NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
     }
 
     // NOTE Marriage not filtered in this recipe
@@ -54,9 +61,9 @@ public class DeathBrideIdentitySubsetLinkageRecipe extends DeathBrideOwnMarriage
                     link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID ),
                     link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID ),
                     links_persistent_name,
-                    PREFILTER_FIELDS,
+                    linkage_fields,
                     link.getDistance() );
-        } catch (BucketException e) {
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }

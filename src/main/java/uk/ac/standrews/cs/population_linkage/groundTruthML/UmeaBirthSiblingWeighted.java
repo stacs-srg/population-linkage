@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.io.IOException;
@@ -154,7 +154,7 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
 
         List<Integer> fields = new ArrayList<>();
         List<Metric<String>> metrics = new ArrayList<>();

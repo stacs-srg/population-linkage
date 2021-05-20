@@ -44,7 +44,7 @@ public class UmeaNameDistribution {
 
     public void run() throws Exception {
 
-        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        RecordRepository record_repository = new RecordRepository(repo_name);
 
         Iterable<Birth> births = record_repository.getBirths();
         Iterable<Death> deaths = record_repository.getDeaths();
@@ -248,7 +248,7 @@ public class UmeaNameDistribution {
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
 
         new UmeaNameDistribution( store_path,repo_name,"/Users/al/Desktop/" ).run();
     }

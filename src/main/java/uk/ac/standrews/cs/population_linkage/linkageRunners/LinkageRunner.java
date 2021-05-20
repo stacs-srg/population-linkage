@@ -4,6 +4,9 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
@@ -12,8 +15,6 @@ import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFac
 import uk.ac.standrews.cs.population_linkage.supportClasses.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
@@ -33,7 +34,7 @@ public abstract class LinkageRunner {
 
     public LinkageResult run(LinkageRecipe linkageRecipe, StringMetric baseMetric,
                              boolean generateMapOfLinks, boolean reverseMap,
-                             boolean evaluateQuality, boolean persistLinks) throws BucketException {
+                             boolean evaluateQuality, boolean persistLinks) throws BucketException, RepositoryException {
 
         MemoryLogger.update();
         this.baseMetric = baseMetric;
@@ -53,13 +54,12 @@ public abstract class LinkageRunner {
 
         LinkageResult result = link(persistLinks, evaluateQuality, numberOGroundTruthLinks, generateMapOfLinks, reverseMap);
 
-        linkageRecipe.stopStoreWatcher(); // TODO where to put src of this method - this is not the best of places!
         linker.terminate();
 
         return result;
     }
 
-    public TreeMap<Double, LinkageQuality> evaluateThresholds(String source_repository_name, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, double minThreshold, double step, double maxThreshold) throws BucketException {
+    public TreeMap<Double, LinkageQuality> evaluateThresholds(String source_repository_name, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, double minThreshold, double step, double maxThreshold) throws BucketException, RepositoryException {
 
         TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
 
@@ -70,7 +70,7 @@ public abstract class LinkageRunner {
         return thresholdToLinkageQuality;
     }
 
-    public TreeMap<Double, LinkageQuality> searchForBestThreshold(final String source_repository_name, double starting_threshold_estimate, StringMetric baseMetric, int maxAttempts, int nRandomRestarts) throws BucketException {
+    public TreeMap<Double, LinkageQuality> searchForBestThreshold(final String source_repository_name, double starting_threshold_estimate, StringMetric baseMetric, int maxAttempts, int nRandomRestarts) throws BucketException, RepositoryException {
 
         TreeMap<Double, LinkageQuality> thresholdToLinkageQualityAll = new TreeMap<>();
         double current_threshold = starting_threshold_estimate;
@@ -154,7 +154,7 @@ public abstract class LinkageRunner {
         }
     }
 
-    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException {
+    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
 
@@ -204,7 +204,9 @@ public abstract class LinkageRunner {
                     }
                 }
             }
-        } catch(NoSuchElementException ignore) {}
+        } catch(NoSuchElementException ignore) {} catch (RepositoryException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now().toString());
 
@@ -251,6 +253,8 @@ public abstract class LinkageRunner {
                     link.getRecord2().getReferend())
                     .equals(TRUE_MATCH);
         } catch (BucketException e) {
+            throw new RuntimeException("Bucket exception from accessing referend - bucket no longer contains expected records (TD)", e);
+        } catch (RepositoryException e) {
             throw new RuntimeException("Bucket exception from accessing referend - bucket no longer contains expected records (TD)", e);
         }
     }

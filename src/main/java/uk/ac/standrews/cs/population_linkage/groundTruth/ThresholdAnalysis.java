@@ -4,10 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
@@ -137,7 +137,7 @@ public abstract class ThresholdAnalysis {
 
     public abstract String getLinkageType();
 
-    public abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
+    public abstract Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository);
 
     public abstract void setupRecords();
 
@@ -147,7 +147,7 @@ public abstract class ThresholdAnalysis {
 
     public abstract LinkStatus isTrueMatch(final LXP record1, final LXP record2);
 
-    public abstract List<Metric<LXP>> getCombinedMetrics();
+    public abstract List<Metric<uk.ac.standrews.cs.neoStorr.impl.LXP>> getCombinedMetrics();
 
     public void run() throws Exception {
 

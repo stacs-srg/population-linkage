@@ -4,9 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.util;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class Util {
      * @param this_family
      * @return
      */
-    public static Set<LXP> getBirthSiblings(List<Link> this_family) throws BucketException {
+    public static Set<LXP> getBirthSiblings(List<Link> this_family) throws BucketException, RepositoryException {
         Set<LXP> results = new TreeSet<>();
         for( Link l : this_family ) {
             results.add( l.getRecord1().getReferend() );

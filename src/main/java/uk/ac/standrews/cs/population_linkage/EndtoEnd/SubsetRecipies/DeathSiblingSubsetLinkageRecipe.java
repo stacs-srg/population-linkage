@@ -4,13 +4,14 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 /**
  * EvidencePair Recipe
@@ -27,7 +28,9 @@ public class DeathSiblingSubsetLinkageRecipe extends DeathSiblingLinkageRecipe {
     private static final int EVERYTHING = Integer.MAX_VALUE;
     private final NeoDbCypherBridge bridge;
 
-    public static final int PREFILTER_REQUIRED_FIELDS = 4;
+    public static final int ALL_LINKAGE_FIELDS = 4;
+
+    public int linkage_fields = ALL_LINKAGE_FIELDS;
 
     public DeathSiblingSubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,results_repository_name,links_persistent_name );
@@ -39,20 +42,25 @@ public class DeathSiblingSubsetLinkageRecipe extends DeathSiblingLinkageRecipe {
      */
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        return filter(PREFILTER_REQUIRED_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
+        return filter(linkage_fields, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
     }
 
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createDDSiblingReference(
-                    bridge,
-                    link.getRecord1().getReferend().getString( Death.STANDARDISED_ID ),
-                    link.getRecord2().getReferend().getString( Death.STANDARDISED_ID ),
-                    links_persistent_name,
-                    PREFILTER_REQUIRED_FIELDS,
-                    link.getDistance() );
-        } catch (BucketException e) {
+            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend().getString( Death.STANDARDISED_ID );
+
+            if( !std_id1.equals(std_id2 ) ) {
+                Query.createDDSiblingReference(
+                        bridge,
+                        std_id1,
+                        std_id2,
+                        links_persistent_name,
+                        linkage_fields,
+                        link.getDistance());
+            }
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }

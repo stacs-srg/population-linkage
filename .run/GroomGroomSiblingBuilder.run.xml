@@ -2,7 +2,7 @@
   <configuration default="false" name="GroomGroomSiblingBuilder" type="Application" factoryName="Application" nameIsGenerated="true">
     <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.GroomGroomSiblingBuilder" />
     <module name="population-linkage" />
-    <option name="PROGRAM_PARAMETERS" value="umea umea_results" />
+    <option name="PROGRAM_PARAMETERS" value="Umea umea_results" />
     <selectedOptions>
       <option name="environmentVariables" visible="false" />
     </selectedOptions>

@@ -4,7 +4,14 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.neoStorr.impl.DynamicLXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.Store;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
+import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
+import uk.ac.standrews.cs.neoStorr.interfaces.IRepository;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -15,14 +22,6 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.DynamicLXP;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.Store;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.storr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.storr.interfaces.IBucket;
-import uk.ac.standrews.cs.storr.interfaces.IRepository;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
 import java.lang.reflect.InvocationTargetException;
@@ -72,16 +71,14 @@ public abstract class LinkageRecipe {
     private  Integer death_records_size = null;
     private  Integer marriage_records_size = null;
 
-    private Map<String, IBucket> storeRepoBucketLookUp = new HashMap<>();
-
     public LinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
 
         this.results_repository_name = results_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.source_repository_name = source_repository_name;
 
-        store_path = ApplicationProperties.getStorePath();
-        this.record_repository = new RecordRepository(store_path, source_repository_name);
+
+        this.record_repository = new RecordRepository(source_repository_name);
     }
 
     protected ArrayList<LXP> filter(int number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
@@ -93,15 +90,16 @@ public abstract class LinkageRecipe {
             if (passesFilter(record, linkageFields, number_of_required_fields)) {
                 filtered_source_records.add(record);
                 count_accepted++;
-            } else {
-                // Trace
-                if( count_rejected < 50 ) {
-                    System.out.print( "Rejected: " );
-                    for( int i : linkageFields ) {
-                        System.out.print(record.getMetaData().getFieldName(i) + ":" + record.getString(i) + "/ ");
-                    }
-                    System.out.println();
-                }
+            }
+            else {
+//                // Trace
+//                if( count_rejected < 50 ) {
+//                    System.out.print( "Rejected: " );
+//                    for( int i : linkageFields ) {
+//                        System.out.print(record.getMetaData().getFieldName(i) + ":" + record.getString(i) + "/ ");
+//                    }
+//                    System.out.println();
+//                }
                 count_rejected++;
             }
             if (filtered_source_records.size() >= number_of_records_required) {
@@ -183,7 +181,7 @@ public abstract class LinkageRecipe {
         if (record instanceof Birth) return Birth.STANDARDISED_ID;
         if (record instanceof Marriage) return Marriage.STANDARDISED_ID;
         if (record instanceof Death) return Death.STANDARDISED_ID;
-        if( record instanceof DynamicLXP ) {
+        if( record instanceof DynamicLXP) {
             DynamicLXP lxp = (DynamicLXP) record;
             Integer slot = record.getMetaData().getSlot("STANDARDISED_ID");
             if( slot == null ) {
@@ -657,10 +655,10 @@ public abstract class LinkageRecipe {
 
     public Iterable<Link> getLinksMade() { // this only works if you chose to persist the links
         try {
-            IRepository repo = new Store(store_path).getRepository(results_repository_name);
+            IRepository repo = Store.getInstance().getRepository(results_repository_name);
             IBucket<Link> bucket = repo.getBucket(links_persistent_name, Link.class);
             return bucket.getInputStream();
-        } catch (RepositoryException | BucketException e) {
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException("No made links repo found when expected - make sure you made the repo you're trying to access");
         }
     }
@@ -807,10 +805,6 @@ public abstract class LinkageRecipe {
 
     public int getStoredSetSize() {
         return getSizeByType(getQueryType());
-    }
-
-    public void stopStoreWatcher() {
-            record_repository.stopStoreWatcher();
     }
 
     public abstract double getTheshold();

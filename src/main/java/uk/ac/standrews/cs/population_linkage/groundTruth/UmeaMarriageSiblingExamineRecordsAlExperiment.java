@@ -4,11 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,7 +23,7 @@ public class UmeaMarriageSiblingExamineRecordsAlExperiment extends UmeaBirthSibl
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
         System.out.println( "umea Marriages" );
         return Utilities.getMarriageRecords(record_repository);
     }
@@ -91,7 +91,7 @@ public class UmeaMarriageSiblingExamineRecordsAlExperiment extends UmeaBirthSibl
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
 
         new UmeaMarriageSiblingExamineRecordsAlExperiment().runAll();
     }

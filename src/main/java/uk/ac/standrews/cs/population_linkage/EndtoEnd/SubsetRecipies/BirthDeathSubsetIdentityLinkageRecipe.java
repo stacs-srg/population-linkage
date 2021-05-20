@@ -4,14 +4,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 /**
  * EvidencePair Recipe
@@ -28,12 +29,17 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
     private static final int EVERYTHING = Integer.MAX_VALUE;
     private final NeoDbCypherBridge bridge;
 
-    private static final int PREFILTER_FIELDS = 6;
+    public int ALL_LINKAGE_FIELDS = 6;
 
+    public int linkage_fields = ALL_LINKAGE_FIELDS;
 
     public BirthDeathSubsetIdentityLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
         super( source_repository_name,results_repository_name,links_persistent_name );
         this.bridge = bridge;
+    }
+
+    public void setNumberLinkageFieldsRequired( int number ) {
+        linkage_fields = number;
     }
 
     /**
@@ -41,7 +47,7 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
      */
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filter(PREFILTER_FIELDS, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+        return filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
     }
 
     /**
@@ -49,7 +55,7 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
      */
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        return filter(PREFILTER_FIELDS, EVERYTHING, super.getDeathRecords(), getQueryMappingFields());
+        return filter(linkage_fields, EVERYTHING, super.getDeathRecords(), getQueryMappingFields());
     }
 
     @Override
@@ -59,10 +65,10 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
                     bridge,
                     link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID ),
                     link.getRecord2().getReferend().getString( Death.STANDARDISED_ID ),
-                    String.join( "-",link.getProvenance() ),
-                    PREFILTER_FIELDS,
+                    getLinks_persistent_name(),
+                    linkage_fields,
                     link.getDistance() );
-        } catch (BucketException e) {
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }

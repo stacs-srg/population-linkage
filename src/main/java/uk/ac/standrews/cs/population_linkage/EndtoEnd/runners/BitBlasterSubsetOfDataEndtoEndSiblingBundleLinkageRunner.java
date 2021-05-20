@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.runners;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
@@ -11,8 +12,8 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
     private static final int NUMBER_OF_BIRTHS = 10000;
 
     @Override
-    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException {
+    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
 
         // NOTE - cannot use numberOfGroundTruthTrueLinks - not been initialised properly.
 
@@ -93,7 +94,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
         return null; // TODO FIX THIS - should be LinkageResult
     }
 
-    private List<Link> dedupSymmetricAndSelfPairs(Iterable<Link> links) throws BucketException {
+    private List<Link> dedupSymmetricAndSelfPairs(Iterable<Link> links) throws BucketException, RepositoryException {
 
         List<Link> result = new ArrayList<>();
 
@@ -110,7 +111,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
         return result;
     }
 
-    private boolean reverseIsIn(LXP rec1, LXP rec2, List<Link> list) throws BucketException {
+    private boolean reverseIsIn(LXP rec1, LXP rec2, List<Link> list) throws BucketException, RepositoryException {
         for (Link link : list) {
             if( link.getRecord1().getReferend().equals(rec2) && link.getRecord2().getReferend().equals(rec1) ) {
                 return true;
@@ -136,7 +137,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
     }
 
 
-    private void mergeFamilies() throws BucketException {
+    private void mergeFamilies() throws BucketException, RepositoryException {
         HashMap<Long, List<Link>> processed = new HashMap<>();
         for (Long primary_sibling_id : familyBundles.keySet()) {
             List<Link> this_family = familyBundles.get(primary_sibling_id);
@@ -187,7 +188,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
     static int father_errors = 0;   // hack
     static int mother_errors = 0;   // hack
 
-    private void showFamilies() throws BucketException {
+    private void showFamilies() throws BucketException, RepositoryException {
 
         int count = 0;
         int family_count = 0;
@@ -207,7 +208,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
         report("No families formed = " + family_count);
     }
 
-    private void BundleFamilies(Link link) throws BucketException {
+    private void BundleFamilies(Link link) throws BucketException, RepositoryException {
         Birth rec_1 = (Birth) link.getRecord1().getReferend();
         Birth rec_2 = (Birth) link.getRecord2().getReferend();
 

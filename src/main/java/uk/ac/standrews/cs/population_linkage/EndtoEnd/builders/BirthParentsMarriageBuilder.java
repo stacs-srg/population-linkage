@@ -6,7 +6,6 @@ package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthParentsMarriageSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -26,14 +25,22 @@ public class BirthParentsMarriageBuilder {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            LinkageRecipe linkageRecipe = new BirthParentsMarriageSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthParentsMarriageBuilder.class.getCanonicalName());
+            BirthParentsMarriageSubsetLinkageRecipe linkageRecipe = new BirthParentsMarriageSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthParentsMarriageBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
-            LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
 
-            LinkageQuality quality = lr.getLinkageQuality();
-            quality.print(System.out);
+            while( linkage_fields >= half_fields ) {
+                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+
+                LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+
+                LinkageQuality quality = lr.getLinkageQuality();
+                quality.print(System.out);
+                linkage_fields--;
+            }
         } finally {
             System.out.println("Run finished");
             System.exit(0); // make sure process dies.

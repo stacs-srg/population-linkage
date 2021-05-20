@@ -4,9 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class Siblings {
 
     // creators
 
-    public void createSiblings() throws BucketException {
+    public void createSiblings() throws BucketException, RepositoryException {
         for (Link link : birth_links) {
             births.add(link.getRecord1().getReferend());
             births.add(link.getRecord2().getReferend());

@@ -4,7 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.TestRecipe;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.TestLinkExistsRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
@@ -23,7 +23,7 @@ public class TestBuilder {
         String resultsRepo = args[1]; // e.g. synth_results
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            LinkageRecipe linkageRecipe = new TestRecipe(sourceRepo, resultsRepo, bridge, TestBuilder.class.getCanonicalName() );
+            LinkageRecipe linkageRecipe = new TestLinkExistsRecipe(sourceRepo, resultsRepo, bridge, TestBuilder.class.getCanonicalName() );
 
             LinkageConfig.numberOfROs = 20;
 

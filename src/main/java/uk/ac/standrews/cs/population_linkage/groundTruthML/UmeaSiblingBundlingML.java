@@ -4,11 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -65,7 +65,7 @@ public class UmeaSiblingBundlingML extends AllPairsSameSourceLinkageAnalysisML {
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
 
         new UmeaSiblingBundlingML(store_path, repo_name, "UmeaSiblingBundlingMLDistances").run();
     }

@@ -4,9 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
+
 
 public class DoubleLink {
 
@@ -20,7 +22,7 @@ public class DoubleLink {
         this.linkType = linkType;
     }
 
-    public Link directLink() throws BucketException, PersistentObjectException {
+    public Link directLink() throws BucketException, PersistentObjectException, RepositoryException {
             return new Link(a.getRecord1().getReferend(), a.getRole1(), b.getRecord2().getReferend(), b.getRole2(),
                     (float) (a.getConfidence() * b.getConfidence()), linkType, a.getDistance() * b.getDistance(),
                     a.getProvenance().toString() + " | " + b.getProvenance().toString());

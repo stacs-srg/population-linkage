@@ -6,7 +6,6 @@ package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthDeathSubsetIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
@@ -24,11 +23,19 @@ public class BirthOwnDeathBuilder {
         String resultsRepo = args[1]; // e.g. synth_results
 
         try ( NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            LinkageRecipe linkageRecipe = new BirthDeathSubsetIdentityLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthOwnDeathBuilder.class.getCanonicalName());
+            BirthDeathSubsetIdentityLinkageRecipe linkageRecipe = new BirthDeathSubsetIdentityLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthOwnDeathBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
+
+            while( linkage_fields >= half_fields ) {
+                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+
+                linkage_fields--;
+            }
         } catch (Exception e) {
             System.out.println( "Exception closing bridge" );
         } finally {

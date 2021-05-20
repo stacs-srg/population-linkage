@@ -4,13 +4,14 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBrideSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 /**
  * EvidencePair Recipe
@@ -28,7 +29,9 @@ public class GroomBrideSubsetSiblingLinkageRecipe extends GroomBrideSiblingLinka
     private static final int EVERYTHING = Integer.MAX_VALUE;
     private final NeoDbCypherBridge bridge;
 
-    public static final int PREFILTER_REQUIRED_FIELDS = 4;
+    public static final int ALL_LINKAGE_FIELDS = 4;
+
+    public int linkage_fields = ALL_LINKAGE_FIELDS;
 
     public GroomBrideSubsetSiblingLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,results_repository_name,links_persistent_name );
@@ -40,7 +43,7 @@ public class GroomBrideSubsetSiblingLinkageRecipe extends GroomBrideSiblingLinka
      */
     @Override
     protected Iterable<LXP> getMarriageRecords() {
-        return filter(PREFILTER_REQUIRED_FIELDS, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+        return filter(linkage_fields, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
     }
 
     @Override
@@ -51,9 +54,9 @@ public class GroomBrideSubsetSiblingLinkageRecipe extends GroomBrideSiblingLinka
                     link.getRecord1().getReferend().getString( Marriage.STANDARDISED_ID ),
                     link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID ),
                     links_persistent_name,
-                    PREFILTER_REQUIRED_FIELDS,
+                    linkage_fields,
                     link.getDistance() );
-        } catch (BucketException e) {
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }

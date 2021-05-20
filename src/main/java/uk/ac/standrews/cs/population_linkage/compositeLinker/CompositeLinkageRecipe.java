@@ -4,17 +4,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.compositeLinker;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomOwnMarriageIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.FatherGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
@@ -24,7 +22,7 @@ import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.
 
 public class CompositeLinkageRecipe {
 
-    public static void main(String[] args) throws BucketException, PersistentObjectException {
+    public static void main(String[] args) throws BucketException, PersistentObjectException, RepositoryException {
 
         StringMetric metric = new JensenShannon(4096);
 
@@ -49,7 +47,7 @@ public class CompositeLinkageRecipe {
         }
     }
 
-    private static LinkageQuality runIndirectBirthFatherLinkage(StringMetric metric, String links_persistent_name, String results_repository_name, String source_repository_name, double match_threshold) throws BucketException, PersistentObjectException {
+    private static LinkageQuality runIndirectBirthFatherLinkage(StringMetric metric, String links_persistent_name, String results_repository_name, String source_repository_name, double match_threshold) throws BucketException, PersistentObjectException, RepositoryException {
         LinkageConfig.birthCacheSize = 15000;
         LinkageConfig.marriageCacheSize = 15000;
         LinkageConfig.deathCacheSize = 15000;
@@ -70,7 +68,7 @@ public class CompositeLinkageRecipe {
                 true);
     }
 
-    private static LinkageQuality runIndirectDeathBirthLinkage(StringMetric metric, String links_persistent_name, String results_repository_name, String source_repository_name, double match_threshold) throws BucketException, PersistentObjectException {
+    private static LinkageQuality runIndirectDeathBirthLinkage(StringMetric metric, String links_persistent_name, String results_repository_name, String source_repository_name, double match_threshold) throws BucketException, PersistentObjectException, RepositoryException {
         LinkageConfig.birthCacheSize = 15000;
         LinkageConfig.marriageCacheSize = 15000;
         LinkageConfig.deathCacheSize = 15000;
@@ -99,7 +97,7 @@ public class CompositeLinkageRecipe {
         return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name), true);
     }
 
-    private static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, PersistentObjectException {
+    private static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, PersistentObjectException, RepositoryException {
 
         int numberOfGroundTruthTrueLinks = directLinkageForGT.getNumberOfGroundTruthTrueLinks();
 
@@ -122,7 +120,7 @@ public class CompositeLinkageRecipe {
         return lq;
     }
 
-    private static boolean trueMatch(Link link, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException {
+    private static boolean trueMatch(Link link, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, RepositoryException {
         if (directReversed) {
             return directLinkageForGT.isTrueMatch(link.getRecord2().getReferend(), link.getRecord1().getReferend()).equals(TRUE_MATCH);
         } else {
@@ -130,7 +128,7 @@ public class CompositeLinkageRecipe {
         }
     }
 
-    private static Link chooseIndirectLink(Collection<DoubleLink> links) throws BucketException, PersistentObjectException {
+    private static Link chooseIndirectLink(Collection<DoubleLink> links) throws BucketException, PersistentObjectException, RepositoryException {
         Link bestLink = null;
 
         for (DoubleLink link : links) {
@@ -145,7 +143,7 @@ public class CompositeLinkageRecipe {
     }
 
 
-    private static Map<String, Collection<DoubleLink>> combineLinks(Map<String, Collection<Link>> firstLinks, Map<String, Collection<Link>> secondLinks, String linkType) throws BucketException {
+    private static Map<String, Collection<DoubleLink>> combineLinks(Map<String, Collection<Link>> firstLinks, Map<String, Collection<Link>> secondLinks, String linkType) throws BucketException, RepositoryException {
 
         Map<String, Collection<DoubleLink>> doubleLinksByFirstRecordID = new HashMap<>();
 

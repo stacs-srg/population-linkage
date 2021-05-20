@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.Dice;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -35,9 +35,9 @@ public class UmeaDeathSiblingProfiling {
     public static void profileData() {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
 
-        final Iterable<LXP> records = Utilities.getDeathRecords(new RecordRepository(store_path, repo_name));
+        final Iterable<LXP> records = Utilities.getDeathRecords(new RecordRepository(repo_name));
 
         List<LXP> record_list = new ArrayList<>(105000);
         for (LXP record : records) {

@@ -8,11 +8,11 @@ import com.google.common.collect.Sets;
 import uk.ac.standrews.cs.data.synthetic.SyntheticBirthsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticDeathsDataSet;
 import uk.ac.standrews.cs.data.synthetic.SyntheticMarriagesDataSet;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.data.synthetic.ImportSyntheticScotlandRecordsToStore;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.storr.interfaces.IBucket;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class ValidatePopulationInStorr {
         RecordRepository record_repository;
 
         try {
-            record_repository = new RecordRepository(store_path, sourceRepoName);
+            record_repository = new RecordRepository(sourceRepoName);
         } catch (RuntimeException e) {
             System.out.println("Repository not found --- will now create: " + sourceRepoName);
             record_repository = new ImportSyntheticScotlandRecordsToStore(store_path, populationName, populationSize,

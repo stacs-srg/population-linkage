@@ -28,7 +28,7 @@ public class InfrastructureTest {
         Path store_path = Files.createTempDirectory("");
         String repo_name = "kilmarnock_repository";
 
-        RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        RecordRepository record_repository = new RecordRepository(repo_name);
 
         DataSet birth_records = new KilmarnockBirthsDataSet();
         DataSet death_records = new KilmarnockDeathsDataSet();

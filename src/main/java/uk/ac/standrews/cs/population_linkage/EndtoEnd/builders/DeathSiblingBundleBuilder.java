@@ -28,11 +28,18 @@ public class DeathSiblingBundleBuilder {
 
             DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-            LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
 
-            LinkageQuality quality = lr.getLinkageQuality();
-            quality.print(System.out);
+            while( linkage_fields >= half_fields ) {
+                BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+
+                LinkageQuality quality = lr.getLinkageQuality();
+                quality.print(System.out);
+
+                linkage_fields--;
+            }
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // make sure process dies.

@@ -4,9 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,28 +47,28 @@ public class MetaMarriage {
 
     // creators - turns links into Births, Marriages etc.
 
-    public void createMarriagesFromGroomLinks() throws BucketException {
+    public void createMarriagesFromGroomLinks() throws BucketException, RepositoryException {
         for (Link link : groom_links) {
             groom_births.add(link.getRecord1().getReferend());
             marriage_records.add(link.getRecord2().getReferend());
         }
     }
 
-    public void createMarriagesFromBrideLinks() throws BucketException {
+    public void createMarriagesFromBrideLinks() throws BucketException, RepositoryException {
         for (Link link : bride_links) {
             bride_births.add(link.getRecord1().getReferend());
             marriage_records.add(link.getRecord2().getReferend());
         }
     }
 
-    public void createMarriagesFromBirthAndFathersMarriageLinks() throws BucketException {
+    public void createMarriagesFromBirthAndFathersMarriageLinks() throws BucketException, RepositoryException {
         for (Link link : grooms_children_links) {
             brides_child_births.add(link.getRecord1().getReferend());
             marriage_records.add(link.getRecord2().getReferend());
         }
     }
 
-    public void createMarriagesFromBirthAndMothersMarriageLinks() throws BucketException {
+    public void createMarriagesFromBirthAndMothersMarriageLinks() throws BucketException, RepositoryException {
         for (Link link : brides_children_links) {
             grooms_child_births.add(link.getRecord1().getReferend());
             marriage_records.add(link.getRecord2().getReferend());

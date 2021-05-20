@@ -5,14 +5,13 @@
 package uk.ac.standrews.cs.population_linkage.graph.util;
 
 import org.neo4j.ogm.session.Session;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.population_linkage.graph.model.BirthRecord;
 import uk.ac.standrews.cs.population_linkage.graph.model.DeathRecord;
 import uk.ac.standrews.cs.population_linkage.graph.model.MarriageRecord;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
 
 import java.nio.file.Path;
 
@@ -33,8 +32,7 @@ public class LoadNeo4JVitalEventsFromStorr implements AutoCloseable {
         session = bridge.getNewSession();
         this.source_repository_name = source_repository_name;
 
-        store_path = ApplicationProperties.getStorePath();
-        this.record_repository = new RecordRepository(store_path, source_repository_name);
+        this.record_repository = new RecordRepository(source_repository_name);
 
         birth_records = Utilities.getBirthRecords(record_repository);
         marriage_records = Utilities.getMarriageRecords(record_repository);
@@ -74,7 +72,7 @@ public class LoadNeo4JVitalEventsFromStorr implements AutoCloseable {
 
     public static void main( String... args ) throws Exception
     {
-        try ( LoadNeo4JVitalEventsFromStorr db = new LoadNeo4JVitalEventsFromStorr( "umea" ) )
+        try ( LoadNeo4JVitalEventsFromStorr db = new LoadNeo4JVitalEventsFromStorr( "Umea" ) )
         {
             System.out.println( "CREATING vital event records" );
             db.make();

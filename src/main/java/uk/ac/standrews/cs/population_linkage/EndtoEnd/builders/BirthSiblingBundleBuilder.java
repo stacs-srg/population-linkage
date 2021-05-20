@@ -26,10 +26,18 @@ public class BirthSiblingBundleBuilder {
             BirthSiblingSubsetLinkageRecipe linkageRecipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-            LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, false, true);
 
-            LinkageQuality quality = lr.getLinkageQuality();
-            quality.print(System.out);
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
+
+            while( linkage_fields >= half_fields ) {
+                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, false, false);
+                LinkageQuality quality = lr.getLinkageQuality();
+                quality.print(System.out);
+
+                linkage_fields--;
+            }
         } finally {
             System.out.println("Run finished");
             System.exit(0); // make sure process dies.

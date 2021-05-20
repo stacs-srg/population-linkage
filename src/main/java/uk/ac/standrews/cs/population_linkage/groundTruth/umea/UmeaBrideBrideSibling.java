@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.SymmetricSingleSourceLinkageAnalysis;
@@ -11,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLin
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,7 +30,7 @@ public class UmeaBrideBrideSibling extends SymmetricSingleSourceLinkageAnalysis 
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
         return Utilities.getMarriageRecords(record_repository);
     }
 
@@ -76,7 +76,7 @@ public class UmeaBrideBrideSibling extends SymmetricSingleSourceLinkageAnalysis 
     public static void main(String[] args) throws Exception {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
 
         int NUMBER_OF_RUNS = 1;
 

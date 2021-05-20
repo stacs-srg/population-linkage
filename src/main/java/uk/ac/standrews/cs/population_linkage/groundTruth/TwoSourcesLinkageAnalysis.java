@@ -4,11 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma2;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
@@ -39,7 +39,7 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
         super(store_path, repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs, allow_multiple_links);
     }
 
-    protected abstract Iterable<LXP> getSourceRecords2(RecordRepository record_repository);
+    protected abstract Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords2(RecordRepository record_repository);
 
     protected abstract String getSourceType2();
 
@@ -48,7 +48,7 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     protected abstract int getIdFieldIndex2();
 
     @Override
-    public List<Metric<LXP>> getCombinedMetrics() {
+    public List<Metric<uk.ac.standrews.cs.neoStorr.impl.LXP>> getCombinedMetrics() {
 
         final List<Metric<LXP>> result = new ArrayList<>();
 
@@ -63,7 +63,7 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
 
         if (verbose) System.out.println("Reading records from repository: " + repo_name);
 
-        final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        final RecordRepository record_repository = new RecordRepository(repo_name);
 
         final Iterable<LXP> records1 = getSourceRecords(record_repository);
         final Iterable<LXP> records2 = getSourceRecords2(record_repository);

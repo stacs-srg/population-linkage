@@ -26,10 +26,19 @@ public class GroomGroomSiblingBuilder {
             GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, GroomGroomSiblingBuilder.class.getCanonicalName());
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-            LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, false, true);
 
-            LinkageQuality quality = lr.getLinkageQuality();
-            quality.print(System.out);
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2) + 1;
+
+            while (linkage_fields >= half_fields) {
+
+                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+
+                LinkageQuality quality = lr.getLinkageQuality();
+                quality.print(System.out);
+
+                linkage_fields--;
+            }
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // make sure process dies.

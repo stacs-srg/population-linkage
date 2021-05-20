@@ -2,7 +2,7 @@
   <configuration default="false" name="DeathGroomOwnMarriageBuilder" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathGroomOwnMarriageBuilder" />
     <module name="population-linkage" />
-    <option name="PROGRAM_PARAMETERS" value="umea umea_results" />
+    <option name="PROGRAM_PARAMETERS" value="Umea umea_results" />
     <option name="VM_PARAMETERS" value="-Xmx16G" />
     <method v="2">
       <option name="Make" enabled="true" />

@@ -4,8 +4,8 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkers;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 
 import java.util.Iterator;

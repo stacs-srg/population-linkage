@@ -4,10 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ public class UmeaDeathSiblingExamineRecordsAlExperiment extends UmeaBirthSibling
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
         System.out.println("Umea Deaths");
         return Utilities.getDeathRecords(record_repository);
     }

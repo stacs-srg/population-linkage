@@ -8,7 +8,7 @@ import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
-import uk.ac.standrews.cs.storr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 
 public class BitBlasterLinkageTest extends SimilaritySearchLinkageTest {
 

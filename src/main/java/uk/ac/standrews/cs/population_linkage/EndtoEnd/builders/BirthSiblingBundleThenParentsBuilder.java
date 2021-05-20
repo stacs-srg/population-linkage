@@ -4,6 +4,8 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
@@ -17,14 +19,16 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.utilities.PercentageProgressIndicator;
+import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.EndtoEnd.util.Util.closeTo;
@@ -40,10 +44,6 @@ public class BirthSiblingBundleThenParentsBuilder {
     public static final int PREFILTER_REQUIRED_FIELDS = 8;
     private static final double DISTANCE_THRESHOLD = 0.67;
 
-    private static int sibling_references_made = 0;    // nasty hack
-    private static int mother_references_made = 0; // nasty hack
-    private static int father_references_made = 0; // nasty hack
-
     public static void main(String[] args) throws Exception {
 
         BitBlasterSearchStructure bb = null;        // initialised in try block - decl is here so we can finally shut it.
@@ -52,73 +52,81 @@ public class BirthSiblingBundleThenParentsBuilder {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String resultsRepo = args[1]; // e.g. synth_results
 
-            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,BirthSiblingBundleThenParentsBuilder.class.getCanonicalName() );
+            BirthSiblingSubsetLinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,BirthSiblingBundleThenParentsBuilder.class.getCanonicalName() );
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, false, false);
 
-            HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
+            int linkage_fields = bb_recipe.ALL_LINKAGE_FIELDS;
+            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
 
-            LinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
+            while( linkage_fields >= half_fields ) {
+                bb_recipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-            LinkageConfig.numberOfROs = 20;
+                LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, false, false);
+                HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
+                LinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
+                LinkageConfig.numberOfROs = 20;
+                Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();  // TODO We have no requirement on number of fields here - we should have!
+                StringMetric baseMetric = new JensenShannon(2048);
+                Metric<LXP> composite_metric = getCompositeMetric(parents_recipe, baseMetric);
+                bb = new BitBlasterSearchStructure(composite_metric, marriage_records);
+                int[] number_of_marriages_per_family = new int[20]; // 20 is far too big!
+                List<String> seen_already = new ArrayList<>(); // keys of the sibling-marriage pairs we have already seen.
+                // TODO This is inefficient but safe - consider doing something else?
+                System.out.println("Forming family bundles @ " + LocalDateTime.now().toString());
+                Collection<List<Link>> all_families = families.values(); // all the families: links from siblings to marriages.
+                ProgressIndicator progress_indicator = new PercentageProgressIndicator(100);
+                progress_indicator.setTotalSteps(all_families.size());
+                processFamilies(bridge, bb, parents_recipe, number_of_marriages_per_family, all_families, progress_indicator, seen_already);
+                printFamilyStats(number_of_marriages_per_family);
 
-            Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();  // TODO We have no requirement on number of fields here - we should have!
-
-            StringMetric baseMetric = new JensenShannon(2048);
-
-            Metric<LXP> composite_metric = getCompositeMetric(parents_recipe, baseMetric);
-
-            bb = new BitBlasterSearchStructure(composite_metric, marriage_records);
-
-            int[] number_of_marriages_per_family = new int[20]; // 20 is far too big!
-
-            List<String> seen_already = new ArrayList<>(); // keys of the sibling-marriage pairs we have already seen.
-            // TODO This is inefficient but safe - consider doing something else?
-
-            Collection<List<Link>> all_families = families.values(); // all the families: links from siblings to marriages.
-            for( List<Link> siblings : all_families ) {
-
-                Set<LXP> sib_records = getBirthSiblings(siblings);
-
-                Set<SiblingParentsMarriage> sibling_parents_marriages = new TreeSet<>();
-
-                for (LXP sibling : sib_records) {
-                    LXP search_record = parents_recipe.convertToOtherRecordType(sibling);
-
-                    List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_record, DISTANCE_THRESHOLD);
-
-                    sibling_parents_marriages.add(new SiblingParentsMarriage(sibling, distances));
-                }
-
-                int count = countDifferentMarriagesInGrouping(sibling_parents_marriages);
-                if (count > 1) {
-                    adjustMarriagesInGrouping(sibling_parents_marriages);
-                }
-
-                addChildParentsMarriageToNeo4J(bridge, sibling_parents_marriages,seen_already);
-
-                number_of_marriages_per_family[count]++;
+                linkage_fields--;
             }
-
-            //---------------------
-
-            System.out.println("Sibling references made = " + sibling_references_made);
-            System.out.println("Mother references made = " + mother_references_made);
-            System.out.println("Father references made = " + father_references_made);
-
-            int sum = 0;
-            for (int i = 1; i < number_of_marriages_per_family.length; i++) {
-                final int no_of_marriages = number_of_marriages_per_family[i];
-                if (no_of_marriages != 0) {
-                    System.out.println("Number of marriages per family for size " + i + " = " + no_of_marriages);
-                    sum = sum + no_of_marriages;
-                }
-            }
-            System.out.println("Total number of families = " + sum);
         } finally {
+            System.out.println( "Finishing" );
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
+            System.out.println( "Run finished" );
             System.exit(0); // make sure it all shuts down.
+        }
+    }
+
+    private static void printFamilyStats(int[] number_of_marriages_per_family) {
+        int sum = 0;
+        for (int i = 1; i < number_of_marriages_per_family.length; i++) {
+            final int no_of_marriages = number_of_marriages_per_family[i];
+            if (no_of_marriages != 0) {
+                System.out.println("Number of marriages per family for family of size " + i + " = " + no_of_marriages);
+                sum = sum + no_of_marriages;
+            }
+        }
+        System.out.println("Total number of families = " + sum);
+    }
+
+    private static void processFamilies(NeoDbCypherBridge bridge, BitBlasterSearchStructure bb, LinkageRecipe parents_recipe, int[] number_of_marriages_per_family, Collection<List<Link>> all_families, ProgressIndicator progress_indicator, List<String> seen_already) throws BucketException, RepositoryException {
+        for( List<Link> siblings : all_families) {
+
+            Set<LXP> sib_records = getBirthSiblings(siblings);
+
+            Set<SiblingParentsMarriage> sibling_parents_marriages = new TreeSet<>();
+
+            for (LXP sibling : sib_records) {
+                LXP search_record = parents_recipe.convertToOtherRecordType(sibling);
+
+                List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_record, DISTANCE_THRESHOLD);
+
+                sibling_parents_marriages.add(new SiblingParentsMarriage(sibling, distances));
+            }
+
+            int count = countDifferentMarriagesInGrouping(sibling_parents_marriages);
+            if (count > 1) {
+                adjustMarriagesInGrouping(sibling_parents_marriages);
+            }
+            System.out.println( "num families in group = " + count );
+
+            addChildParentsMarriageToNeo4J(bridge, sibling_parents_marriages,seen_already);
+
+            number_of_marriages_per_family[count]++;
+            progress_indicator.progressStep();
         }
     }
 

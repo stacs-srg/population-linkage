@@ -4,18 +4,19 @@
  */
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
-import uk.ac.standrews.cs.storr.impl.JPO;
-import uk.ac.standrews.cs.storr.impl.JPOMetadata;
-import uk.ac.standrews.cs.storr.impl.LXP;
-import uk.ac.standrews.cs.storr.impl.LXPReference;
-import uk.ac.standrews.cs.storr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.storr.interfaces.IBucket;
-import uk.ac.standrews.cs.storr.interfaces.IStoreReference;
-import uk.ac.standrews.cs.storr.types.JPO_FIELD;
-import uk.ac.standrews.cs.utilities.JSONReader;
+
+import uk.ac.standrews.cs.neoStorr.impl.JPO;
+import uk.ac.standrews.cs.neoStorr.impl.JPOMetadata;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
+import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.neoStorr.types.JPO_FIELD;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class Link extends JPO {
@@ -39,9 +40,8 @@ public class Link extends JPO {
 
     public Link() {}
 
-    public Link(long id, JSONReader reader, IBucket bucket ) throws PersistentObjectException {
-        super( id, bucket );
-        readJSON(reader, true);
+    public Link(long id, Map map, IBucket bucket ) throws PersistentObjectException {
+        super( id, map, bucket );
     }
 
     public Link(LXP record1, String role1, LXP record2, String role2, float confidence, String link_type, double distance, String... provenance) throws PersistentObjectException {
@@ -116,7 +116,7 @@ public class Link extends JPO {
      * This selector returns the class metadata.
      */
     @Override
-    public JPOMetadata getMetaData() {
+    public JPOMetadata getJPOMetaData() {
         return static_metadata;
     }
 

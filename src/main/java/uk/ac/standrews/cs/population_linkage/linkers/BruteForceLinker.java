@@ -4,8 +4,8 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkers;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
@@ -18,7 +18,7 @@ public abstract class BruteForceLinker extends Linker {
      * @param number_of_progress_updates the number of updates to be given, zero or negative to suppress updates
      */
     public BruteForceLinker(Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
-                               String link_type, String provenace, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink) {
+                            String link_type, String provenace, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink) {
 
         super(distance_metric, threshold, number_of_progress_updates, link_type, provenace, role_type_1, role_type_2, isViableLink);
     }

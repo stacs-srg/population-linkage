@@ -4,9 +4,9 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
 
         if (verbose) System.out.println("Reading records from repository: " + repo_name);
 
-        final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        final RecordRepository record_repository = new RecordRepository(repo_name);
         final Iterable<LXP> records = getSourceRecords(record_repository);
 
         if (verbose) System.out.println("Randomising record order");

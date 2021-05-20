@@ -4,11 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,7 +20,7 @@ import java.util.Map;
  **/
 public class UmeaBirthSiblingExamineRecordsAlExperiment  {
 
-    protected static final String repo_name = "umea";
+    protected static final String repo_name = "Umea";
     protected static final Path store_path = ApplicationProperties.getStorePath();
     protected Iterable<LXP> records;
     protected Map<String,Integer> father_surname_map = new HashMap<>();
@@ -34,12 +34,12 @@ public class UmeaBirthSiblingExamineRecordsAlExperiment  {
 
     UmeaBirthSiblingExamineRecordsAlExperiment() throws IOException {
         System.out.println("Reading records from repository: " + repo_name);
-        final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        final RecordRepository record_repository = new RecordRepository(repo_name);
 
         records = getSourceRecords(record_repository);
     }
 
-    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
         System.out.println("Umea Births");
         return Utilities.getBirthRecords(record_repository);
     }

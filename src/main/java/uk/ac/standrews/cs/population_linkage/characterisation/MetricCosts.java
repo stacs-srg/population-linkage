@@ -4,13 +4,13 @@
  */
 package uk.ac.standrews.cs.population_linkage.characterisation;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
@@ -32,7 +32,7 @@ public class MetricCosts {
 
     public void run() {
 
-        final RecordRepository record_repository = new RecordRepository(store_path, repo_name);
+        final RecordRepository record_repository = new RecordRepository(repo_name);
 
         final List<LXP> birth_records = Utilities.permute(Utilities.getBirthRecords(record_repository)).subList(0, 1000);
 
@@ -58,7 +58,7 @@ public class MetricCosts {
     public static void main(String[] args) {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repository_name = "umea";
+        String repository_name = "Umea";
 
         new MetricCosts(store_path, repository_name).run();
     }

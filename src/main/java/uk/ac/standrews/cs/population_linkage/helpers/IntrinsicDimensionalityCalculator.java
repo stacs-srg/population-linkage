@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.helpers;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -11,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
@@ -138,7 +138,7 @@ public class IntrinsicDimensionalityCalculator {
     public double calculateIntrinsicDimensionality(final String source_repository_name, StringMetric baseMetric, List<Integer> fields, int sampleN, int numberOfRecords) {
 
         final Path store_path = ApplicationProperties.getStorePath();
-        final RecordRepository record_repository = new RecordRepository(store_path, source_repository_name);
+        final RecordRepository record_repository = new RecordRepository(source_repository_name);
 
         Sigma distanceFunction = new Sigma(baseMetric, fields, 0);
 
@@ -182,8 +182,6 @@ public class IntrinsicDimensionalityCalculator {
         System.out.println("mean of distances: " + mean);
         System.out.println("standard deviation: " + standardDeviation);
         System.out.println("Intrinsic Dimensionality: " + intrinsicDimensionality);
-
-        record_repository.stopStoreWatcher();
 
         return intrinsicDimensionality;
     }

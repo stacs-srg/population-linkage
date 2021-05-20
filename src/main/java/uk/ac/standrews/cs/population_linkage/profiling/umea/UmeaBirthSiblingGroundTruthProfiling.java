@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
@@ -11,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.LXP;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -22,9 +22,9 @@ public class UmeaBirthSiblingGroundTruthProfiling {
     public static void main(String[] args) {
 
         Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "umea";
+        String repo_name = "Umea";
 
-        final Iterable<LXP> records = Utilities.getBirthRecords(new RecordRepository(store_path, repo_name));
+        final Iterable<LXP> records = Utilities.getBirthRecords(new RecordRepository(repo_name));
 
         List<LXP> record_list = new ArrayList<>(230000);
         for (LXP record : records) {
