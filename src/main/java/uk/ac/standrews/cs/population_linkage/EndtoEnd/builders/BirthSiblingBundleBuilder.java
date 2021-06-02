@@ -32,7 +32,7 @@ public class BirthSiblingBundleBuilder {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, false, false);
+                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
 

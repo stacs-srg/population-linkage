@@ -68,13 +68,18 @@ public class DeathGroomIdentitySubsetLinkageRecipe extends DeathGroomOwnMarriage
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createDeathGroomOwnMarriageReference(
-                    bridge,
-                    link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID ),
-                    link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID ),
-                    links_persistent_name,
-                    linkage_fields,
-                    link.getDistance() );
+            final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+
+            if( ! Query.DMDeathGroomOwnMarriageReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+                Query.createDeathGroomOwnMarriageReference(
+                        bridge,
+                        std_id1,
+                        std_id2,
+                        links_persistent_name,
+                        linkage_fields,
+                        link.getDistance());
+            }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }

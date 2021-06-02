@@ -154,7 +154,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    public Iterable<LXP> getQueryRecords() {
+    public Iterable<LXP> getStoredRecords() {
 
         Collection<LXP> filteredMarriageRecords = new HashSet<>();
 
@@ -211,7 +211,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
 
     @Override
-    public Iterable<LXP> getStoredRecords() {
+    public Iterable<LXP> getQueryRecords() {
 
         HashSet<LXP> filteredBirthRecords = new HashSet<>();
 

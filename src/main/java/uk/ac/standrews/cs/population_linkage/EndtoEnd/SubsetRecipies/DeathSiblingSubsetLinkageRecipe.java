@@ -51,14 +51,17 @@ public class DeathSiblingSubsetLinkageRecipe extends DeathSiblingLinkageRecipe {
             String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
             String std_id2 = link.getRecord2().getReferend().getString( Death.STANDARDISED_ID );
 
-            if( !std_id1.equals(std_id2 ) ) {
-                Query.createDDSiblingReference(
-                        bridge,
-                        std_id1,
-                        std_id2,
-                        links_persistent_name,
-                        linkage_fields,
-                        link.getDistance());
+            if (!std_id1.equals(std_id2)) {
+                if( ! Query.DDSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+
+                    Query.createDDSiblingReference(
+                            bridge,
+                            std_id1,
+                            std_id2,
+                            links_persistent_name,
+                            linkage_fields,
+                            link.getDistance());
+                }
             }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);

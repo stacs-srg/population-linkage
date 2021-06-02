@@ -32,7 +32,7 @@ public class DeathGroomOwnMarriageBuilder {
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, false);
                 linkage_fields--;
             }
         } finally {

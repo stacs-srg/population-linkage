@@ -4,6 +4,8 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
@@ -11,8 +13,6 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLi
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 /**
  * EvidencePair Recipe
@@ -34,12 +34,12 @@ public class BirthGroomIdentitySubsetLinkageRecipe extends BirthGroomIdentityLin
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
-    public BirthGroomIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
-        super( source_repository_name,results_repository_name,links_persistent_name );
+    public BirthGroomIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
         this.bridge = bridge;
     }
 
-    public void setNumberLinkageFieldsRequired( int number ) {
+    public void setNumberLinkageFieldsRequired(int number) {
         linkage_fields = number;
     }
 
@@ -48,7 +48,7 @@ public class BirthGroomIdentitySubsetLinkageRecipe extends BirthGroomIdentityLin
      */
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields() );
+        return filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
     }
 
     // NOTE Marriage not filtered in this recipe
@@ -56,16 +56,21 @@ public class BirthGroomIdentitySubsetLinkageRecipe extends BirthGroomIdentityLin
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createBirthGroomOwnMarriageReference(
-                    bridge,
-                    link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID ),
-                    link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID ),
-                    links_persistent_name,
-                    linkage_fields,
-                    link.getDistance() );
+            String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+
+            if (!Query.BMBirthGroomReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+
+                Query.createBirthGroomOwnMarriageReference(
+                        bridge,
+                        std_id1,
+                        std_id2,
+                        links_persistent_name,
+                        linkage_fields,
+                        link.getDistance());
+            }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }
-
 }

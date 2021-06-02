@@ -34,12 +34,12 @@ public class BirthBrideIdentitySubsetLinkageRecipe extends BirthBrideIdentityLin
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
-    public BirthBrideIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
-        super( source_repository_name,results_repository_name,links_persistent_name );
+    public BirthBrideIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
+        super(source_repository_name, results_repository_name, links_persistent_name);
         this.bridge = bridge;
     }
 
-    public void setNumberLinkageFieldsRequired( int number ) {
+    public void setNumberLinkageFieldsRequired(int number) {
         linkage_fields = number;
     }
 
@@ -48,7 +48,7 @@ public class BirthBrideIdentitySubsetLinkageRecipe extends BirthBrideIdentityLin
      */
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords() , getLinkageFields() );
+        return filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
     }
 
     // NOTE Marriage not filtered in this recipe
@@ -56,16 +56,21 @@ public class BirthBrideIdentitySubsetLinkageRecipe extends BirthBrideIdentityLin
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createBirthBrideOwnMarriageReference(
-                    bridge,
-                    link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID ),
-                    link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID ),
-                    getLinks_persistent_name(),
-                    linkage_fields,
-                    link.getDistance() );
+            final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+
+            if (!Query.BMBirthBrideReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+
+                Query.createBirthBrideOwnMarriageReference(
+                        bridge,
+                        std_id1,
+                        std_id2,
+                        getLinks_persistent_name(),
+                        linkage_fields,
+                        link.getDistance());
+            }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }
-
 }

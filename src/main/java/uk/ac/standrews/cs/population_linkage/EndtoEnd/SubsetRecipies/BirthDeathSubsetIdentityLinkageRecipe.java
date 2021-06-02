@@ -61,13 +61,20 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createBDReference(
-                    bridge,
-                    link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID ),
-                    link.getRecord2().getReferend().getString( Death.STANDARDISED_ID ),
-                    getLinks_persistent_name(),
-                    linkage_fields,
-                    link.getDistance() );
+            final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend().getString(Death.STANDARDISED_ID);
+
+            if( ! Query.BDDeathReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+
+                Query.createBDReference(
+                        bridge,
+                        std_id1,
+                        std_id2,
+                        getLinks_persistent_name(),
+                        linkage_fields,
+                        link.getDistance());
+            }
+
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }

@@ -450,7 +450,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
         DecimalFormat df = new DecimalFormat("0.00" );
 
         HashMap<String, Integer> marriage_counts = new HashMap<>();     // map from the marriages to number of occurances.
-        List<DataDistance<LXP>> distances = new ArrayList<>();          // all the distances from all the siblings - siblings can have multiple parents
+        List<DataDistance<Marriage>> distances = new ArrayList<>();          // all the distances from all the siblings - siblings can have multiple parents
 
         System.out.println("Family unit:");
         System.out.println("Number of children in bundle: " + sibling_parents_marriages.size());
@@ -461,7 +461,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
             System.out.println( sibling_index++ + " has " + spm.parents_marriages.size() + " parents' marriages");
 
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
+            for (DataDistance<Marriage> distance : spm.parents_marriages) {
                 final LXP marriage = distance.value;
                 String id = marriage.getString(Marriage.STANDARDISED_ID);
                 if (marriage_counts.keySet().contains(id)) {
@@ -475,7 +475,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
         }
 
         System.out.println("Number of different parents marriages in bundle: " + distances.size());
-        for (DataDistance<LXP> distance : distances) {
+        for (DataDistance<Marriage> distance : distances) {
             String perfect_match = closeTo( distance.distance,0.0 ) ? "  ********": "";
             System.out.println("Distance = " + df.format(distance.distance) + perfect_match );
             LXP marriage = distance.value;

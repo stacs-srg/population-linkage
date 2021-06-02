@@ -5,6 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
 
 import java.util.List;
@@ -12,9 +13,9 @@ import java.util.List;
 public class SiblingParentsMarriage implements Comparable<SiblingParentsMarriage> {
 
     public LXP sibling;
-    public List<DataDistance<LXP>> parents_marriages;
+    public List<DataDistance<Marriage>> parents_marriages;
 
-    public SiblingParentsMarriage(LXP sibling, List<DataDistance<LXP>> parents_marriages) {
+    public SiblingParentsMarriage(LXP sibling, List<DataDistance<Marriage>> parents_marriages) {
         this.sibling = sibling;
         this.parents_marriages = parents_marriages;
     }

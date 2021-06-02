@@ -46,7 +46,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
     public static void main(String[] args) throws Exception {
 
-        BitBlasterSearchStructure bb = null;        // initialised in try block - decl is here so we can finally shut it.
+        BitBlasterSearchStructure<Marriage> bb = null;        // initialised in try block - decl is here so we can finally shut it.
 
         try( NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
@@ -64,7 +64,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
                 LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, false, false);
                 HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
-                LinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
+                ParentsMarriageBirthLinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
                 LinkageConfig.numberOfROs = 20;
                 Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();  // TODO We have no requirement on number of fields here - we should have!
                 StringMetric baseMetric = new JensenShannon(2048);
@@ -79,7 +79,7 @@ public class BirthSiblingBundleThenParentsBuilder {
                 progress_indicator.setTotalSteps(all_families.size());
                 processFamilies(bridge, bb, parents_recipe, number_of_marriages_per_family, all_families, progress_indicator, seen_already);
                 printFamilyStats(number_of_marriages_per_family);
-
+                System.exit(1); //<<<<<<<<<<<<<<<<<<<<<<<<<<
                 linkage_fields--;
             }
         } finally {
@@ -102,7 +102,7 @@ public class BirthSiblingBundleThenParentsBuilder {
         System.out.println("Total number of families = " + sum);
     }
 
-    private static void processFamilies(NeoDbCypherBridge bridge, BitBlasterSearchStructure bb, LinkageRecipe parents_recipe, int[] number_of_marriages_per_family, Collection<List<Link>> all_families, ProgressIndicator progress_indicator, List<String> seen_already) throws BucketException, RepositoryException {
+    private static void processFamilies(NeoDbCypherBridge bridge, BitBlasterSearchStructure<Marriage> bb, LinkageRecipe parents_recipe, int[] number_of_marriages_per_family, Collection<List<Link>> all_families, ProgressIndicator progress_indicator, List<String> seen_already) throws BucketException, RepositoryException {
         for( List<Link> siblings : all_families) {
 
             Set<LXP> sib_records = getBirthSiblings(siblings);
@@ -110,9 +110,9 @@ public class BirthSiblingBundleThenParentsBuilder {
             Set<SiblingParentsMarriage> sibling_parents_marriages = new TreeSet<>();
 
             for (LXP sibling : sib_records) {
-                LXP search_record = parents_recipe.convertToOtherRecordType(sibling);
+                Marriage search_record = (Marriage) parents_recipe.convertToOtherRecordType(sibling);
 
-                List<DataDistance<LXP>> distances = bb.findWithinThreshold(search_record, DISTANCE_THRESHOLD);
+                List<DataDistance<Marriage>> distances = bb.findWithinThreshold(search_record, DISTANCE_THRESHOLD);
 
                 sibling_parents_marriages.add(new SiblingParentsMarriage(sibling, distances));
             }
@@ -147,7 +147,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
             final LXP sibling = spm.sibling;
 
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
+            for (DataDistance<Marriage> distance : spm.parents_marriages) {
                 final LXP marriage = distance.value;
                 double dist = distance.distance;
                 String sibling_std_id = sibling.getString( Birth.STANDARDISED_ID );
@@ -183,7 +183,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
         Map<LXP, Integer> counts = new HashMap<>();
         for (SiblingParentsMarriage spm : sibling_parents_marriages) {
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
+            for (DataDistance<Marriage> distance : spm.parents_marriages) {
                 LXP marriage = distance.value;
                 if (counts.containsKey(marriage)) {
                     counts.put(marriage, counts.get(marriage) + 1);
@@ -206,7 +206,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
         for (SiblingParentsMarriage spm : sibling_parents_marriages) {
 
-            for (DataDistance<LXP> distance_and_marriage : spm.parents_marriages) {
+            for (DataDistance<Marriage> distance_and_marriage : spm.parents_marriages) {
                 final LXP marriage = distance_and_marriage.value;
                 String id = marriage.getString(Marriage.STANDARDISED_ID);
                 if (marriage_counts.keySet().contains(id)) {
@@ -268,7 +268,7 @@ public class BirthSiblingBundleThenParentsBuilder {
         for (SiblingParentsMarriage spm : sibling_parents_marriages) {
             LXP sibling = spm.sibling;
             double total = 0.0;
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
+            for (DataDistance<Marriage> distance : spm.parents_marriages) {
                 total += distance.distance;
             }
             if (total < lowest) {
@@ -304,11 +304,11 @@ public class BirthSiblingBundleThenParentsBuilder {
         TreeSet<SiblingParentsMarriage> result = new TreeSet<>();
         for( SiblingParentsMarriage spm : sibling_parents_marriages ) {
             LXP sibling = spm.sibling;
-            for( DataDistance<LXP> distance : spm.parents_marriages ) {
-                final LXP marriage = distance.value;
+            for( DataDistance<Marriage> distance : spm.parents_marriages ) {
+                final Marriage marriage = distance.value;
                 String id = marriage.getString(Marriage.STANDARDISED_ID);
                 if(standard_agreed_id.equals(id)) {
-                    List<DataDistance<LXP>> new_list = new ArrayList<>();
+                    List<DataDistance<Marriage>> new_list = new ArrayList<>();
                     new_list.add( new DataDistance<>(marriage,distance.distance) );
                     SiblingParentsMarriage new_entry = new SiblingParentsMarriage( sibling,new_list );
                     result.add( new_entry );
@@ -324,7 +324,7 @@ public class BirthSiblingBundleThenParentsBuilder {
         DecimalFormat df = new DecimalFormat("0.00" );
 
         HashMap<String, Integer> marriage_counts = new HashMap<>();     // map from the marriages to number of occurances.
-        List<DataDistance<LXP>> distances = new ArrayList<>();          // all the distances from all the siblings - siblings can have multiple parents
+        List<DataDistance<Marriage>> distances = new ArrayList<>();          // all the distances from all the siblings - siblings can have multiple parents
 
         System.out.println("Family unit:");
         System.out.println("Number of children in bundle: " + sibling_parents_marriages.size());
@@ -335,7 +335,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
             System.out.println( sibling_index++ + " has " + spm.parents_marriages.size() + " parents' marriages");
 
-            for (DataDistance<LXP> distance : spm.parents_marriages) {
+            for (DataDistance<Marriage> distance : spm.parents_marriages) {
                 final LXP marriage = distance.value;
                 String id = marriage.getString(Marriage.STANDARDISED_ID);
                 if (marriage_counts.keySet().contains(id)) {
@@ -349,7 +349,7 @@ public class BirthSiblingBundleThenParentsBuilder {
         }
 
         System.out.println("Number of different parents marriages in bundle: " + distances.size());
-        for (DataDistance<LXP> distance : distances) {
+        for (DataDistance<Marriage> distance : distances) {
             String perfect_match = closeTo( distance.distance,0.0 ) ? "  ********": "";
             System.out.println("Distance = " + df.format(distance.distance) + perfect_match );
             LXP marriage = distance.value;

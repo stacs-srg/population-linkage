@@ -158,6 +158,15 @@ public class Query {
      * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
+    public static void createMMBrideGroomReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+        createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_to, standard_id_from, provenance, fields_populated, distance);
+    }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
     public static void createMMGroomGroomReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, MM_GG_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
@@ -169,15 +178,6 @@ public class Query {
      */
     public static void createMMBrideBrideReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, MM_BB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
-    }
-
-    /**
-     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
-     * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
-     * See createReference for param details
-     */
-    public static void createMMBrideGroomReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
-        createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_to, standard_id_from, provenance, fields_populated, distance);
     }
 
     // predicates
@@ -228,6 +228,10 @@ public class Query {
 
     public static boolean MMGroomBrideSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
         return linkExists( bridge, MM_GB_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
+    }
+
+    public static boolean MMBrideGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
+        return linkExists( bridge, MM_GB_SIBLING_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
     }
 
     //=====================// private methods //=====================//

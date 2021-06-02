@@ -53,16 +53,20 @@ public class BrideBrideSubsetSiblingLinkageRecipe extends BrideBrideSiblingLinka
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            Query.createMMBrideBrideReference(
-                    bridge,
-                    link.getRecord1().getReferend().getString( Marriage.STANDARDISED_ID ),
-                    link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID ),
-                    links_persistent_name,
-                    ALL_LINKAGE_FIELDS,
-                    link.getDistance() );
+            final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+
+            if( ! Query.MMBrideBrideSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+                Query.createMMBrideBrideReference(
+                        bridge,
+                        std_id1,
+                        std_id2,
+                        links_persistent_name,
+                        ALL_LINKAGE_FIELDS,
+                        link.getDistance());
+            }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }
-
 }
