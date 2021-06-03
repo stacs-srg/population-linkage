@@ -79,7 +79,6 @@ public class BirthSiblingBundleThenParentsBuilder {
                 progress_indicator.setTotalSteps(all_families.size());
                 processFamilies(bridge, bb, parents_recipe, number_of_marriages_per_family, all_families, progress_indicator, seen_already);
                 printFamilyStats(number_of_marriages_per_family);
-                System.exit(1); //<<<<<<<<<<<<<<<<<<<<<<<<<<
                 linkage_fields--;
             }
         } finally {
