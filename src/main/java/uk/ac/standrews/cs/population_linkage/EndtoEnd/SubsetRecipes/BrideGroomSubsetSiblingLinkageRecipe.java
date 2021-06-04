@@ -2,12 +2,12 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
@@ -23,19 +23,23 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
  *
  */
 
-public class GroomBrideSubsetSiblingLinkageRecipe extends GroomBrideSiblingLinkageRecipe {
+public class BrideGroomSubsetSiblingLinkageRecipe extends BrideGroomSiblingLinkageRecipe {
 
-    private static final int NUMBER_OF_MARRIAGES = 10000;
     private static final int EVERYTHING = Integer.MAX_VALUE;
+    private static final int NUMBER_OF_MARRIAGES = EVERYTHING; // 10000; // for testing
     private final NeoDbCypherBridge bridge;
 
     public static final int ALL_LINKAGE_FIELDS = 4;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
-    public GroomBrideSubsetSiblingLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
+    public BrideGroomSubsetSiblingLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,results_repository_name,links_persistent_name );
         this.bridge = bridge;
+    }
+
+    public void setNumberLinkageFieldsRequired( int number ) {
+        linkage_fields = number;
     }
 
     /**
@@ -52,8 +56,8 @@ public class GroomBrideSubsetSiblingLinkageRecipe extends GroomBrideSiblingLinka
             final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if( ! Query.MMGroomBrideSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
-                Query.createMMGroomBrideReference(
+            if( ! Query.MMBrideGroomSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+                Query.createMMBrideGroomReference(
                         bridge,
                         std_id1,
                         std_id2,

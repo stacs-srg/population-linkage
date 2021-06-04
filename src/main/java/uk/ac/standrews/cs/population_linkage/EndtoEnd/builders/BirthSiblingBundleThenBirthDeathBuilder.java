@@ -7,7 +7,7 @@ package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 import uk.ac.standrews.cs.neoStorr.impl.DynamicLXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;

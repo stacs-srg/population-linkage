@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.BirthSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.EndtoEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;

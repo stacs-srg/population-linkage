@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
@@ -32,8 +32,8 @@ public class DeathGroomIdentitySubsetLinkageRecipe extends DeathGroomOwnMarriage
 
     private final NeoDbCypherBridge bridge;
 
-    private static final int NUMBER_OF_DEATHS = 10000;
     private static final int EVERYTHING = Integer.MAX_VALUE;
+    private static final int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
 
     public  static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
 

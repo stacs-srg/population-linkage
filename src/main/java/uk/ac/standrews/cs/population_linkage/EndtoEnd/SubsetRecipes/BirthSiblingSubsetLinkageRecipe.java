@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies;
+package uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
@@ -24,8 +24,8 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
  */
 public class BirthSiblingSubsetLinkageRecipe extends BirthSiblingLinkageRecipe {
 
-    private static final int NUMBER_OF_BIRTHS = 10000;
     private static final int EVERYTHING = Integer.MAX_VALUE;
+    private static final int NUMBER_OF_BIRTHS = EVERYTHING; // 10000; // for testing
     private final NeoDbCypherBridge bridge;
     public static final int ALL_LINKAGE_FIELDS = 8;
 

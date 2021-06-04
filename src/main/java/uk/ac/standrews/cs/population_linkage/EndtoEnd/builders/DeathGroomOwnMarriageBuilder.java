@@ -4,7 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.EndtoEnd.builders;
 
-import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipies.DeathGroomIdentitySubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.EndtoEnd.SubsetRecipes.DeathGroomIdentitySubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
