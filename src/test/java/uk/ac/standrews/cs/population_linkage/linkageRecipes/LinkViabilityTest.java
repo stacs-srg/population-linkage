@@ -254,7 +254,7 @@ public class LinkViabilityTest {
 
     private boolean birthBrideIdentityLinkViable(final int marriage_day, final int marriage_month, final int marriage_year, final int birth_day, final int birth_month, final int birth_year, final String age_or_date_of_birth) {
 
-        final LXP record1 = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, true);
+        final LXP record1 = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, true, "1");
         final LXP record2 = makeBirth(birth_day, birth_month, birth_year);
 
         return BirthBrideIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
@@ -262,7 +262,7 @@ public class LinkViabilityTest {
 
     private boolean birthBrideIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage();
+        final LXP record1 = makeInvalidMarriage("1");
         final LXP record2 = makeInvalidBirth();
 
         return BirthBrideIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
@@ -270,32 +270,32 @@ public class LinkViabilityTest {
 
     private boolean brideBrideSiblingLinkViable(final int marriage_day1, final int marriage_month1, final int marriage_year1, final String age_or_date_of_birth1, final int marriage_day2, final int marriage_month2, final int marriage_year2, final String age_or_date_of_birth2) {
 
-        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true);
-        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, true);
+        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true, "1");
+        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, true, "2");
 
         return BrideBrideSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
 
     private boolean brideBrideSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage();
-        final LXP record2 = makeInvalidMarriage();
+        final LXP record1 = makeInvalidMarriage("1");
+        final LXP record2 = makeInvalidMarriage("2");
 
         return BrideBrideSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
 
     private boolean brideGroomSiblingLinkViable(final int marriage_day1, final int marriage_month1, final int marriage_year1, final String age_or_date_of_birth1, final int marriage_day2, final int marriage_month2, final int marriage_year2, final String age_or_date_of_birth2) {
 
-        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true);
-        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false);
+        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true, "1");
+        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false, "2");
 
         return BrideGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
 
     private boolean brideGroomSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage();
-        final LXP record2 = makeInvalidMarriage();
+        final LXP record1 = makeInvalidMarriage("1");
+        final LXP record2 = makeInvalidMarriage("2");
 
         return BrideGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
@@ -326,7 +326,7 @@ public class LinkViabilityTest {
 
     private boolean deathBrideMarriageIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage();
+        final LXP record1 = makeInvalidMarriage("1");
         final LXP record2 = makeInvalidBirth();
 
         return DeathBrideOwnMarriageIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
@@ -341,17 +341,15 @@ public class LinkViabilityTest {
 
     private boolean deathGroomMarriageIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage();
+        final LXP record1 = makeInvalidMarriage("1");
         final LXP record2 = makeInvalidBirth();
 
         return DeathGroomOwnMarriageIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
 
-
-
     private boolean groomBirthIdentityLinkViable(final int marriage_day, final int marriage_month, final int marriage_year, final int birth_day, final int birth_month, final int birth_year, final String age_or_date_of_birth) {
 
-        final LXP record1 = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, false);
+        final LXP record1 = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, false, "1");
         final LXP record2 = makeBirth(birth_day, birth_month, birth_year);
 
         return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
@@ -359,7 +357,7 @@ public class LinkViabilityTest {
 
     private boolean groomBirthIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage();
+        final LXP record1 = makeInvalidMarriage("1");
         final LXP record2 = makeInvalidBirth();
 
         return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
@@ -367,16 +365,16 @@ public class LinkViabilityTest {
 
     private boolean groomGroomSiblingLinkViable(final int marriage_day1, final int marriage_month1, final int marriage_year1, final String age_or_date_of_birth1, final int marriage_day2, final int marriage_month2, final int marriage_year2, final String age_or_date_of_birth2) {
 
-        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, false);
-        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false);
+        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, false, "1");
+        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false, "2");
 
         return GroomGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
 
     private boolean groomGroomSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage();
-        final LXP record2 = makeInvalidMarriage();
+        final LXP record1 = makeInvalidMarriage("1");
+        final LXP record2 = makeInvalidMarriage("2");
 
         return GroomGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
@@ -470,7 +468,7 @@ public class LinkViabilityTest {
         return record;
     }
 
-    private Marriage makeMarriage(final int marriage_day, final int marriage_month, final int marriage_year, String age_or_date_of_birth, boolean spouse_is_bride) {
+    private Marriage makeMarriage(final int marriage_day, final int marriage_month, final int marriage_year, String age_or_date_of_birth, boolean spouse_is_bride, String id) {
 
         final Marriage record = new Marriage();
 
@@ -478,6 +476,7 @@ public class LinkViabilityTest {
             record.put(i, "");
         }
 
+        record.put(Marriage.STANDARDISED_ID, id);
         record.put(Marriage.MARRIAGE_DAY, String.valueOf(marriage_day));
         record.put(Marriage.MARRIAGE_MONTH, String.valueOf(marriage_month));
         record.put(Marriage.MARRIAGE_YEAR, String.valueOf(marriage_year));
@@ -486,7 +485,7 @@ public class LinkViabilityTest {
         return record;
     }
 
-    private Marriage makeInvalidMarriage() {
+    private Marriage makeInvalidMarriage(String id) {
 
         final Marriage record = new Marriage();
 
@@ -494,6 +493,7 @@ public class LinkViabilityTest {
             record.put(i, "");
         }
 
+        record.put(Marriage.STANDARDISED_ID, id);
         record.put(Marriage.MARRIAGE_DAY, "Unknown");
         record.put(Marriage.MARRIAGE_MONTH, "Unknown");
         record.put(Marriage.MARRIAGE_YEAR, "Unknown");

@@ -9,9 +9,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.github.stacs-srg</groupId>
+        <groupId>uk.ac.standrews.cs</groupId>
         <artifactId>common-pom</artifactId>
-        <version>1.0.2</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>population-linkage</artifactId>
@@ -21,31 +21,38 @@
 
     <description>Population linkage</description>
     <inceptionYear>2018</inceptionYear>
+    
+    <properties>
+
+        <neo4j-ogm-core-version>3.2.20</neo4j-ogm-core-version>
+        <neo4j-ogm-bolt-driver-version>3.2.20</neo4j-ogm-bolt-driver-version>
+
+    </properties>
+
+    <repositories>
+
+        <!-- This has to be replicated from the parent POM so the parent POM can be found. -->
+
+        <repository>
+            <id>uk.ac.standrews.cs.maven.repository</id>
+            <name>School of Computer Science Maven Repository</name>
+            <url>https://maven.cs.st-andrews.ac.uk/</url>
+        </repository>
+
+    </repositories>
 
     <dependencies>
 
         <dependency>
             <groupId>org.neo4j</groupId>
-            <artifactId>neo4j</artifactId>
-            <version>4.2.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.neo4j.driver</groupId>
-            <artifactId>neo4j-java-driver</artifactId>
-            <version>4.2.0</version>
+            <artifactId>neo4j-ogm-core</artifactId>
+            <version>${neo4j-ogm-core-version}</version>
         </dependency>
 
         <dependency> <!-- If you're using the Bolt driver -->
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-ogm-bolt-driver</artifactId>
-            <version>3.2.20</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-ogm-core</artifactId>
-            <version>3.2.20</version>
+            <version>${neo4j-ogm-bolt-driver-version}</version>
         </dependency>
 
         <dependency>
@@ -54,22 +61,16 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>uk.ac.standrews.cs</groupId>-->
-        <!--            <artifactId>storr</artifactId>-->
-        <!--            <version>1.0-SNAPSHOT</version>-->
-        <!--        </dependency>-->
-
         <dependency>
-            <groupId>com.github.stacs-srg</groupId>
+            <groupId>uk.ac.standrews.cs</groupId>
             <artifactId>ciesvium</artifactId>
-            <version>1.0.2</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>uk.ac.standrews.cs</groupId>
             <artifactId>population-records</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -104,14 +105,22 @@
 
     </dependencies>
 
-    <repositories>
+    <build>
 
-        <repository>
-            <id>uk.ac.standrews.cs.maven.repository</id>
-            <name>School of Computer Science Maven Repository</name>
-            <url>https://maven.cs.st-andrews.ac.uk/</url>
-        </repository>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
 
-    </repositories>
+                <!-- Temporarily suppress tests until they're made self-contained. -->
+                <configuration>
+                    <excludes>
+                        <exclude>*uk.ac.standrews.cs.population_linkage*/*InfrastructureTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

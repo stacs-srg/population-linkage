@@ -4,17 +4,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.characterisation;
 
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.data.umea.UmeaBirthsDataSet;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
-import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
-import java.io.PrintStream;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -27,29 +25,16 @@ public class MetricSpaceChecks {
     private static final long SEED = 34553543456223L;
     private static final double DELTA = 0.0000001;
 
-    private final Path store_path;
-    private final String repo_name;
+    private final List<Metric<LXP>> combined_metrics;
 
-    private final PrintStream outstream;
-    private List<Metric<LXP>> combined_metrics;
-
-    private MetricSpaceChecks(Path store_path, String repo_name, String filename) throws Exception {
-
-        this.store_path = store_path;
-        this.repo_name = repo_name;
-
-        if (filename.equals("stdout")) {
-            outstream = System.out;
-        } else {
-            outstream = new PrintStream(filename);
-        }
+    private MetricSpaceChecks() {
 
         combined_metrics = getCombinedMetrics();
     }
 
     public void run() throws Exception {
 
-        checkTriangleInequality(new RecordRepository(repo_name));
+        checkTriangleInequality();
     }
 
     private List<Metric<LXP>> getCombinedMetrics() {
@@ -62,10 +47,14 @@ public class MetricSpaceChecks {
         return result;
     }
 
-    private void checkTriangleInequality(RecordRepository record_repository) {
+    private void checkTriangleInequality() throws IOException {
 
         Random random = new Random(SEED);
-        final List<LXP> birth_records = Utilities.permute(Utilities.getBirthRecords(record_repository));
+
+        final List<LXP> birth_records = new ArrayList<>();
+        for (Birth birth : Birth.convertToRecords(new UmeaBirthsDataSet())) {
+            birth_records.add(birth);
+        }
 
         long counter = 0;
 
@@ -87,14 +76,14 @@ public class MetricSpaceChecks {
 
                 if (violatesTriangleInequality(distance1, distance2, distance3)) {
 
-                    outstream.println("violation of triangle inequality for " + metric_name);
-                    outstream.println(b1);
-                    outstream.println(b2);
-                    outstream.println(b3);
-                    outstream.println(distance1);
-                    outstream.println(distance2);
-                    outstream.println(distance3);
-                    outstream.println();
+                    System.out.println("violation of triangle inequality for " + metric_name);
+                    System.out.println(b1);
+                    System.out.println(b2);
+                    System.out.println(b3);
+                    System.out.println(distance1);
+                    System.out.println(distance2);
+                    System.out.println(distance3);
+                    System.out.println();
                 }
             }
 
@@ -113,9 +102,6 @@ public class MetricSpaceChecks {
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "skye";
-
-        new MetricSpaceChecks(store_path, repo_name, "TriangleInequalityChecks").run();
+        new MetricSpaceChecks().checkTriangleInequality();
     }
 }
