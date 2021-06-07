@@ -2,7 +2,7 @@
   <configuration default="false" name="BirthSiblingBundleBuilder" type="Application" factoryName="Application">
     <option name="ALTERNATIVE_JRE_PATH" value="11" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthSiblingBundleBuilder" />
+    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder" />
     <module name="population-linkage" />
     <option name="PROGRAM_PARAMETERS" value="Umea umea_results" />
     <option name="VM_PARAMETERS" value="-Xmx16G" />

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GroomGroomSiblingBuilder" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.GroomGroomSiblingBuilder" />
+    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.endToEnd.builders.GroomGroomSiblingBuilder" />
     <module name="population-linkage" />
     <option name="PROGRAM_PARAMETERS" value="Umea umea_results" />
     <selectedOptions>

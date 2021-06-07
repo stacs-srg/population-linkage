@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="BirthBrideOwnMarriageBuilder" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthBrideOwnMarriageBuilder" />
+    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthBrideOwnMarriageBuilder" />
     <module name="population-linkage" />
     <option name="PROGRAM_PARAMETERS" value="Umea umea_results" />
     <option name="VM_PARAMETERS" value="-Xmx16G" />

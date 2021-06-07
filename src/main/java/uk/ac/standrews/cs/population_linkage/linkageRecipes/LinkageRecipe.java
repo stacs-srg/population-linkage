@@ -194,12 +194,12 @@ public abstract class LinkageRecipe {
         throw new RuntimeException("unexpected record type");
     }
 
-    protected static Pair pair(final int first, final int second) {
+    public static Pair pair(final int first, final int second) {
         return new Pair(first, second);
     }
 
     @SuppressWarnings("unchecked")
-    protected static <T> List<T> list(final T... values) {
+    public static <T> List<T> list(final T... values) {
         return Arrays.asList(values);
     }
 
