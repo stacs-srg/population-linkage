@@ -1,13 +1,14 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
-import uk.ac.standrews.cs.data.umea.UmeaBirthsDataSet;
 import uk.ac.standrews.cs.data.umea.UmeaDeathsDataSet;
 import uk.ac.standrews.cs.data.umea.UmeaMarriagesDataSet;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
