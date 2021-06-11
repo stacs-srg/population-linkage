@@ -5,60 +5,55 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THESHOLD = 0;
-
-    public static void main(String[] args) throws BucketException, RepositoryException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new BirthDeathSiblingLinkageRecipe(sourceRepo, resultsRepo,
-                LINKAGE_TYPE + "-links");
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048),  false, false, true, false);
-    }
-
     public static final String LINKAGE_TYPE = "birth-death-sibling";
+
+    private static final double DISTANCE_THESHOLD = 0; // TODO 8888
+
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME
+    );
+
+    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
+
 
     public BirthDeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(   pair(Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY),
+                    pair(Birth.MOTHER_IDENTITY, Death.MOTHER_IDENTITY) ) );
+
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+        return trueMatch(record1, record2);
+    }
 
-        String childFatherID = record1.getString(Birth.FATHER_IDENTITY).trim();
-        String childMotherID = record1.getString(Birth.MOTHER_IDENTITY).trim();
-
-        String decFatherID = record2.getString(Death.FATHER_IDENTITY).trim();
-        String decMotherID = record2.getString(Death.MOTHER_IDENTITY).trim();
-
-        if(childFatherID.isEmpty() || childMotherID.isEmpty() || decFatherID.isEmpty() || decMotherID.isEmpty())
-            return LinkStatus.UNKNOWN;
-
-        if(childFatherID.equals(decFatherID) && childMotherID.equals(decMotherID))
-            return LinkStatus.TRUE_MATCH;
-
-        return LinkStatus.NOT_TRUE_MATCH;
+    public static LinkStatus trueMatch(LXP record1, LXP record2) {
+        return trueMatch(record1, record2, TRUE_MATCH_ALTERNATIVES);
     }
 
     @Override
@@ -87,14 +82,10 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getLinkageFields() {
-        return Arrays.asList(
-                Birth.FATHER_FORENAME,
-                Birth.FATHER_SURNAME,
-                Birth.MOTHER_FORENAME,
-                Birth.MOTHER_MAIDEN_SURNAME
-        );
-    }
+    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+
+    @Override
+    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
@@ -113,16 +104,6 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() {
-        return Arrays.asList(
-                Death.FATHER_FORENAME,
-                Death.FATHER_SURNAME,
-                Death.MOTHER_FORENAME,
-                Death.MOTHER_MAIDEN_SURNAME
-        );
-    }
-
-    @Override
     public Map<String, Link> getGroundTruthLinks() {
         return getGroundTruthLinksOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
     }
@@ -134,8 +115,6 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getTheshold() {
-        System.out.println( "THESHOLD set to zero - fix me"); // TODO 666
-        System.exit(1);
         return DISTANCE_THESHOLD;
     }
 }

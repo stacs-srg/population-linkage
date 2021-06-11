@@ -59,3 +59,8 @@ $COPY $COPYDIR/deathsiblings
 echo "16. Performing birth sibling bundling then BM (birth-parents-marriage) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthSiblingBundleThenParentsBuilder" -e -Dexec.args="Umea umea_results"
 $COPY $COPYDIR/parents
+
+echo "17. Birth-Death Sibling (BD) linkage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthDeathSiblingBundleBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/death-birth
+

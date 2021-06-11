@@ -6,6 +6,7 @@ package uk.ac.standrews.cs.population_linkage.graph.util;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 import java.util.Arrays;
 import java.util.List;

@@ -5,7 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathBrideIdentitySubsetLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;

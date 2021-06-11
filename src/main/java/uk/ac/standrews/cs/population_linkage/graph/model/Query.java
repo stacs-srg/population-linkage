@@ -9,7 +9,7 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Relationship;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +39,8 @@ public class Query {
     private static final String MM_GG_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
     private static final String MM_GB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
+    private static final String DB_SIBLING_QUERY = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+
     // queries for use in predicates - return a relationship if it exists
 
     private static final String BB_SIBLING_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
@@ -59,6 +61,7 @@ public class Query {
     private static final String MM_BB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String MM_GG_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String MM_GB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String DB_SIBLING_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
 
 
@@ -180,6 +183,15 @@ public class Query {
         createReference(bridge, MM_BB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a Death and the second a Birth - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createDBSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+        createReference(bridge, DB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
     // predicates
 
     public static boolean BBBirthSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
@@ -232,6 +244,10 @@ public class Query {
 
     public static boolean MMBrideGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
         return linkExists( bridge, MM_GB_SIBLING_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static boolean DBSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
+        return linkExists( bridge, DB_SIBLING_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
     }
 
     //=====================// private methods //=====================//

@@ -9,7 +9,7 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Relationship;
-import uk.ac.standrews.cs.population_linkage.graph.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 import java.util.HashMap;
 import java.util.List;
