@@ -27,7 +27,7 @@ public class GroomMarriageParentsMarriageSubsetLinkageRecipe extends GroomMarria
 
     public static final int ALL_LINKAGE_FIELDS = 5;
     private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_MARRIAGES = 10000; // for testing EVERYTHING;
+    private static final int NUMBER_OF_MARRIAGES = EVERYTHING; // ; // for testing EVERYTHING;
     private final NeoDbCypherBridge bridge;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;

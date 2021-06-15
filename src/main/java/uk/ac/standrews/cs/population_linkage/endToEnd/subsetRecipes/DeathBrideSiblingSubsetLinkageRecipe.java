@@ -26,7 +26,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 public class DeathBrideSiblingSubsetLinkageRecipe extends DeathBrideSiblingLinkageRecipe {
 
     private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_DEATHS = 10000; // EVERYTHING; // 10000; // for testing
+    private static final int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
     private final NeoDbCypherBridge bridge;
     public static final int ALL_LINKAGE_FIELDS = 5;
 
@@ -45,7 +45,7 @@ public class DeathBrideSiblingSubsetLinkageRecipe extends DeathBrideSiblingLinka
      * @return
      */
     @Override
-    protected Iterable<LXP> getBirthRecords() {
+    protected Iterable<LXP> getDeathRecords() {
         return filter(linkage_fields, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
     }
 

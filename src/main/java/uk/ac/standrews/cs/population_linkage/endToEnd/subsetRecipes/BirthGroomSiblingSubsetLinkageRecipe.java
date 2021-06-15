@@ -26,7 +26,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 public class BirthGroomSiblingSubsetLinkageRecipe extends BirthGroomSiblingLinkageRecipe {
 
     private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_BIRTHS = 10000; // EVERYTHING; // 10000; // for testing
+    private static final int NUMBER_OF_BIRTHS = EVERYTHING; // 10000; // for testing
     private final NeoDbCypherBridge bridge;
     public static final int ALL_LINKAGE_FIELDS = 5;
 

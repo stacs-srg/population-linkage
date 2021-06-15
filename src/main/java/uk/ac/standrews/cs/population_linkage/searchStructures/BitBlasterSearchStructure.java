@@ -27,22 +27,29 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
         List<T> copy_of_data = copyData(data);
 
-        int maxTries = 5;
-        Exception cause = null;
+        // Keep repeating with less reference objects of we cannot initialise bitblaster
+        while( number_of_reference_objects > 20 ) {
+            int maxTries = 5;
+            Exception cause = null;
 
-        for (int tries = 0; tries < maxTries; tries++) {
-            try {
-                init(distance_metric, chooseRandomReferencePoints(copy_of_data, number_of_reference_objects), copy_of_data);
-                return;
+            // Try several times with different seeds
+            for (int tries = 0; tries < maxTries; tries++) {
+                try {
+                    init(distance_metric, chooseRandomReferencePoints(copy_of_data, number_of_reference_objects), copy_of_data);
+                    return;
 
-            } catch (Exception e) {
-                cause = e;
-                SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
-                System.out.println("Initilisation exception - trying again with different reference points - new seed: " + SEED);
+                } catch (Exception e) {
+                    cause = e;
+                    SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
+                    System.out.println("Initilisation exception - trying again with different reference points - new seed: " + SEED);
+                }
             }
+            // Reduce number of ros if we cannot initialse
+            number_of_reference_objects = number_of_reference_objects - 10;
+            System.out.println("Reducing number of reference points to: " + number_of_reference_objects);
         }
 
-        throw new RuntimeException("Failed to initialise BitBlaster - try reducing number of reference objects: " + cause.getMessage());
+        throw new RuntimeException( "Failed to initialise BitBlaster" );
     }
 
     public BitBlasterSearchStructure(Metric<T> distance_metric, List<T> reference_points, Iterable<T> data) {

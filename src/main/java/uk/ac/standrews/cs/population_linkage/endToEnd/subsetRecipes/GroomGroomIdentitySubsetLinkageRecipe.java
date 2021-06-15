@@ -26,7 +26,7 @@ public class GroomGroomIdentitySubsetLinkageRecipe extends GroomGroomIdentityLin
     private final NeoDbCypherBridge bridge;
 
     private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_DEATHS = 10000; // EVERYTHING; // 10000; // for testing
+    private static final int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
 
     public static final int ALL_LINKAGE_FIELDS = 8; // 8 is all of them
 
