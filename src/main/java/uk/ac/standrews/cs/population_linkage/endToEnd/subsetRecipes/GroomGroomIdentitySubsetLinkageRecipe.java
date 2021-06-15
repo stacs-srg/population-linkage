@@ -4,14 +4,13 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 /**
  * EvidencePair Recipe
@@ -22,18 +21,18 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  *
  */
+public class GroomGroomIdentitySubsetLinkageRecipe extends GroomGroomIdentityLinkageRecipe {
 
-public class BrideBrideSubsetSiblingLinkageRecipe extends BrideBrideSiblingLinkageRecipe {
-
-    private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_MARRIAGES = EVERYTHING; // 10000; // for testing
     private final NeoDbCypherBridge bridge;
 
-    public static final int ALL_LINKAGE_FIELDS = 4;
+    private static final int EVERYTHING = Integer.MAX_VALUE;
+    private static final int NUMBER_OF_DEATHS = 10000; // EVERYTHING; // 10000; // for testing
+
+    public static final int ALL_LINKAGE_FIELDS = 8; // 8 is all of them
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
-    public BrideBrideSubsetSiblingLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
+    public GroomGroomIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
         super( source_repository_name,results_repository_name,links_persistent_name );
         this.bridge = bridge;
     }
@@ -42,13 +41,7 @@ public class BrideBrideSubsetSiblingLinkageRecipe extends BrideBrideSiblingLinka
         linkage_fields = number;
     }
 
-    /**
-     * @return
-     */
-    @Override
-    protected Iterable<LXP> getMarriageRecords() {
-        return filter(ALL_LINKAGE_FIELDS, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
-    }
+    // NOTE Marriage not filtered in this recipe
 
     @Override
     public void makeLinkPersistent(Link link) {
@@ -56,17 +49,19 @@ public class BrideBrideSubsetSiblingLinkageRecipe extends BrideBrideSiblingLinka
             final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if( ! Query.MMBrideBrideSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
-                Query.createMMBrideBrideSiblingReference(
+            if( ! Query.MMGroomGroomIdReferenceExists(bridge, std_id1, std_id2, links_persistent_name)) {
+
+                Query.createMMGroomGroomIdReference(
                         bridge,
                         std_id1,
                         std_id2,
                         links_persistent_name,
-                        ALL_LINKAGE_FIELDS,
+                        linkage_fields,
                         link.getDistance());
             }
-        } catch (BucketException | RepositoryException e) {
+            } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }
+
 }

@@ -57,11 +57,11 @@ public class ParentsMarriageDeathLinkageRecipe extends LinkageRecipe {
     @Override
     public String getStoredRole() {
         return Marriage.ROLE_PARENTS;  // bride and groom
-    }  // TODO this is arguably wrong and should be some name representing those getting married.
+    }
 
     @Override
     public String getQueryRole() {
-        return Death.ROLE_MOTHER + Death.ROLE_FATHER; // TODO FIX THIS.
+        return Death.ROLE_MOTHER + Death.ROLE_FATHER;
     } // mother and father
 
     @Override
@@ -104,8 +104,7 @@ public class ParentsMarriageDeathLinkageRecipe extends LinkageRecipe {
 
                 if( birth_key_from_marriage.equals( marriage_key_from_marriage ) ) {
                     try {
-                        Link l = new Link(marriage_record, Marriage.ROLE_BRIDES_MOTHER, death_record, Birth.ROLE_MOTHER, 1.0f, "ground truth", -1); // TODO labels are wrong!
-                        // Link l = new Link(marriage_record, Marriage.ROLE_PARENTS, birth_record, Birth.ROLE_PARENTS, 1.0f, "ground truth");
+                        Link l = new Link(marriage_record, Marriage.ROLE_BRIDE + Marriage.ROLE_GROOM, death_record, Death.ROLE_FATHER + Death.ROLE_MOTHER, 1.0f, "ground truth", -1);
                         links.put(l.toString(), l);
                     } catch (PersistentObjectException e) {
                         ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
@@ -117,7 +116,7 @@ public class ParentsMarriageDeathLinkageRecipe extends LinkageRecipe {
         return links;
     }
 
-    private static String toKeyFromDeath(LXP death_record) {    // TODO check all of these! easy to get wrong.
+    private static String toKeyFromDeath(LXP death_record) {
         return  death_record.getString(Death.FATHER_IDENTITY ) +
                 "-" + death_record.getString(Death.MOTHER_IDENTITY );
     }

@@ -108,14 +108,14 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links. TODO maybe do this elsewhere?
+        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links.
             return false;
         }
         if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
-            int year_of_birth1 = getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
-            int year_of_birth2 = getBirthYearOfPersonBeingMarried(proposedLink.record2, false);
+            int year_of_birth1 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
+            int year_of_birth2 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record2, false);
 
             return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
 
@@ -137,11 +137,6 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksOnSiblingSymmetric(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY);
-    }
-
-    @Override
-    public void makeLinkPersistent(Link link) {
-        System.out.println( "TODO makeLinkPersistent"); // TODO 333
     }
 
     @Override

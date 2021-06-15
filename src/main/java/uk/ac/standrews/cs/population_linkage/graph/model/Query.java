@@ -41,6 +41,18 @@ public class Query {
 
     private static final String DB_SIBLING_QUERY = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
+    private static final String MM_GROOM_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM_PARENTS { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)\";";
+    private static final String MM_BRIDE_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE_PARENTS { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)\";";
+
+    private static final String BM_GROOM_MARRIAGE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_BRIDE_MARRIAGE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+
+    private static final String MM_BRIDE_BRIDE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String MM_GROOM_GROOM_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+
+    private static final String DM_DECEASED_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"DB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String DM_DECEASED_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"DG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+
     // queries for use in predicates - return a relationship if it exists
 
     private static final String BB_SIBLING_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
@@ -63,6 +75,17 @@ public class Query {
     private static final String MM_GB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String DB_SIBLING_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
+    private static final String MM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:GROOM_PARENTS]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:BRIDE_PARENTS]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+
+    private static final String BM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+
+    private static final String MM_BRIDE_BRIDE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_GROOM_GROOM_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+
+    private static final String DM_DECEASED_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String DM_DECEASED_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
 
     /**
@@ -152,7 +175,7 @@ public class Query {
      * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
-    public static void createMMGroomBrideReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+    public static void createMMGroomBrideSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
@@ -161,7 +184,7 @@ public class Query {
      * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
-    public static void createMMBrideGroomReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+    public static void createMMBrideGroomSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_to, standard_id_from, provenance, fields_populated, distance);
     }
 
@@ -170,7 +193,7 @@ public class Query {
      * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
-    public static void createMMGroomGroomReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+    public static void createMMGroomGroomSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, MM_GG_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
@@ -179,7 +202,7 @@ public class Query {
      * The first parameter should be the id of a Death and the second a Marriage - it will not work if this is not the case!
      * See createReference for param details
      */
-    public static void createMMBrideBrideReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+    public static void createMMBrideBrideSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, MM_BB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
@@ -190,6 +213,49 @@ public class Query {
      */
     public static void createDBSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, DB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a marriage and the second a marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createMMGroomMarriageParentsMarriageReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+        createReference(bridge, MM_GROOM_MARRIAGE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    /**
+     * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first parameter should be the id of a marriage and the second a marriage - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createMMBrideMarriageParentsMarriageReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+        createReference(bridge, MM_BRIDE_MARRIAGE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    public static void createBMGroomSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+        createReference(bridge, BM_GROOM_MARRIAGE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    public static void createBMBrideSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance,  int fields_populated, double distance) {
+        createReference(bridge, BM_BRIDE_MARRIAGE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    public static void createMMBrideBrideIdReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance,  int fields_populated, double distance) {
+        createReference(bridge, MM_BRIDE_BRIDE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    public static void createMMGroomGroomIdReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance,  int fields_populated, double distance) {
+        createReference(bridge, MM_GROOM_GROOM_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+
+    public static void createDMBrideSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance,  int fields_populated, double distance) {
+        createReference(bridge, DM_DECEASED_BRIDE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    public static void createDMGroomSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance,  int fields_populated, double distance) {
+        createReference(bridge, DM_DECEASED_GROOM_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
     // predicates
@@ -250,6 +316,38 @@ public class Query {
         return linkExists( bridge, DB_SIBLING_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
     }
 
+    public static boolean MMGroomMarriageParentsMarriageReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
+        return linkExists( bridge, MM_GROOM_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static boolean MMBrideMarriageParentsMarriageReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
+        return linkExists( bridge, MM_BRIDE_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static boolean BMGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ){
+        return linkExists(bridge, BM_GROOM_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance);
+    }
+
+    public static boolean BMBrideSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
+        return linkExists( bridge, BM_BRIDE_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static boolean MMBrideBrideIdReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
+        return linkExists( bridge, MM_BRIDE_BRIDE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static boolean MMGroomGroomIdReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
+        return linkExists( bridge, MM_GROOM_GROOM_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static boolean DMBrideSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
+        return linkExists( bridge, DM_DECEASED_BRIDE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static boolean DMGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
+        return linkExists( bridge, DM_DECEASED_GROOM_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
     //=====================// private methods //=====================//
 
     /**
@@ -275,7 +373,6 @@ public class Query {
     private static boolean linkExists(NeoDbCypherBridge bridge, String query_string, String standard_id_from, String standard_id_to, String provenance) {
         Map<String, Object> parameters = getparams(standard_id_from, standard_id_to, provenance);
         Result result = bridge.getNewSession().run(query_string,parameters);
-        // List<Integer> field = result.list(r -> r.get("r").asRelationship().get("fields_populated").asInt());
         List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
         if( relationships.size() == 0 ) {
             return false;

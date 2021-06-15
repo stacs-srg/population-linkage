@@ -28,7 +28,7 @@ public class BirthDeathSiblingSubsetLinkageRecipe extends BirthDeathSiblingLinka
     private static final int EVERYTHING = Integer.MAX_VALUE;
     private static final int NUMBER_OF_BIRTHS = 10000; // EVERYTHING; // 10000; // for testing
     private final NeoDbCypherBridge bridge;
-    public static final int ALL_LINKAGE_FIELDS = 6;
+    public static final int ALL_LINKAGE_FIELDS = 4;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 

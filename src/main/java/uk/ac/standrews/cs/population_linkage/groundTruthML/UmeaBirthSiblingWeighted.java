@@ -35,7 +35,7 @@ import java.util.List;
  *
  * if multiple fields then like this:
  *
- * distance.field1.field2=value TODO
+ * distance.field1.field2=value
  *
  * @author al
  *

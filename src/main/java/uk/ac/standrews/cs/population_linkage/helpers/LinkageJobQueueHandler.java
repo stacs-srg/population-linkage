@@ -135,8 +135,6 @@ public class LinkageJobQueueHandler {
 
     private static LinkageRecipe getLinkageRecipe(final String linkageType, final String resultsRepo, final String links_persistent_name, final String sourceRepo) {
 
-        // TODO Replace with reflective call.
-
         switch (linkageType) {
             case BirthSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
@@ -162,8 +160,6 @@ public class LinkageJobQueueHandler {
                 return new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case DeathGroomOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
-            case FatherGroomIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new FatherGroomIdentityLinkageRecipe(links_persistent_name, sourceRepo, resultsRepo);
             case BirthGroomIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new BirthGroomIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
             case GroomGroomSiblingLinkageRecipe.LINKAGE_TYPE:

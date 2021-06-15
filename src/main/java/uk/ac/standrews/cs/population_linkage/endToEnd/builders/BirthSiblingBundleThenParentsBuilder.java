@@ -66,13 +66,13 @@ public class BirthSiblingBundleThenParentsBuilder {
                 HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
                 ParentsMarriageBirthLinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
                 LinkageConfig.numberOfROs = 20;
-                Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();  // TODO We have no requirement on number of fields here - we should have!
+                Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();
                 StringMetric baseMetric = new JensenShannon(2048);
                 Metric<LXP> composite_metric = getCompositeMetric(parents_recipe, baseMetric);
                 bb = new BitBlasterSearchStructure(composite_metric, marriage_records);
                 int[] number_of_marriages_per_family = new int[20]; // 20 is far too big!
                 List<String> seen_already = new ArrayList<>(); // keys of the sibling-marriage pairs we have already seen.
-                // TODO This is inefficient but safe - consider doing something else?
+                // This is inefficient but safe - consider doing something else?
                 System.out.println("Forming family bundles @ " + LocalDateTime.now().toString());
                 Collection<List<Link>> all_families = families.values(); // all the families: links from siblings to marriages.
                 ProgressIndicator progress_indicator = new PercentageProgressIndicator(100);
@@ -140,7 +140,7 @@ public class BirthSiblingBundleThenParentsBuilder {
      */
     private static void addChildParentsMarriageToNeo4J(NeoDbCypherBridge bridge, Set<SiblingParentsMarriage> sibling_parents_marriages, List<String> seen_already) {
 
-        String provenance = getThisClassName(); // TODO This is not really enough but will do for now, need tied to git version and some narrative - JSON perhaps?
+        String provenance = getThisClassName();
 
         for (SiblingParentsMarriage spm : sibling_parents_marriages) {
 
@@ -253,7 +253,6 @@ public class BirthSiblingBundleThenParentsBuilder {
 
     /**
      * Tries to find a list of sibling marriages on which the siblings all agree, and whose combined distance is close to zero.
-     * TODO this is policy!
      * @param all_agree_ids
      * @param sibling_parents_marriages
      * @return a list of sibling marriages that are the best and close to zero
@@ -288,7 +287,7 @@ public class BirthSiblingBundleThenParentsBuilder {
             return result;
 
         } else {
-            System.out.println("Could not find a clear winner for set of parents ##### - average distance = " + average_distance); // TODO now what???????????
+            System.out.println("Could not find a clear winner for set of parents ##### - average distance = " + average_distance);
             return sibling_parents_marriages;
         }
     }

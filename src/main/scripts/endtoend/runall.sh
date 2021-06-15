@@ -64,3 +64,34 @@ echo "17. Birth-Death Sibling (BD) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthDeathSiblingBundleBuilder" -e -Dexec.args="Umea umea_results"
 $COPY $COPYDIR/death-birth
 
+echo "18. Birth-Bride Sibling (BB) linkage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthBrideSiblingBundleBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/birth-bride
+
+echo "19. Birth-Groom Sibling (BG) linkage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BirthGroomSiblingBundleBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/birth-bride
+
+echo "20. Bride Bride Identity linkage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BrideBrideIdentityBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/birth-bride-id
+
+echo "21. Groom Groom Identity linkage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.GroomGroomIdentityBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/groom-groom-id
+
+echo "22. Bride Marriage Parents Marriage Identity linkage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.BrideMarriageParentsMarriageBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/bride-parents-marriage
+
+echo "22. Groom Marriage Parents Marriage Identity linkage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.GroomMarriageParentsMarriageBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/groom-parents-marriage
+
+echo "23. Death Bride Sibling linkage" DeathBrideSiblingBundleBuilder
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathBrideSiblingBundleBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/death-bride-sibling
+
+echo "24. Death Groom Sibling linkage" DeathBrideSiblingBundleBuilder
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathGroomSiblingBundleBuilder" -e -Dexec.args="Umea umea_results"
+$COPY $COPYDIR/death-groom-sibling

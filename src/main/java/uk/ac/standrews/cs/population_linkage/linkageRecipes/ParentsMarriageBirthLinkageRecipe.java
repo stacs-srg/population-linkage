@@ -56,7 +56,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
     @Override
     public String getStoredRole() {
         return Marriage.ROLE_PARENTS;  // bride and groom
-    }  // TODO this is arguably wrong and should be some name representing those getting married.
+    }
 
     @Override
     public String getQueryRole() {
@@ -124,7 +124,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
         return links;
     }
 
-    private static String toKeyFromBirth(LXP birth_record) {    // TODO check all of these! easy to get wrong.
+    private static String toKeyFromBirth(LXP birth_record) {
         return  birth_record.getString(Birth.FATHER_IDENTITY ) +
                 "-" + birth_record.getString(Birth.MOTHER_IDENTITY );
     }

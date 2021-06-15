@@ -5,17 +5,18 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthBrideIdentitySubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideBrideIdentitySubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
- *  This class attempts to find birth-bride links: links a baby on a birth to the same person as a groom on a marriage.
- *  This is NOT STRONG: uses the 3 names: the groom/baby and the names of the mother and father.
+ *  This class attempts to find bride-bride links: links a bride on wedding to another bride on a wedding
+ *  Multiple marriages of a single party (the bride).
+ *  This is  STRONG.
  */
-public class BirthBrideOwnMarriageBuilder {
+public class BrideBrideIdentityBuilder {
 
     public static void main(String[] args) throws BucketException {
 
@@ -23,7 +24,7 @@ public class BirthBrideOwnMarriageBuilder {
         String resultsRepo = args[1]; // e.g. synth_results
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            BirthBrideIdentitySubsetLinkageRecipe linkageRecipe = new BirthBrideIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthBrideOwnMarriageBuilder.class.getCanonicalName());
+            BrideBrideIdentitySubsetLinkageRecipe linkageRecipe = new BrideBrideIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BrideBrideIdentityBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
@@ -32,7 +33,6 @@ public class BirthBrideOwnMarriageBuilder {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-
                 new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
 
                 linkage_fields--;

@@ -46,7 +46,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Birth.MOTHER_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Birth.MOTHER_BIRTH_RECORD_IDENTITY))
     );
-    private static final double DISTANCE_THESHOLD = 0;
+    private static final double DISTANCE_THESHOLD = 0.22; // from UmeaBirthMotherViabilityPRFByThreshold.csv - looks very low?
 
     public static void main(String[] args) throws BucketException, RepositoryException {
 
@@ -116,7 +116,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
         // appearing as mother on the second record. Check that a plausible period has elapsed for
         // the person to be the mother.
 
-        return birthParentIdentityLinkIsViable(proposedLink);
+        return SiblingMarriageHelper.birthParentIdentityLinkIsViable(proposedLink);
     }
 
     @Override
@@ -134,8 +134,6 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getTheshold() {
-        System.out.println( "THESHOLD set to zero - fix me"); // TODO 666
-        System.exit(1);
         return DISTANCE_THESHOLD;
     }
 

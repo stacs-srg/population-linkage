@@ -89,9 +89,8 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
         report( "Num GT true links = " + numberOfGroundTruthTrueLinks );
         int fn = numberOfGroundTruthTrueLinks - tp;
         LinkageQuality lq = new LinkageQuality(tp, fp, fn);
-        lq.print(System.out);
 
-        return null; // TODO FIX THIS - should be LinkageResult
+        return new LinkageResult(lq);
     }
 
     private List<Link> dedupSymmetricAndSelfPairs(Iterable<Link> links) throws BucketException, RepositoryException {
@@ -167,8 +166,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
                     report("Removed 1 overlapping sibling's family");
                 } else {
                     if( VERBOSE ) {
-                        report("Families are different ********* TODO!! ");
-                        // TODO What to do.
+                        report("Families are different ********* "); // TODO Look at this again - perhaps don't do this and do in Unification stage?
                         // Options -
                         // Could combine and get a few potentially too big families
                         // Could split into 2 - move the intersecting records into one of the other - could perhaps keep track of (potentialy) related families

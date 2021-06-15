@@ -113,15 +113,15 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links. TODO maybe do this elsewhere?
+        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links.
             return false;
         }
 
         if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
 
         try {
-            int year_of_birth1 = getBirthYearOfPersonBeingMarried(proposedLink.record1, true);
-            int year_of_birth2 = getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
+            int year_of_birth1 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record1, true);
+            int year_of_birth2 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
 
             return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
 

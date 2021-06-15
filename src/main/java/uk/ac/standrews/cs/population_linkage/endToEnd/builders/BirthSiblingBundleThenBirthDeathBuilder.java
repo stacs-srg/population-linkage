@@ -63,7 +63,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
             LinkageConfig.numberOfROs = 20;
 
-            Iterable<LXP> death_records = death_birth_recipe.getStoredRecords();  // TODO We have no requirement on number of fields here - we should have!
+            Iterable<LXP> death_records = death_birth_recipe.getStoredRecords();
 
             StringMetric baseMetric = new JensenShannon(2048);
 
@@ -76,7 +76,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
             int unknown = 0;
 
             List<String> seen_already = new ArrayList<>(); // keys of the sibling-marriage pairs we have already seen.
-            // TODO This is inefficient but safe - consider doing something else?
+            // This is inefficient but safe - consider doing something else?
 
             Set<Long> birth_keys = families.keySet();
             for (long key : birth_keys) {
@@ -247,7 +247,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
      */
     private static void addBirthDeathToNeo4J(NeoDbCypherBridge bridge, List<SiblingDeath> sibling_deaths, List<String> seen_already) {
 
-        String provenance = getThisClassName(); // TODO This is not really enough but will do for now, need tied to git version and some narrative - JSON perhaps?
+        String provenance = getThisClassName();
 
         for (SiblingDeath sd : sibling_deaths) {
 
@@ -372,16 +372,15 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
         } else {
             System.out.println( "There are not any parents on which the siblings agree" );
-            // TODO Need more code here not sure what!!! - the above method will return multiples if there is no agreement - maybe this is OK.
+            // TODONeed more code here not sure what!!! - the above method will return multiples if there is no agreement - maybe this is OK.
         }
 
-        //TODO if we get here there is no one list of siblings that share a single set of parents - WHAT TO DO?? - MAYBE OK.
+        // TODO if we get here there is no one list of siblings that share a single set of parents - MAYBE OK.
         return sibling_deaths;
     }
 
     /**
      * Tries to find a list of sibling marriages on which the siblings all agree, and whose combined distance is close to zero.
-     * TODO this is policy!
      * @param all_agree_ids
      * @param sibling_deaths
      * @return a list of sibling marriages that are the best and close to zero
@@ -415,7 +414,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
             return result;
 
         } else {
-            System.out.println("Could not find a clear winner for set of parents ##### - average distance = " + average_distance); // TODO now what???????????
+            System.out.println("Could not find a clear winner for set of parents ##### - average distance = " + average_distance);
             return sibling_deaths;
         }
     }

@@ -54,7 +54,7 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Death.BIRTH_RECORD_IDENTITY,Birth.STANDARDISED_ID)),
             list(pair(Death.STANDARDISED_ID,Birth.DEATH_RECORD_IDENTITY))
     );
-    private static final double DISTANCE_THESHOLD = 0;
+    private static final double DISTANCE_THESHOLD = 0.36 ; // from UmeaBirthDeathViabilityPRFByThreshold.csv
 
     public static final String LINKAGE_TYPE = "death-birth-identity";
 
@@ -137,8 +137,6 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getTheshold() {
-        System.out.println( "THESHOLD set to zero - fix me"); // TODO 666
-        System.exit(1);
         return DISTANCE_THESHOLD;
     }
 }

@@ -13,7 +13,7 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
- * It creates a Map of families indexed (at the momement TODO) from birth ids to families
+ * It creates a Map of families indexed (at the momement) from birth ids to families
  */
 public class BirthSiblingBundleExperimentDifferentFieldsRequred {
 

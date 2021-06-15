@@ -53,7 +53,7 @@ public class GroomBrideSubsetSiblingLinkageRecipe extends GroomBrideSiblingLinka
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
             if( ! Query.MMGroomBrideSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
-                Query.createMMGroomBrideReference(
+                Query.createMMGroomBrideSiblingReference(
                         bridge,
                         std_id1,
                         std_id2,

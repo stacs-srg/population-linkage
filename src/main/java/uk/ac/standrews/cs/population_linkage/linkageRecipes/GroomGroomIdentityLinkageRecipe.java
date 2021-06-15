@@ -8,7 +8,6 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.util.List;
@@ -23,40 +22,43 @@ import java.util.Map;
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  *
  */
-public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
+public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     private static final double DISTANCE_THRESHOLD = 0.49;
 
-    public static final String LINKAGE_TYPE = "birth-bride-identity";
-    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
+    public static final String LINKAGE_TYPE = "bride-bride-identity";
+    public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+    public GroomGroomIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, results_repository_name, links_persistent_name);
     }
 
     public static final List<Integer> LINKAGE_FIELDS = list(
-            Birth.FORENAME,
-            Birth.SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_FATHER_OCCUPATION,
+            Marriage.GROOM_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.BRIDE_FORENAME,
-            Marriage.BRIDE_SURNAME,
-            Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_FATHER_OCCUPATION,
+            Marriage.GROOM_OCCUPATION
     );
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(pair(Birth.CHILD_IDENTITY, Marriage.BRIDE_IDENTITY)),
-            list(pair(Birth.STANDARDISED_ID, Marriage.BRIDE_BIRTH_RECORD_IDENTITY))
+            list(pair(Marriage.GROOM_IDENTITY, Marriage.GROOM_IDENTITY))
     );
 
     @Override
@@ -75,7 +77,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Class<? extends LXP> getStoredType() {
-        return Birth.class;
+        return Marriage.class;
     }
 
     @Override
@@ -85,22 +87,17 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getStoredRole() {
-        return Birth.ROLE_BABY;
+        return Marriage.ROLE_GROOM;
     }
 
     @Override
     public String getQueryRole() {
-        return Marriage.ROLE_BRIDE;
+        return Marriage.ROLE_GROOM;
     }
 
     @Override
     public List<Integer> getLinkageFields() {
         return LINKAGE_FIELDS;
-    }
-
-    @Override
-    protected Iterable<LXP> getBirthRecords() {
-        return filterBySex(super.getBirthRecords(), Birth.SEX, "f");
     }
 
     @Override
@@ -118,19 +115,16 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
         return isViable( proposedLink );
     }
 
-    public static boolean isViable(RecordPair proposedLink) {
-
-        return SiblingMarriageHelper.spouseBirthIdentityLinkIsViable(proposedLink, true);
-    }
+    public static boolean isViable(RecordPair proposedLink) { return true; } // TODO VIABLE
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY,Marriage.BRIDE_IDENTITY);
+        return getGroundTruthLinksOn(Marriage.GROOM_IDENTITY,Marriage.GROOM_IDENTITY);
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Birth.CHILD_IDENTITY,Marriage.BRIDE_IDENTITY);
+        return getNumberOfGroundTruthTrueLinksOn(Marriage.GROOM_IDENTITY,Marriage.GROOM_IDENTITY);
     }
 
 }
