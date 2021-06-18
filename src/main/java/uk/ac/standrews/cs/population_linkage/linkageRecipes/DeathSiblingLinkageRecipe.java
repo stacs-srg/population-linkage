@@ -34,7 +34,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
             Death.MOTHER_MAIDEN_SURNAME
     );
 
-    protected static final double DISTANCE_THRESHOLD =  0.53;
+    protected static final double DISTANCE_THRESHOLD =  0.53; // 0.53 - This is very high
 
     public static final int ID_FIELD_INDEX = Death.STANDARDISED_ID;
 

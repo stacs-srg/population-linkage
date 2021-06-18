@@ -17,8 +17,6 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
  */
 public class DeathSiblingBundleBuilder {
 
-    public static final int PREFILTER_REQUIRED_FIELDS = 4;
-
     public static void main(String[] args) throws Exception {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean

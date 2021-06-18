@@ -12,18 +12,18 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.*;
 import java.util.stream.Stream;
 
-public class SiblingDeathTriangleResolver {
+public class SiblingBrideMarriageTriangleResolver {
 
     public static final int SIBLING_COUNT_SUPPORT_THRESHOLD = 2;
     public static final int SIBLING_TRANSITIVE_PATH_SUPPORT_THRESHOLD = 2;
@@ -32,16 +32,16 @@ public class SiblingDeathTriangleResolver {
     public static final double HIGH_DISTANCE_REJECT_THRESHOLD = 0.5;
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
-    private final IBucket deaths;
-    private final DeathSiblingSubsetLinkageRecipe recipe;
+    private final IBucket births;
+    private final BirthSiblingSubsetLinkageRecipe recipe;
 
     private final JensenShannon base_metric;
     private final Metric<LXP> metric;
 
-    private static final String DEATH_SIBLING_ILLEGAL_TRIANGLE_QUERY = "MATCH (x:Death)-[xy:SIBLING]-(y:Death)-[yz:SIBLING]-(z:Death) WHERE NOT (x)-[:SIBLING]-(z) return x,y,z,xy,yz";
-    private static final String DD_GET_SIBLINGS = "MATCH (a:Death)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+    private static final String BIRTH_SIBLING_ILLEGAL_TRIANGLE_QUERY = "MATCH (x:Birth)-[xy:SIBLING]-(y:Birth)-[yz:SIBLING]-(z:Birth) WHERE NOT (x)-[:SIBLING]-(z) return x,y,z,xy,yz";
+    private static final String BB_GET_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
 
-    private static final String DD_GET_INDIRECT_SIBLING_LINKS = "MATCH (a:Death)-[r:SIBLING*1..5]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to RETURN r";
+    private static final String BB_GET_INDIRECT_SIBLING_LINKS = "MATCH (a:Birth)-[r:SIBLING*1..5]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to RETURN r";
 
     private int intersection_support_count = 0;// ALL A HACK DELETE
     private int transitive_link_count = 0;
@@ -59,11 +59,11 @@ public class SiblingDeathTriangleResolver {
     private int count = 0;
 
 
-    public SiblingDeathTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingSubsetLinkageRecipe recipe) {
+    public SiblingBrideMarriageTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingSubsetLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
         this.record_repository = new RecordRepository(source_repo_name);
-        this.deaths = record_repository.getBucket("death_records");
+        this.births = record_repository.getBucket("birth_records");
         this.base_metric = new JensenShannon(2048);
         this.metric = getCompositeMetric(recipe);
     }
@@ -73,7 +73,7 @@ public class SiblingDeathTriangleResolver {
     }
 
     private void resolve() {
-        Stream<OpenTriangle> oddballs = findIllegalDeathSiblingTriangles();
+        Stream<OpenTriangle> oddballs = findIllegalBirthSiblingTriangles();
 //            System.out.println( "Found " + oddballs.count() );
         oddballs.forEach(this::process);
         System.out.println("Would have established (intersection neighbours) " + intersection_support_count + " correctly established = " + intersection_support_correct);
@@ -90,12 +90,12 @@ public class SiblingDeathTriangleResolver {
         System.out.println(open_triangle.toString());
         try {
 
-            LXP x = (LXP) deaths.getObjectById(open_triangle.x);
-            LXP y = (LXP) deaths.getObjectById(open_triangle.y);
-            LXP z = (LXP) deaths.getObjectById(open_triangle.z);
-            String std_id_x = x.getString(Death.STANDARDISED_ID);
-            String std_id_y = y.getString(Death.STANDARDISED_ID);  // check in other
-            String std_id_z = z.getString(Death.STANDARDISED_ID);
+            LXP x = (LXP) births.getObjectById(open_triangle.x);
+            LXP y = (LXP) births.getObjectById(open_triangle.y);
+            LXP z = (LXP) births.getObjectById(open_triangle.z);
+            String std_id_x = x.getString(Birth.STANDARDISED_ID);
+            String std_id_y = y.getString(Birth.STANDARDISED_ID);  // check in other
+            String std_id_z = z.getString(Birth.STANDARDISED_ID);
 
             count++;
 
@@ -118,7 +118,7 @@ public class SiblingDeathTriangleResolver {
                     // If distances are low then establish irrespective of other links
                     // Query.createDDSiblingReference(NeoDbCypherBridge bridge, std_id_x, std_id_z, "open-triangle-processing",0,open_distance(open_triangle));
                     System.out.println("Would establish link between " + std_id_x + " and " + std_id_z);
-                    if (x.getString(Death.FATHER_IDENTITY).equals(z.getString(Death.FATHER_IDENTITY))) {
+                    if (x.getString(Birth.FATHER_IDENTITY).equals(z.getString(Birth.FATHER_IDENTITY))) {
                         new_link_distance_correct++;
                     } else {
                         //
@@ -128,7 +128,7 @@ public class SiblingDeathTriangleResolver {
                     // we have support for the link so establish it
                     // Query.createDDSiblingReference(NeoDbCypherBridge bridge, std_id_x, std_id_z, "open-triangle-processing",0,open_distance(open_triangle));
                     System.out.println("Would establish link between " + std_id_x + " and " + std_id_z);
-                    if (x.getString(Death.FATHER_IDENTITY).equals(z.getString(Death.FATHER_IDENTITY))) {
+                    if (x.getString(Birth.FATHER_IDENTITY).equals(z.getString(Birth.FATHER_IDENTITY))) {
                         intersection_support_correct++;
                     } else {
                         //
@@ -136,13 +136,13 @@ public class SiblingDeathTriangleResolver {
                     intersection_support_count++;
                 } else if( surnamesStrictlyMatch(x,z) ) {
                     System.out.println("Would establish link between " + std_id_x + " and " + std_id_z);
-                    if (x.getString(Death.FATHER_IDENTITY).equals(z.getString(Death.FATHER_IDENTITY))) {
+                    if (x.getString(Birth.FATHER_IDENTITY).equals(z.getString(Birth.FATHER_IDENTITY))) {
                         names_correct++;
                     }
                     names_count++;
 //                } else if( countTransitiveSiblingPaths(std_id_x, std_id_z) >= SIBLING_TRANSITIVE_PATH_SUPPORT_THRESHOLD ) {
 //                    System.out.println("Would establish link between " + std_id_x + " and " + std_id_z);
-//                    if (x.getString(Death.FATHER_IDENTITY).equals(z.getString(Death.FATHER_IDENTITY))) {
+//                    if (x.getString(Birth.FATHER_IDENTITY).equals(z.getString(Birth.FATHER_IDENTITY))) {
 //                        transitive_support_correct++;
 //                    }
 //                    transitive_link_count++;
@@ -150,24 +150,24 @@ public class SiblingDeathTriangleResolver {
 //                   cutLinks(open_triangle, x, y, z);
                     // This is not a good reason - what is?
                     System.out.println("Would leave link as is: " + std_id_x + " and " + std_id_z);
-                    if (!(x.getString(Death.FATHER_IDENTITY).equals(z.getString(Death.FATHER_IDENTITY)))) {
+                    if (!(x.getString(Birth.FATHER_IDENTITY).equals(z.getString(Birth.FATHER_IDENTITY)))) {
                         as_is_correct++;
                     } else {
                         as_is_incorrect++;
                     }
                 } else{
-                        System.out.println("Would leave link as is: " + std_id_x + " and " + std_id_z);
-                        if (!(x.getString(Death.FATHER_IDENTITY).equals(z.getString(Death.FATHER_IDENTITY)))) {
-                            as_is_correct++;
-                        } else {
-                            as_is_incorrect++;
-                        }
+                    System.out.println("Would leave link as is: " + std_id_x + " and " + std_id_z);
+                    if (!(x.getString(Birth.FATHER_IDENTITY).equals(z.getString(Birth.FATHER_IDENTITY)))) {
+                        as_is_correct++;
+                    } else {
+                        as_is_incorrect++;
+                    }
                 }
             } else { // not plausible dates - cut??
                 // need more analysis - 2 might be close and one outlier.
-               // cutLinks(open_triangle, x, y, z);
+                // cutLinks(open_triangle, x, y, z);
                 System.out.println("Would leave link as is: " + std_id_x + " and " + std_id_z);
-                if (!(x.getString(Death.FATHER_IDENTITY).equals(z.getString(Death.FATHER_IDENTITY)))) {
+                if (!(x.getString(Birth.FATHER_IDENTITY).equals(z.getString(Birth.FATHER_IDENTITY)))) {
                     as_is_correct++;
                 } else {
                     as_is_incorrect++;
@@ -179,11 +179,11 @@ public class SiblingDeathTriangleResolver {
     }
 
     private boolean surnamesStrictlyMatch(LXP x, LXP z) {
-        return  x.getString( Death.MOTHER_MAIDEN_SURNAME ).equals( z.getString( Death.MOTHER_MAIDEN_SURNAME ) ) &&
-                x.getString( Death.FATHER_SURNAME ).equals( z.getString( Death.FATHER_SURNAME) );
+        return  x.getString( Birth.MOTHER_MAIDEN_SURNAME ).equals( z.getString( Birth.MOTHER_MAIDEN_SURNAME ) ) &&
+                x.getString( Birth.FATHER_SURNAME ).equals( z.getString( Birth.FATHER_SURNAME) );
 
-        //        x.getString( Death.FATHER_FORENAME ).equals( z.getString( Death.FATHER_FORENAME) ) &&
-        //        x.getString( Death.MOTHER_FORENAME ).equals( z.getString( Death.MOTHER_FORENAME) );
+        //        x.getString( Birth.FATHER_FORENAME ).equals( z.getString( Birth.FATHER_FORENAME) ) &&
+        //        x.getString( Birth.MOTHER_FORENAME ).equals( z.getString( Birth.MOTHER_FORENAME) );
     }
 
     private boolean allDifferent(LXP x, LXP y, LXP z) {
@@ -193,12 +193,12 @@ public class SiblingDeathTriangleResolver {
     // Cut the biggest distance = perhaps use fields
     private void cutLinks( OpenTriangle open_triangle, LXP b_x, LXP b_y, LXP b_z) {   // TODO Cut both??? either 0 or 3.
         System.out.println("Would DO CUT XY");
-        if (!b_x.getString(Death.FATHER_IDENTITY).equals(b_y.getString(Death.FATHER_IDENTITY))) {
+        if (!b_x.getString(Birth.FATHER_IDENTITY).equals(b_y.getString(Birth.FATHER_IDENTITY))) {
             cut_link_correct++;
         }
         cut_count++;
         System.out.println("Would DO CUT YZ");
-        if (!b_y.getString(Death.FATHER_IDENTITY).equals(b_z.getString(Death.FATHER_IDENTITY))) {
+        if (!b_y.getString(Birth.FATHER_IDENTITY).equals(b_z.getString(Birth.FATHER_IDENTITY))) {
             cut_link_correct++;
         }
         cut_count++;
@@ -208,13 +208,13 @@ public class SiblingDeathTriangleResolver {
     private void cutOne( OpenTriangle open_triangle, LXP b_x, LXP b_y, LXP b_z) {
         if (open_triangle.xy_distance > open_triangle.yz_distance) {
             System.out.println("Would DO CUT XY");
-            if (!b_x.getString(Death.FATHER_IDENTITY).equals(b_y.getString(Death.FATHER_IDENTITY))) {
+            if (!b_x.getString(Birth.FATHER_IDENTITY).equals(b_y.getString(Birth.FATHER_IDENTITY))) {
                 cut_link_correct++;
             }
             cut_count++;
         } else {
             System.out.println("Would DO CUT YZ");
-            if (!b_y.getString(Death.FATHER_IDENTITY).equals(b_z.getString(Death.FATHER_IDENTITY))) {
+            if (!b_y.getString(Birth.FATHER_IDENTITY).equals(b_z.getString(Birth.FATHER_IDENTITY))) {
                 cut_link_correct++;
             }
             cut_count++;
@@ -223,9 +223,9 @@ public class SiblingDeathTriangleResolver {
 
     private boolean plausibleBirthDates(LXP a, LXP b, LXP c) {
         try {
-            int a_birth_year = Integer.parseInt(a.getString(Death.DEATH_YEAR)) - Integer.parseInt(a.getString(Death.AGE_AT_DEATH));
-            int b_birth_year = Integer.parseInt(b.getString(Death.DEATH_YEAR)) - Integer.parseInt(b.getString(Death.AGE_AT_DEATH));
-            int c_birth_year = Integer.parseInt(c.getString(Death.DEATH_YEAR)) - Integer.parseInt(c.getString(Death.AGE_AT_DEATH));
+            int a_birth_year = Integer.parseInt(a.getString(Birth.BIRTH_YEAR));
+            int b_birth_year = Integer.parseInt(b.getString(Birth.BIRTH_YEAR));
+            int c_birth_year = Integer.parseInt(c.getString(Birth.BIRTH_YEAR));
 
             return Math.max(Math.abs(a_birth_year - b_birth_year), Math.abs(b_birth_year - c_birth_year)) < MAX_AGE_DIFFERENCE;
         } catch( NumberFormatException e ) {
@@ -264,7 +264,7 @@ public class SiblingDeathTriangleResolver {
 
     private Set<Long> getSiblingIds(String std_id) throws BucketException {
         Set<Long> result = new HashSet<>();
-        result.addAll( getSiblings(bridge,DD_GET_SIBLINGS,std_id) );
+        result.addAll( getSiblings(bridge, BB_GET_SIBLINGS,std_id) );
         return result;
     }
 
@@ -273,8 +273,8 @@ public class SiblingDeathTriangleResolver {
     }
 
     private double get_distance(long id1, long id2) throws BucketException {
-        LXP b1 = (LXP) deaths.getObjectById(id1);
-        LXP b2 = (LXP) deaths.getObjectById(id2);
+        LXP b1 = (LXP) births.getObjectById(id1);
+        LXP b2 = (LXP) births.getObjectById(id2);
         return metric.distance( b1, b2 );
     }
 
@@ -283,10 +283,10 @@ public class SiblingDeathTriangleResolver {
     /**
      * @return a Stream of OpenTriangles
      */
-    public Stream<OpenTriangle> findIllegalDeathSiblingTriangles() {
-        Result result = bridge.getNewSession().run(DEATH_SIBLING_ILLEGAL_TRIANGLE_QUERY); // returns x,y,z where x and y and z are connected and zx is not.
+    public Stream<OpenTriangle> findIllegalBirthSiblingTriangles() {
+        Result result = bridge.getNewSession().run(BIRTH_SIBLING_ILLEGAL_TRIANGLE_QUERY); // returns x,y,z where x and y and z are connected and zx is not.
         return result.stream().map( r -> {
-            return new OpenTriangle(
+                    return new OpenTriangle(
                             ( (Node) r.asMap().get("x")).get( "STORR_ID" ).asLong(),
                             ( (Node) r.asMap().get("y")).get( "STORR_ID" ).asLong(),
                             ( (Node) r.asMap().get("z")).get( "STORR_ID" ).asLong(),
@@ -301,7 +301,7 @@ public class SiblingDeathTriangleResolver {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
-        Result result = bridge.getNewSession().run(DD_GET_INDIRECT_SIBLING_LINKS,parameters);
+        Result result = bridge.getNewSession().run(BB_GET_INDIRECT_SIBLING_LINKS,parameters);
 //        return result.stream().map( r -> { // debug
 //            System.out.println(r); return r;
 //        } ).count();
@@ -323,8 +323,8 @@ public class SiblingDeathTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
 
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
-            SiblingDeathTriangleResolver resolver = new SiblingDeathTriangleResolver( bridge,sourceRepo,linkageRecipe );
+            BirthSiblingSubsetLinkageRecipe linkageRecipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            SiblingBrideMarriageTriangleResolver resolver = new SiblingBrideMarriageTriangleResolver( bridge,sourceRepo,linkageRecipe );
             resolver.resolve();
 
         } catch (Exception e) {
