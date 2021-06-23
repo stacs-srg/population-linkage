@@ -94,7 +94,7 @@ public class SiblingBirthTriangleResolver {
             LXP y = (LXP) births.getObjectById(open_triangle.y);
             LXP z = (LXP) births.getObjectById(open_triangle.z);
             String std_id_x = x.getString(Birth.STANDARDISED_ID);
-            String std_id_y = y.getString(Birth.STANDARDISED_ID);  // check in other
+            String std_id_y = y.getString(Birth.STANDARDISED_ID);
             String std_id_z = z.getString(Birth.STANDARDISED_ID);
 
             count++;
@@ -105,6 +105,8 @@ public class SiblingBirthTriangleResolver {
             }
 
             // Not accounted for fields matched
+
+
 
             if (plausibleBirthDates(x,y,z)) {
                 if (isLowDistance(open_triangle.xy_distance, open_triangle.yz_distance)) {

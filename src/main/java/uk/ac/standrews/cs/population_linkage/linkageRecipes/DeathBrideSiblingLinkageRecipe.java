@@ -21,6 +21,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     private static final double DISTANCE_THESHOLD = 0.5; // used values from UmeaBrideBirthViabilityPRFByThreshold.csv
 
     public static final List<Integer> LINKAGE_FIELDS = list(
+            // Could have Death.DECEASED_OCCUPATION
             Death.FATHER_FORENAME,
             Death.FATHER_SURNAME,
             Death.MOTHER_FORENAME,
@@ -29,6 +30,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
+            // Could have BRIDE.BRIDE_OCCUPATION
             Marriage.BRIDE_FATHER_FORENAME,
             Marriage.BRIDE_FATHER_SURNAME,
             Marriage.BRIDE_MOTHER_FORENAME,

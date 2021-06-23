@@ -68,6 +68,7 @@ public class ApplicationProperties extends Properties {
         return store_path_string != null ? Paths.get(store_path_string) : null;
     }
 
+
     private static Path getTempStorePath() {
 
         try {

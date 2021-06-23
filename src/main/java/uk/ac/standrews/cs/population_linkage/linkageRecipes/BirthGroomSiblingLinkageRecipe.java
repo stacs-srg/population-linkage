@@ -89,7 +89,7 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return true; } // TODO VIABLE
+    public boolean isViableLink(RecordPair proposedLink) { return true; } //  TODO VIABLE
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

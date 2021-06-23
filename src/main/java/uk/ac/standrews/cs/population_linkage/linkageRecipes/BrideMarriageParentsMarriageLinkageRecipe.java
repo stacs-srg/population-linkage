@@ -32,7 +32,7 @@ public class BrideMarriageParentsMarriageLinkageRecipe extends LinkageRecipe {
             Marriage.BRIDE_FATHER_SURNAME,
             Marriage.BRIDE_MOTHER_FORENAME,
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
-            Marriage.GROOM_FATHER_OCCUPATION
+            Marriage.BRIDE_FATHER_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS= list(
