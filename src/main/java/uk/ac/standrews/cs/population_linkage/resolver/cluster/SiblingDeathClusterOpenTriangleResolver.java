@@ -395,7 +395,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
 
             printHeaders();
 
-            for( int min_cluster = 7; min_cluster < 10; min_cluster++ ) {
+            for( int min_cluster = 2; min_cluster < 10; min_cluster++ ) {
                 for (double hdrt = 2; hdrt < 8; hdrt += 1) {
                     for (double ldrt = 10; ldrt < 40; ldrt += 5) {
                         resolver.resolve(min_cluster,ldrt / 100d, hdrt / 10d);
