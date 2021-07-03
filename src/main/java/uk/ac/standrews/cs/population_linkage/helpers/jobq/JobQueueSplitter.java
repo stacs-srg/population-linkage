@@ -19,7 +19,7 @@ import uk.ac.standrews.cs.population_linkage.helpers.jobq.job.JobWithExpressions
 public class JobQueueSplitter {
 
     /**
-     * job/file/to/split.csv target/dir/ sif,hogun 11
+     * job/file/to/split.csv target/dir/ sif,hogun 11 <[bool] wipeExistingJobs>
      *
      * @param args
      * @throws Exception
