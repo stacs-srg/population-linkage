@@ -340,14 +340,6 @@ public class Result extends Job {
         }
     }
 
-    public String getEvaluationApproach() {
-        return evaluationApproach;
-    }
-
-    public void setEvaluationApproach(String evaluationApproach) {
-        this.evaluationApproach = evaluationApproach;
-    }
-
     public String getFieldsUsed1() {
         return fieldsUsed1;
     }

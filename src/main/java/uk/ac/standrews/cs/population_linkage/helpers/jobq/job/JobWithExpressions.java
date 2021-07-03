@@ -100,6 +100,7 @@ public class JobWithExpressions extends JobCore {
         clone.popNumber = popNumber;
         clone.linkagePhase = linkagePhase;
         clone.experimentId = experimentId;
+        clone.evaluationApproach = evaluationApproach;
         return clone;
     }
 
