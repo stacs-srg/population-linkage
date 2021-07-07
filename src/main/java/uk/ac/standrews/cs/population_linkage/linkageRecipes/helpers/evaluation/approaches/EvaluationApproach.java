@@ -13,7 +13,8 @@ public interface EvaluationApproach {
 
     enum Type {
         ALL, // would have been better named STANDARD. I'll rename this once I've run my thesis experiments
-        PARENTAL_STATUS
+        PARENTAL_STATUS,
+        EMPLOYMENT_DATA
     }
 
     Type getEvaluationDescription();
