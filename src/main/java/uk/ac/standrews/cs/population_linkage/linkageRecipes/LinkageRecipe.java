@@ -6,12 +6,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.DynamicLXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.Store;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
-import uk.ac.standrews.cs.neoStorr.interfaces.IRepository;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -53,7 +48,9 @@ public abstract class LinkageRecipe {
      */
     protected static final boolean TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN = false;
 
-    protected final String results_repository_name;
+    protected static final String EVERYTHING_STRING = "EVERYTHING";
+    protected static final int EVERYTHING = Integer.MAX_VALUE;
+
     protected String links_persistent_name;
     protected final String source_repository_name;
     private final RecordRepository record_repository;
@@ -67,9 +64,8 @@ public abstract class LinkageRecipe {
     private  Integer death_records_size = null;
     private  Integer marriage_records_size = null;
 
-    public LinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+    public LinkageRecipe(String source_repository_name, String links_persistent_name) {
 
-        this.results_repository_name = results_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.source_repository_name = source_repository_name;
 
@@ -183,7 +179,7 @@ public abstract class LinkageRecipe {
             if( slot == null ) {
                 throw new RuntimeException("unexpected record type - can't find STANDARDISED_ID in DynamicLXP");
             } else {
-                return lxp.getInt(slot);
+                return slot;
             }
         }
 
@@ -560,16 +556,6 @@ public abstract class LinkageRecipe {
     --------- PRE-FILTERING OF RECORDS ----------
      */
 
-    public Iterable<Link> getLinksMade() { // this only works if you chose to persist the links
-        try {
-            IRepository repo = Store.getInstance().getRepository(results_repository_name);
-            IBucket<Link> bucket = repo.getBucket(links_persistent_name, Link.class);
-            return bucket.getInputStream();
-        } catch (BucketException | RepositoryException e) {
-            throw new RuntimeException("No made links repo found when expected - make sure you made the repo you're trying to access");
-        }
-    }
-
     /**
      * Note - May be overridden by subclass
      * @return
@@ -696,10 +682,6 @@ public abstract class LinkageRecipe {
 
     public void makeLinkPersistent(Link link) {
         throw new RuntimeException( "makeLinkPersistent unimplemented");
-    }
-
-    public String getResults_repository_name() {
-        return results_repository_name;
     }
 
     public String getLinks_persistent_name() {

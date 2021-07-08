@@ -23,7 +23,7 @@ public class GroomGroomIdentityBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
             GroomGroomIdentitySubsetLinkageRecipe linkageRecipe = new GroomGroomIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, GroomGroomIdentityBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
@@ -33,12 +33,13 @@ public class GroomGroomIdentityBuilder {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, false);
 
                 linkage_fields--;
             }
         } catch (Exception e) {
-            System.out.println( "Exception closing bridge" );
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // Make sure it all shuts down properly.

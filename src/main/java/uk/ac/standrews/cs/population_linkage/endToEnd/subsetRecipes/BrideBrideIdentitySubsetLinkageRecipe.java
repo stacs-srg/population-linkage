@@ -25,15 +25,19 @@ public class BrideBrideIdentitySubsetLinkageRecipe extends BrideBrideIdentityLin
 
     private final NeoDbCypherBridge bridge;
 
-    private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
+    private int NUMBER_OF_DEATHS;
 
     public static final int ALL_LINKAGE_FIELDS = 8; // 8 is all of them
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
-    public BrideBrideIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
-        super( source_repository_name,results_repository_name,links_persistent_name );
+    public BrideBrideIdentitySubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name ) {
+        super( source_repository_name,links_persistent_name );
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_DEATHS = EVERYTHING;
+        } else {
+            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
+        }
         this.bridge = bridge;
     }
 

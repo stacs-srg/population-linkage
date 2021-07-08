@@ -41,6 +41,9 @@ public class BirthParentsMarriageBuilder {
                 quality.print(System.out);
                 linkage_fields--;
             }
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println("Run finished");
             System.exit(0); // make sure process dies.

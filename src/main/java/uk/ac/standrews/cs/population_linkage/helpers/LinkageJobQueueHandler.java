@@ -137,33 +137,33 @@ public class LinkageJobQueueHandler {
 
         switch (linkageType) {
             case BirthSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthSiblingLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthDeathIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthDeathIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthDeathIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthDeathSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BirthDeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthDeathSiblingLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthFatherIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthFatherIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthFatherIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthMotherIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthMotherIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthMotherIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE:
-                return new BirthParentsMarriageLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthParentsMarriageLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthBrideIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthBrideIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthBrideIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BrideBrideSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BrideBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BrideBrideSiblingLinkageRecipe(sourceRepo, links_persistent_name);
             case BrideGroomSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BrideGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BrideGroomSiblingLinkageRecipe(sourceRepo, links_persistent_name);
             case DeathBrideOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case DeathSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new DeathSiblingLinkageRecipe(sourceRepo, links_persistent_name);
             case DeathGroomOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthGroomIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthGroomIdentityLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new BirthGroomIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case GroomGroomSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new GroomGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, links_persistent_name);
+                return new GroomGroomSiblingLinkageRecipe(sourceRepo, links_persistent_name);
             default:
                 throw new RuntimeException("LinkageType not found");
         }

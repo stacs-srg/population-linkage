@@ -26,15 +26,19 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 public class BrideMarriageParentsMarriageSubsetLinkageRecipe extends BrideMarriageParentsMarriageLinkageRecipe {
 
     public static final int ALL_LINKAGE_FIELDS = 5;
-    private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_MARRIAGES = EVERYTHING; // 10000; // for testing EVERYTHING;
+    private int NUMBER_OF_MARRIAGES;
     private final NeoDbCypherBridge bridge;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
 
-    public BrideMarriageParentsMarriageSubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BrideMarriageParentsMarriageSubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_MARRIAGES = EVERYTHING;
+        } else {
+            NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
+        }
         this.bridge = bridge;
     }
 

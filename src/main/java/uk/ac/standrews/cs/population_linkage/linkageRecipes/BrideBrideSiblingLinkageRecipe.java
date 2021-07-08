@@ -50,8 +50,8 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
                     list(pair(Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY), pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
             );
 
-    public BrideBrideSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BrideBrideSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

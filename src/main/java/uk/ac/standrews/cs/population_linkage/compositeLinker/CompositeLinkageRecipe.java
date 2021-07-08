@@ -54,17 +54,17 @@ public class CompositeLinkageRecipe {
         LinkageConfig.numberOfROs = 70;
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
-                new BirthGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new BirthGroomIdentityLinkageRecipe(source_repository_name, ""),
                 metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> fatherGroomLinks = new BitBlasterLinkageRunner().run(
-                new BirthParentsMarriageLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new BirthParentsMarriageLinkageRecipe(source_repository_name, ""),
                 metric,  true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> fatherBirthLinksViaGroom = combineLinks(fatherGroomLinks, groomBirthLinks, "father-birth-via-groom-id");
 
         return selectAndAssessIndirectLinks(fatherBirthLinksViaGroom,
-                new BirthFatherIdentityLinkageRecipe(source_repository_name, results_repository_name, links_persistent_name),
+                new BirthFatherIdentityLinkageRecipe(source_repository_name, links_persistent_name),
                 true);
     }
 
@@ -75,26 +75,26 @@ public class CompositeLinkageRecipe {
         LinkageConfig.numberOfROs = 60;
 
         Map<String, Collection<Link>> deathGroomLinks = new BitBlasterLinkageRunner().run(
-                new DeathGroomOwnMarriageIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new DeathGroomOwnMarriageIdentityLinkageRecipe(source_repository_name, ""),
                 metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
-                new BirthGroomIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new BirthGroomIdentityLinkageRecipe(source_repository_name, ""),
                 metric,  true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> deathBrideLinks = new BitBlasterLinkageRunner().run(
-                new DeathBrideOwnMarriageIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new DeathBrideOwnMarriageIdentityLinkageRecipe(source_repository_name, ""),
                 metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> birthBrideLinks = new BitBlasterLinkageRunner().run(
-                new BirthBrideIdentityLinkageRecipe(source_repository_name, results_repository_name, ""),
+                new BirthBrideIdentityLinkageRecipe(source_repository_name, ""),
                 metric, true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks, "death-birth-via-groom-id");
         Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, birthBrideLinks, "death-birth-via-bride-id");
         deathBirthLinks.putAll(deathBirthLinksViaGroom); // the combine works as the male and female death records share the same unique ID space - thus no clashes on combining maps (remember the prefilter checks for sex in the used linkers)
 
-        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(results_repository_name, links_persistent_name, source_repository_name), true);
+        return selectAndAssessIndirectLinks(deathBirthLinks, new BirthDeathIdentityLinkageRecipe(links_persistent_name, source_repository_name), true);
     }
 
     private static LinkageQuality selectAndAssessIndirectLinks(Map<String, Collection<DoubleLink>> indirectLinks, LinkageRecipe directLinkageForGT, boolean directReversed) throws BucketException, PersistentObjectException, RepositoryException {

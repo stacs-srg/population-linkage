@@ -18,8 +18,8 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideBrideSubsetSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.resolver.Distance;
-import uk.ac.standrews.cs.population_linkage.resolver.OpenTriangle;
+import uk.ac.standrews.cs.population_linkage.resolver.util.Distance;
+import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -33,9 +33,9 @@ import java.util.stream.Stream;
 
 public class SiblingBrideClusterOpenTriangleResolver {
 
-    public int CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE = 7;
-    private double LOW_DISTANCE_MATCH_THRESHOLD = 0.1;
-    private double HIGH_DISTANCE_REJECT_THRESHOLD = 0.6;
+    public final int DEFAULT_CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE = 7;
+    private final double DEFAULT_LOW_DISTANCE_MATCH_THRESHOLD = 0.1;
+    private final double DEFAULT_HIGH_DISTANCE_REJECT_THRESHOLD = 0.6;
 
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
@@ -46,9 +46,13 @@ public class SiblingBrideClusterOpenTriangleResolver {
     private final Metric<LXP> metric;
 
     static String BRIDE_SIBLING_TRIANGLE_QUERY = "MATCH (x:Marriage)-[xy:SIBLING]-(y:Marriage)-[yz:SIBLING]-(z:Marriage) WHERE NOT (x)-[:SIBLING]-(z) return x,y,z,xy,yz";
-    private static final String DD_GET_SIBLINGS = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+    private static final String MM_GET_SIBLINGS = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
 
-    private static final String DD_GET_INDIRECT_SIBLING_LINKS = "MATCH (a:Marriage)-[r:SIBLING*1..5]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to RETURN r";
+    private static final String MM_GET_INDIRECT_SIBLING_LINKS = "MATCH (a:Marriage)-[r:SIBLING*1..5]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to RETURN r";
+
+    private int cluster_eligible_for_split_size = DEFAULT_CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE;
+    private double low_distance_match_threshold = DEFAULT_LOW_DISTANCE_MATCH_THRESHOLD;
+    private double high_distance_reject_threshold = DEFAULT_HIGH_DISTANCE_REJECT_THRESHOLD;
 
     private int count = 0;
     private int TP = 0;
@@ -71,9 +75,9 @@ public class SiblingBrideClusterOpenTriangleResolver {
     }
 
     protected void resolve(int min_cluster_size, double ldmt, double hdrt) {
-        CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE = min_cluster_size;
-        LOW_DISTANCE_MATCH_THRESHOLD = ldmt;
-        HIGH_DISTANCE_REJECT_THRESHOLD = hdrt;
+        cluster_eligible_for_split_size = min_cluster_size;
+        low_distance_match_threshold = ldmt;
+        high_distance_reject_threshold = hdrt;
         resolve();
     }
 
@@ -93,7 +97,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
         double recall = ClassificationMetrics.recall(TP, FN);
         double f1 = ClassificationMetrics.F1(TP, FP, FN);
         System.out.println(
-                CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE + "\t" + LOW_DISTANCE_MATCH_THRESHOLD + "\t" +HIGH_DISTANCE_REJECT_THRESHOLD + "\t" +
+                cluster_eligible_for_split_size + "\t" + low_distance_match_threshold + "\t" + high_distance_reject_threshold + "\t" +
                 + count + "\t" + TP + "\t" + FP + "\t" + FN + "\t" +
                 df.format(precision) + "\t" + df.format(recall) + "\t" + df.format(f1));
     }
@@ -138,8 +142,8 @@ public class SiblingBrideClusterOpenTriangleResolver {
     }
 
     private void analyseClusters(Cluster<Long> cluster, Set<Distance> all_pairs_between) throws BucketException {
-        if (cluster.size > CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE) {
-            if( cluster.distance > HIGH_DISTANCE_REJECT_THRESHOLD && oneSubClustersIsTight( cluster ) ) {
+        if (cluster.size > cluster_eligible_for_split_size) {
+            if( cluster.distance > high_distance_reject_threshold && oneSubClustersIsTight( cluster ) ) {
                 splitCluster(cluster,all_pairs_between);
             } else {
                 DoNotsplitCluster(cluster,all_pairs_between);
@@ -205,8 +209,8 @@ public class SiblingBrideClusterOpenTriangleResolver {
     private boolean oneSubClustersIsTight(Cluster<Long> cluster) {
         Cluster<Long> left_cluster = cluster.left_child;
         Cluster<Long> right_cluster = cluster.right_child;
-        return  left_cluster != null && left_cluster.size >= 2 && left_cluster.distance < LOW_DISTANCE_MATCH_THRESHOLD ||
-                right_cluster != null && right_cluster.size >= 2 && right_cluster.distance < LOW_DISTANCE_MATCH_THRESHOLD;
+        return  left_cluster != null && left_cluster.size >= 2 && left_cluster.distance < low_distance_match_threshold ||
+                right_cluster != null && right_cluster.size >= 2 && right_cluster.distance < low_distance_match_threshold;
     }
 
     private void showDistances(Cluster<Long> top_cluster, String symbol ) {
@@ -290,13 +294,13 @@ public class SiblingBrideClusterOpenTriangleResolver {
     }
 
     private boolean isLowDistance(double d1, double d2) {
-        return d1 + d2 < LOW_DISTANCE_MATCH_THRESHOLD;  // count be determined properly by a human (or AI) inspecting these.
+        return d1 + d2 < low_distance_match_threshold;  // count be determined properly by a human (or AI) inspecting these.
     }
 
 
     private Set<Long> getSiblingIds(String std_id) throws BucketException {
         Set<Long> result = new HashSet<>();
-        result.addAll( getSiblings(bridge,DD_GET_SIBLINGS,std_id) );
+        result.addAll( getSiblings(bridge,MM_GET_SIBLINGS,std_id) );
         return result;
     }
 
@@ -361,7 +365,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
-        Result result = bridge.getNewSession().run(DD_GET_INDIRECT_SIBLING_LINKS,parameters);
+        Result result = bridge.getNewSession().run(MM_GET_INDIRECT_SIBLING_LINKS,parameters);
 
         Set<Distance> set = new HashSet<>();
         List<Record> results = result.list();

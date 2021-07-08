@@ -1,4 +1,8 @@
-package uk.ac.standrews.cs.population_linkage.resolver;
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
+package uk.ac.standrews.cs.population_linkage.resolver.util;
 
 public class Distance {
     public final long startNodeId;

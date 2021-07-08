@@ -22,7 +22,7 @@ public class BirthSiblingBundleExperimentDifferentFieldsRequred {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        LinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleExperimentDifferentFieldsRequred.class.getCanonicalName());
+        LinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleExperimentDifferentFieldsRequred.class.getCanonicalName());
 
         for( int req_fields = 0; req_fields <= 8; req_fields ++ ) {
             System.out.println( "Number of fields required = " + req_fields);

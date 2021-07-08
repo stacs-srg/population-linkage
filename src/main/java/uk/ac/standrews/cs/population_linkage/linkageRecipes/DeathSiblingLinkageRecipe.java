@@ -53,8 +53,8 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
 
 
-    public DeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public DeathSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

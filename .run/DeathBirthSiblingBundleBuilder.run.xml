@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="DeathBirthSiblingBundleBuilder" type="Application" factoryName="Application" nameIsGenerated="true">
+  <configuration default="false" name="BirthDeathSiblingBundleBuilder" type="Application" factoryName="Application" nameIsGenerated="true">
     <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthDeathSiblingBundleBuilder" />
     <module name="population-linkage" />
-    <option name="PROGRAM_PARAMETERS" value="Umea umea_results" />
+    <option name="PROGRAM_PARAMETERS" value="Umea 10000" />
     <option name="VM_PARAMETERS" value="-Xmx16G" />
     <method v="2">
       <option name="Make" enabled="true" />

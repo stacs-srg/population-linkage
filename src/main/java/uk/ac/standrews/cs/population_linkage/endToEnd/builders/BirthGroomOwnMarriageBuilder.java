@@ -22,7 +22,7 @@ public class BirthGroomOwnMarriageBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
             BirthGroomIdentitySubsetLinkageRecipe linkageRecipe = new BirthGroomIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthGroomOwnMarriageBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
@@ -37,7 +37,8 @@ public class BirthGroomOwnMarriageBuilder {
                 linkage_fields--;
             }
         } catch (Exception e) {
-            System.out.println( "Exception closing bridge" );
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // Make sure it all shuts down properly.

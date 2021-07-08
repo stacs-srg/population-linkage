@@ -30,8 +30,8 @@ public class ParentsMarriageDeathLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "parents-marriage-death-identity";
     private static final double DISTANCE_THESHOLD = 0;
 
-    public ParentsMarriageDeathLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public ParentsMarriageDeathLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

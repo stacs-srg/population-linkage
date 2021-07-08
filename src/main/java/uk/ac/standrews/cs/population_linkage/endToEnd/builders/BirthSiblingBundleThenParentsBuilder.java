@@ -81,6 +81,9 @@ public class BirthSiblingBundleThenParentsBuilder {
                 printFamilyStats(number_of_marriages_per_family);
                 linkage_fields--;
             }
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println( "Finishing" );
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads

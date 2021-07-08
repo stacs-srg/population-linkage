@@ -22,8 +22,8 @@ public class TestBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            LinkageRecipe linkageRecipe = new TestLinkExistsRecipe(sourceRepo, resultsRepo, bridge, TestBuilder.class.getCanonicalName() );
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
+            LinkageRecipe linkageRecipe = new TestLinkExistsRecipe(sourceRepo, bridge, TestBuilder.class.getCanonicalName() );
 
             LinkageConfig.numberOfROs = 20;
 

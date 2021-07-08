@@ -27,8 +27,8 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
         List<T> copy_of_data = copyData(data);
 
-        // Keep repeating with less reference objects of we cannot initialise bitblaster
-        while( number_of_reference_objects > 20 ) {
+        // Keep repeating with less reference objects if we cannot initialise bitblaster
+        while( number_of_reference_objects >= 20 ) {
             int maxTries = 5;
             Exception cause = null;
 

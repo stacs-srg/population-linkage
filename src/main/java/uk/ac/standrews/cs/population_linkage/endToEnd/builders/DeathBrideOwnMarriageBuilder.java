@@ -21,7 +21,7 @@ public class DeathBrideOwnMarriageBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             DeathBrideIdentitySubsetLinkageRecipe linkageRecipe = new DeathBrideIdentitySubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathBrideOwnMarriageBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
@@ -31,11 +31,14 @@ public class DeathBrideOwnMarriageBuilder {
 
             while (linkage_fields >= half_fields) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, true);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
 
                 linkage_fields--;
             }
-    } finally {
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
+        } finally {
             System.out.println( "Run finished" );
             System.exit(0);
         }

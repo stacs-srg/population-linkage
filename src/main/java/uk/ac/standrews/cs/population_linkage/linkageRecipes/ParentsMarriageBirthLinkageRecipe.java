@@ -30,7 +30,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
     private static final double DISTANCE_THESHOLD = 0;
 
     public ParentsMarriageBirthLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

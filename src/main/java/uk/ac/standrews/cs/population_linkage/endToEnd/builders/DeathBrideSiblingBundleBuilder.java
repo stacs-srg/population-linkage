@@ -21,7 +21,7 @@ public class DeathBrideSiblingBundleBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try(NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
             DeathBrideSiblingSubsetLinkageRecipe linkageRecipe = new DeathBrideSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathBrideSiblingBundleBuilder.class.getCanonicalName());
 
@@ -32,12 +32,15 @@ public class DeathBrideSiblingBundleBuilder {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, true, true);
+                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048),false, false, false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
 
                 linkage_fields--;
             }
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println("Run finished");
             System.exit(0); // make sure process dies.

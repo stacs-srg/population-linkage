@@ -59,7 +59,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 
-            LinkageRecipe death_birth_recipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
+            LinkageRecipe death_birth_recipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
@@ -154,6 +154,9 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
             int total = tp + fp + unknown;
             System.out.println( "Total = " + total );
 
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             if( bb != null ) { bb.terminate(); } // shut down the metric search threads
             System.out.println( "Run complete" );

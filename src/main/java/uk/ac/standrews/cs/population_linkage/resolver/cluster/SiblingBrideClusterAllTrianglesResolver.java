@@ -19,11 +19,10 @@ public class SiblingBrideClusterAllTrianglesResolver extends SiblingBrideCluster
         BRIDE_SIBLING_TRIANGLE_QUERY = "MATCH (x:Marriage)-[xy:SIBLING]-(y:Marriage)-[yz:SIBLING]-(z:Marriage)-[zx:SIBLING]-(x:Marriage) return x,y,z,xy,yz";
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BrideBrideSubsetSiblingLinkageRecipe linkageRecipe = new BrideBrideSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            BrideBrideSubsetSiblingLinkageRecipe linkageRecipe = new BrideBrideSubsetSiblingLinkageRecipe(sourceRepo, "10000", bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
             SiblingBrideClusterAllTrianglesResolver resolver = new SiblingBrideClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();

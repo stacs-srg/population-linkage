@@ -22,7 +22,7 @@ public class DeathSiblingBundleBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try( NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
             DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
 
@@ -38,6 +38,9 @@ public class DeathSiblingBundleBuilder {
 
                 linkage_fields--;
             }
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // make sure process dies.

@@ -55,8 +55,8 @@ public class GroomMarriageParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "groom-parents-marriage-identity";
 
-    public GroomMarriageParentsMarriageLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public GroomMarriageParentsMarriageLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

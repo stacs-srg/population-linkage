@@ -16,13 +16,13 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.GroomGroomSubsetSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.Distance;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -31,24 +31,24 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class SiblingDeathClusterOpenTriangleResolver {
+public class SiblingGroomClusterOpenTriangleResolver {
 
     public final int DEFAULT_CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE = 7;
     private final double DEFAULT_LOW_DISTANCE_MATCH_THRESHOLD = 0.1;
-    private final double DEFAULT_HIGH_DISTANCE_REJECT_THRESHOLD = 0.2;
+    private final double DEFAULT_HIGH_DISTANCE_REJECT_THRESHOLD = 0.6;
 
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
-    private final IBucket deaths;
-    private final DeathSiblingSubsetLinkageRecipe recipe;
+    private final IBucket marriages;
+    private final GroomGroomSubsetSiblingLinkageRecipe recipe;
 
     private final JensenShannon base_metric;
     private final Metric<LXP> metric;
 
-    static String DEATH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Death)-[xy:SIBLING]-(y:Death)-[yz:SIBLING]-(z:Death) WHERE NOT (x)-[:SIBLING]-(z) return x,y,z,xy,yz";
-    private static final String DD_GET_SIBLINGS = "MATCH (a:Death)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+    static String GROOM_SIBLING_TRIANGLE_QUERY = "MATCH (x:Marriage)-[xy:SIBLING]-(y:Marriage)-[yz:SIBLING]-(z:Marriage) WHERE NOT (x)-[:SIBLING]-(z) return x,y,z,xy,yz";
+    private static final String MM_GET_SIBLINGS = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
 
-    private static final String DD_GET_INDIRECT_SIBLING_LINKS = "MATCH (a:Death)-[r:SIBLING*1..5]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to RETURN r";
+    private static final String MM_GET_INDIRECT_SIBLING_LINKS = "MATCH (a:Marriage)-[r:SIBLING*1..5]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to RETURN r";
 
     private int cluster_eligible_for_split_size = DEFAULT_CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE;
     private double low_distance_match_threshold = DEFAULT_LOW_DISTANCE_MATCH_THRESHOLD;
@@ -58,15 +58,14 @@ public class SiblingDeathClusterOpenTriangleResolver {
     private int TP = 0;
     private int FN = 0;
     private int FP = 0;
-    private int cut_count = 0;
 
     DecimalFormat df = new DecimalFormat("0.00");
 
-    public SiblingDeathClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingSubsetLinkageRecipe recipe) {
+    public SiblingGroomClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, GroomGroomSubsetSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
         this.record_repository = new RecordRepository(source_repo_name);
-        this.deaths = record_repository.getBucket("death_records");
+        this.marriages = record_repository.getBucket("marriage_records");
         this.base_metric = new JensenShannon(2048);
         this.metric = getCompositeMetric(recipe);
     }
@@ -75,7 +74,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
         return new Sigma(base_metric, linkageRecipe.getLinkageFields(), 0);
     }
 
-    protected void resolve( int min_cluster_size, double ldmt, double hdrt ) {
+    protected void resolve(int min_cluster_size, double ldmt, double hdrt) {
         cluster_eligible_for_split_size = min_cluster_size;
         low_distance_match_threshold = ldmt;
         high_distance_reject_threshold = hdrt;
@@ -83,14 +82,14 @@ public class SiblingDeathClusterOpenTriangleResolver {
     }
 
     private void resolve( ) {
-        Stream<OpenTriangle> oddballs = findIllegalDeathSiblingTriangles();
+        Stream<OpenTriangle> oddballs = findIllegalmarriagesiblingTriangles();
 //            System.out.println( "Found " + oddballs.count() );
         oddballs.forEach(this::process);
         printResults();
     }
 
     protected static void printHeaders() {
-        System.out.println("CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE\tLOW_DISTANCE_MATCH_THRESHOLD\tHIGH_DISTANCE_REJECT_THRESHOLD\tCount\tCut count\tTP\tFP\tFN\tprecision\trecall\tF1");
+        System.out.println("CLUSTER_ELIGIBLE_FOR_SPLIT_SIZE\tLOW_DISTANCE_MATCH_THRESHOLD\tHIGH_DISTANCE_REJECT_THRESHOLD\tCount\tTP\tFP\tFN\tprecision\trecall\tF1");
     }
 
     private void printResults() {
@@ -99,7 +98,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
         double f1 = ClassificationMetrics.F1(TP, FP, FN);
         System.out.println(
                 cluster_eligible_for_split_size + "\t" + low_distance_match_threshold + "\t" + high_distance_reject_threshold + "\t" +
-                + count + "\t" + cut_count + "\t" + TP + "\t" + FP + "\t" + FN + "\t" +
+                + count + "\t" + TP + "\t" + FP + "\t" + FN + "\t" +
                 df.format(precision) + "\t" + df.format(recall) + "\t" + df.format(f1));
     }
 
@@ -109,12 +108,12 @@ public class SiblingDeathClusterOpenTriangleResolver {
 
             count++;
 
-            LXP x = (LXP) deaths.getObjectById(open_triangle.x);
-            LXP y = (LXP) deaths.getObjectById(open_triangle.y);
-            LXP z = (LXP) deaths.getObjectById(open_triangle.z);
-            String std_id_x = x.getString(Death.STANDARDISED_ID);
-            String std_id_y = y.getString(Death.STANDARDISED_ID);
-            String std_id_z = z.getString(Death.STANDARDISED_ID);
+            LXP x = (LXP) marriages.getObjectById(open_triangle.x);
+            LXP y = (LXP) marriages.getObjectById(open_triangle.y);
+            LXP z = (LXP) marriages.getObjectById(open_triangle.z);
+            String std_id_x = x.getString(Marriage.STANDARDISED_ID);
+            String std_id_y = y.getString(Marriage.STANDARDISED_ID);
+            String std_id_z = z.getString(Marriage.STANDARDISED_ID);
 
             if( ! allDifferent( x,y,z ) ) {  // They might all be the same person with different ids - how to fix that?
                 return;
@@ -167,9 +166,9 @@ public class SiblingDeathClusterOpenTriangleResolver {
             for (long neo_id_right : right_elements ) {
                 for( Distance d : all_pairs_between ) {
                     if ((d.startNodeId == neo_id_left || d.startNodeId == neo_id_right) && (d.endNodeId == neo_id_left || d.endNodeId == neo_id_right)) {
-                        LXP x = (LXP) deaths.getObjectById(getStorrId(neo_id_left));
-                        LXP y = (LXP) deaths.getObjectById(getStorrId(neo_id_right));
-                        if ( ! x.getString(Death.FATHER_IDENTITY).equals(y.getString(Death.FATHER_IDENTITY) ) ) {
+                        LXP x = (LXP) marriages.getObjectById(getStorrId(neo_id_left));
+                        LXP y = (LXP) marriages.getObjectById(getStorrId(neo_id_right));
+                        if ( ! x.getString(Marriage.GROOM_FATHER_IDENTITY).equals(y.getString(Marriage.GROOM_FATHER_IDENTITY) ) ) {
                             // if they don't have the same fathers we should have split so FN.
                             FN++;
                         }
@@ -257,29 +256,27 @@ public class SiblingDeathClusterOpenTriangleResolver {
 
     private void cutLink(LXP x, LXP y, String message) {
 //        System.out.println(message);
-        if (!x.getString(Death.FATHER_IDENTITY).equals(y.getString(Death.FATHER_IDENTITY))) {   // Cut links should have different fathers!
+        if (!x.getString(Marriage.GROOM_FATHER_IDENTITY).equals(y.getString(Marriage.GROOM_FATHER_IDENTITY))) {   // Cut links should have different fathers!
             TP++;
         } else {
             FP++;
         }
-        cut_count++;
     }
 
     private int counter = 0; // debug tracer - triggers printout of query.
 
     private void cutLink(LXP x, LXP y, long nid_x, long nid_y, String message) {
 //        System.out.println(message);
-        if (!x.getString(Death.FATHER_IDENTITY).equals(y.getString(Death.FATHER_IDENTITY))) {   // Cut links should have different fathers!
+        if (!x.getString(Marriage.GROOM_FATHER_IDENTITY).equals(y.getString(Marriage.GROOM_FATHER_IDENTITY))) {   // Cut links should have different fathers!
             TP++;
         } else {
             FP++;
             counter++;
             if( counter == 100 ) {
                 // Debug method only
-                System.out.println( "MATCH (x:Death)-[r:SIBLING]-(y:Death) WHERE ID(x) = " + nid_x + " AND ID(y) = " + nid_y + " RETURN x,y" );
+                System.out.println( "MATCH (x:Marriage)-[r:SIBLING]-(y:Marriage) WHERE ID(x) = " + nid_x + " AND ID(y) = " + nid_y + " RETURN x,y" );
             }
         }
-        cut_count++;
     }
 
     /**
@@ -290,8 +287,8 @@ public class SiblingDeathClusterOpenTriangleResolver {
      * @throws BucketException
      */
     private void cutLink(long nid_x, long nid_y, String message) throws BucketException {
-        LXP x = (LXP) deaths.getObjectById(getStorrId(nid_x));
-        LXP y = (LXP) deaths.getObjectById(getStorrId(nid_y));
+        LXP x = (LXP) marriages.getObjectById(getStorrId(nid_x));
+        LXP y = (LXP) marriages.getObjectById(getStorrId(nid_y));
         // cutLink( x,y, nid_x, nid_y, message );
         cutLink( x,y, message );
     }
@@ -303,7 +300,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
 
     private Set<Long> getSiblingIds(String std_id) throws BucketException {
         Set<Long> result = new HashSet<>();
-        result.addAll( getSiblings(bridge,DD_GET_SIBLINGS,std_id) );
+        result.addAll( getSiblings(bridge, MM_GET_SIBLINGS,std_id) );
         return result;
     }
 
@@ -313,10 +310,10 @@ public class SiblingDeathClusterOpenTriangleResolver {
 
     private double get_distanceNyNeoId(long id1, long id2) {
         try {
-            LXP b1 = (LXP) deaths.getObjectById(getStorrId(id1));
-//            System.out.println( "F1 name = " + b1.get( Death.FATHER_SURNAME ) );
-            LXP b2 = (LXP) deaths.getObjectById(getStorrId(id2));
-//            System.out.println( "F2 name = " + b2.get( Death.FATHER_SURNAME ) );
+            LXP b1 = (LXP) marriages.getObjectById(getStorrId(id1));
+//            System.out.println( "F1 name = " + b1.get( Marriage.FATHER_SURNAME ) );
+            LXP b2 = (LXP) marriages.getObjectById(getStorrId(id2));
+//            System.out.println( "F2 name = " + b2.get( Marriage.FATHER_SURNAME ) );
 //            System.out.println( "d= " + metric.distance( b1, b2 ) );
             return metric.distance( b1, b2 );
         } catch (BucketException e) {
@@ -324,7 +321,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
         }
     }
 
-    private static final String NODE_BY_NEO_ID = "MATCH (a:Death) WHERE Id( a ) = $node_id RETURN a";
+    private static final String NODE_BY_NEO_ID = "MATCH (a:Marriage) WHERE Id( a ) = $node_id RETURN a";
 
     private long getStorrId(long id) {
         Map<String, Object> parameters = new HashMap<>();
@@ -336,8 +333,8 @@ public class SiblingDeathClusterOpenTriangleResolver {
 
     private double get_distanceByNeoId(long id1, long id2) {
         try {
-            LXP b1 = (LXP) deaths.getObjectById(getStorrId(id1));
-            LXP b2 = (LXP) deaths.getObjectById(getStorrId(id2));
+            LXP b1 = (LXP) marriages.getObjectById(getStorrId(id1));
+            LXP b2 = (LXP) marriages.getObjectById(getStorrId(id2));
             return metric.distance( b1, b2 );
         } catch (BucketException e) {
             return 1l;
@@ -350,8 +347,8 @@ public class SiblingDeathClusterOpenTriangleResolver {
     /**
      * @return a Stream of OpenTriangles
      */
-    public Stream<OpenTriangle> findIllegalDeathSiblingTriangles() {
-        Result result = bridge.getNewSession().run(DEATH_SIBLING_TRIANGLE_QUERY); // returns x,y,z where x and y and z are connected and zx is not.
+    public Stream<OpenTriangle> findIllegalmarriagesiblingTriangles() {
+        Result result = bridge.getNewSession().run(GROOM_SIBLING_TRIANGLE_QUERY); // returns x,y,z where x and y and z are connected and zx is not.
         return result.stream().map( r -> {
             return new OpenTriangle(
                             ( (Node) r.asMap().get("x")).get( "STORR_ID" ).asLong(),
@@ -368,7 +365,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
-        Result result = bridge.getNewSession().run(DD_GET_INDIRECT_SIBLING_LINKS,parameters);
+        Result result = bridge.getNewSession().run(MM_GET_INDIRECT_SIBLING_LINKS,parameters);
 
         Set<Distance> set = new HashSet<>();
         List<Record> results = result.list();
@@ -396,15 +393,15 @@ public class SiblingDeathClusterOpenTriangleResolver {
         String resultsRepo = args[1]; // e.g. synth_results
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
 
+            GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            SiblingGroomClusterOpenTriangleResolver resolver = new SiblingGroomClusterOpenTriangleResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();
 
             for( int min_cluster = 2; min_cluster < 10; min_cluster++ ) {
                 for (double hdrt = 2; hdrt < 8; hdrt += 1) {
                     for (double ldrt = 10; ldrt < 40; ldrt += 5) {
-                        SiblingDeathClusterOpenTriangleResolver resolver = new SiblingDeathClusterOpenTriangleResolver( bridge,sourceRepo,linkageRecipe );
                         resolver.resolve(min_cluster,ldrt / 100d, hdrt / 10d);
                     }
                 }

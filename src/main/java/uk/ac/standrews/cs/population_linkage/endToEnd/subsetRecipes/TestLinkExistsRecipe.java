@@ -38,8 +38,8 @@ public class TestLinkExistsRecipe extends DeathGroomOwnMarriageIdentityLinkageRe
     private static final int PREFILTER_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
 
 
-    public TestLinkExistsRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
-        super( source_repository_name,results_repository_name,links_persistent_name );
+    public TestLinkExistsRecipe(String source_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
+        super( source_repository_name,links_persistent_name );
         this.bridge = bridge;
     }
 
@@ -94,7 +94,7 @@ public class TestLinkExistsRecipe extends DeathGroomOwnMarriageIdentityLinkageRe
         String resultsRepo = args[1]; // e.g. synth_results
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            TestLinkExistsRecipe linkageRecipe = new TestLinkExistsRecipe(sourceRepo, resultsRepo, bridge,"");
+            TestLinkExistsRecipe linkageRecipe = new TestLinkExistsRecipe(sourceRepo, bridge,"");
 
             boolean exists = Query.DMDeathGroomOwnMarriageReferenceExists( bridge, "9395194","9389272","uk.ac.standrews.cs.population_linkage.EndtoEnd.builders.DeathGroomOwnMarriageBuilder" );
 

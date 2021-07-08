@@ -6,25 +6,24 @@ package uk.ac.standrews.cs.population_linkage.resolver.cluster;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
 
 public class SiblingBirthClusterAllTrianglesResolver extends SiblingBirthClusterOpenTriangleResolver {
 
-    public SiblingBirthClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingSubsetLinkageRecipe recipe) {
+    public SiblingBirthClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingSubsetLinkageRecipe recipe) {
         super( bridge, source_repo_name, recipe );
     }
 
     public static void main(String[] args) {
 
-        DEATH_SIBLING_TRIANGLE_QUERY = "MATCH (x:birth)-[xy:SIBLING]-(y:birth)-[yz:SIBLING]-(z:birth)-[zx:SIBLING]-(x:birth) return x,y,z,xy,yz";
+        BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:birth)-[xy:SIBLING]-(y:birth)-[yz:SIBLING]-(z:birth)-[zx:SIBLING]-(x:birth) return x,y,z,xy,yz";
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
-            SiblingDeathClusterAllTrianglesResolver resolver = new SiblingDeathClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
+            BirthSiblingSubsetLinkageRecipe linkageRecipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, "10000", bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
+            SiblingBirthClusterAllTrianglesResolver resolver = new SiblingBirthClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();
 

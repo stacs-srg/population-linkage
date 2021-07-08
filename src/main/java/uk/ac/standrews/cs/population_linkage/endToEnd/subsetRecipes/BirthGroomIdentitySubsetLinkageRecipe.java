@@ -27,15 +27,19 @@ public class BirthGroomIdentitySubsetLinkageRecipe extends BirthGroomIdentityLin
 
     private final NeoDbCypherBridge bridge;
 
-    private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_BIRTHS = EVERYTHING; // 10000; // for testing
+    private int NUMBER_OF_BIRTHS;
 
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
-    public BirthGroomIdentitySubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BirthGroomIdentitySubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_BIRTHS = EVERYTHING;
+        } else {
+            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+        }
         this.bridge = bridge;
     }
 

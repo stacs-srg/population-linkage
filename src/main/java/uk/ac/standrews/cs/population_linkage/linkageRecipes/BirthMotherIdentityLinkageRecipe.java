@@ -53,7 +53,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        LinkageRecipe linkageRecipe = new BirthMotherIdentityLinkageRecipe(sourceRepo, resultsRepo,LINKAGE_TYPE + "-links");
+        LinkageRecipe linkageRecipe = new BirthMotherIdentityLinkageRecipe(sourceRepo,LINKAGE_TYPE + "-links");
 
         new BitBlasterLinkageRunner()
                 .run(linkageRecipe, new JensenShannon(2048), false, false, true, false
@@ -62,8 +62,8 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "birth-mother-identity";
 
-    public BirthMotherIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BirthMotherIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

@@ -30,8 +30,8 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    public GroomGroomIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public GroomGroomIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     public static final List<Integer> LINKAGE_FIELDS = list(

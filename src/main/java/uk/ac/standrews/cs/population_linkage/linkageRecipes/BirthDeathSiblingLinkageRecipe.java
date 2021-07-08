@@ -39,8 +39,8 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
 
-    public BirthDeathSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BirthDeathSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(

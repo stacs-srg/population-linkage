@@ -54,8 +54,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        LinkageRecipe linkageRecipe = new BirthFatherIdentityLinkageRecipe(sourceRepo,
-                resultsRepo, LINKAGE_TYPE + "-links");
+        LinkageRecipe linkageRecipe = new BirthFatherIdentityLinkageRecipe(sourceRepo, LINKAGE_TYPE + "-links");
 
         LinkageConfig.numberOfROs = 20;
 
@@ -65,8 +64,8 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "birth-father-identity";
 
-    public BirthFatherIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public BirthFatherIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

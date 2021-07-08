@@ -40,8 +40,8 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
 
-    public DeathGroomSiblingLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public DeathGroomSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(

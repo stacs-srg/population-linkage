@@ -6,31 +6,32 @@ package uk.ac.standrews.cs.population_linkage.resolver.cluster;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.GroomGroomSubsetSiblingLinkageRecipe;
 
-public class SiblingDeathClusterAllTrianglesResolver extends SiblingDeathClusterOpenTriangleResolver {
+public class SiblingGroomClusterAllTrianglesResolver extends SiblingGroomClusterOpenTriangleResolver {
 
-    public SiblingDeathClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingSubsetLinkageRecipe recipe) {
+    public SiblingGroomClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, GroomGroomSubsetSiblingLinkageRecipe recipe) {
         super( bridge, source_repo_name, recipe );
     }
 
     public static void main(String[] args) {
 
-        DEATH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Death)-[xy:SIBLING]-(y:Death)-[yz:SIBLING]-(z:Death)-[zx:SIBLING]-(x:Death) return x,y,z,xy,yz";
+        GROOM_SIBLING_TRIANGLE_QUERY = "MATCH (x:Marriage)-[xy:SIBLING]-(y:Marriage)-[yz:SIBLING]-(z:Marriage)-[zx:SIBLING]-(x:Marriage) return x,y,z,xy,yz";
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, "10000", bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
-            SiblingDeathClusterAllTrianglesResolver resolver = new SiblingDeathClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
+            GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, "10000", bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+
 
             printHeaders();
 
-            for( int min_cluster = 9; min_cluster > 2; min_cluster-- ) {
+            for( int min_cluster = 2; min_cluster < 10; min_cluster++ ) {
                 for (double hdrt = 2; hdrt < 8; hdrt += 1) {
                     for (double ldrt = 10; ldrt < 40; ldrt += 5) {
-                        resolver.resolve(min_cluster,ldrt / 100d, hdrt / 10d);
+                        SiblingGroomClusterAllTrianglesResolver resolver = new SiblingGroomClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
+                        resolver.resolve(min_cluster, ldrt / 100d, hdrt / 10d);
                     }
                 }
             }

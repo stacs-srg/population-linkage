@@ -7,8 +7,8 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -25,15 +25,19 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
  */
 public class BirthDeathSiblingSubsetLinkageRecipe extends BirthDeathSiblingLinkageRecipe {
 
-    private static final int EVERYTHING = Integer.MAX_VALUE;
-    private static final int NUMBER_OF_BIRTHS = EVERYTHING; // 10000; // for testing
+    private static int NUMBER_OF_BIRTHS;
     private final NeoDbCypherBridge bridge;
     public static final int ALL_LINKAGE_FIELDS = 4;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
-    public BirthDeathSiblingSubsetLinkageRecipe(String source_repository_name, String results_repository_name, NeoDbCypherBridge bridge, String links_persistent_name) {
-        super( source_repository_name,results_repository_name,links_persistent_name );
+    public BirthDeathSiblingSubsetLinkageRecipe(String source_repository_name, String number_of_records,  NeoDbCypherBridge bridge, String links_persistent_name) {
+        super( source_repository_name,links_persistent_name );
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_BIRTHS = EVERYTHING;
+        } else {
+            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+        }
         this.bridge = bridge;
     }
 

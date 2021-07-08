@@ -51,8 +51,8 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY))
     );
 
-    public DeathGroomOwnMarriageIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
-        super(source_repository_name, results_repository_name, links_persistent_name);
+    public DeathGroomOwnMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

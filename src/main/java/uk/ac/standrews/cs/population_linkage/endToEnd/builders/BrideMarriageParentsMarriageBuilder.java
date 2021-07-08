@@ -35,12 +35,15 @@ public class BrideMarriageParentsMarriageBuilder {
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-                LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, false);
+                LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, false);
 
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
                 linkage_fields--;
             }
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println("Run finished");
             System.exit(0); // make sure process dies.

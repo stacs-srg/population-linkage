@@ -21,7 +21,7 @@ public class GroomGroomSiblingBuilder {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try( NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
             GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, GroomGroomSiblingBuilder.class.getCanonicalName());
 
@@ -39,6 +39,9 @@ public class GroomGroomSiblingBuilder {
 
                 linkage_fields--;
             }
+        } catch (Exception e) {
+            System.out.println( "Runtime exception:" );
+            e.printStackTrace();
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // make sure process dies.
