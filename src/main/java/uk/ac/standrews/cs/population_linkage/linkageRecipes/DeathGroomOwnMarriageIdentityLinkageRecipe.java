@@ -108,7 +108,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
+        return getGroundTruthLinksAsymmetric();
     }
 
     public int getNumberOfGroundTruthTrueLinks() {

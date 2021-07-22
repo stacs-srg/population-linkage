@@ -123,7 +123,7 @@ public class GroomMarriageParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
+        return getGroundTruthLinksAsymmetric();
     }
 
     @Override

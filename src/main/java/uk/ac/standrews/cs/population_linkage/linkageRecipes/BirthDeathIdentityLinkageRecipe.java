@@ -126,7 +126,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY);
+        return getGroundTruthLinksAsymmetric();
     }
 
     @Override

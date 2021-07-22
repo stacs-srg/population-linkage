@@ -126,7 +126,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOn(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY);
+        return getGroundTruthLinksAsymmetric();
     }
 
     @Override
