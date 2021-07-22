@@ -97,9 +97,6 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
-    @Override
-    public boolean isSymmetric() { return true; }
-
     public static boolean isViable(RecordPair proposedLink) {
 
         if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
@@ -127,12 +124,12 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY );
+        return getGroundTruthLinksSymmetric();
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthLinksOnSiblingSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY );
+        return getNumberOfGroundTruthLinksSymmetric();
     }
 
     @Override

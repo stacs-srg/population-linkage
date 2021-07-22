@@ -124,7 +124,7 @@ public class BrideBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Marriage.BRIDE_IDENTITY,Marriage.BRIDE_IDENTITY);
+        return getNumberOfGroundTruthLinksAsymmetric();
     }
 
 }

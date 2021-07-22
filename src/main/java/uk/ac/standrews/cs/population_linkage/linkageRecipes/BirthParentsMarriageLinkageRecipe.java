@@ -133,7 +133,7 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY);
+        return getNumberOfGroundTruthLinksAsymmetric();
     }
 
 //    @Override

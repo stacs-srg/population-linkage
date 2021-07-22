@@ -105,12 +105,12 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
-        return getGroundTruthLinksOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+        return getGroundTruthLinksAsymmetric();
     }
 
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(Birth.FATHER_IDENTITY, Birth.MOTHER_IDENTITY, Death.FATHER_IDENTITY, Death.MOTHER_IDENTITY);
+        return getNumberOfGroundTruthLinksAsymmetric();
     }
 
     @Override

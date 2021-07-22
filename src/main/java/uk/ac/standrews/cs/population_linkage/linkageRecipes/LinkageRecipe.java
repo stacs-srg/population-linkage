@@ -20,7 +20,6 @@ import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * EvidencePair Recipe
@@ -348,195 +347,86 @@ public abstract class LinkageRecipe {
     }
 
     /**
-     * Returns the count of ground truth links among source records 1 and 2 when using the ground truth IDs
-     * specified by the parameters.
-     * <p>
-     * The method behaviour is much the same as method: getGroundTruthLinksOn.
-     *
-     * @param record1LinkageID the ground truth field for source records 1
-     * @param record2LinkageID the ground truth field for source records 2
+     * Returns the count of ground truth links among source records 1 and 2
      * @return A count of all ground truth links
      */
-    private int getNumberOfGroundTruthTrueLinksOn(int record1LinkageID, int record2LinkageID, Iterable<LXP> sourceRecords1, Iterable<LXP> sourceRecords2) {
+    public int getNumberOfGroundTruthLinksAsymmetric() {
 
-        Map<String, Collection<LXP>> records1 = new HashMap<>();
-        sourceRecords1.forEach(record1 -> {
-            records1.putIfAbsent(record1.getString(record1LinkageID), new ArrayList<>());
-            records1.get(record1.getString(record1LinkageID)).add(record1);
-        });
+        int count = 0;
 
-        int c = 0;
-
-        for (LXP record2 : sourceRecords2)
-            if (records1.containsKey(record2.getString(record2LinkageID)))
-                c += records1.get(record2.getString(record2LinkageID)).size();
-
-        return c;
-    }
-
-    protected int getNumberOfGroundTruthTrueLinksOn(int record1LinkageID, int record2LinkageID) {
-        return getNumberOfGroundTruthTrueLinksOn(record1LinkageID, record2LinkageID, getStoredRecords(), getQueryRecords());
-    }
-
-    /**
-     * Returns the set of ground truth links for symmetric sibling linkage.
-     * A map of group/family ID to count of group size is created by the first loop
-     * The values in this map are then looped over in the second loop - this loop created the combination of links for
-     * the group subset.
-     * - The originalId(a) != originalId(b) test ensures links are not made between records with the same ID
-     * - The toKey(a,b) method created a key where the record IDs are ordered and then concatonated
-     * - the ordering ensures that each link is only recorded in one direction (i.e. a link A->B is not also added as B->A)
-     *
-     * @param fatherID the father ID field to be used as ground truth (same for both records as symmetric linkage)
-     * @param motherID the mother ID field to be used as ground truth (same for both records as symmetric linkage)
-     * @return A map of all ground truth links
-     */
-    Map<String, Link> getGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID, Iterable<LXP> sourceRecords1) {
-
-        Map<String, ArrayList<LXP>> records1GroupedByLinkageID = new HashMap<>();
-
-        for (LXP record1 : sourceRecords1) {
-
-            String famID = record1.getString(fatherID).trim() + "-" + record1.getString(motherID).trim();
-            if (!famID.equals(""))
-                records1GroupedByLinkageID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record1);
-        }
-
-        final Map<String, Link> links = new HashMap<>();
-
-        records1GroupedByLinkageID.forEach((k, grouping) -> {
-
-            for (LXP a : grouping)
-                for (LXP b : grouping)
-                    if (!Utilities.originalId(a).equals(Utilities.originalId(b))) {
-                        try {
-                            links.put(toKey(a, b), new Link(a, getStoredRole(), b, getQueryRole(), 1.0f, "ground truth", -1)); // role 1 and role 2 should be the same
-                        } catch (PersistentObjectException e) {
-                            ErrorHandling.error("PersistentObjectException adding getGroundTruthLinksOnSymmetric");
-                        }
+        for (LXP record1 : getStoredRecords()) {
+            for (LXP record2 : getQueryRecords()) {
+                if( record1 != record2 ) {
+                    if( isTrueMatch(record1,record2) == LinkStatus.TRUE_MATCH ) {
+                        count++;
                     }
-        });
-        return links;
-    }
+                }
+            }
+        }
 
-    protected Map<String, Link> getGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID) {
-        return getGroundTruthLinksOnSiblingSymmetric(fatherID, motherID, getStoredRecords());
+        return count;
     }
 
     /**
-     * This method returns the count of all ground truth links for symmetric sibling linkage.
-     * The first loop is the same as documented for getGroundTruthLinksOnSymmetric but with counts of links rather than the links.
-     * The second loop calculates the number of links for each ground and sums these together.
-     * - The links among a set are equal to the triangle number (this accounts for not linking to self or in two directions)
-     *
-     * @param fatherID the father ID field to be used as ground truth (same for both records as symmetric linkage)
-     * @param motherID the mother ID field to be used as ground truth (same for both records as symmetric linkage)
+     * This method returns the count of all ground truth links.
      * @return A count of all ground truth links
      */
-    int getNumberOfGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID, Iterable<LXP> sourceRecords1) {
+    int getNumberOfGroundTruthLinksSymmetric() {
 
-        Map<String, AtomicInteger> groupCounts = new HashMap<>();
-        for (LXP record1 : sourceRecords1) {
+        int count = 0;
 
-            String famID = record1.getString(fatherID).trim() + "-" + record1.getString(motherID).trim();
-            if (!famID.equals(""))
-                groupCounts.computeIfAbsent(famID, k -> new AtomicInteger()).incrementAndGet();
+        for (LXP record1 : getStoredRecords()) {
+            for (LXP record2 : getStoredRecords()) {
+                if( record1 != record2 ) {
+                    if( isTrueMatch(record1,record2) == LinkStatus.TRUE_MATCH ) {
+                        count++;
+                    }
+                }
+            }
         }
 
-        AtomicInteger c = new AtomicInteger();
-        groupCounts.forEach((key, count) -> {
-            int numberOfLinksAmongGroup = (int) (count.get() * (count.get() - 1) / 2.0); // the number of links among the groups are defined by the triangle numbers - this is a formula for such!
-            c.addAndGet(numberOfLinksAmongGroup);
-        });
-
-        return c.get();
+        return count / 2; // above counts each link twice.
     }
 
-    /*--------- ABSTRACTION HELPER CODE -----------*/
-
-    protected int getNumberOfGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID) {
-        return getNumberOfGroundTruthLinksOnSiblingSymmetric(fatherID, motherID, getStoredRecords());
-    }
-
-    protected Map<String, Link> getGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID, Iterable<LXP> sourceRecords1, Iterable<LXP> sourceRecords2) {
-
-        Map<String, ArrayList<LXP>> records1GroupedByFamilyID = new HashMap<>();
-        for (LXP record1 : sourceRecords1) {
-
-            String famID = record1.getString(r1FatherID).trim() + "-" + record1.getString(r1MotherID).trim();
-            if (!famID.equals(""))
-                records1GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record1);
-        }
-
-        Map<String, ArrayList<LXP>> records2GroupedByFamilyID = new HashMap<>();
-        for (LXP record2 : sourceRecords2) {
-
-            String famID = record2.getString(r2FatherID).trim() + "-" + record2.getString(r2MotherID).trim();
-            if (!famID.equals(""))
-                records2GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record2);
-        }
-
-        final Map<String, Link> links = new HashMap<>();
-
-        for (String famID : records1GroupedByFamilyID.keySet()) {
-
-            ArrayList<LXP> records2 = records2GroupedByFamilyID.get(famID);
-
-            if (records2 != null) {
-                for (LXP a : records1GroupedByFamilyID.get(famID)) {
-                    for (LXP b : records2GroupedByFamilyID.get(famID)) {
+    public Map<String, Link> getGroundTruthLinksSymmetric() {
+        Map<String, Link> map = new HashMap<>();
+        for (LXP lxp1 : getStoredRecords()) {
+            for (LXP lxp2 : getStoredRecords()) {
+                if( lxp1.getId() != lxp2.getId() ) {
+                    LinkStatus ls = isTrueMatch(lxp1, lxp2);
+                    if (ls.equals(LinkStatus.TRUE_MATCH)) {
                         try {
-                            links.put(toKey(a, b), new Link(a, getStoredRole(), b, getQueryRole(), 1.0f, "ground truth", -1));
+                            if( lxp1.getId() < lxp2.getId()) { // Only put in ascending order to avoid duplicates!
+                                Link l = new Link(lxp1, getStoredRole(), lxp2, getQueryRole(), 1.0f, "GT", 0.0, "GT");
+                                map.put(l.toString(), l);
+                            }
                         } catch (PersistentObjectException e) {
-                            throw new RuntimeException(e);
+                            ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
                         }
                     }
                 }
             }
         }
-        return links;
+        return map;
     }
 
-    protected Map<String, Link> getGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
-        return getGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getStoredRecords(), getQueryRecords());
-    }
-
-    protected int getNumberOfGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID, Iterable<LXP> sourceRecords1, Iterable<LXP> sourceRecords2) {
-
-        Map<String, List<LXP>> records1GroupedByFamilyID = new HashMap<>();
-        for (LXP record1 : sourceRecords1) {
-
-            String famID = record1.getString(r1FatherID).trim() + "-" + record1.getString(r1MotherID).trim();
-            if (!famID.equals(""))
-                records1GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record1);
-        }
-
-        Map<String, ArrayList<LXP>> records2GroupedByFamilyID = new HashMap<>();
-        for (LXP record2 : sourceRecords2) {
-
-            String famID = record2.getString(r2FatherID).trim() + "-" + record2.getString(r2MotherID).trim();
-            if (!famID.equals(""))
-                records2GroupedByFamilyID.computeIfAbsent(famID, k -> new ArrayList<>()).add(record2);
-        }
-
-        int numberOfLinks = 0;
-
-        for (String famID : records1GroupedByFamilyID.keySet()) {
-
-            List<LXP> records1 = records1GroupedByFamilyID.get(famID);
-            List<LXP> records2 = records2GroupedByFamilyID.get(famID);
-
-            if (records2 != null) {
-                numberOfLinks += records1.size() * records2.size();
+    public Map<String, Link> getGroundTruthLinksAsymmetric() {
+        Map<String, Link> map = new HashMap<>();
+        for (LXP lxp1 : getStoredRecords()) {
+            for (LXP lxp2 : getQueryRecords()) {
+                LinkStatus ls = isTrueMatch(lxp1, lxp2);
+                if (ls.equals(LinkStatus.TRUE_MATCH)) {
+                    try {
+                        Link l = new Link(lxp1, getStoredRole(), lxp2, getQueryRole(), 1.0f, "GT", 0.0, "GT");
+                        map.put(l.toString(), l);
+                    } catch (PersistentObjectException e) {
+                        ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
+                    }
+                }
             }
         }
-        return numberOfLinks;
+        return map;
     }
-
-    protected int getNumberOfGroundTruthLinksOnSiblingNonSymmetric(int r1FatherID, int r1MotherID, int r2FatherID, int r2MotherID) {
-        return getNumberOfGroundTruthLinksOnSiblingNonSymmetric(r1FatherID, r1MotherID, r2FatherID, r2MotherID, getStoredRecords(), getQueryRecords());
-    }
-
 
     public String toKey(LXP query_record, LXP stored_record) {
         String s1 = Utilities.originalId(query_record);
@@ -551,10 +441,6 @@ public abstract class LinkageRecipe {
             return s1 + "-" + s2;
         }
     }
-
-    /*
-    --------- PRE-FILTERING OF RECORDS ----------
-     */
 
     /**
      * Note - May be overridden by subclass

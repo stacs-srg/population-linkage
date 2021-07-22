@@ -112,7 +112,7 @@ public class DeathGroomOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     public int getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthTrueLinksOn(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY);
+        return getNumberOfGroundTruthLinksAsymmetric();
     }
 
     @Override
