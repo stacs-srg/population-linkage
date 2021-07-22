@@ -391,7 +391,7 @@ public abstract class LinkageRecipe {
      * @param motherID the mother ID field to be used as ground truth (same for both records as symmetric linkage)
      * @return A map of all ground truth links
      */
-    private Map<String, Link> getGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID, Iterable<LXP> sourceRecords1) {
+    Map<String, Link> getGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID, Iterable<LXP> sourceRecords1) {
 
         Map<String, ArrayList<LXP>> records1GroupedByLinkageID = new HashMap<>();
 
@@ -433,7 +433,7 @@ public abstract class LinkageRecipe {
      * @param motherID the mother ID field to be used as ground truth (same for both records as symmetric linkage)
      * @return A count of all ground truth links
      */
-    private int getNumberOfGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID, Iterable<LXP> sourceRecords1) {
+    int getNumberOfGroundTruthLinksOnSiblingSymmetric(int fatherID, int motherID, Iterable<LXP> sourceRecords1) {
 
         Map<String, AtomicInteger> groupCounts = new HashMap<>();
         for (LXP record1 : sourceRecords1) {

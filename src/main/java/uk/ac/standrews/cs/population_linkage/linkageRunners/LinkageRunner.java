@@ -48,6 +48,7 @@ public abstract class LinkageRunner {
         if(evaluateQuality) {
             System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
             numberOGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
+            System.out.println( "Number of GroundTruth true Links = " + numberOGroundTruthLinks );
         }
 
         MemoryLogger.update();

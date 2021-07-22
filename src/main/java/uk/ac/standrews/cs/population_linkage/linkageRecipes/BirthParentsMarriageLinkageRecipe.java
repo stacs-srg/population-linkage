@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -104,10 +105,23 @@ public class BirthParentsMarriageLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
+    public static boolean isViable(RecordPair proposedLink) {
+        try {
+            Birth birth_record = (Birth) proposedLink.record1;
+            Marriage marriage_record = (Marriage) proposedLink.record2;
+            int yob = Integer.parseInt( birth_record.getString( Birth.BIRTH_YEAR ) );
+            int yom = Integer.parseInt( marriage_record.getString( Marriage.MARRIAGE_YEAR ) );
+
+            return yob > yom && yom + LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE > yob;
+        } catch (NumberFormatException e) {
+            return true;
+        }
+    }
+
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return true;
-    } // TODO
+        return isViable(proposedLink);
+    }
 
     @Override
     public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }

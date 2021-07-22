@@ -9,8 +9,8 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 
 public class RecordPair {
 
-    public LXP record1;
-    public LXP record2;
+    public LXP record1;     // This is the stored type? TODO relabel these? - al
+    public LXP record2;     // This is the query type?
     public double distance;
 
     public RecordPair(LXP record1, LXP record2, double distance) {

@@ -2,10 +2,9 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
+package uk.ac.standrews.cs.population_linkage.endToEnd.OzMLCustom;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
@@ -14,7 +13,7 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 /**
  * This class attempts to perform birth-birth sibling linkage.
  */
-public class BirthSiblingBundleBuilder {
+public class MLCustomBirthSiblingBundleBuilder {
 
     public static void main(String[] args) throws Exception {
 
@@ -23,9 +22,9 @@ public class BirthSiblingBundleBuilder {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BirthSiblingSubsetLinkageRecipe linkageRecipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            MLCustomBirthSiblingSubsetLinkageRecipe linkageRecipe = new MLCustomBirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, MLCustomBirthSiblingBundleBuilder.class.getCanonicalName());
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            CustomBitBlasterLinkageRunner runner = new CustomBitBlasterLinkageRunner();
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
