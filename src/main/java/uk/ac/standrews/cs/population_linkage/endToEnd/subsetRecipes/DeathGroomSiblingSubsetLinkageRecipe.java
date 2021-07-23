@@ -14,6 +14,8 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
+import java.util.ArrayList;
+
 /**
  * EvidencePair Recipe
  * In all linkage recipies the naming convention is:
@@ -30,6 +32,7 @@ public class DeathGroomSiblingSubsetLinkageRecipe extends DeathGroomSiblingLinka
     public static final int ALL_LINKAGE_FIELDS = 5;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
+    private ArrayList<LXP> cached_records = null;
 
     public DeathGroomSiblingSubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,links_persistent_name );
@@ -50,7 +53,10 @@ public class DeathGroomSiblingSubsetLinkageRecipe extends DeathGroomSiblingLinka
      */
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        return filter(linkage_fields, NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
+        if( cached_records == null ) {
+            cached_records = filter( linkage_fields, NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
+        }
+        return cached_records;
     }
 
     @Override

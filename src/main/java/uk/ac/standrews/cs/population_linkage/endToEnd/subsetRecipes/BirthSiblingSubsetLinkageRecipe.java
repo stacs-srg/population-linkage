@@ -31,7 +31,7 @@ public class BirthSiblingSubsetLinkageRecipe extends BirthSiblingLinkageRecipe {
     private final NeoDbCypherBridge bridge;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
-    private ArrayList<LXP> filtered = null;
+    private ArrayList<LXP> cached_records = null;
 
     public BirthSiblingSubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,links_persistent_name );
@@ -51,11 +51,11 @@ public class BirthSiblingSubsetLinkageRecipe extends BirthSiblingLinkageRecipe {
      * @return
      */
     @Override
-    protected Iterable<LXP> getBirthRecords() { // TODO everywhere?
-        if( filtered == null ) {
-            filtered = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+    protected Iterable<LXP> getBirthRecords() {
+        if( cached_records == null ) {
+            cached_records = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
         }
-        return filtered;
+        return cached_records;
     }
 
     @Override

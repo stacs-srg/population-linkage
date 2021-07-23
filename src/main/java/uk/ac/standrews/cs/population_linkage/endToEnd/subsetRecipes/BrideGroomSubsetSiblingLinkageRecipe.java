@@ -51,6 +51,7 @@ public class BrideGroomSubsetSiblingLinkageRecipe extends BrideGroomSiblingLinka
      */
     @Override
     protected Iterable<LXP> getMarriageRecords() {
+
         return filter(linkage_fields, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
     }
 

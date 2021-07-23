@@ -14,6 +14,8 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
+import java.util.ArrayList;
+
 /**
  * EvidencePair Recipe
  * In all linkage recipies the naming convention is:
@@ -31,6 +33,7 @@ public class BirthParentsMarriageSubsetLinkageRecipe extends BirthParentsMarriag
     private final NeoDbCypherBridge bridge;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
+    private ArrayList<LXP> cached_records = null;
 
 
     public BirthParentsMarriageSubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
@@ -53,7 +56,10 @@ public class BirthParentsMarriageSubsetLinkageRecipe extends BirthParentsMarriag
      */
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+        if( cached_records == null ) {
+            cached_records = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+        }
+        return cached_records;
     }
 
     // NOTE that Marriage fields are not filtered in this recipe.
