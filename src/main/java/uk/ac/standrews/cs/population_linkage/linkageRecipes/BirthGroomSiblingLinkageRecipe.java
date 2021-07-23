@@ -102,7 +102,7 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public double getTheshold() {
+    public double getThreshold() {
         return DISTANCE_THESHOLD;
     }
 }

@@ -32,6 +32,7 @@ public class MLCustomBirthSiblingSubsetLinkageRecipe extends BirthSiblingLinkage
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
     private ArrayList<LXP> cached_records = null;
+    private double threshold = 0.360571156;
 
     public MLCustomBirthSiblingSubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,links_persistent_name );
@@ -46,6 +47,9 @@ public class MLCustomBirthSiblingSubsetLinkageRecipe extends BirthSiblingLinkage
     public void setNumberLinkageFieldsRequired( int number ) {
         linkage_fields = number;
     }
+
+    @Override
+    public double getThreshold() { return threshold; }
 
     /**
      * @return

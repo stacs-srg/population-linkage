@@ -321,7 +321,7 @@ public abstract class LinkageRunner {
 
     public Linker getLinker( LinkageRecipe linkageRecipe ) {
         Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
-        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getTheshold(), getNumberOfProgressUpdates(),
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
                 linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
 
     }

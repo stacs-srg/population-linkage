@@ -134,7 +134,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public double getTheshold() {
+    public double getThreshold() {
         return DISTANCE_THRESHOLD;
     }
 

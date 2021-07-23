@@ -46,6 +46,8 @@ public class CustomMetric extends Metric<LXP> {
     static final double mms_weight= 0.727961819; // MOTHER_MAIDEN_SURNAME
     static final double fs_weight= 0.442990745; // FATHER_SURNAME
 
+    static final double total_weights = mf_cos_weight + pdom_weight + ppom_weight + pyom_weight + pmom_weight + ff_weight + mf_jacc_weight + mms_weight + fs_weight;
+
     public CustomMetric(final int id_field_index) {
 
         this.id_field_index = id_field_index;
@@ -66,7 +68,9 @@ public class CustomMetric extends Metric<LXP> {
 
         double total_distance = mf_cos_dist + pdom_dist + ppom_dist + pyom_dist + pmom_dist + ff_dist + mf_dist + mms_dist + fs_dist;
 
-        return total_distance; // was in other version: normaliseArbitraryPositiveDistance(total_distance);
+        // Should be a weighted average. - sum and divide by total weight.
+
+        return total_distance / total_weights;
     }
 
     @Override

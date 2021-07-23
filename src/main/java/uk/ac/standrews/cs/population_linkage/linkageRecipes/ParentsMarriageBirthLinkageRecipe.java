@@ -273,7 +273,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public double getTheshold() {
+    public double getThreshold() {
         return DISTANCE_THESHOLD;
     }
 

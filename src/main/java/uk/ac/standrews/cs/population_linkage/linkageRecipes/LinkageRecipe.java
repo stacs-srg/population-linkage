@@ -534,7 +534,7 @@ public abstract class LinkageRecipe {
         return getSizeByType(getQueryType());
     }
 
-    public abstract double getTheshold();
+    public abstract double getThreshold();
 
     public void setCacheSizes(int birthCacheSize, int deathCacheSize, int marriageCacheSize) {
         record_repository.setBirthsCacheSize(birthCacheSize);

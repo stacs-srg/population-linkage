@@ -133,7 +133,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public double getTheshold() {
+    public double getThreshold() {
         return THRESHOLD;
     }
 }
