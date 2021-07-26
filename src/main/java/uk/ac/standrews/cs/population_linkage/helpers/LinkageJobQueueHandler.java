@@ -113,7 +113,7 @@ public class LinkageJobQueueHandler {
                 LinkageRecipe linkageRecipe = getLinkageRecipe(linkageType, resultsRepo, links_persistent_name, sourceRepo);
                 String linkageApproach = linkageRecipe.getLinkageType();
 
-                LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run( linkageRecipe, chosenMetric, false, false, evaluate_quality, persist_links).getLinkageQuality();
+                LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run( linkageRecipe, false, false, evaluate_quality, persist_links).getLinkageQuality();
 
                 String fieldsUsed1 = getLinkageFields(1, linkageRecipe, sourceRepo);
                 String fieldsUsed2 = getLinkageFields(2, linkageRecipe, sourceRepo);

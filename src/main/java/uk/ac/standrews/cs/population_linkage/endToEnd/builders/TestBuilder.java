@@ -9,7 +9,6 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.TestLinkExis
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
  *  This class attempts to find death-groom links: links a deceased on a death to the same person as a groom on a marriage.
@@ -27,7 +26,7 @@ public class TestBuilder {
 
             LinkageConfig.numberOfROs = 20;
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, true, true);
+            new BitBlasterLinkageRunner().run(linkageRecipe, false, false, true, true);
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // Make sure it all shuts down properly.

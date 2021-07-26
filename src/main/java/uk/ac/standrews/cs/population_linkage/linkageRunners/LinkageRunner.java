@@ -32,12 +32,12 @@ public abstract class LinkageRunner {
     protected Linker linker;
     protected LinkageRecipe linkageRecipe;
 
-    public LinkageResult run(LinkageRecipe linkageRecipe, StringMetric baseMetric,
+    public LinkageResult run(LinkageRecipe linkageRecipe,
                              boolean generateMapOfLinks, boolean reverseMap,
                              boolean evaluateQuality, boolean persistLinks) throws BucketException, RepositoryException {
 
         MemoryLogger.update();
-        this.baseMetric = baseMetric;
+        this.baseMetric = linkageRecipe.getMetric();
         this.linkageRecipe = linkageRecipe;
 
         linker = getLinker(this.linkageRecipe);
@@ -65,7 +65,7 @@ public abstract class LinkageRunner {
         TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
 
         for(double threshold = minThreshold; threshold < maxThreshold; threshold += step) {
-            LinkageQuality lq = run(linkageRecipe, baseMetric, false, false, true, false).getLinkageQuality();
+            LinkageQuality lq = run(linkageRecipe, false, false, true, false).getLinkageQuality();
             thresholdToLinkageQuality.put(threshold, lq);
         }
         return thresholdToLinkageQuality;
@@ -76,8 +76,8 @@ public abstract class LinkageRunner {
         TreeMap<Double, LinkageQuality> thresholdToLinkageQualityAll = new TreeMap<>();
         double current_threshold = starting_threshold_estimate;
 
-        LinkageQuality t_0 = run(linkageRecipe, baseMetric, false, false, true, false).getLinkageQuality();
-        LinkageQuality t_1 = run(linkageRecipe, baseMetric, false, false, true, false).getLinkageQuality();
+        LinkageQuality t_0 = run(linkageRecipe, false, false, true, false).getLinkageQuality();
+        LinkageQuality t_1 = run(linkageRecipe, false, false, true, false).getLinkageQuality();
 
         for(int n = 0 ; n < nRandomRestarts; n++) {
             double bestF = 0;
@@ -89,7 +89,7 @@ public abstract class LinkageRunner {
 
             while (bestF < 0.99 && count < maxAttempts) {
 
-                LinkageQuality lq = run(linkageRecipe, baseMetric, false, false, true, false).getLinkageQuality();
+                LinkageQuality lq = run(linkageRecipe, false, false, true, false).getLinkageQuality();
                 thresholdToLinkageQuality.put(current_threshold, lq);
 
                 if (lq.getF_measure() > bestF) {
@@ -342,7 +342,5 @@ public abstract class LinkageRunner {
         return baseMetric;
     }
 
-    public void setBaseMetric(StringMetric baseMetric) {
-        this.baseMetric = baseMetric;
-    }
+
 }

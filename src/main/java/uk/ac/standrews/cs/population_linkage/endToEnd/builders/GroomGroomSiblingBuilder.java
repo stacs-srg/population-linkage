@@ -9,7 +9,6 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
  * This class attempts to perform marriage-marriage sibling linkage.
@@ -32,7 +31,7 @@ public class GroomGroomSiblingBuilder {
 
             while (linkage_fields >= half_fields) {
 
-                LinkageResult lr = runner.run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+                LinkageResult lr = runner.run(linkageRecipe, false, false, false, true);
 
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);

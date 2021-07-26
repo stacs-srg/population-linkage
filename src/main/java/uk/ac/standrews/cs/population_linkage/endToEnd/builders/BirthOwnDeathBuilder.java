@@ -9,7 +9,6 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthDeathSu
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
  *  This class attempts to find birth-groom links: links a baby on a birth to the same person as a groom on a marriage.
@@ -32,7 +31,7 @@ public class BirthOwnDeathBuilder {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, true);
+                new BitBlasterLinkageRunner().run(linkageRecipe, false, false, false, true);
 
                 linkage_fields--;
             }

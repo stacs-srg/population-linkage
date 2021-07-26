@@ -16,6 +16,8 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -540,6 +542,10 @@ public abstract class LinkageRecipe {
         record_repository.setBirthsCacheSize(birthCacheSize);
         record_repository.setDeathsCacheSize(deathCacheSize);
         record_repository.setMarriagesCacheSize(marriageCacheSize);
+    }
+
+    public StringMetric getMetric() {
+        return new JensenShannon(2048);
     }
 
     public static class Pair {

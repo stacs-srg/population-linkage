@@ -55,11 +55,11 @@ public class CompositeLinkageRecipe {
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
                 new BirthGroomIdentityLinkageRecipe(source_repository_name, ""),
-                metric, true, false, true, false).getMapOfLinks();
+                true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> fatherGroomLinks = new BitBlasterLinkageRunner().run(
                 new BirthParentsMarriageLinkageRecipe(source_repository_name, ""),
-                metric,  true, false, true, false).getMapOfLinks();
+                true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> fatherBirthLinksViaGroom = combineLinks(fatherGroomLinks, groomBirthLinks, "father-birth-via-groom-id");
 
@@ -76,19 +76,19 @@ public class CompositeLinkageRecipe {
 
         Map<String, Collection<Link>> deathGroomLinks = new BitBlasterLinkageRunner().run(
                 new DeathGroomOwnMarriageIdentityLinkageRecipe(source_repository_name, ""),
-                metric, true, false, true, false).getMapOfLinks();
+                true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
                 new BirthGroomIdentityLinkageRecipe(source_repository_name, ""),
-                metric,  true, false, true, false).getMapOfLinks();
+                true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> deathBrideLinks = new BitBlasterLinkageRunner().run(
                 new DeathBrideOwnMarriageIdentityLinkageRecipe(source_repository_name, ""),
-                metric, true, false, true, false).getMapOfLinks();
+                true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> birthBrideLinks = new BitBlasterLinkageRunner().run(
                 new BirthBrideIdentityLinkageRecipe(source_repository_name, ""),
-                metric, true, false, true, false).getMapOfLinks();
+                true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> deathBirthLinksViaGroom = combineLinks(deathGroomLinks, groomBirthLinks, "death-birth-via-groom-id");
         Map<String, Collection<DoubleLink>> deathBirthLinks = combineLinks(deathBrideLinks, birthBrideLinks, "death-birth-via-bride-id");

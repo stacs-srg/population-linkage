@@ -10,7 +10,6 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRun
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
  *  This class attempts to find marriage-marriage links: links a groom's parents on a marriage record to the parents marriage.
@@ -35,7 +34,7 @@ public class BrideMarriageParentsMarriageBuilder {
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-                LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, false);
+                LinkageResult lr = new BitBlasterLinkageRunner().run(linkageRecipe, false, false, false, false);
 
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);

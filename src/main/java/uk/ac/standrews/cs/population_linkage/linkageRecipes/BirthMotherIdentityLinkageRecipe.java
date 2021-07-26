@@ -12,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
         LinkageRecipe linkageRecipe = new BirthMotherIdentityLinkageRecipe(sourceRepo,LINKAGE_TYPE + "-links");
 
         new BitBlasterLinkageRunner()
-                .run(linkageRecipe, new JensenShannon(2048), false, false, true, false
+                .run(linkageRecipe, false, false, true, false
                 );
     }
 

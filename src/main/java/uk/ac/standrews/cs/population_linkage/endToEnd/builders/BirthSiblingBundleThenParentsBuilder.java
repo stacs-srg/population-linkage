@@ -62,7 +62,7 @@ public class BirthSiblingBundleThenParentsBuilder {
             while( linkage_fields >= half_fields ) {
                 bb_recipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-                LinkageResult lr = runner1.run(bb_recipe, new JensenShannon(2048), false, false, false, false);
+                LinkageResult lr = runner1.run(bb_recipe, false, false, false, false);
                 HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
                 ParentsMarriageBirthLinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
                 LinkageConfig.numberOfROs = 20;

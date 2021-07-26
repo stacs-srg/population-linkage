@@ -8,7 +8,6 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathGroomId
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
  *  This class attempts to find death-groom links: links a deceased on a death to the same person as a groom on a marriage.
@@ -32,7 +31,7 @@ public class DeathGroomOwnMarriageBuilder {
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-                new BitBlasterLinkageRunner().run(linkageRecipe, new JensenShannon(2048), false, false, false, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, false, false, false, false);
                 linkage_fields--;
             }
         } catch (Exception e) {
