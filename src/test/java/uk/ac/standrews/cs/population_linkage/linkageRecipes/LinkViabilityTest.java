@@ -80,12 +80,12 @@ public class LinkViabilityTest {
         assertTrue(birthBrideIdentityLinkViable(1,7,1920, 1,1,1900, "01/01/1900"));
         assertTrue(birthBrideIdentityLinkViable(1,7,1920, 1,1,1900, "19"));
         assertTrue(birthBrideIdentityLinkViable(1,7,1920, 1,1,1900, "01/01/1901"));
-        assertTrue(birthBrideIdentityLinkViable(1,7,1920, 1,1,1900, String.valueOf(20 + LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY)));
-        assertTrue(birthBrideIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY)));
+        assertTrue(birthBrideIdentityLinkViable(1,7,1920, 1,1,1900, String.valueOf(20 + LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE)));
+        assertTrue(birthBrideIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE)));
 
         assertFalse(birthBrideIdentityLinkViable(1,7,1920, 1,1,1910, "10"));
         assertFalse(birthBrideIdentityLinkViable(1,7,1920, 1,1,1910, "20"));
-        assertFalse(birthBrideIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY - 1)));
+        assertFalse(birthBrideIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE - 1)));
 
         assertTrue(birthBrideIdentityLinkViableWithInvalidData());
     }
@@ -163,12 +163,12 @@ public class LinkViabilityTest {
         assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, "01/01/1900"));
         assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, "19"));
         assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, "01/01/1901"));
-        assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, String.valueOf(20 + LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY)));
-        assertTrue(groomBirthIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY)));
+        assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, String.valueOf(20 + LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE)));
+        assertTrue(groomBirthIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE)));
 
         assertFalse(groomBirthIdentityLinkViable(1,7,1920, 1,1,1910, "10"));
         assertFalse(groomBirthIdentityLinkViable(1,7,1920, 1,1,1910, "20"));
-        assertFalse(groomBirthIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY - 1)));
+        assertFalse(groomBirthIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE - 1)));
 
         assertTrue(groomBirthIdentityLinkViableWithInvalidData());
     }

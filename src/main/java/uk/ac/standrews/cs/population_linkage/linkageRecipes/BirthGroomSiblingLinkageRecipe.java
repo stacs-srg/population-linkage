@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -88,8 +89,31 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
 
+    private boolean isViable(RecordPair proposedLink) {
+
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+
+//        try {
+//            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
+//            int groom_age_or_dob = Integer.parseInt(proposedLink.record2.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH));
+//            // in Umea the GROOM_AGE_OR_DATE_OF_BIRTH all seem to be --/--/----
+//            IF YOU UNCOMMENT THIS CODE IS UNFINISHED!!!! LINE BELOW WILL NOT WORK!
+//            return Math.abs(year_of_birth1 - groom_yob) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
+//        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
+//            return true;
+//        }
+        // Although above doesn't work can still check yom > yob (crude)
+        try {
+            int year_of_birth = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
+            int year_of_marriage = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
+            return year_of_birth < year_of_marriage;
+        } catch (NumberFormatException e) {
+            return true;
+        }
+    }
+
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return true; } //  TODO VIABLE
+    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

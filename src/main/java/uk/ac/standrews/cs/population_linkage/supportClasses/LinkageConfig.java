@@ -18,7 +18,8 @@ public class LinkageConfig {
     public static Integer MAX_CHILD_PARENTS_MARRIAGE_DIFFERENCE = 100; // very conservative (possibly contradictory with above!)
     public static Integer MIN_PARENT_AGE_AT_BIRTH = 15;
     public static Integer MAX_PARENT_AGE_AT_BIRTH = 50;
-    public static Integer MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY = 10;
+    public static Integer MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE = 10;
+    public static Integer MAX_INTER_MARRIAGE_DIFFERENCE = 50; // MAX TIME BETWEEN MARRIAGES
 
     public static Integer MAX_AGE_AT_DEATH = 120;
 }

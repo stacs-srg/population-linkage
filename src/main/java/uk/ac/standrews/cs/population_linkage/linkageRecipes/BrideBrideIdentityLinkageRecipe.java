@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
@@ -115,7 +116,28 @@ public class BrideBrideIdentityLinkageRecipe extends LinkageRecipe {
         return isViable( proposedLink );
     }
 
-    public static boolean isViable(RecordPair proposedLink) { return true; } // TODO VIABLE
+    private boolean isViable(RecordPair proposedLink) {
+
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+
+//        try {
+//            int bride_age_or_dob1 = Integer.parseInt(proposedLink.record1.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH));
+//            int bride_age_or_dob2 = Integer.parseInt(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH));
+//            // in Umea the BRIDE_AGE_OR_DATE_OF_BIRTH all seem to be --/--/----
+//            IF YOU UNCOMMENT THIS CODE IS UNFINISHED!!!! LINE BELOW WILL NOT WORK!
+//            return ...
+//        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
+//            return true;
+//        }
+        // Although above doesn't work can still check inter marriage range
+        try {
+            int yom1 = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_YEAR));
+            int yom2 = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
+            return Math.abs(yom1 - yom2) <= LinkageConfig.MAX_INTER_MARRIAGE_DIFFERENCE;
+        } catch (NumberFormatException e) {
+            return true;
+        }
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

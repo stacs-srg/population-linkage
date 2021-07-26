@@ -65,7 +65,7 @@ public class SiblingMarriageHelper {
                 age_discrepancy = Math.abs(birth_date_from_birth_record.until(birth_date_from_marriage_record).getYears());
             }
 
-            return age_at_marriage_calculated >= LinkageConfig.MIN_AGE_AT_MARRIAGE && age_discrepancy <= LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DISCREPANCY;
+            return age_at_marriage_calculated >= LinkageConfig.MIN_AGE_AT_MARRIAGE && age_discrepancy <= LinkageConfig.MAX_ALLOWABLE_MARRIAGE_AGE_DIFFERENCE;
 
         } catch (NumberFormatException e ) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR or GROOM_AGE_OR_DATE_OF_BIRTH is invalid
             return true;
