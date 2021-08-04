@@ -43,6 +43,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.ReversedLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.SexLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.Storr;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EmploymentDataEvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.EvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.ParentalStatusEvaluationApproach;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.approaches.StandardEvaluationApproach;
@@ -245,6 +246,8 @@ public class LinkageJobQueueHandler {
                         return new StandardEvaluationApproach(linkageRecipe);
                     case PARENTAL_STATUS:
                         return new ParentalStatusEvaluationApproach(linkageRecipe);
+                    case EMPLOYMENT_DATA:
+                        return new EmploymentDataEvaluationApproach(linkageRecipe);
                 }
             } catch (UnsupportedOperationException | IllegalArgumentException e) {
                 throw new InvalidEvaluationApproachException(e);

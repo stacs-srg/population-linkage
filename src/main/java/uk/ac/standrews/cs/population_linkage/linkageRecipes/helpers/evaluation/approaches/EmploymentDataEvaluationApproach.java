@@ -11,24 +11,26 @@ import javax.annotation.Nonnull;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.storr.impl.LXP;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
-public class ParentalStatusEvaluationApproach extends SubGroupEvaluationApproach {
+public class EmploymentDataEvaluationApproach extends SubGroupEvaluationApproach {
 
-    public ParentalStatusEvaluationApproach(LinkageRecipe linkageRecipe) {
+    public EmploymentDataEvaluationApproach(LinkageRecipe linkageRecipe) {
         super(linkageRecipe);
     }
 
     @Override
     protected Set<String> getGroups() {
-        return Sets.newHashSet("Residing-Separately","Married","Cohabiting");
+        return Sets.newHashSet("both-no-occupation", "male-no-occupation", "female-no-occupation", "both-have-occupation");
     }
 
     protected String identifyGroup(Link proposedLink) {
         try {
-            LXP child = proposedLink.getRecord1().getReferend();
-            return classifyRecord(child);
+            LXP death = proposedLink.getRecord1().getReferend();
+            return classifyRecord(death);
         } catch (BucketException e) {
             throw new IllegalStateException("Expected Birth record in ParentalStatusEvaluationApproach");
         }
@@ -43,24 +45,25 @@ public class ParentalStatusEvaluationApproach extends SubGroupEvaluationApproach
     } // categorisation is done on the child (stored) record and thus we don't filter out any parent (search) records during evaluation
 
     @Nonnull
-    protected String classifyRecord(LXP record) {
-        boolean illegitimate = !Objects.equals(record.getString(Birth.ILLEGITIMATE_INDICATOR), "");
-        boolean parentsMarried = !Objects.equals(record.getString(Birth.PARENT_MARRIAGE_RECORD_IDENTITY), "");
+    protected String classifyRecord(LXP death) {
 
-        if(illegitimate) {
-            return "Residing-Separately";
+        boolean deathDeceasedOccupationMissing = Objects.equals(death.getString(Death.OCCUPATION), "");
+        boolean deathSpouseOccupationMissing = Objects.equals(death.getString(Death.SPOUSE_OCCUPATION), "");
+
+        if(deathDeceasedOccupationMissing && deathSpouseOccupationMissing) {
+            return "both-no-occupation";
+        } else if(deathDeceasedOccupationMissing) {
+            return "male-no-occupation";
+        } else if(deathSpouseOccupationMissing) {
+            return "female-no-occupation";
         } else {
-            if(parentsMarried) {
-                return "Married";
-            } else {
-                return "Cohabiting";
-            }
+            return "both-have-occupation";
         }
     }
 
     @Override
     public Type getEvaluationDescription() {
-        return Type.PARENTAL_STATUS;
+        return Type.EMPLOYMENT_DATA;
     }
 
 }

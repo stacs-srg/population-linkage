@@ -6,6 +6,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes.helpers.evaluation.
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -21,7 +22,15 @@ public abstract class SubGroupEvaluationApproach implements EvaluationApproach {
 
     public SubGroupEvaluationApproach(LinkageRecipe linkageRecipe) {
         this.linkageRecipe = linkageRecipe;
+        getGroups().forEach(group -> {
+            StandardEvaluationApproach evaluation = new StandardEvaluationApproach(linkageRecipe);
+            evaluation.setSearchRecordsFilter(defineSearchRecordsFilter(group));
+            evaluation.setStoredRecordsFilter(defineStoredRecordsFilter(group));
+            evaluations.put(group, evaluation);
+        });
     }
+
+    protected abstract Set<String> getGroups();
 
     protected abstract String identifyGroup(Link proposedLink);
     protected abstract boolean isStoredRecordInGroup(LXP record, String group);
