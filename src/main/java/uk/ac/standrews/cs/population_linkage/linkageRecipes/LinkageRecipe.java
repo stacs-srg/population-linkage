@@ -22,6 +22,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 /**
  * EvidencePair Recipe
@@ -310,10 +311,8 @@ public abstract class LinkageRecipe {
 
         for (LXP record1 : getStoredRecords()) {
             for (LXP record2 : getQueryRecords()) {
-                if( record1 != record2 ) {
-                    if( isTrueMatch(record1,record2) == LinkStatus.TRUE_MATCH ) {
-                        count++;
-                    }
+                if (isTrueMatch(record1, record2) == LinkStatus.TRUE_MATCH) {
+                    count++;
                 }
             }
         }
@@ -323,44 +322,42 @@ public abstract class LinkageRecipe {
 
     /**
      * This method returns the count of all ground truth links.
-     * @return A count of all ground truth links
+     * @return a count of all ground truth links
      */
     int getNumberOfGroundTruthLinksSymmetric() {
 
         int count = 0;
 
-        for (LXP record1 : getStoredRecords()) {
-            for (LXP record2 : getStoredRecords()) {
-                if( record1 != record2 ) {
-                    if( isTrueMatch(record1,record2) == LinkStatus.TRUE_MATCH ) {
+        LXP[] records = StreamSupport.stream(getStoredRecords().spliterator(), false).toArray(LXP[]::new);
+
+        for (int i = 0; i < records.length - 1; i++) {
+            for (int j = i+1; j < records.length;j++ ) {
+                    if( isTrueMatch(records[i],records[j]) == LinkStatus.TRUE_MATCH ) {
                         count++;
                     }
-                }
             }
         }
 
-        return count / 2; // above counts each link twice.
+        return count;
     }
 
     public Map<String, Link> getGroundTruthLinksSymmetric() {
         Map<String, Link> map = new HashMap<>();
-        for (LXP lxp1 : getStoredRecords()) {
-            for (LXP lxp2 : getStoredRecords()) {
-                if( lxp1.getId() != lxp2.getId() ) {
-                    LinkStatus ls = isTrueMatch(lxp1, lxp2);
-                    if (ls.equals(LinkStatus.TRUE_MATCH)) {
-                        try {
-                            if( lxp1.getId() < lxp2.getId()) { // Only put in ascending order to avoid duplicates!
-                                Link l = new Link(lxp1, getStoredRole(), lxp2, getQueryRole(), 1.0f, "GT", 0.0, "GT");
-                                map.put(l.toString(), l);
-                            }
-                        } catch (PersistentObjectException e) {
-                            ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
-                        }
+        LXP[] records = StreamSupport.stream(getStoredRecords().spliterator(), false).toArray(LXP[]::new);
+
+        for (int i = 0; i < records.length - 1; i++) {
+            for (int j = i + 1; j < records.length; j++) {
+                if (isTrueMatch(records[i], records[j]) == LinkStatus.TRUE_MATCH) {
+                    try {
+                        Link l = new Link(records[i], getStoredRole(), records[j], getQueryRole(), 1.0f, "GT", 0.0, "GT");
+                        map.put(l.toString(), l);
+                    } catch (PersistentObjectException e) {
+                        ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
                     }
                 }
             }
         }
+
         return map;
     }
 

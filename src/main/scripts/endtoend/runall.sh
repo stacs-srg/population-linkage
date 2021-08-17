@@ -60,42 +60,38 @@ echo "15. Death siblings (indirect) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/deathsiblings
 
-echo "16. Performing birth sibling bundling then BM (birth-parents-marriage) linkage"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleThenParentsBuilder" -e -Dexec.args="Umea EVERYTHING"
-#$COPY #$COPYDIR/parents
-
-echo "17. Birth-Death Sibling (BD) linkage"
+echo "16. Birth-Death Sibling (BD) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthDeathSiblingBundleBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/death-birth
 
-echo "18. Birth-Bride Sibling (BB) linkage"
+echo "17. Birth-Bride Sibling (BB) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthBrideSiblingBundleBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/birth-bride
 
-echo "19. Birth-Groom Sibling (BG) linkage"
+echo "18. Birth-Groom Sibling (BG) linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthGroomSiblingBundleBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/birth-bride
 
-echo "20. Bride Bride Identity linkage"
+echo "19. Bride Bride Identity linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BrideBrideIdentityBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/birth-bride-id
 
-echo "21. Groom Groom Identity linkage"
+echo "20. Groom Groom Identity linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.GroomGroomIdentityBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/groom-groom-id
 
-echo "22. Bride Marriage Parents Marriage Identity linkage"
+echo "21. Bride Marriage Parents Marriage Identity linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BrideMarriageParentsMarriageBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/bride-parents-marriage
 
-echo "23. Groom Marriage Parents Marriage Identity linkage"
+echo "22. Groom Marriage Parents Marriage Identity linkage"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.GroomMarriageParentsMarriageBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/groom-parents-marriage
 
-echo "24. Death Bride Sibling linkage" DeathBrideSiblingBundleBuilder
+echo "23. Death Bride Sibling linkage" DeathBrideSiblingBundleBuilder
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathBrideSiblingBundleBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/death-bride-sibling
 
-echo "25. Death Groom Sibling linkage" DeathBrideSiblingBundleBuilder
+echo "24. Death Groom Sibling linkage" DeathBrideSiblingBundleBuilder
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathGroomSiblingBundleBuilder" -e -Dexec.args="Umea EVERYTHING"
 #$COPY #$COPYDIR/death-groom-sibling
