@@ -1,2 +1,2 @@
 births-cache-size,marriages-cache-size,deaths-cache-size,ros,threshold,"pre-filter-required-fields",max-sibling-age-diff,min-marriage-age,min-parenting-age,max-parenting-age,"max-marriage-age-discrepancy",max-death-age,linkage-results-file,reason,priority,required-memory,seed,population,size,corruption-profile,metric,linkage-type,pre-filter,persist-links,evaluate-quality,experiment-id,linkage-phase,pop-number,evaluation-approach,"single-path-indirect-evaluation-approach","dual-path-indirect-evaluation-approach"
-90000,90000,90000,70,0.75,8,50,15,15,55,20,120,"cluster-runs/results/thesis-1-sif-1.csv",green,9,12,12345,synthetic-scotland,5003k,A,JENSEN_SHANNON,"death-groom-identity-with-occupations",true,false,true,-,,3,,,
+,,,,,,,,,,,,,,0,0,,,,,,,false,false,false,,,,,,
