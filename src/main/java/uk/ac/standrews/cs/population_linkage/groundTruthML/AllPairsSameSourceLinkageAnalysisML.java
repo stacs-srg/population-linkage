@@ -4,9 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.BufferedWriter;
@@ -33,17 +34,17 @@ import java.util.Map;
 
 public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnalysisML {
 
-    private final Path store_path;
-    private final String repo_name;
+    protected final Path store_path;
+    protected final String repo_name;
 
-    private static final int BLOCK_SIZE = 100;
-    private static final String DELIMIT = ",";
+    protected static final int BLOCK_SIZE = 100;
+    protected static final String DELIMIT = ",";
 
-    private final PrintWriter distance_results_writer;
-    private final PrintWriter distance_results_metadata_writer;
+    protected final PrintWriter distance_results_writer;
+    protected final PrintWriter distance_results_metadata_writer;
 
-    private List<LXP> source_records;
-    private int number_of_records;
+    protected List<LXP> source_records;
+    protected int number_of_records;
 
     DecimalFormat df = new DecimalFormat("#.###");
 
@@ -58,6 +59,34 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         distance_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".meta", false)));
 
         setupRecords();
+    }
+
+    protected ArrayList<LXP> filter(int number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+        ArrayList<LXP> filtered_source_records = new ArrayList<>();
+
+        for (LXP record : records_to_filter) {
+            if (passesFilter(record, linkageFields, number_of_required_fields)) {
+                filtered_source_records.add(record);
+            }
+            if (filtered_source_records.size() >= number_of_records_required) {
+                break;
+            }
+        }
+        return filtered_source_records;
+    }
+
+    public boolean passesFilter(LXP record, List<Integer> filterOn, int reqPopulatedFields) {
+        int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
+        int numberOfEmptyFields = 0;
+
+        for (int attribute : filterOn) {
+            String value = record.getString(attribute).toLowerCase().trim();
+            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----") ) {  // TODO could make this field specific
+                numberOfEmptyFields++;
+            }
+        }
+
+        return numberOfEmptyFields <= numberOfEmptyFieldsPermitted;
     }
 
     protected abstract Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository);
@@ -94,7 +123,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         return map;
     }
 
-    private void setupRecords() {
+    protected void setupRecords() {
 
         System.out.println("Reading records from repository: " + repo_name);
 
@@ -108,7 +137,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         number_of_records = source_records.size();
     }
 
-    public void run() throws Exception {
+    protected void run() throws Exception {
 
         printHeaders();
         printMetaData();
@@ -139,9 +168,10 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         LinkStatus last_status = LinkStatus.UNKNOWN;
 
+        final LXP record1 = source_records.get(record_index);
+
         for (int j = record_index + 1; j < number_of_records; j++) {
 
-            final LXP record1 = source_records.get(record_index);
             final LXP record2 = source_records.get(j);
 
             final LinkStatus link_status = isTrueLink(record1, record2);
@@ -168,29 +198,29 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         }
     }
 
-    private boolean shouldPrintResult(LinkStatus link_status, LinkStatus last_status) {
-        if( link_status == LinkStatus.TRUE_LINK ) { // always print true links
+    protected boolean shouldPrintResult(LinkStatus link_status, LinkStatus last_status) {
+        if( link_status == LinkStatus.TRUE_MATCH ) { // always print true links
             return true;
         }
-        if( last_status == LinkStatus.NOT_TRUE_LINK && link_status == LinkStatus.NOT_TRUE_LINK ) { // never print two falses in a row
+        if( last_status == LinkStatus.NOT_TRUE_MATCH && link_status == LinkStatus.NOT_TRUE_MATCH ) { // never print two falses in a row
             return false;
-        } else if( last_status == LinkStatus.TRUE_LINK && link_status == LinkStatus.NOT_TRUE_LINK ) { // last was true so print the false
+        } else if( last_status == LinkStatus.TRUE_MATCH && link_status == LinkStatus.NOT_TRUE_MATCH ) { // last was true so print the false
             return true;
         }
         return true; // print if status was unknown or last was unknown
     }
 
-    private void outputMeasurement(double value) {
+    protected void outputMeasurement(double value) {
         distance_results_writer.print(df.format(value));
         distance_results_writer.print(DELIMIT);
     }
 
-    private void outputMeasurement(long value) {
+    protected void outputMeasurement(long value) {
         distance_results_writer.print(value);
         distance_results_writer.print(DELIMIT);
     }
 
-    private void printHeaders() {
+    protected void printHeaders() {
 
         LXP a_source_record = source_records.get(0);
 
@@ -213,7 +243,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         distance_results_writer.flush();
     }
 
-    private void printMetaData() {
+    protected void printMetaData() {
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
         distance_results_metadata_writer.println("Checking quality of linkage for machine learning processing: cross products of metrics and field distances");
@@ -221,17 +251,13 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         distance_results_metadata_writer.println("LinkageRecipe type: sibling bundling");
         distance_results_metadata_writer.println("Records: " + getSourceType());
         distance_results_metadata_writer.flush();
+        distance_results_metadata_writer.close();
     }
 
-    protected enum LinkStatus {
-
-        TRUE_LINK, NOT_TRUE_LINK, UNKNOWN
-    }
-
-    private String statusToPrintFormat( LinkStatus ls ) {
-        if( ls == LinkStatus.TRUE_LINK ) {
+    protected String statusToPrintFormat( LinkStatus ls ) {
+        if( ls == LinkStatus.TRUE_MATCH ) {
             return "1";
-        } else if( ls == LinkStatus.NOT_TRUE_LINK ) {
+        } else if( ls == LinkStatus.NOT_TRUE_MATCH ) {
             return "-1";
         } else {
             return "0";

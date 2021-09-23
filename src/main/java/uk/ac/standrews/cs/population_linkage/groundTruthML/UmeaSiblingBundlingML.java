@@ -6,6 +6,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -24,13 +25,17 @@ import java.util.List;
 
 public class UmeaSiblingBundlingML extends AllPairsSameSourceLinkageAnalysisML {
 
+    protected static final int EVERYTHING = Integer.MAX_VALUE;
+    public int ALL_LINKAGE_FIELDS = 8;
+
     public UmeaSiblingBundlingML(Path store_path, String repo_name, final String distance_results_filename) throws IOException {
         super(store_path,repo_name, distance_results_filename);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
-        return Utilities.getBirthRecords( record_repository );
+        // return Utilities.getBirthRecords( record_repository );
+        return filter(ALL_LINKAGE_FIELDS, EVERYTHING, Utilities.getBirthRecords( record_repository ), getComparisonFields());
     }
 
     @Override
@@ -41,7 +46,7 @@ public class UmeaSiblingBundlingML extends AllPairsSameSourceLinkageAnalysisML {
 
         if (b1_parent_id.isEmpty() || b2_parent_id.isEmpty()) return LinkStatus.UNKNOWN;
 
-        return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_LINK : LinkStatus.NOT_TRUE_LINK;
+        return b1_parent_id.equals(b2_parent_id) ? LinkStatus.TRUE_MATCH : LinkStatus.NOT_TRUE_MATCH;
     }
 
     @Override

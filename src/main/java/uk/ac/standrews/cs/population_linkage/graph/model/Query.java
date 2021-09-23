@@ -360,7 +360,6 @@ public class Query {
      * @param standard_id_to   - the STANDARDISED_ID of the node to which we are creating a reference
      * @param provenance       - the provenance of this reference
      * @param fields_populated   - the number of fields used in establishing the link - might need the actual fields and metric (?) but could find this from provenance (if includes classname)
-     * @param distance         - the distance between the two nodes being linked
      * @return the number of relationships created
      */
     private static void createReference(NeoDbCypherBridge bridge, String query, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
