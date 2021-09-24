@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -30,19 +31,36 @@ public class EstablishGTLinks {
     private final List<Marriage> marriageList = new ArrayList<>();
     private final List<Death> deathList = new ArrayList<>();
 
-    public EstablishGTLinks(String source_repo_name) {
+    public EstablishGTLinks(String source_repo_name, NeoDbCypherBridge bridge) throws BucketException {
         this.record_repository = new RecordRepository(source_repo_name);
-        this.bridge = new NeoDbCypherBridge();
+        this.bridge = bridge;
         this.births = record_repository.getBucket("birth_records");
         this.marriages = record_repository.getBucket("marriage_records");
         this.deaths = record_repository.getBucket("death_records");
         initializeRecordsToList();
     }
 
-    private void initializeRecordsToList() {
+    private void initializeRecordsToList() throws BucketException {
+        checkConnections( record_repository );
+
         record_repository.getBirths().forEach(birthList::add);
         record_repository.getMarriages().forEach(marriageList::add);
         record_repository.getDeaths().forEach(deathList::add);
+    }
+
+    private void checkConnections(RecordRepository record_repository) throws BucketException {
+        if( record_repository.getBucket("birth_records").size() == 0 ) {
+            System.out.println( "Zero birth records found - giving up!" );
+            throw new RuntimeException("No records found");
+        }
+        if( record_repository.getBucket("marriage_records").size() == 0 ) {
+            System.out.println( "Zero marriage records found - giving up!" );
+            throw new RuntimeException("No records found");
+        }
+        if( record_repository.getBucket("death_records").size() == 0 ) {
+            System.out.println( "Zero death records found - giving up!" );
+            throw new RuntimeException("No records found");
+        }
     }
 
     public void runLinkageCreation() {
@@ -63,7 +81,6 @@ public class EstablishGTLinks {
         matchGroomBrideSiblingLinkage();    //not break
         matchBrideGroomHalfSiblingLinkage();    // not break
         matchGroomBrideHalfSiblingLinkage();    //not break
-
 
         matchBirthSiblingLinkage(); // not break  Birth Birth
         matchBirthHalfSiblingLinkage(); // not break  Birth Birth
@@ -375,9 +392,17 @@ public class EstablishGTLinks {
     }
 
     public static void main(String[] args) {
-        EstablishGTLinks linkageMatch = new EstablishGTLinks("Umea"); // it should read the configuration file, not hard code
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
+            EstablishGTLinks linkageMatch = new EstablishGTLinks("Umea",bridge); // it should read the configuration file, not hard code
 
-        linkageMatch.runLinkageCreation();
-        System.out.println("finished!");
+            linkageMatch.runLinkageCreation();
+            System.out.println("finished!");
+        } catch (Exception e) {
+            System.out.println( "Fatal exception during linkage creation");
+            e.printStackTrace();
+            System.exit(-1);
+        } finally {
+            System.exit(0); // all good
+        }
     }
 }
