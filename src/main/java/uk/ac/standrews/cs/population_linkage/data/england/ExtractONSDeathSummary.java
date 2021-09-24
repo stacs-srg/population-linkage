@@ -180,7 +180,7 @@ public class ExtractONSDeathSummary {
         String cleaned_description = clean(descriptions.get(pair_number));
 
         if (!cleaned_description.isEmpty()) {
-            String combined = ICDs.get(pair_number) + "," + cleaned_description;
+            String combined = ICDs.get(pair_number) + ",\"" + cleaned_description + "\"";
 
             if (occurrences.containsKey(combined)) {
                 occurrences.put(combined, occurrences.get(combined) + 1);
