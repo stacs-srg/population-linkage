@@ -7,64 +7,165 @@ package uk.ac.standrews.cs.population_linkage.data.england;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.regex.Pattern;
 
 public class ExtractONSDeathSummary {
 
-    public static final String DATA_PARENT_PATH = "/Users/graham/Desktop/";
+    public static final String DATA_PARENT_PATH = "/Users/graham/Desktop/ONS/";
     public static final String DATA_FILE_PREFIX = "MORT";
     public static final String DATA_FILE_SUFFIX = ".TXT";
-    public static final int NUMBER_OF_DATA_FILES = 2;
-    public static final int DISCLOSURE_THRESHOLD = 2;
+
+    public static final String ALTERNATES_PATH = "/Users/graham/Desktop/ONS/alternates.csv";
+
+    public static final String RAW_ALL_PATH = "/Users/graham/Desktop/ONS/extract-raw-all-causes.csv";
+    public static final String RAW_MAIN_PATH = "/Users/graham/Desktop/ONS/extract-raw-main-causes.csv";
+    public static final String CLEANED_ALL_PATH = "/Users/graham/Desktop/ONS/extract-cleaned-all-causes.csv";
+    public static final String CLEANED_MAIN_PATH = "/Users/graham/Desktop/ONS/extract-cleaned-main-causes.csv";
+
+    public static final int NUMBER_OF_DATA_FILES = 13;
+    public static final int DISCLOSURE_THRESHOLD = 1;
+
+    private static final List<Map.Entry<Pattern, String>> TIDY_PATTERNS = new ArrayList<>();
+
+    private static final Map<String, String> ALTERNATE_STRINGS = new HashMap<>();
+
+    private final boolean do_cleaning;
+    private final boolean main_cause_only;
+    private final String output_path;
+
+    static {
+        // A list to preserve the order, as we want to remove apostrophe altogether rather than substituting space.
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("'"), ""));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("[^a-zA-Z0-9 ]"), " "));
+
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^a "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^b "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^c "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^i "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^ii "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^iii "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^I "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^II "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^III "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1 "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^2 "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^3 "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1a "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1b "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1c "), " "));
+
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile(" of "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile(" the "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile(" and "), " "));
+
+        try {
+            DataSet alternates = new DataSet(Paths.get(ALTERNATES_PATH));
+
+            for (List<String> row : alternates.getRecords()) {
+                String standardised = row.get(0);
+                for (String alternate : row) {
+                    ALTERNATE_STRINGS.put(" " + alternate + " ", " " + standardised + " ");
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void main(String[] args) throws IOException {
+
+        new ExtractONSDeathSummary(false, false, RAW_ALL_PATH).extractSummary();
+        new ExtractONSDeathSummary(false, true, RAW_MAIN_PATH).extractSummary();
+        new ExtractONSDeathSummary(true, false, CLEANED_ALL_PATH).extractSummary();
+        new ExtractONSDeathSummary(true, true, CLEANED_MAIN_PATH).extractSummary();
+    }
+
+    public ExtractONSDeathSummary(boolean do_cleaning, boolean main_cause_only, String output_path) throws IOException {
+
+        this.do_cleaning = do_cleaning;
+        this.main_cause_only = main_cause_only;
+        this.output_path = output_path;
+    }
+
+    private void extractSummary() throws IOException {
 
         Map<String, Integer> occurrences = new TreeMap<>();
         int row_count = 0;
 
         for (int i = 1; i <= NUMBER_OF_DATA_FILES; i++) {
+            System.out.println("started file " + i);
             row_count += process(i, occurrences);
         }
 
-        output(occurrences, row_count);
+        try (PrintStream print_stream = new PrintStream(Files.newOutputStream(Paths.get(output_path)))) {
+            output(occurrences, row_count, print_stream);
+        }
     }
 
-    private static void output(Map<String, Integer> occurrences, int row_count) {
+    private void output(Map<String, Integer> occurrences, int row_count, PrintStream print_stream) {
 
         for (String combined : occurrences.keySet()) {
             int number_of_occurrences = occurrences.get(combined);
             if (number_of_occurrences >= DISCLOSURE_THRESHOLD) {
-                System.out.println(combined + ", " + number_of_occurrences);
+                print_stream.println(combined + "," + number_of_occurrences);
             }
         }
 
-        System.out.println("\nNumber of input rows: " + row_count);
+        print_stream.println("\nNumber of input rows: " + row_count);
     }
 
-    private static int process(int file_number, Map<String, Integer> occurrences) throws IOException {
+    private int process(int file_number, Map<String, Integer> occurrences) throws IOException {
 
         String data_path = getPath(file_number);
         DataSet dataset = new DataSet(Paths.get(data_path));
         List<List<String>> records = dataset.getRecords();
 
+        int count = 0;
+
         for (List<String> record : records) {
+            if (count % 10000 == 0) System.out.println(count);
             processRecord(occurrences, dataset, record);
+            count++;
         }
 
         return records.size();
     }
 
-    private static void processRecord(Map<String, Integer> occurrences, DataSet dataset, List<String> record) {
+    private void processRecord(Map<String, Integer> occurrences, DataSet dataset, List<String> record) {
 
+        String main_cause_ICD = getMainCauseICD(dataset, record);
         List<String> ICDs = getICDs(dataset, record);
         List<String> descriptions = getDescriptions(dataset, record);
 
         alignEntries(ICDs, descriptions);
+        if (main_cause_only) stripSecondaryCauses(main_cause_ICD, ICDs, descriptions);
         recordICDDescriptionPairs(occurrences, ICDs, descriptions);
     }
 
-    private static void recordICDDescriptionPairs(Map<String, Integer> occurrences, List<String> ICDs, List<String> descriptions) {
+    private void stripSecondaryCauses(String main_cause_icd, List<String> ICDs, List<String> descriptions) {
+
+        try {
+            int main_index = ICDs.indexOf(main_cause_icd);
+            String main_cause_description = descriptions.get(main_index);
+
+            ICDs.clear();
+            ICDs.add(main_cause_icd);
+
+            descriptions.clear();
+            descriptions.add(main_cause_description);
+        }
+        catch (IndexOutOfBoundsException e) {
+            ICDs.clear();
+            descriptions.clear();
+        }
+    }
+
+    private void recordICDDescriptionPairs(Map<String, Integer> occurrences, List<String> ICDs, List<String> descriptions) {
 
         for (int i = 0; i < ICDs.size(); i++) {
             if (i < descriptions.size() && !descriptions.get(i).isEmpty()) {
@@ -74,15 +175,76 @@ public class ExtractONSDeathSummary {
         }
     }
 
-    private static void recordICDDescriptionPair(Map<String, Integer> occurrences, List<String> ICDs, List<String> descriptions, int pair_number) {
+    private void recordICDDescriptionPair(Map<String, Integer> occurrences, List<String> ICDs, List<String> descriptions, int pair_number) {
 
-        String combined = ICDs.get(pair_number) + ", " + descriptions.get(pair_number).toLowerCase();
+        String cleaned_description = clean(descriptions.get(pair_number));
 
-        if (occurrences.containsKey(combined)) {
-            occurrences.put(combined, occurrences.get(combined) + 1);
-        } else {
-            occurrences.put(combined, 1);
+        if (!cleaned_description.isEmpty()) {
+            String combined = ICDs.get(pair_number) + "," + cleaned_description;
+
+            if (occurrences.containsKey(combined)) {
+                occurrences.put(combined, occurrences.get(combined) + 1);
+            } else {
+                occurrences.put(combined, 1);
+            }
         }
+    }
+
+    private String clean(final String raw) {
+
+        if (!do_cleaning) return raw;
+
+        String result = removeRepeatedSpaces(raw);
+
+        result = convertCase(result);
+        result = replacePatterns(result);
+        result = removeRepeatedSpaces(result);
+        result = " " + result + " ";
+        result = replaceAlternates(result);
+        result = removeRepeatedSpaces(result);
+        if (result.equals(" ")) result = "";
+
+        return result;
+    }
+
+    private String replaceAlternates(String clean) {
+
+        for (Map.Entry<String,String> entry : ALTERNATE_STRINGS.entrySet()) {
+            clean = clean.replaceAll(entry.getKey(), entry.getValue());
+        }
+        return clean;
+    }
+
+    private String replacePatterns(String s) {
+
+        for (Map.Entry<Pattern, String> entry : TIDY_PATTERNS) {
+            s = entry.getKey().matcher(s).replaceAll(entry.getValue());
+        }
+        return s;
+    }
+
+    private String convertCase(String s) {
+
+        StringBuilder b = new StringBuilder();
+
+        for (String word : s.split(" ")) {
+            if (allCaps(word)) {
+                b.append(word);
+            }
+            else {
+                b.append(word.toLowerCase());
+            }
+            b.append(" ");
+        }
+        return b.toString();
+    }
+
+    private String removeRepeatedSpaces(String raw) {
+        return raw.replaceAll("\\s\\s+", " ").trim();
+    }
+
+    private static boolean allCaps(String s) {
+        return s.equals(s.toUpperCase());
     }
 
     private static void alignEntries(List<String> ICDs, List<String> descriptions) {
@@ -136,7 +298,11 @@ public class ExtractONSDeathSummary {
     private static List<String> getICDs(DataSet dataset, List<String> record) {
 
         return getRowValues(dataset, record, 15, "ICD");
+    }
 
+    private static String getMainCauseICD(DataSet dataset, List<String> record) {
+
+        return dataset.getValue(record, "ICD10U");
     }
 
     private static List<String> getDescriptions(DataSet dataset, List<String> record) {
