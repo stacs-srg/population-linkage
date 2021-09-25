@@ -55,9 +55,22 @@ public class ExtractONSDeathSummary {
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1 "), " "));
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^2 "), " "));
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^3 "), " "));
-        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1a "), " "));
-        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1b "), " "));
-        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1c "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1a"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1b"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1c"), " "));
+
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^\\(a\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^\\(b\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^\\(c\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^a\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^b\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^c\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^\\(1\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^\\(2\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1 a "), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1\\(a\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1 \\(a\\)"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^11 "), " "));
 
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile(" of "), " "));
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile(" the "), " "));
@@ -207,12 +220,12 @@ public class ExtractONSDeathSummary {
         return result;
     }
 
-    private String replaceAlternates(String clean) {
+    private String replaceAlternates(String s) {
 
         for (Map.Entry<String,String> entry : ALTERNATE_STRINGS.entrySet()) {
-            clean = clean.replaceAll(entry.getKey(), entry.getValue());
+            s = s.replaceAll(entry.getKey(), entry.getValue());
         }
-        return clean;
+        return s;
     }
 
     private String replacePatterns(String s) {
