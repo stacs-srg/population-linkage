@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.data.england;
 
+import org.neo4j.internal.batchimport.cache.idmapping.string.Radix;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.io.IOException;
@@ -20,19 +21,21 @@ public class ExtractONSDeathSummary {
     public static final String DATA_FILE_PREFIX = "MORT";
     public static final String DATA_FILE_SUFFIX = ".TXT";
 
+    public static final String ACRONYMS_PATH = "/Users/graham/Desktop/ONS/acronyms.csv";
     public static final String ALTERNATES_PATH = "/Users/graham/Desktop/ONS/alternates.csv";
 
-    public static final String RAW_ALL_PATH = "/Users/graham/Desktop/ONS/extract-raw-all-causes.csv";
-    public static final String RAW_MAIN_PATH = "/Users/graham/Desktop/ONS/extract-raw-main-causes.csv";
-    public static final String CLEANED_ALL_PATH = "/Users/graham/Desktop/ONS/extract-cleaned-all-causes.csv";
-    public static final String CLEANED_MAIN_PATH = "/Users/graham/Desktop/ONS/extract-cleaned-main-causes.csv";
+    public static final String RAW_ALL_PATH = "/Users/graham/Desktop/extract-raw-all-causes.csv";
+    public static final String RAW_MAIN_PATH = "/Users/graham/Desktop/extract-raw-main-causes.csv";
+    public static final String CLEANED_ALL_PATH = "/Users/graham/Desktop/extract-cleaned-all-causes.csv";
+    public static final String CLEANED_MAIN_PATH = "/Users/graham/Desktop/extract-cleaned-main-causes.csv";
 
     public static final int NUMBER_OF_DATA_FILES = 13;
-    public static final int DISCLOSURE_THRESHOLD = 1;
+    public static final int DISCLOSURE_THRESHOLD = 10;
 
     private static final List<Map.Entry<Pattern, String>> TIDY_PATTERNS = new ArrayList<>();
 
     private static final Map<String, String> ALTERNATE_STRINGS = new HashMap<>();
+    private static final Set<String> ACRONYMS = new HashSet<>();
 
     private final boolean do_cleaning;
     private final boolean main_cause_only;
@@ -58,6 +61,9 @@ public class ExtractONSDeathSummary {
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1a"), " "));
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1b"), " "));
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^1c"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^ia"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^ib"), " "));
+        TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^ic"), " "));
 
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^\\(a\\)"), " "));
         TIDY_PATTERNS.add(new SimpleEntry<>(Pattern.compile("^\\(b\\)"), " "));
@@ -84,6 +90,17 @@ public class ExtractONSDeathSummary {
                 for (String alternate : row) {
                     ALTERNATE_STRINGS.put(" " + alternate + " ", " " + standardised + " ");
                 }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            DataSet acronyms = new DataSet(Paths.get(ACRONYMS_PATH));
+
+            for (List<String> row : acronyms.getRecords()) {
+                String acronym = row.get(0);
+                ACRONYMS.add(acronym);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -125,11 +142,28 @@ public class ExtractONSDeathSummary {
         for (String combined : occurrences.keySet()) {
             int number_of_occurrences = occurrences.get(combined);
             if (number_of_occurrences >= DISCLOSURE_THRESHOLD) {
-                print_stream.println(combined + "," + number_of_occurrences);
+                String s = restoreAcronyms(combined);
+                int first_space_index = s.indexOf(" ");
+                print_stream.println(s.substring(0, first_space_index ) + ",\"" + s.substring(first_space_index + 1) + "\"," + number_of_occurrences);
             }
         }
 
         print_stream.println("\nNumber of input rows: " + row_count);
+    }
+
+    private String restoreAcronyms(String s) {
+
+        StringBuilder b = new StringBuilder();
+        String[] words = s.split(" ");
+
+        for (String word : words) {
+
+            String upper_case_version = word.toUpperCase();
+            b.append(ACRONYMS.contains(upper_case_version) ? upper_case_version : word);
+            b.append(" ");
+        }
+
+        return b.toString().trim();
     }
 
     private int process(int file_number, Map<String, Integer> occurrences) throws IOException {
@@ -193,7 +227,7 @@ public class ExtractONSDeathSummary {
         String cleaned_description = clean(descriptions.get(pair_number));
 
         if (!cleaned_description.isEmpty()) {
-            String combined = ICDs.get(pair_number) + ",\"" + cleaned_description + "\"";
+            String combined = ICDs.get(pair_number) + " " + cleaned_description + " ";
 
             if (occurrences.containsKey(combined)) {
                 occurrences.put(combined, occurrences.get(combined) + 1);
@@ -215,6 +249,9 @@ public class ExtractONSDeathSummary {
         result = " " + result + " ";
         result = replaceAlternates(result);
         result = removeRepeatedSpaces(result);
+        result = replacePatterns(result);
+        result = replacePatterns(result);
+        result = result.trim();
         if (result.equals(" ")) result = "";
 
         return result;
@@ -238,18 +275,7 @@ public class ExtractONSDeathSummary {
 
     private String convertCase(String s) {
 
-        StringBuilder b = new StringBuilder();
-
-        for (String word : s.split(" ")) {
-            if (allCaps(word)) {
-                b.append(word);
-            }
-            else {
-                b.append(word.toLowerCase());
-            }
-            b.append(" ");
-        }
-        return b.toString();
+        return s.toLowerCase();
     }
 
     private String removeRepeatedSpaces(String raw) {
