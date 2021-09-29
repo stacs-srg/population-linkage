@@ -4,7 +4,6 @@
  */
 package uk.ac.standrews.cs.population_linkage.data.england;
 
-import org.neo4j.internal.batchimport.cache.idmapping.string.Radix;
 import uk.ac.standrews.cs.utilities.dataset.DataSet;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ public class ExtractONSDeathSummary {
     public static final String CLEANED_ALL_PATH = "/Users/graham/Desktop/extract-cleaned-all-causes.csv";
     public static final String CLEANED_MAIN_PATH = "/Users/graham/Desktop/extract-cleaned-main-causes.csv";
 
-    public static final int NUMBER_OF_DATA_FILES = 13;
+    public static final int NUMBER_OF_DATA_FILES = 1;
     public static final int DISCLOSURE_THRESHOLD = 10;
 
     private static final List<Map.Entry<Pattern, String>> TIDY_PATTERNS = new ArrayList<>();
@@ -144,7 +143,9 @@ public class ExtractONSDeathSummary {
             if (number_of_occurrences >= DISCLOSURE_THRESHOLD) {
                 String s = restoreAcronyms(combined);
                 int first_space_index = s.indexOf(" ");
-                if (first_space_index >= 0) print_stream.println(s.substring(0, first_space_index ) + ",\"" + s.substring(first_space_index + 1) + "\"," + number_of_occurrences);
+                if (first_space_index >= 0) {
+                    print_stream.println(s.substring(0, first_space_index) + ",\"" + s.substring(first_space_index + 1) + "\"," + number_of_occurrences);
+                }
             }
         }
 
@@ -243,7 +244,7 @@ public class ExtractONSDeathSummary {
 
         String result = removeRepeatedSpaces(raw);
 
-        result = convertCase(result);
+        result = result.toLowerCase();
         result = replacePatterns(result);
         result = removeRepeatedSpaces(result);
         result = " " + result + " ";
@@ -273,17 +274,8 @@ public class ExtractONSDeathSummary {
         return s;
     }
 
-    private String convertCase(String s) {
-
-        return s.toLowerCase();
-    }
-
     private String removeRepeatedSpaces(String raw) {
         return raw.replaceAll("\\s\\s+", " ").trim();
-    }
-
-    private static boolean allCaps(String s) {
-        return s.equals(s.toUpperCase());
     }
 
     private static void alignEntries(List<String> ICDs, List<String> descriptions) {
