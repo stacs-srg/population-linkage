@@ -144,7 +144,7 @@ public class ExtractONSDeathSummary {
             if (number_of_occurrences >= DISCLOSURE_THRESHOLD) {
                 String s = restoreAcronyms(combined);
                 int first_space_index = s.indexOf(" ");
-                print_stream.println(s.substring(0, first_space_index ) + ",\"" + s.substring(first_space_index + 1) + "\"," + number_of_occurrences);
+                if (first_space_index >= 0) print_stream.println(s.substring(0, first_space_index ) + ",\"" + s.substring(first_space_index + 1) + "\"," + number_of_occurrences);
             }
         }
 
