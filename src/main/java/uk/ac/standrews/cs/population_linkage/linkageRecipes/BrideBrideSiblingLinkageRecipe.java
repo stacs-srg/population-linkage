@@ -11,33 +11,26 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the bride on a marriage record with a sibling appearing as the bride on another marriage record.
  */
 public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
+    private static final double DISTANCE_THRESHOLD = 0.15;
+
     public static final String LINKAGE_TYPE = "bride-bride-sibling";
-    private static final double DISTANCE_THESHOLD = 0.15;
-
-    public static List<Integer> COMPARISON_FIELDS = Arrays.asList(
-
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME
-    );
 
     public static final int ID_FIELD_INDEX = Marriage.STANDARDISED_ID;
+
+    public static List<Integer> LINKAGE_FIELDS = list(
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME
+    );
 
     /**
      * Various possible relevant sources of ground truth for siblings:
@@ -46,8 +39,10 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
      */
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-                    list(pair(Marriage.BRIDE_MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY), pair(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)),
-                    list(pair(Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY), pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
+                    list(   pair(Marriage.BRIDE_MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
+                            pair(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)),
+                    list(   pair(Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY),
+                            pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
             );
 
     public BrideBrideSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
@@ -56,7 +51,6 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-
         return trueMatch(record1, record2);
     }
 
@@ -99,11 +93,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public List<Integer> getLinkageFields() {
 
-        return getComparisonFields();
-    }
-
-    public static List<Integer> getComparisonFields() {
-        return COMPARISON_FIELDS;
+        return LINKAGE_FIELDS;
     }
 
     @Override
@@ -117,13 +107,13 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
             return false;
         }
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
         try {
             int year_of_birth1 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record1, true);
             int year_of_birth2 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
 
         } catch(NumberFormatException e) { 
             return true;
@@ -146,6 +136,6 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

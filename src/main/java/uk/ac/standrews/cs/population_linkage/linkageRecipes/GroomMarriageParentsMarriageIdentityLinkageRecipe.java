@@ -15,48 +15,41 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links two people appearing as the spouses on a marriage record with the same people appearing as the parents of the groom on another marriage record,
+ * i.e. links the marriage of two people to a marriage of their son.
  */
+public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-public class BrideMarriageParentsMarriageLinkageRecipe extends LinkageRecipe {
+    private static final double DISTANCE_THRESHOLD = 0.6;
 
-    private static final double DISTANCE_THESHOLD = 0.55;
-
-    public static final List<Integer> LINKAGE_FIELDS = list(
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
-            Marriage.BRIDE_FATHER_OCCUPATION
-    );
-
-    public static final List<Integer> SEARCH_FIELDS= list(
-            Marriage.GROOM_FORENAME,
-            Marriage.GROOM_SURNAME,
-            Marriage.BRIDE_FORENAME,
-            Marriage.BRIDE_SURNAME,
-            Marriage.GROOM_OCCUPATION
-    );
-
+    public static final String LINKAGE_TYPE = "groom-parents-marriage-identity";
 
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    @SuppressWarnings("unchecked")
-    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(pair(Marriage.BRIDE_FATHER_IDENTITY, Marriage.GROOM_IDENTITY )),
-            list(pair(Marriage.BRIDE_MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY ))
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_FATHER_OCCUPATION
     );
 
-    public static final String LINKAGE_TYPE = "bride-parents-marriage-identity";
+    public static final List<Integer> SEARCH_FIELDS= list(
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME,
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.GROOM_OCCUPATION
+    );
 
-    public BrideMarriageParentsMarriageLinkageRecipe(String source_repository_name, String links_persistent_name) {
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_IDENTITY )),
+            list(pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY ))
+    );
+
+    public GroomMarriageParentsMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
 
@@ -75,7 +68,7 @@ public class BrideMarriageParentsMarriageLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Marriage.class;
     }
 
@@ -86,7 +79,7 @@ public class BrideMarriageParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getStoredRole() {
-        return Marriage.ROLE_BRIDE;
+        return Marriage.ROLE_GROOM; // TODO doesn't seem right - does it matter?
     }
 
     @Override
@@ -133,6 +126,6 @@ public class BrideMarriageParentsMarriageLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

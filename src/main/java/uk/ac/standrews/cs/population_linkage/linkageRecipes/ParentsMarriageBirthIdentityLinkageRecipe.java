@@ -16,20 +16,40 @@ import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 import java.util.*;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links two people appearing as the spouses on a marriage record with the same people appearing as the parents on a birth record.
  */
-public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
+public class ParentsMarriageBirthIdentityLinkageRecipe extends LinkageRecipe {
+
+    // TODO Redundant given BirthParentsMarriageIdentityLinkageRecipe? Does different filtering though.
+
+    private static final double DISTANCE_THRESHOLD = 0; // TODO ??
 
     public static final String LINKAGE_TYPE = "parents-marriage-birth-identity";
-    private static final double DISTANCE_THESHOLD = 0;
 
-    public ParentsMarriageBirthLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
+    // TODO Include occupation?
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME,
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.PLACE_OF_MARRIAGE,
+            Marriage.MARRIAGE_DAY,
+            Marriage.MARRIAGE_MONTH,
+            Marriage.MARRIAGE_YEAR
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.PARENTS_PLACE_OF_MARRIAGE,
+            Birth.PARENTS_DAY_OF_MARRIAGE,
+            Birth.PARENTS_MONTH_OF_MARRIAGE,
+            Birth.PARENTS_YEAR_OF_MARRIAGE
+    );
+
+    public ParentsMarriageBirthIdentityLinkageRecipe(String source_repository_name, String results_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
 
@@ -65,16 +85,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getLinkageFields() {
-        return Arrays.asList(
-            Marriage.GROOM_FORENAME,
-            Marriage.GROOM_SURNAME,
-            Marriage.BRIDE_FORENAME,
-            Marriage.BRIDE_SURNAME,
-            Marriage.PLACE_OF_MARRIAGE,
-            Marriage.MARRIAGE_DAY,
-            Marriage.MARRIAGE_MONTH,
-            Marriage.MARRIAGE_YEAR
-        );
+        return LINKAGE_FIELDS;
     }
 
     @Override
@@ -84,16 +95,7 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
     @Override
     public List<Integer> getQueryMappingFields() {
-        return Arrays.asList(
-                Birth.FATHER_FORENAME,
-                Birth.FATHER_SURNAME,
-                Birth.MOTHER_FORENAME,
-                Birth.MOTHER_MAIDEN_SURNAME,
-                Birth.PARENTS_PLACE_OF_MARRIAGE,
-                Birth.PARENTS_DAY_OF_MARRIAGE,
-                Birth.PARENTS_MONTH_OF_MARRIAGE,
-                Birth.PARENTS_YEAR_OF_MARRIAGE
-        );
+        return SEARCH_FIELDS;
     }
 
     @Override
@@ -103,19 +105,18 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
         for (LXP marriage_record : getMarriageRecords()) {
 
-            String marriage_key_from_marriage = toKeyFromMarriage( marriage_record );
+            String marriage_key_from_marriage = toKeyFromMarriage(marriage_record);
 
             for (LXP birth_record : getBirthRecords()) {
 
-                String birth_key_from_marriage = toKeyFromBirth( birth_record );
+                String birth_key_from_marriage = toKeyFromBirth(birth_record);
 
-                if( birth_key_from_marriage.equals( marriage_key_from_marriage ) ) {
+                if (birth_key_from_marriage.equals(marriage_key_from_marriage)) {
                     try {
                         Link l = new Link(marriage_record, Marriage.ROLE_BRIDES_MOTHER, birth_record, Birth.ROLE_MOTHER, 1.0f, "ground truth", -1);
-                        // Link l = new Link(marriage_record, Marriage.ROLE_PARENTS, birth_record, Birth.ROLE_PARENTS, 1.0f, "ground truth");
                         links.put(l.toString(), l);
                     } catch (PersistentObjectException e) {
-                        ErrorHandling.error("PersistentObjectException adding getGroundTruthLinks");
+                        throw new RuntimeException("PersistentObjectException adding getGroundTruthLinks");
                     }
                 }
             }
@@ -125,28 +126,28 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
     }
 
     private static String toKeyFromBirth(LXP birth_record) {
-        return  birth_record.getString(Birth.FATHER_IDENTITY ) +
-                "-" + birth_record.getString(Birth.MOTHER_IDENTITY );
+        return birth_record.getString(Birth.FATHER_IDENTITY) +
+                "-" + birth_record.getString(Birth.MOTHER_IDENTITY);
     }
 
     private static String toKeyFromMarriage(LXP marriage_record) {
-        return  marriage_record.getString(Marriage.GROOM_IDENTITY ) +
-                "-" + marriage_record.getString(Marriage.BRIDE_IDENTITY );
+        return marriage_record.getString(Marriage.GROOM_IDENTITY) +
+                "-" + marriage_record.getString(Marriage.BRIDE_IDENTITY);
     }
 
     public int getNumberOfGroundTruthTrueLinks() {
 
         int count = 0;
 
-        for(LXP marriage : getMarriageRecords()) {
+        for (LXP marriage : getMarriageRecords()) {
 
-            String marriage_key_from_marriage = toKeyFromMarriage( marriage );
+            String marriage_key_from_marriage = toKeyFromMarriage(marriage);
 
             for (LXP birth : getBirthRecords()) {
 
-                String birth_key_from_marriage = toKeyFromBirth( birth );
+                String birth_key_from_marriage = toKeyFromBirth(birth);
 
-                if( birth_key_from_marriage.equals( marriage_key_from_marriage ) ) {
+                if (birth_key_from_marriage.equals(marriage_key_from_marriage)) {
                     count++;
                 }
             }
@@ -154,11 +155,12 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
+    @Override
     public Iterable<LXP> getStoredRecords() {
 
         Collection<LXP> filteredMarriageRecords = new HashSet<>();
 
-        for(LXP record : getMarriageRecords()) {
+        for (LXP record : getMarriageRecords()) {
 
             String groomForename = record.getString(Marriage.GROOM_FORENAME).trim();
             String groomSurname = record.getString(Marriage.GROOM_SURNAME).trim();
@@ -208,7 +210,6 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
     private int requiredNumberOfPreFilterFields() {
         return 5;
     }
-
 
     @Override
     public Iterable<LXP> getQueryRecords() {
@@ -263,34 +264,32 @@ public class ParentsMarriageBirthLinkageRecipe extends LinkageRecipe {
 
     public String toKey(LXP query_record, LXP stored_record) {
         String s1 = stored_record.getString(Marriage.ORIGINAL_ID);
-        String s2= query_record.getString(Birth.ORIGINAL_ID);
+        String s2 = query_record.getString(Birth.ORIGINAL_ID);
 
-        if(s1.compareTo(s2) < 0)
+        if (s1.compareTo(s2) < 0)
             return s1 + "-" + s2;
         else
             return s2 + "-" + s1;
-
     }
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 
     public static LinkStatus trueMatch(LXP birth, LXP marriage) {
 
-        if(     birth.getString( Birth.FATHER_IDENTITY ).isEmpty()  ||
-                birth.getString( Birth.MOTHER_IDENTITY ).isEmpty()  ||
-                marriage.getString(Marriage.GROOM_IDENTITY ).isEmpty() ||
-                marriage.getString(Marriage.BRIDE_IDENTITY ).isEmpty() ) {
+        if (birth.getString(Birth.FATHER_IDENTITY).isEmpty() ||
+                birth.getString(Birth.MOTHER_IDENTITY).isEmpty() ||
+                marriage.getString(Marriage.GROOM_IDENTITY).isEmpty() ||
+                marriage.getString(Marriage.BRIDE_IDENTITY).isEmpty()) {
 
-                    return LinkStatus.UNKNOWN;
-
+            return LinkStatus.UNKNOWN;
         }
-        String birth_key_from_marriage = toKeyFromBirth( birth );
-        String marriage_key_from_marriage = toKeyFromMarriage( marriage );
+        String birth_key_from_marriage = toKeyFromBirth(birth);
+        String marriage_key_from_marriage = toKeyFromMarriage(marriage);
 
-        if (marriage_key_from_marriage.equals( birth_key_from_marriage ) ) {
+        if (marriage_key_from_marriage.equals(birth_key_from_marriage)) {
             return LinkStatus.TRUE_MATCH;
         } else {
             return LinkStatus.NOT_TRUE_MATCH;

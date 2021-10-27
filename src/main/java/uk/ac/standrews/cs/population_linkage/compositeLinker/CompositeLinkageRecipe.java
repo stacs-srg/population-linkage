@@ -58,7 +58,7 @@ public class CompositeLinkageRecipe {
                 true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> fatherGroomLinks = new BitBlasterLinkageRunner().run(
-                new BirthParentsMarriageLinkageRecipe(source_repository_name, ""),
+                new BirthParentsMarriageIdentityLinkageRecipe(source_repository_name, ""),
                 true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<DoubleLink>> fatherBirthLinksViaGroom = combineLinks(fatherGroomLinks, groomBirthLinks, "father-birth-via-groom-id");

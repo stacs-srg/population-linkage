@@ -15,7 +15,7 @@ public class BitBlasterLinkageTest extends SimilaritySearchLinkageTest {
     @Override
     public Linker getLinker() {
 
-        SearchStructureFactory<LXP> factory = new SearchStructureFactory<LXP>() {
+        SearchStructureFactory<LXP> factory = new SearchStructureFactory<>() {
             @Override
             public SearchStructure<LXP> newSearchStructure(final Iterable<LXP> records) {
                 return new BitBlasterSearchStructure<>(metric, records);

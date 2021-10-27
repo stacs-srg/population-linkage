@@ -22,7 +22,7 @@ public class Utilities {
 
     public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
 
-        return () -> new Iterator<LXP>() {
+        return () -> new Iterator<>() {
 
             Iterator<Birth> birth_records = record_repository.getBirths().iterator();
 
@@ -104,22 +104,22 @@ public class Utilities {
     }
 
     public static String originalId(LXP record) {
-        if(record instanceof Birth)
+        if (record instanceof Birth)
             return record.getString(Birth.ORIGINAL_ID);
-        if(record instanceof Marriage)
+        if (record instanceof Marriage)
             return record.getString(Marriage.ORIGINAL_ID);
-        if(record instanceof Death)
+        if (record instanceof Death)
             return record.getString(Death.ORIGINAL_ID);
 
         throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());
     }
 
     public static List<String> getLabels(LXP record) {
-        if(record instanceof Birth)
+        if (record instanceof Birth)
             return Birth.getLabels();
-        if(record instanceof Marriage)
+        if (record instanceof Marriage)
             return Marriage.getLabels();
-        if(record instanceof Death)
+        if (record instanceof Death)
             return Death.getLabels();
 
         throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());

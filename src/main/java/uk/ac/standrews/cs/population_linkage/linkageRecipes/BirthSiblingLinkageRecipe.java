@@ -15,13 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the child on a birth record with a sibling appearing as the child on another birth record.
  */
 public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
@@ -29,18 +23,18 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "birth-birth-sibling";
 
+    public static final int ID_FIELD_INDEX = Birth.STANDARDISED_ID;
+
     public static final List<Integer> LINKAGE_FIELDS = list(
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
             Birth.MOTHER_FORENAME,
             Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
             Birth.PARENTS_PLACE_OF_MARRIAGE,
             Birth.PARENTS_DAY_OF_MARRIAGE,
             Birth.PARENTS_MONTH_OF_MARRIAGE,
             Birth.PARENTS_YEAR_OF_MARRIAGE
     );
-
-    public static final int ID_FIELD_INDEX = Birth.STANDARDISED_ID;
 
     /**
      * Various possible relevant sources of ground truth for siblings:
@@ -99,13 +93,13 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
         try {
             int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
             int year_of_birth2 = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
 
         } catch (NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
             return true;

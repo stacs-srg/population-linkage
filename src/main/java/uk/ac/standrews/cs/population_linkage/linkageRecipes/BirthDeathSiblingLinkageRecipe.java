@@ -15,37 +15,44 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Links a person appearing as the child on a birth record with a sibling appearing as the deceased on a death record.
+ */
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    public static final String LINKAGE_TYPE = "birth-death-sibling";
+    // TODO Do we need to do something to avoid self-links (linker & ground truth)?
 
     private static final double DISTANCE_THESHOLD = 0.36;
 
-    public static final List<Integer> LINKAGE_FIELDS = list(
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
-            Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
-            Death.MOTHER_FORENAME,
-            Death.MOTHER_MAIDEN_SURNAME
-    );
+    public static final String LINKAGE_TYPE = "birth-death-sibling";
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
+    // TODO Why not father/mother occupation?
+
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME,
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME
+    );
+
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Birth.MOTHER_IDENTITY, Death.MOTHER_IDENTITY),
+                    pair(Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY)));
 
     public BirthDeathSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
-
-    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(   pair(Birth.FATHER_IDENTITY, Death.FATHER_IDENTITY),
-                    pair(Birth.MOTHER_IDENTITY, Death.MOTHER_IDENTITY) ) );
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -62,7 +69,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Birth.class;
     }
 
@@ -82,21 +89,25 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
-    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return LINKAGE_FIELDS;
+    }
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
         try {
             int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
             int year_of_birth2 = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
 
         } catch (NumberFormatException e) { // in this case a BIRTH_YEAR or DEATH_YEAR is invalid
             return true;

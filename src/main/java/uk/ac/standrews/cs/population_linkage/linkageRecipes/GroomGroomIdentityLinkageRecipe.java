@@ -15,25 +15,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the groom on a marriage record with the same person appearing as the groom on another marriage record,
+ * i.e. links a man's multiple marriages.
  */
 public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     private static final double DISTANCE_THRESHOLD = 0.49;
 
-    public static final String LINKAGE_TYPE = "bride-bride-identity";
+    public static final String LINKAGE_TYPE = "groom-groom-identity";
+
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
-
-    public GroomGroomIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
-    }
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Marriage.GROOM_FORENAME,
@@ -61,6 +53,10 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
             list(pair(Marriage.GROOM_IDENTITY, Marriage.GROOM_IDENTITY))
     );
+
+    public GroomGroomIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
+    }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -118,7 +114,7 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     private boolean isViable(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
 //        try {
 //            int groom_age_or_dob1 = Integer.parseInt(proposedLink.record1.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH));
@@ -148,5 +144,4 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
     public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
-
 }

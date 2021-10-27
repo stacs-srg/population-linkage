@@ -16,15 +16,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the deceased on a death record with the same person appearing as the child on a birth record.
  */
 public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
+
+    // TODO Isn't this redundant given BirthDeathIdentityLinkageRecipe?
+
+    private static final double DISTANCE_THRESHOLD = 0.36 ; // from UmeaBirthDeathViabilityPRFByThreshold.csv
+
+    public static final String LINKAGE_TYPE = "death-birth-identity";
+
+    public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Birth.STANDARDISED_ID;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FORENAME,
@@ -44,19 +47,12 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
             Birth.FATHER_SURNAME
     );
 
-    public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
-    public static final int ID_FIELD_INDEX2 = Birth.STANDARDISED_ID;
-
-
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
             list(pair(Death.DECEASED_IDENTITY,Birth.CHILD_IDENTITY)),
             list(pair(Death.BIRTH_RECORD_IDENTITY,Birth.STANDARDISED_ID)),
             list(pair(Death.STANDARDISED_ID,Birth.DEATH_RECORD_IDENTITY))
     );
-    private static final double DISTANCE_THESHOLD = 0.36 ; // from UmeaBirthDeathViabilityPRFByThreshold.csv
-
-    public static final String LINKAGE_TYPE = "death-birth-identity";
 
     public DeathBirthIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
@@ -137,6 +133,6 @@ public class DeathBirthIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

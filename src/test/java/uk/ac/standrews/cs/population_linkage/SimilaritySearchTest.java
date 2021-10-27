@@ -52,8 +52,8 @@ public abstract class SimilaritySearchTest {
     @Test
     public void similaritySearchGivesCorrectResults() {
 
-        for (double side_of_square = 1.0; side_of_square <= MAX_SIDE_OF_SQUARE; side_of_square++) {
-            for (double threshold = 0.0; threshold <= MAX_THRESHOLD; threshold += 0.5) {
+        for (double side_of_square = 1.0; side_of_square <= MAX_SIDE_OF_SQUARE; side_of_square += 2) {
+            for (double threshold = 0.0; threshold <= MAX_THRESHOLD; threshold ++) {
 
                 for (Point query : getQueryPoints()) {
 

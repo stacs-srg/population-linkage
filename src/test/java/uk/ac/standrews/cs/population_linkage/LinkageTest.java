@@ -53,7 +53,7 @@ public abstract class LinkageTest {
 
     protected abstract Linker getLinker();
 
-    protected abstract boolean equal(final Link link, final IStoreReference id1, final IStoreReference id2);
+    protected abstract boolean equal(final Link link, final IStoreReference<LXP> id1, final IStoreReference<LXP> id2);
 
     @Before
     public void init() {

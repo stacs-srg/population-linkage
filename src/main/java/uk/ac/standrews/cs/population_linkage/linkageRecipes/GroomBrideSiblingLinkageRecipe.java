@@ -15,36 +15,33 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the groom on a marriage record with a sibling appearing as the bride on another marriage record.
  */
 public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
 
-    public static final String LINKAGE_TYPE = "groom-bride-sibling";
+    // TODO Redundant given BrideGroomSiblingLinkageRecipe?
 
     private static final double DISTANCE_THESHOLD = 0.12;
 
-    public static final List<Integer> LINKAGE_FIELDS = list(
-            Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME,
-            Marriage.GROOM_MOTHER_FORENAME,
-            Marriage.GROOM_MOTHER_MAIDEN_SURNAME
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME
-    );
+    public static final String LINKAGE_TYPE = "groom-bride-sibling";
 
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
+
+    // TODO Why not father occupation?
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME
+    );
 
     /**
      * Various possible relevant sources of ground truth for siblings:
@@ -105,13 +102,13 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
         try {
             int year_of_birth1 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
             int year_of_birth2 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
 
         } catch(NumberFormatException e) {
             return true;

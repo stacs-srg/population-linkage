@@ -9,9 +9,11 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomMarriageParentsMarriageLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideMarriageParentsMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+
+import java.util.ArrayList;
 
 /**
  * EvidencePair Recipe
@@ -23,16 +25,17 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
  *
  */
 
-public class GroomMarriageParentsMarriageSubsetLinkageRecipe extends GroomMarriageParentsMarriageLinkageRecipe {
+public class BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe extends BrideMarriageParentsMarriageIdentityLinkageRecipe {
 
     public static final int ALL_LINKAGE_FIELDS = 5;
     private int NUMBER_OF_MARRIAGES;
     private final NeoDbCypherBridge bridge;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
+    private ArrayList<LXP> cached_records = null;
 
 
-    public GroomMarriageParentsMarriageSubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
+    public BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
         if( number_of_records.equals(EVERYTHING_STRING) ) {
             NUMBER_OF_MARRIAGES = EVERYTHING;
@@ -52,7 +55,10 @@ public class GroomMarriageParentsMarriageSubsetLinkageRecipe extends GroomMarria
      */
     @Override
     protected Iterable<LXP> getMarriageRecords() {
-        return filter(linkage_fields, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+        if( cached_records == null ) {
+            cached_records = filter(linkage_fields, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+        }
+        return cached_records;
     }
 
     // NOTE that Marriage fields are not filtered in this recipe.
@@ -63,9 +69,9 @@ public class GroomMarriageParentsMarriageSubsetLinkageRecipe extends GroomMarria
             final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if (!Query.MMGroomMarriageParentsMarriageReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+            if (!Query.MMBrideMarriageParentsMarriageReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
 
-                Query.createMMGroomMarriageParentsMarriageReference(
+                Query.createMMBrideMarriageParentsMarriageReference(
                         bridge,
                         std_id1,
                         std_id2,

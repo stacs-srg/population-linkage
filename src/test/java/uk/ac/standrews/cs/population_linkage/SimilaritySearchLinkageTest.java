@@ -19,8 +19,8 @@ public abstract class SimilaritySearchLinkageTest extends LinkageTest {
         // Don't care which way round the records are in the pair.
         // The order will depend on which of the record sets was the largest and hence got put into the search structure.
 
-        IStoreReference link_id1 = link.getRecord1();
-        IStoreReference link_id2 = link.getRecord2();
+        IStoreReference<LXP> link_id1 = link.getRecord1();
+        IStoreReference<LXP> link_id2 = link.getRecord2();
 
         return (link_id1.equals(id1) && link_id2.equals(id2)) || (link_id1.equals(id2) && link_id2.equals(id1));
     }

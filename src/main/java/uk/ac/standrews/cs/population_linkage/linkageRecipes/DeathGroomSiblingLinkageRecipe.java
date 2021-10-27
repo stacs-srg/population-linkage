@@ -14,39 +14,43 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Links a person appearing as the deceased on a death record with a sibling appearing as the groom on a marriage record.
+ */
 public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
 
-    public static final String LINKAGE_TYPE = "death-GROOM-sibling";
+    private static final double DISTANCE_THRESHOLD = 0.5; // used values from UmeaGroomBirthViabilityPRFByThreshold.csv
 
-    private static final double DISTANCE_THESHOLD = 0.5; // used values from UmeaGroomBirthViabilityPRFByThreshold.csv
-
-    public static final List<Integer> LINKAGE_FIELDS = list(
-            Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
-            Death.MOTHER_FORENAME,
-            Death.MOTHER_MAIDEN_SURNAME,
-            Death.FATHER_OCCUPATION
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME,
-            Marriage.GROOM_MOTHER_FORENAME,
-            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
-            Marriage.GROOM_FATHER_OCCUPATION
-    );
+    public static final String LINKAGE_TYPE = "death-groom-sibling";
 
     public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME,
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
+            Death.FATHER_OCCUPATION
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_FATHER_OCCUPATION
+    );
 
     public DeathGroomSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
 
+    @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(   pair(Death.FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY),
-                    pair(Death.MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY) ) );
+            list(
+                    pair(Death.MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY),
+                    pair(Death.FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY) ) );
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -63,7 +67,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Death.class;
     }
 
@@ -131,6 +135,6 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

@@ -15,25 +15,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the child on a birth record with the same person appearing as the bride on a marriage record.
  */
 public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     private static final double DISTANCE_THRESHOLD = 0.49;
 
     public static final String LINKAGE_TYPE = "birth-bride-identity";
+
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
-    }
+    // TODO Why not father/mother occupation?
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
@@ -58,6 +51,10 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Marriage.BRIDE_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Marriage.BRIDE_BIRTH_RECORD_IDENTITY))
     );
+
+    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+        super(source_repository_name, links_persistent_name);
+    }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -115,11 +112,12 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return isViable( proposedLink );
+        return isViable(proposedLink);
     }
 
     public static boolean isViable(RecordPair proposedLink) {
 
+        // TODO is the pair the wrong way round?
         return SiblingMarriageHelper.spouseBirthIdentityLinkIsViable(proposedLink, true);
     }
 
@@ -132,5 +130,4 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
-
 }

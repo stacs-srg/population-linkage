@@ -14,41 +14,46 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Links a person appearing as the deceased on a death record with a sibling appearing as the bride on a marriage record.
+ */
 public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
+
+    private static final double DISTANCE_THRESHOLD = 0.5; // used values from UmeaBrideBirthViabilityPRFByThreshold.csv
 
     public static final String LINKAGE_TYPE = "death-bride-sibling";
 
-    private static final double DISTANCE_THESHOLD = 0.5; // used values from UmeaBrideBirthViabilityPRFByThreshold.csv
+    public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             // Could have Death.DECEASED_OCCUPATION
-            Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
+            // TODO No - this is sibling linkage.
             Death.MOTHER_FORENAME,
             Death.MOTHER_MAIDEN_SURNAME,
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME,
             Death.FATHER_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
             // Could have BRIDE.BRIDE_OCCUPATION
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
             Marriage.BRIDE_MOTHER_FORENAME,
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME,
             Marriage.BRIDE_FATHER_OCCUPATION
     );
 
-    public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
-    public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
-
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(
+                    pair(Death.MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
+                    pair(Death.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)));
 
     public DeathBrideSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
-
-    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(   pair(Death.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY),
-                    pair(Death.MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY) ) );
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -65,7 +70,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Death.class;
     }
 
@@ -85,10 +90,14 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
-    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return LINKAGE_FIELDS;
+    }
 
     private boolean isViable(RecordPair proposedLink) {
 
@@ -118,8 +127,9 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
-
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -133,6 +143,6 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

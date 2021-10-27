@@ -15,38 +15,33 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the deceased on a death record with the same person appearing as the bride on a marriage record.
  */
 public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    public static final double DISTANCE_THESHOLD = 0.49;
-
-    public static final List<Integer> LINKAGE_FIELDS = list(
-            Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
-            Death.MOTHER_FORENAME,
-            Death.MOTHER_MAIDEN_SURNAME,
-            Death.FORENAME,
-            Death.SURNAME
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
-            Marriage.BRIDE_FORENAME,
-            Marriage.BRIDE_SURNAME
-    );
+    public static final double DISTANCE_THRESHOLD = 0.49;
 
     public static final String LINKAGE_TYPE = "death-bride-identity";
 
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Death.FORENAME,
+            Death.SURNAME,
+            Death.MOTHER_FORENAME,
+            Death.MOTHER_MAIDEN_SURNAME,
+            Death.FATHER_FORENAME,
+            Death.FATHER_SURNAME
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME,
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME
+    );
+
+    @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
             list(pair(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY))
     );
@@ -64,14 +59,13 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
         return trueMatch(death, marriage, TRUE_MATCH_ALTERNATIVES);
     }
 
-
     @Override
     public String getLinkageType() {
         return LINKAGE_TYPE;
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Death.class;
     }
 
@@ -115,7 +109,7 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 
     @Override

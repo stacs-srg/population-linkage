@@ -16,17 +16,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the child on a birth record with the same person appearing as the deceased on a death record.
  */
 public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     private static final double THRESHOLD = 0.38;  // from earlier experiments
+
+    public static final String LINKAGE_TYPE = "birth-death-identity";
+
+    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
+
+    // TODO Why not father/mother occupation?
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
@@ -46,17 +47,12 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
             Death.FATHER_SURNAME
     );
 
-    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
-    public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
-
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
             list(pair(Birth.CHILD_IDENTITY, Death.DECEASED_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Death.BIRTH_RECORD_IDENTITY)),
             list(pair(Birth.DEATH_RECORD_IDENTITY, Death.STANDARDISED_ID))
     );
-
-    public static final String LINKAGE_TYPE = "birth-death-identity";
 
     public BirthDeathIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);

@@ -15,39 +15,44 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Links a person appearing as the child on a birth record with a sibling appearing as the bride on a marriage record.
+ */
 public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
+    // TODO Do we need to do something to avoid self-links (linker & ground truth)?
+
+    private static final double DISTANCE_THRESHOLD = 0.5; // TODO THIS THRESHOLD WAS NOT MEASURED - 0.15 in table
+
     public static final String LINKAGE_TYPE = "birth-bride-sibling";
-
-    private static final double DISTANCE_THESHOLD = 0.5; // TODO THIS THRESHOLD WAS NOT MEASURED - 0.15 in table
-
-    public static final List<Integer> LINKAGE_FIELDS = list(
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.FATHER_OCCUPATION
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
-            Marriage.BRIDE_FATHER_OCCUPATION
-    );
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.FATHER_OCCUPATION
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Marriage.BRIDE_MOTHER_FORENAME,
+            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
+            Marriage.BRIDE_FATHER_FORENAME,
+            Marriage.BRIDE_FATHER_SURNAME,
+            Marriage.BRIDE_FATHER_OCCUPATION
+    );
+
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(   pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
+                    pair(Birth.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY) ) );
 
     public BirthBrideSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
-
-    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(   pair(Birth.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY),
-                    pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY) ) );
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -64,7 +69,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Birth.class;
     }
 
@@ -91,7 +96,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     private boolean isViable(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
 //        try {
 //            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
@@ -115,8 +120,6 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
 
-
-
     @Override
     public Map<String, Link> getGroundTruthLinks() {
         return getGroundTruthLinksAsymmetric();
@@ -129,6 +132,6 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

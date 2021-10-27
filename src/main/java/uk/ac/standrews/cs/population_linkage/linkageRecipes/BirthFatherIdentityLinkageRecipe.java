@@ -18,15 +18,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
- * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
+ * Links a person appearing as the child on a birth record with the same person appearing as the father on another birth record.
  */
 public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
+
+    private static final double DISTANCE_THRESHOLD = 0.22; // in file UmeaBirthFatherViabilityPRFByThreshold.csv - looks very low!
+
+    public static final String LINKAGE_TYPE = "birth-father-identity";
+
+    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Birth.STANDARDISED_ID;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
@@ -38,30 +39,11 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
             Birth.FATHER_SURNAME
     );
 
-    public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
-    public static final int ID_FIELD_INDEX2 = Birth.STANDARDISED_ID;
-
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
             list(pair(Birth.CHILD_IDENTITY, Birth.FATHER_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Birth.FATHER_BIRTH_RECORD_IDENTITY))
     );
-    private static final double DISTANCE_THESHOLD = 0.22; // in file UmeaBirthFatherViabilityPRFByThreshold.csv - looks very low!
-
-    public static void main(String[] args) throws BucketException, RepositoryException {
-
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
-
-        LinkageRecipe linkageRecipe = new BirthFatherIdentityLinkageRecipe(sourceRepo, LINKAGE_TYPE + "-links");
-
-        LinkageConfig.numberOfROs = 20;
-
-        new BitBlasterLinkageRunner()
-                .run(linkageRecipe, false, false, true, false);
-    }
-
-    public static final String LINKAGE_TYPE = "birth-father-identity";
 
     public BirthFatherIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
@@ -135,7 +117,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 
     @Override

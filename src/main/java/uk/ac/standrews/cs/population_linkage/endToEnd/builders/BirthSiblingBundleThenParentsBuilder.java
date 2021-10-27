@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.runners.BitBlasterSubsetOf
 import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.ParentsMarriageBirthLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.ParentsMarriageBirthIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -64,7 +64,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
                 LinkageResult lr = runner1.run(bb_recipe, false, false, false, false);
                 HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
-                ParentsMarriageBirthLinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
+                ParentsMarriageBirthIdentityLinkageRecipe parents_recipe = new ParentsMarriageBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
                 LinkageConfig.numberOfROs = 20;
                 Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();
                 StringMetric baseMetric = new JensenShannon(2048);

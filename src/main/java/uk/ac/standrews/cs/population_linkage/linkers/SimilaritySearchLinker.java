@@ -87,7 +87,7 @@ public class SimilaritySearchLinker extends Linker {
 
                 void getNextPair() {
 
-                    while (search_set_iterator.hasNext() && !moreResultsAvailiable()) {
+                    while (search_set_iterator.hasNext() && !moreResultsAvailable()) {
                         getNextRecordFromSearchSet();
                     }
 
@@ -106,7 +106,7 @@ public class SimilaritySearchLinker extends Linker {
                             DataDistance<LXP> data_distance = result_records.get(result_index++);
                             next_pair = new RecordPair(data_distance.value, next_record_from_search_set, data_distance.distance);
 
-                            if (!moreResultsAvailiable())
+                            if (!moreResultsAvailable())
                                 getNextRecordFromSearchSet();
 
                         } else {
@@ -118,10 +118,10 @@ public class SimilaritySearchLinker extends Linker {
 
                 private boolean moreLinksToConsider() {
 
-                    return search_set_iterator.hasNext() || moreResultsAvailiable();
+                    return search_set_iterator.hasNext() || moreResultsAvailable();
                 }
 
-                private boolean moreResultsAvailiable() {
+                private boolean moreResultsAvailable() {
 
                     return result_index < result_records.size();
                 }

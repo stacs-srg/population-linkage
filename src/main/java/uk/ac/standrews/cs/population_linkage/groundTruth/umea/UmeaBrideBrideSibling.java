@@ -36,7 +36,7 @@ public class UmeaBrideBrideSibling extends SymmetricSingleSourceLinkageAnalysis 
 
     @Override
     public List<Integer> getComparisonFields() {
-        return BrideBrideSiblingLinkageRecipe.COMPARISON_FIELDS;
+        return BrideBrideSiblingLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override

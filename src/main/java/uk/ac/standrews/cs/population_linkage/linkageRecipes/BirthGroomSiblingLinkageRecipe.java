@@ -15,39 +15,44 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Links a person appearing as the child on a birth record with the a sibling appearing as the groom on a marriage record.
+ */
 public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
 
+    // TODO Do we need to do something to avoid self-links (linker & ground truth)?
+
+    private static final double DISTANCE_THRESHOLD = 0.49;
+
     public static final String LINKAGE_TYPE = "birth-groom-sibling";
-
-    private static final double DISTANCE_THESHOLD = 0.49;
-
-    public static final List<Integer> LINKAGE_FIELDS = list(
-            Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.MOTHER_FORENAME,
-            Birth.MOTHER_MAIDEN_SURNAME,
-            Birth.FATHER_OCCUPATION
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME,
-            Marriage.GROOM_MOTHER_FORENAME,
-            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
-            Marriage.GROOM_FATHER_OCCUPATION
-    );
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
+    public static final List<Integer> LINKAGE_FIELDS = list(
+            Birth.MOTHER_FORENAME,
+            Birth.MOTHER_MAIDEN_SURNAME,
+            Birth.FATHER_FORENAME,
+            Birth.FATHER_SURNAME,
+            Birth.FATHER_OCCUPATION
+    );
+
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME,
+            Marriage.GROOM_FATHER_OCCUPATION
+    );
+
+    @SuppressWarnings("unchecked")
+    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
+            list(pair(Birth.MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY),
+                    pair(Birth.FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY)));
 
     public BirthGroomSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
-
-    public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(   pair(Birth.FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY),
-                    pair(Birth.MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY) ) );
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -64,7 +69,7 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getStoredType() {
+    public Class<? extends LXP> getStoredType() {
         return Birth.class;
     }
 
@@ -84,14 +89,18 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
-    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return LINKAGE_FIELDS;
+    }
 
     private boolean isViable(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
+        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
 //        try {
 //            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
@@ -113,7 +122,9 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -127,6 +138,6 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

@@ -4,17 +4,14 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
 
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.population_linkage.graph.model.Query;
-import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthParentsMarriageLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-
-import java.util.ArrayList;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomMarriageParentsMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 /**
  * EvidencePair Recipe
@@ -26,22 +23,21 @@ import java.util.ArrayList;
  *
  */
 
-public class BirthParentsMarriageSubsetLinkageRecipe extends BirthParentsMarriageLinkageRecipe {
+public class GroomMarriageParentsMarriageSubsetIdentityLinkageRecipe extends GroomMarriageParentsMarriageIdentityLinkageRecipe {
 
-    public static final int ALL_LINKAGE_FIELDS = 8;
-    private int NUMBER_OF_BIRTHS;
+    public static final int ALL_LINKAGE_FIELDS = 5;
+    private int NUMBER_OF_MARRIAGES;
     private final NeoDbCypherBridge bridge;
 
     public int linkage_fields = ALL_LINKAGE_FIELDS;
-    private ArrayList<LXP> cached_records = null;
 
 
-    public BirthParentsMarriageSubsetLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
+    public GroomMarriageParentsMarriageSubsetIdentityLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
         if( number_of_records.equals(EVERYTHING_STRING) ) {
-            NUMBER_OF_BIRTHS = EVERYTHING;
+            NUMBER_OF_MARRIAGES = EVERYTHING;
         } else {
-            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+            NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
         }
         this.bridge = bridge;
     }
@@ -55,11 +51,8 @@ public class BirthParentsMarriageSubsetLinkageRecipe extends BirthParentsMarriag
      * @return
      */
     @Override
-    protected Iterable<LXP> getBirthRecords() {
-        if( cached_records == null ) {
-            cached_records = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
-        }
-        return cached_records;
+    protected Iterable<LXP> getMarriageRecords() {
+        return filter(linkage_fields, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
     }
 
     // NOTE that Marriage fields are not filtered in this recipe.
@@ -67,12 +60,12 @@ public class BirthParentsMarriageSubsetLinkageRecipe extends BirthParentsMarriag
     @Override
     public void makeLinkPersistent(Link link) {
         try {
-            final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
+            final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if (!Query.BMBirthFatherReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+            if (!Query.MMGroomMarriageParentsMarriageReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
 
-                Query.createBMFatherReference(
+                Query.createMMGroomMarriageParentsMarriageReference(
                         bridge,
                         std_id1,
                         std_id2,
@@ -81,15 +74,6 @@ public class BirthParentsMarriageSubsetLinkageRecipe extends BirthParentsMarriag
                         link.getDistance());
             }
 
-            if (Query.BMBirthMotherReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
-
-                Query.createBMMotherReference(bridge,
-                        std_id1,
-                        std_id2,
-                        links_persistent_name,
-                        linkage_fields,
-                        link.getDistance());
-            }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }

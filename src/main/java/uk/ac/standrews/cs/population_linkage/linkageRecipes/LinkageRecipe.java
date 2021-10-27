@@ -25,13 +25,11 @@ import java.util.*;
 import java.util.stream.StreamSupport;
 
 /**
- * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
- *     the stored type is the first part of the name
- *     the query type is the second part of the name
+ * In all linkage recipes the naming convention is:
+ * the stored type is the first part of the name
+ * the query type is the second part of the name
  * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
  */
 public abstract class LinkageRecipe {
 
@@ -52,9 +50,10 @@ public abstract class LinkageRecipe {
 
     protected static final String EVERYTHING_STRING = "EVERYTHING";
     protected static final int EVERYTHING = Integer.MAX_VALUE;
+    public static final JensenShannon DEFAULT_METRIC = new JensenShannon(2048);
 
-    protected String links_persistent_name;
     protected final String source_repository_name;
+    protected final String links_persistent_name;
     private final RecordRepository record_repository;
     protected Path store_path;
 
@@ -62,45 +61,31 @@ public abstract class LinkageRecipe {
     private Iterable<LXP> marriage_records;
     private Iterable<LXP> death_records;
 
-    private  Integer birth_records_size = null;
-    private  Integer death_records_size = null;
-    private  Integer marriage_records_size = null;
+    private Integer birth_records_size = null;
+    private Integer death_records_size = null;
+    private Integer marriage_records_size = null;
 
     public LinkageRecipe(String source_repository_name, String links_persistent_name) {
 
-        this.links_persistent_name = links_persistent_name;
         this.source_repository_name = source_repository_name;
-
+        this.links_persistent_name = links_persistent_name;
 
         this.record_repository = new RecordRepository(source_repository_name);
     }
 
     protected ArrayList<LXP> filter(int number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+
         ArrayList<LXP> filtered_source_records = new ArrayList<>();
-        int count_rejected = 0;
-        int count_accepted = 0;
 
         for (LXP record : records_to_filter) {
             if (passesFilter(record, linkageFields, number_of_required_fields)) {
                 filtered_source_records.add(record);
-                count_accepted++;
-            }
-            else {
-//                // Trace
-//                if( count_rejected < 50 ) {
-//                    System.out.print( "Rejected: " );
-//                    for( int i : linkageFields ) {
-//                        System.out.print(record.getMetaData().getFieldName(i) + ":" + record.getString(i) + "/ ");
-//                    }
-//                    System.out.println();
-//                }
-                count_rejected++;
             }
             if (filtered_source_records.size() >= number_of_records_required) {
                 break;
             }
         }
-        System.out.println( "Filtering: accepted: " + count_accepted + " rejected: " + count_rejected + " from " + ( count_rejected + count_accepted ) );
+
         return filtered_source_records;
     }
 
@@ -175,10 +160,9 @@ public abstract class LinkageRecipe {
         if (record instanceof Birth) return Birth.STANDARDISED_ID;
         if (record instanceof Marriage) return Marriage.STANDARDISED_ID;
         if (record instanceof Death) return Death.STANDARDISED_ID;
-        if( record instanceof DynamicLXP) {
-            DynamicLXP lxp = (DynamicLXP) record;
+        if (record instanceof DynamicLXP) {
             Integer slot = record.getMetaData().getSlot("STANDARDISED_ID");
-            if( slot == null ) {
+            if (slot == null) {
                 throw new RuntimeException("unexpected record type - can't find STANDARDISED_ID in DynamicLXP");
             } else {
                 return slot;
@@ -199,20 +183,6 @@ public abstract class LinkageRecipe {
 
     static boolean equalsNonEmpty(final String s1, final String s2) {
         return !s1.isEmpty() && s1.equals(s2);
-    }
-
-    static boolean allEmpty(final String... strings) {
-        for (String s : strings) {
-            if (!s.isEmpty()) return false;
-        }
-        return true;
-    }
-
-    static boolean anyEmpty(final String... strings) {
-        for (String s : strings) {
-            if (s.isEmpty()) return true;
-        }
-        return false;
     }
 
     Iterable<LXP> getByType(Class<? extends LXP> type) {
@@ -258,6 +228,7 @@ public abstract class LinkageRecipe {
 
     /**
      * This identifies how to map the fields in the query records to the fields in the storage records
+     *
      * @return list of integers identifies mapping fields
      */
     public abstract List<Integer> getQueryMappingFields();
@@ -303,6 +274,7 @@ public abstract class LinkageRecipe {
 
     /**
      * Returns the count of ground truth links among source records 1 and 2
+     *
      * @return A count of all ground truth links
      */
     public int getNumberOfGroundTruthLinksAsymmetric() {
@@ -322,6 +294,7 @@ public abstract class LinkageRecipe {
 
     /**
      * This method returns the count of all ground truth links.
+     *
      * @return a count of all ground truth links
      */
     int getNumberOfGroundTruthLinksSymmetric() {
@@ -331,10 +304,10 @@ public abstract class LinkageRecipe {
         LXP[] records = StreamSupport.stream(getStoredRecords().spliterator(), false).toArray(LXP[]::new);
 
         for (int i = 0; i < records.length - 1; i++) {
-            for (int j = i+1; j < records.length;j++ ) {
-                    if( isTrueMatch(records[i],records[j]) == LinkStatus.TRUE_MATCH ) {
-                        count++;
-                    }
+            for (int j = i + 1; j < records.length; j++) {
+                if (isTrueMatch(records[i], records[j]) == LinkStatus.TRUE_MATCH) {
+                    count++;
+                }
             }
         }
 
@@ -362,6 +335,7 @@ public abstract class LinkageRecipe {
     }
 
     public Map<String, Link> getGroundTruthLinksAsymmetric() {
+
         Map<String, Link> map = new HashMap<>();
         for (LXP lxp1 : getStoredRecords()) {
             for (LXP lxp2 : getQueryRecords()) {
@@ -380,6 +354,7 @@ public abstract class LinkageRecipe {
     }
 
     public String toKey(LXP query_record, LXP stored_record) {
+
         String s1 = Utilities.originalId(query_record);
         String s2 = Utilities.originalId(stored_record);
 
@@ -393,48 +368,36 @@ public abstract class LinkageRecipe {
         }
     }
 
-    /**
-     * Note - May be overridden by subclass
-     * @return
-     */
     protected Iterable<LXP> getBirthRecords() {
-        if( birth_records == null ) {
+        if (birth_records == null) {
             birth_records = Utilities.getBirthRecords(record_repository);
         }
         return birth_records;
     }
 
     protected int getBirthRecordsSize() {
-        if( birth_records_size == null ) {
-            birth_records_size = getSize( birth_records );
+        if (birth_records_size == null) {
+            birth_records_size = getSize(birth_records);
         }
         return birth_records_size;
     }
 
-    /**
-     * Note - May be overridden by subclass
-     * @return the death records to be used in this recipe
-     */
     protected Iterable<LXP> getDeathRecords() {
-        if( death_records == null ) {
+        if (death_records == null) {
             death_records = Utilities.getDeathRecords(record_repository);
         }
         return death_records;
     }
 
     protected int getDeathRecordsSize() {
-        if( death_records_size == null ) {
-            death_records_size = getSize( death_records );
+        if (death_records_size == null) {
+            death_records_size = getSize(death_records);
         }
         return death_records_size;
     }
 
-    /**
-     * Note - May be overwritten by subclass
-     * @return the marriage records to be used in this recipe
-     */
     protected Iterable<LXP> getMarriageRecords() {
-        if( marriage_records == null ) {
+        if (marriage_records == null) {
             marriage_records = Utilities.getMarriageRecords(record_repository);
         }
         return marriage_records;
@@ -447,17 +410,15 @@ public abstract class LinkageRecipe {
         return marriage_records_size;
     }
 
-
-
-    private int getSize(Iterable<LXP> records ) {
+    private int getSize(Iterable<LXP> records) {
         int size = 0;
-        for(LXP value : records) {
+        for (LXP ignored : records) {
             size++;
         }
         return size;
     }
 
-    protected int getSizeByType( Class<? extends LXP> type ) {
+    protected int getSizeByType(Class<? extends LXP> type) {
         if (type.equals(Birth.class)) {
             return getBirthRecordsSize();
         }
@@ -474,26 +435,13 @@ public abstract class LinkageRecipe {
     ------- PERSISTENCE CODE ------------
      */
 
-    protected Iterable<LXP> filterRecords(Iterable<LXP> records, List<Integer> filterOn, int reqPopulatedFields) {
-        Collection<LXP> filteredRecords = new HashSet<>();
-
-        for (LXP record : records) {
-
-            if( passesFilter(record, filterOn, reqPopulatedFields) ) {
-                filteredRecords.add(record);
-            }
-        }
-
-        return filteredRecords;
-    }
-
     public boolean passesFilter(LXP record, List<Integer> filterOn, int reqPopulatedFields) {
         int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
         int numberOfEmptyFields = 0;
 
         for (int attribute : filterOn) {
             String value = record.getString(attribute).toLowerCase().trim();
-            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----") ) {  // TODO could make this field specific
+            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----")) {  // TODO could make this field specific
                 numberOfEmptyFields++;
             }
         }
@@ -511,14 +459,8 @@ public abstract class LinkageRecipe {
         return filteredRecords;
     }
 
-    public void makeLinksPersistent(Iterable<Link> links) {
-        for( Link link : links ) {
-            makeLinkPersistent(link);
-        }
-    }
-
     public void makeLinkPersistent(Link link) {
-        throw new RuntimeException( "makeLinkPersistent unimplemented");
+        throw new RuntimeException("makeLinkPersistent unimplemented");
     }
 
     public String getLinks_persistent_name() {
@@ -526,10 +468,6 @@ public abstract class LinkageRecipe {
     }
 
     public int getQuerySetSize() {
-        return getSizeByType(getQueryType());
-    }
-
-    public int getStoredSetSize() {
         return getSizeByType(getQueryType());
     }
 
@@ -542,7 +480,7 @@ public abstract class LinkageRecipe {
     }
 
     public StringMetric getMetric() {
-        return new JensenShannon(2048);
+        return DEFAULT_METRIC;
     }
 
     public static class Pair {

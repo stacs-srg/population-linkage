@@ -78,7 +78,7 @@ public class LinkageJobQueueHandler {
                 double threshold = Double.parseDouble(job.get(columnLabels.indexOf("threshold")).trim());
                 String metric = job.get(columnLabels.indexOf("metric")).trim();
                 String maxSiblingGapString = job.get(columnLabels.indexOf("max-sibling-gap")).trim();
-                Integer maxSiblingGap = (maxSiblingGapString.equals("")) ? null : Integer.valueOf(maxSiblingGapString);
+                int maxSiblingGap = (maxSiblingGapString.equals("")) ? 0 : Integer.valueOf(maxSiblingGapString);
                 int birthsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("births-cache-size")).trim());
                 int marriagesCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
                 int deathsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
@@ -99,7 +99,7 @@ public class LinkageJobQueueHandler {
                 LinkageConfig.marriageCacheSize = marriagesCacheSize;
                 LinkageConfig.deathCacheSize = deathsCacheSize;
                 LinkageConfig.numberOfROs = numROs;
-                LinkageConfig.MAX_SIBLING_AGE_DIFF = maxSiblingGap;
+                LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE = maxSiblingGap;
 
                 // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
                 new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber).validate(recordCountsFile);
@@ -120,7 +120,7 @@ public class LinkageJobQueueHandler {
 
                 long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
 
-                JobRunnerIO.appendToResultsFile(threshold, metric, LinkageConfig.MAX_SIBLING_AGE_DIFF, linkageQuality, timeTakenInSeconds,
+                JobRunnerIO.appendToResultsFile(threshold, metric, LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE, linkageQuality, timeTakenInSeconds,
                         linkageResultsFile, populationName, populationSize, populationNumber, corruptionNumber,
                         linkageApproach, numROs, fieldsUsed1, fieldsUsed2, preFilter,
                         birthsCacheSize, marriagesCacheSize, deathsCacheSize);
@@ -146,8 +146,8 @@ public class LinkageJobQueueHandler {
                 return new BirthFatherIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthMotherIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new BirthMotherIdentityLinkageRecipe(sourceRepo, links_persistent_name);
-            case BirthParentsMarriageLinkageRecipe.LINKAGE_TYPE:
-                return new BirthParentsMarriageLinkageRecipe(sourceRepo, links_persistent_name);
+            case BirthParentsMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
+                return new BirthParentsMarriageIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthBrideIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new BirthBrideIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BrideBrideSiblingLinkageRecipe.LINKAGE_TYPE:
