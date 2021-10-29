@@ -5,14 +5,10 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 import java.util.List;
 import java.util.Map;
@@ -99,7 +95,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
         // appearing as father on the second record. Check that a plausible period has elapsed for
         // the person to be the father.
 
-        return SiblingMarriageHelper.birthParentIdentityLinkIsViable(proposedLink);
+        return CommonLinkViabilityLogic.birthParentIdentityLinkIsViable(proposedLink);
     }
 
     @Override

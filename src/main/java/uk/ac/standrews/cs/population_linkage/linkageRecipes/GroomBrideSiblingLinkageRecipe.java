@@ -105,8 +105,8 @@ public class GroomBrideSiblingLinkageRecipe extends LinkageRecipe {
         if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
         try {
-            int year_of_birth1 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
-            int year_of_birth2 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
+            int year_of_birth1 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
+            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
 
             return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
 

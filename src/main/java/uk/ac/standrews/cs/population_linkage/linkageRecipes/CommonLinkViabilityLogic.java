@@ -15,14 +15,14 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 
-public class SiblingMarriageHelper {
+public class CommonLinkViabilityLogic {
 
     protected static int getBirthYearOfPersonBeingMarried(final LXP record, final boolean spouse_is_bride) {
 
-        final String age_or_birth_date1 = record.getString(spouse_is_bride ? Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH : Marriage.GROOM_AGE_OR_DATE_OF_BIRTH);
+        final String age_or_birth_date = record.getString(spouse_is_bride ? Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH : Marriage.GROOM_AGE_OR_DATE_OF_BIRTH);
 
         try {
-            final int age_at_marriage_recorded = Integer.parseInt(age_or_birth_date1);
+            final int age_at_marriage_recorded = Integer.parseInt(age_or_birth_date);
             final int marriage_year = Integer.parseInt(record.getString(Marriage.MARRIAGE_YEAR));
 
             return marriage_year - age_at_marriage_recorded;
@@ -30,7 +30,7 @@ public class SiblingMarriageHelper {
         } catch (NumberFormatException e) {
 
             // Probably date of birth recorded rather than age.
-            return Integer.parseInt(Normalisation.extractYear(age_or_birth_date1));
+            return Integer.parseInt(Normalisation.extractYear(age_or_birth_date));
         }
     }
 
@@ -52,41 +52,48 @@ public class SiblingMarriageHelper {
         return LocalDate.of(birth_year, birth_month, birth_day);
     }
 
-    public static boolean spouseBirthIdentityLinkIsViable(final RecordPair proposedLink, final boolean spouse_is_bride) {
+    protected static boolean birthMarriageSiblingLinkIsViable(RecordPair proposedLink, boolean marriage_role_is_bride) {
 
         try {
+            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
+            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record2, marriage_role_is_bride);
+
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
+
+        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
+            return true;
+        }
+    }
+
+    protected static boolean marriageBirthIdentityLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
+
+        // Returns true if age at marriage as calculated from the date of birth on the birth record and date of marriage on the marriage
+        // record is within acceptable range, and the discrepancy between that age and the age recorded on, or calculated from, the
+        // marriage record is acceptably low.
+
+        try {
+            final int birth_year_from_marriage_record = getBirthYearOfPersonBeingMarried(proposedLink.record1, marriage_role_is_bride);
             final LocalDate marriage_date_from_marriage_record = getMarriageDateFromMarriageRecord(proposedLink.record1);
             final LocalDate birth_date_from_birth_record = getBirthDateFromBirthRecord(proposedLink.record2);
 
             final int age_at_marriage_calculated = birth_date_from_birth_record.until(marriage_date_from_marriage_record).getYears();
+            final int age_at_marriage_recorded = marriage_date_from_marriage_record.getYear() - birth_year_from_marriage_record;
 
-            final String age_or_birth_date_string = proposedLink.record1.getString(spouse_is_bride ? Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH : Marriage.GROOM_AGE_OR_DATE_OF_BIRTH);
-            int age_discrepancy;
+            final int age_discrepancy = Math.abs(age_at_marriage_calculated - age_at_marriage_recorded);
 
-            try {
+            return  age_at_marriage_calculated >= LinkageConfig.MIN_AGE_AT_MARRIAGE &&
+                    age_at_marriage_calculated <= LinkageConfig.MAX_AGE_AT_DEATH &&
+                    age_discrepancy <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
 
-                int age_at_marriage_recorded = Integer.parseInt(age_or_birth_date_string);
-                age_discrepancy = Math.abs(age_at_marriage_calculated - age_at_marriage_recorded);
-
-            } catch (NumberFormatException e) {
-
-                // Probably date of birth recorded rather than age.
-                LocalDate birth_date_from_marriage_record = Normalisation.parseDate(age_or_birth_date_string);
-                age_discrepancy = Math.abs(birth_date_from_birth_record.until(birth_date_from_marriage_record).getYears());
-            }
-
-            return age_at_marriage_calculated >= LinkageConfig.MIN_AGE_AT_MARRIAGE && age_discrepancy <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
-
-        } catch (NumberFormatException e ) { // in this case a BIRTH_YEAR or MARRIAGE_YEAR or GROOM_AGE_OR_DATE_OF_BIRTH is invalid
-            return true;
-        } catch (DateTimeException e) { // getting a date we cannot parse like --/--/--
+        } catch (NumberFormatException | DateTimeException e ) {
+            // Invalid BIRTH_YEAR or MARRIAGE_YEAR or AGE_OR_DATE_OF_BIRTH, or unparseable date.
             return true;
         }
     }
 
     protected static boolean deathMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
 
-        // Returns false if year of marriage is after year of death.
+        // Returns true if year of death is after year of marriage.
 
         try {
             final int year_of_death = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
@@ -101,7 +108,7 @@ public class SiblingMarriageHelper {
 
     protected static boolean birthParentIdentityLinkIsViable(final RecordPair proposedLink) {
 
-        // Returns false if difference in birth years is too low or too high.
+        // Returns true if difference in birth years is within acceptable range.
 
         try {
             final int parent_year_of_birth = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));

@@ -9,6 +9,7 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -100,16 +101,37 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
+        return isViable( proposedLink );
+    }
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
+    /**
+     * Checks whether the age difference between the potential siblings is plausible, and that the age at death
+     * recorded on the death record is consistent with the difference between birth year on death record and death year.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
+    public static boolean isViable(RecordPair proposedLink) {
 
         try {
-            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int year_of_birth2 = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
+            final LXP birth_record = proposedLink.record1;
+            final LXP death_record = proposedLink.record2;
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
+            final int year_of_birth_from_birth_record = Integer.parseInt(birth_record.getString(Birth.BIRTH_YEAR));
+            final int year_of_birth_from_death_record = Integer.parseInt(Normalisation.extractYear(death_record.getString(Death.DATE_OF_BIRTH)));
+            final int year_of_death_from_death_record = Integer.parseInt(death_record.getString(Death.DEATH_YEAR));
 
-        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR or DEATH_YEAR is invalid
+            final int age_difference_between_siblings = Math.abs(year_of_birth_from_birth_record - year_of_birth_from_death_record);
+
+            final int age_at_death_recorded_on_death_record = Integer.parseInt(death_record.getString(Death.AGE_AT_DEATH));
+            final int age_at_death_calculated_from_death_record = year_of_death_from_death_record - year_of_birth_from_death_record;
+
+            final int age_at_death_discrepancy = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
+
+            return  age_difference_between_siblings <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE &&
+                    age_at_death_discrepancy <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
+
+        } catch (NumberFormatException e) { // Invalid year.
             return true;
         }
     }

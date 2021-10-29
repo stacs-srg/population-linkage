@@ -9,6 +9,7 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -102,17 +103,40 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         return isViable( proposedLink );
     }
 
-    public static boolean isViable(RecordPair proposedLink) {
+    /**
+     * Checks whether the birth occurs before the death, that the age at death is plausible, and that the ages at death
+     * derived in three different ways are consistent (recorded on death record; difference between birth year on birth
+     * record and death year; difference between birth year on death record and death year).
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
+    public static boolean isViable(final RecordPair proposedLink) {
+
+        // TODO is it correct to check for internal consistency with death records?
 
         try {
-            int year_of_birth = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int year_of_death = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR));
+            final LXP birth_record = proposedLink.record1;
+            final LXP death_record = proposedLink.record2;
 
-            int age_at_death = year_of_death - year_of_birth;
+            final int year_of_birth_from_birth_record = Integer.parseInt(birth_record.getString(Birth.BIRTH_YEAR));
+            final int year_of_birth_from_death_record = Integer.parseInt(Normalisation.extractYear(death_record.getString(Death.DATE_OF_BIRTH)));
+            final int year_of_death_from_death_record = Integer.parseInt(death_record.getString(Death.DEATH_YEAR));
 
-            return age_at_death >= 0 && age_at_death <= LinkageConfig.MAX_AGE_AT_DEATH;
+            final int age_at_death_recorded_on_death_record = Integer.parseInt(death_record.getString(Death.AGE_AT_DEATH));
 
-        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR or DEATH_YEAR is invalid
+            final int age_at_death_calculated_from_both_records = year_of_death_from_death_record - year_of_birth_from_birth_record;
+            final int age_at_death_calculated_from_death_record = year_of_death_from_death_record - year_of_birth_from_death_record;
+
+            final int age_at_death_discrepancy_1 = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_both_records);
+            final int age_at_death_discrepancy_2 = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
+
+            return  age_at_death_calculated_from_both_records >= 0 &&
+                    age_at_death_calculated_from_both_records <= LinkageConfig.MAX_AGE_AT_DEATH &&
+                    age_at_death_discrepancy_1 <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY &&
+                    age_at_death_discrepancy_2 <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
+
+        } catch (NumberFormatException e) { // Invalid year.
             return true;
         }
     }

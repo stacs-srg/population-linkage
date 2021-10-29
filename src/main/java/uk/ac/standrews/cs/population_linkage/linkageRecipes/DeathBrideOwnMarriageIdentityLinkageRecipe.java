@@ -89,7 +89,7 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
 
     public static boolean isViable(final RecordPair proposedLink) {
-        return SiblingMarriageHelper.deathMarriageIdentityLinkIsViable(proposedLink);
+        return CommonLinkViabilityLogic.deathMarriageIdentityLinkIsViable(proposedLink);
     }
 
     @Override

@@ -99,8 +99,19 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
         return isViable(proposedLink);
     }
 
+    /**
+     * Checks whether the date of marriage is sufficiently long after the date of birth for the groom to have
+     * attained the minimum age for marriage, and that any discrepancy between that calculated age at marriage
+     * and the age derived from the marriage record (either explicitly recorded or derived from a date of birth
+     * recorded there) is acceptably low.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
     public static boolean isViable(RecordPair proposedLink) {
-        return SiblingMarriageHelper.spouseBirthIdentityLinkIsViable(proposedLink, false); // TODO (al) this looks like the wrong method to me - what has spouse to do with it?
+
+        // TODO is the pair the wrong way round?
+        return CommonLinkViabilityLogic.marriageBirthIdentityLinkIsViable(proposedLink, false); // TODO (al) this looks like the wrong method to me - what has spouse to do with it?
     }
 
     @Override

@@ -20,6 +20,8 @@ public class UmeaRecordsAnalysis {
 
     public void run() throws Exception {
 
+        // TODO add checks for within-record consistency e.g. year of death after year of birth on death record, consistent with age at death etc.
+
         final PopulationDataSet births = new UmeaBirthsDataSet();
 
         System.out.println("Number of birth records: " + births.getRecords().size());
@@ -202,7 +204,7 @@ public class UmeaRecordsAnalysis {
     }
 
     @SafeVarargs
-    private final Set<String> union(final Set<String>... sets) {
+    private Set<String> union(final Set<String>... sets) {
 
         final Set<String> result = new HashSet<>();
 
@@ -213,7 +215,7 @@ public class UmeaRecordsAnalysis {
     }
 
     @SafeVarargs
-    private final List<String> append(final List<String>... lists) {
+    private List<String> append(final List<String>... lists) {
 
         final List<String> result = new ArrayList<>();
 

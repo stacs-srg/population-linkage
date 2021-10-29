@@ -94,31 +94,22 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
 
-    private boolean isViable(RecordPair proposedLink) {
-
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
-
-//        try {
-//            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-//            int bride_age_or_dob = Integer.parseInt(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH));
-//            // in Umea the BRIDE_AGE_OR_DATE_OF_BIRTH all seem to be --/--/----
-//            IF YOU UNCOMMENT THIS CODE IS UNFINISHED!!!! LINE BELOW WILL NOT WORK!
-//            return Math.abs(year_of_birth1 - bride_yob) <= LinkageConfig.MAX_SIBLING_AGE_DIFF;
-//        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
-//            return true;
-//        }
-        // Although above doesn't work can still check yom > yob (crude)
-        try {
-            int year_of_birth = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int year_of_marriage = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
-            return year_of_birth < year_of_marriage;
-        } catch (NumberFormatException e) {
-            return true;
-        }
-    }
-
     @Override
     public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+
+    /**
+     * Checks whether the difference in age between the potential siblings is within the acceptable range.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
+    public static boolean isViable(RecordPair proposedLink) {
+
+        // The previous version checked that the year of marriage was after the year of birth, but
+        // this is incorrect: a person can be born after their sibling's marriage.
+
+        return CommonLinkViabilityLogic.birthMarriageSiblingLinkIsViable(proposedLink, true);
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

@@ -39,11 +39,11 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
      */
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-                    list(   pair(Marriage.BRIDE_MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
-                            pair(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)),
-                    list(   pair(Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY),
-                            pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
-            );
+            list(pair(Marriage.BRIDE_MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
+                    pair(Marriage.BRIDE_FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)),
+            list(pair(Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_MOTHER_BIRTH_RECORD_IDENTITY),
+                    pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
+    );
 
     public BrideBrideSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
@@ -60,7 +60,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
         final String m2_bride_id = record2.getString(Marriage.BRIDE_IDENTITY);
 
         // Exclude matches for multiple marriages of the same bride.
-        if (m1_bride_id.equals(m2_bride_id))  return LinkStatus.NOT_TRUE_MATCH;
+        if (m1_bride_id.equals(m2_bride_id)) return LinkStatus.NOT_TRUE_MATCH;
 
         return trueMatch(record1, record2, TRUE_MATCH_ALTERNATIVES);
     }
@@ -98,24 +98,22 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return isViable( proposedLink );
+        return isViable(proposedLink);
     }
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links.
+        if (proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID))) { // avoid self links.
             return false;
         }
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
-
         try {
-            int year_of_birth1 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record1, true);
-            int year_of_birth2 = SiblingMarriageHelper.getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
+            int year_of_birth1 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record1, true);
+            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record2, true);
 
             return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
 
-        } catch(NumberFormatException e) { 
+        } catch (NumberFormatException e) {
             return true;
         }
     }
