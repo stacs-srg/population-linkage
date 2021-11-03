@@ -65,16 +65,19 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    protected static boolean marriageBirthIdentityLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
+    protected static boolean birthMarriageIdentityLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
 
         // Returns true if age at marriage as calculated from the date of birth on the birth record and date of marriage on the marriage
         // record is within acceptable range, and the discrepancy between that age and the age recorded on, or calculated from, the
         // marriage record is acceptably low.
 
         try {
-            final int birth_year_from_marriage_record = getBirthYearOfPersonBeingMarried(proposedLink.record1, marriage_role_is_bride);
-            final LocalDate marriage_date_from_marriage_record = getMarriageDateFromMarriageRecord(proposedLink.record1);
-            final LocalDate birth_date_from_birth_record = getBirthDateFromBirthRecord(proposedLink.record2);
+            final LXP birth_record = proposedLink.record1;
+            final LXP marriage_record = proposedLink.record2;
+
+            final LocalDate birth_date_from_birth_record = getBirthDateFromBirthRecord(birth_record);
+            final int birth_year_from_marriage_record = getBirthYearOfPersonBeingMarried(marriage_record, marriage_role_is_bride);
+            final LocalDate marriage_date_from_marriage_record = getMarriageDateFromMarriageRecord(marriage_record);
 
             final int age_at_marriage_calculated = birth_date_from_birth_record.until(marriage_date_from_marriage_record).getYears();
             final int age_at_marriage_recorded = marriage_date_from_marriage_record.getYear() - birth_year_from_marriage_record;

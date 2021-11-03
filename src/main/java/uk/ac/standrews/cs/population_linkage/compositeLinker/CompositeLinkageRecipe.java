@@ -75,7 +75,7 @@ public class CompositeLinkageRecipe {
         LinkageConfig.numberOfROs = 60;
 
         Map<String, Collection<Link>> deathGroomLinks = new BitBlasterLinkageRunner().run(
-                new DeathGroomOwnMarriageIdentityLinkageRecipe(source_repository_name, ""),
+                new DeathGroomIdentityLinkageRecipe(source_repository_name, ""),
                 true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> groomBirthLinks = new BitBlasterLinkageRunner().run(
@@ -83,7 +83,7 @@ public class CompositeLinkageRecipe {
                 true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> deathBrideLinks = new BitBlasterLinkageRunner().run(
-                new DeathBrideOwnMarriageIdentityLinkageRecipe(source_repository_name, ""),
+                new DeathBrideIdentityLinkageRecipe(source_repository_name, ""),
                 true, false, true, false).getMapOfLinks();
 
         Map<String, Collection<Link>> birthBrideLinks = new BitBlasterLinkageRunner().run(

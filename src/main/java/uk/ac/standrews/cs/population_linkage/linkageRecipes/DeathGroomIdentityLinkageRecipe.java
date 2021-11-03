@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Links a person appearing as the deceased on a death record with the same person appearing as the bride on a marriage record.
+ * Links a person appearing as the deceased on a death record with the same person appearing as the groom on a marriage record.
  */
-public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
+public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
 
-    public static final double DISTANCE_THRESHOLD = 0.49;
+    public static final double DISTANCE_THRESHOLD = 0.35;
 
-    public static final String LINKAGE_TYPE = "death-bride-identity";
+    public static final String LINKAGE_TYPE = "death-groom-identity";
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FORENAME,
@@ -33,26 +33,26 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.BRIDE_FORENAME,
-            Marriage.BRIDE_SURNAME,
-            Marriage.BRIDE_MOTHER_FORENAME,
-            Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
-            Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME,
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME
     );
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(pair(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY))
+            list(pair(Death.DECEASED_IDENTITY, Marriage.GROOM_IDENTITY))
     );
 
-    public DeathBrideOwnMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+    public DeathGroomIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
 
     @Override
-    public LinkStatus isTrueMatch(LXP death, LXP marriage)  {
-        return trueMatch(death,marriage);
+    public LinkStatus isTrueMatch(LXP death, LXP marriage) {
+        return trueMatch(death, marriage);
     }
 
     public static LinkStatus trueMatch(LXP death, LXP marriage) {
@@ -80,13 +80,19 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getQueryRole() { return Marriage.ROLE_BRIDE; }
+    public String getQueryRole() {
+        return Marriage.ROLE_GROOM;
+    }
 
     @Override
-    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return LINKAGE_FIELDS;
+    }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
 
     public static boolean isViable(final RecordPair proposedLink) {
         return CommonLinkViabilityLogic.deathMarriageIdentityLinkIsViable(proposedLink);
@@ -102,7 +108,6 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
         return getGroundTruthLinksAsymmetric();
     }
 
-    @Override
     public int getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
@@ -114,6 +119,6 @@ public class DeathBrideOwnMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getDeathRecords() {
-        return filterBySex(super.getDeathRecords(), Death.SEX, "f");
+        return filterBySex(super.getDeathRecords(), Death.SEX, "m");
     }
 }

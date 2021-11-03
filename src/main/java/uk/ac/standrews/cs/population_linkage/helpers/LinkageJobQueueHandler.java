@@ -154,12 +154,12 @@ public class LinkageJobQueueHandler {
                 return new BrideBrideSiblingLinkageRecipe(sourceRepo, links_persistent_name);
             case BrideGroomSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new BrideGroomSiblingLinkageRecipe(sourceRepo, links_persistent_name);
-            case DeathBrideOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new DeathBrideOwnMarriageIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+            case DeathBrideIdentityLinkageRecipe.LINKAGE_TYPE:
+                return new DeathBrideIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case DeathSiblingLinkageRecipe.LINKAGE_TYPE:
                 return new DeathSiblingLinkageRecipe(sourceRepo, links_persistent_name);
-            case DeathGroomOwnMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new DeathGroomOwnMarriageIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+            case DeathGroomIdentityLinkageRecipe.LINKAGE_TYPE:
+                return new DeathGroomIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case BirthGroomIdentityLinkageRecipe.LINKAGE_TYPE:
                 return new BirthGroomIdentityLinkageRecipe(sourceRepo, links_persistent_name);
             case GroomGroomSiblingLinkageRecipe.LINKAGE_TYPE:

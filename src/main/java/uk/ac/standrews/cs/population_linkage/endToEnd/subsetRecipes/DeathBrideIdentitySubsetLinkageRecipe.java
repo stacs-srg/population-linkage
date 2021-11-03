@@ -7,7 +7,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideOwnMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBrideIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  *
  */
-public class DeathBrideIdentitySubsetLinkageRecipe extends DeathBrideOwnMarriageIdentityLinkageRecipe {
+public class DeathBrideIdentitySubsetLinkageRecipe extends DeathBrideIdentityLinkageRecipe {
 
     private final NeoDbCypherBridge bridge;
 

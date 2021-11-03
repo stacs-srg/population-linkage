@@ -144,28 +144,28 @@ public class LinkViabilityTest {
     public void birthGroomIdentityViability() {
 
         // All consistent.
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "20"));
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "01/01/1900"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1920, "20"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1920, "01/01/1900"));
 
         // Slight differences between ages derived from different records.
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "19"));
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "01/01/1901"));
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "21"));
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "01/01/1899"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1920, "19"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1920, "01/01/1901"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1920, "21"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1920, "01/01/1899"));
 
         // Significant differences between ages derived from different records, but within acceptable bounds.
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "24"));
-        assertTrue(birthGroomIdentityLinkViable(1, 7, 1930, 1, 1, 1900, "26"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1920, "24"));
+        assertTrue(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1930, "26"));
 
         // Invalid age of marriage on marriage record.
-        assertFalse(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1910, "10"));
+        assertFalse(birthGroomIdentityLinkViable(1, 1, 1910, 1,7,1920, "10"));
 
         // Significant differences between ages derived from different records, exceeding acceptable bounds.
-        assertFalse(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1910, "20"));
-        assertFalse(birthGroomIdentityLinkViable(1, 7, 1930, 1, 1, 1900, "25"));
-        assertFalse(birthGroomIdentityLinkViable(1, 7, 1910, 1, 1, 1920, "25"));
+        assertFalse(birthGroomIdentityLinkViable(1, 1, 1910, 1,7,1920, "20"));
+        assertFalse(birthGroomIdentityLinkViable(1, 1, 1900, 1,7,1930, "25"));
+        assertFalse(birthGroomIdentityLinkViable(1, 1, 1920, 1,7,1910, "25"));
 
-        assertTrue(groomBirthIdentityLinkViableWithInvalidData());
+        assertTrue(birthGroomIdentityLinkViableWithInvalidData());
     }
 
     @Test
@@ -279,12 +279,12 @@ public class LinkViabilityTest {
     @Test
     public void deathBrideOwnMarriageIdentityViability() {
 
-        assertTrue(deathBrideOwnMarriageIdentityLinkViable(1920,1920));
-        assertTrue(deathBrideOwnMarriageIdentityLinkViable(1921,1920));
+        assertTrue(deathBrideIdentityLinkViable(1920,1920));
+        assertTrue(deathBrideIdentityLinkViable(1921,1920));
 
-        assertFalse(deathBrideOwnMarriageIdentityLinkViable(1920,1921));
+        assertFalse(deathBrideIdentityLinkViable(1920,1921));
 
-        assertTrue(deathBrideMarriageIdentityLinkViableWithInvalidData());
+        assertTrue(deathBrideIdentityLinkViableWithInvalidData());
     }
 
     @Test
@@ -296,12 +296,12 @@ public class LinkViabilityTest {
     @Test
     public void deathGroomOwnMarriageIdentityViability() {
 
-        assertTrue(deathGroomOwnMarriageIdentityLinkViable(1920,1920));
-        assertTrue(deathGroomOwnMarriageIdentityLinkViable(1921,1920));
+        assertTrue(deathGroomIdentityLinkViable(1920,1920));
+        assertTrue(deathGroomIdentityLinkViable(1921,1920));
 
-        assertFalse(deathGroomOwnMarriageIdentityLinkViable(1920,1921));
+        assertFalse(deathGroomIdentityLinkViable(1920,1921));
 
-        assertTrue(deathGroomMarriageIdentityLinkViableWithInvalidData());
+        assertTrue(deathGroomIdentityLinkViableWithInvalidData());
     }
 
     @Test
@@ -401,244 +401,244 @@ public class LinkViabilityTest {
 
     private boolean birthSiblingLinkViable(final int birth_year1, final int birth_year2) {
 
-        final LXP record1 = makeBirth(birth_year1);
-        final LXP record2 = makeBirth(birth_year2);
+        final LXP birth_record1 = makeBirth(birth_year1);
+        final LXP birth_record2 = makeBirth(birth_year2);
 
-        return BirthSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthSiblingLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }
 
     private boolean birthBirthSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidBirth();
-        final LXP record2 = makeInvalidBirth();
+        final LXP birth_record1 = makeInvalidBirth();
+        final LXP birth_record2 = makeInvalidBirth();
 
-        return BirthSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthSiblingLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }
 
     private boolean birthDeathIdentityLinkViable(final int birth_year, final int death_year, int age_at_death, String date_of_birth) {
 
-        final LXP record1 = makeBirth(birth_year);
-        final LXP record2 = makeDeath(death_year, age_at_death, date_of_birth);
+        final LXP birth_record = makeBirth(birth_year);
+        final LXP death_record = makeDeath(death_year, age_at_death, date_of_birth);
 
-        return BirthDeathIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthDeathIdentityLinkageRecipe.isViable(new RecordPair(birth_record, death_record, 0.0));
     }
 
     private boolean birthDeathIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidBirth();
-        final LXP record2 = makeInvalidDeath();
+        final LXP birth_record = makeInvalidBirth();
+        final LXP death_record = makeInvalidDeath();
 
-        return BirthDeathIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthDeathIdentityLinkageRecipe.isViable(new RecordPair(birth_record, death_record, 0.0));
     }
 
     private boolean birthFatherIdentityLinkViable(final int birth_year1, final int birth_year2) {
 
-        final LXP record1 = makeBirth(birth_year1);
-        final LXP record2 = makeBirth(birth_year2);
+        final LXP birth_record1 = makeBirth(birth_year1);
+        final LXP birth_record2 = makeBirth(birth_year2);
 
-        return BirthFatherIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthFatherIdentityLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }
 
     private boolean birthFatherIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidBirth();
-        final LXP record2 = makeInvalidBirth();
+        final LXP birth_record1 = makeInvalidBirth();
+        final LXP birth_record2 = makeInvalidBirth();
 
-        return BirthFatherIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthFatherIdentityLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }
 
     private boolean birthMotherIdentityLinkViable(final int birth_year1, final int birth_year2) {
 
-        final LXP record1 = makeBirth(birth_year1);
-        final LXP record2 = makeBirth(birth_year2);
+        final LXP birth_record1 = makeBirth(birth_year1);
+        final LXP birth_record2 = makeBirth(birth_year2);
 
-        return BirthMotherIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthMotherIdentityLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }
 
     private boolean birthMotherIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidBirth();
-        final LXP record2 = makeInvalidBirth();
+        final LXP birth_record1 = makeInvalidBirth();
+        final LXP birth_record2 = makeInvalidBirth();
 
-        return BirthMotherIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthMotherIdentityLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }
 
     private boolean birthBrideIdentityLinkViable(final int birth_day, final int birth_month, final int birth_year, final int marriage_day, final int marriage_month, final int marriage_year, final String marriage_age_or_date_of_birth) {
 
-        final LXP record1 = makeMarriage(marriage_day, marriage_month, marriage_year, marriage_age_or_date_of_birth, true, "1");
-        final LXP record2 = makeBirth(birth_day, birth_month, birth_year);
+        final LXP birth_record = makeBirth(birth_day, birth_month, birth_year);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, marriage_age_or_date_of_birth, true, "1");
 
-        return BirthBrideIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthBrideIdentityLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean birthBrideIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidBirth();
+        final LXP birth_record = makeInvalidBirth();
+        final LXP marriage_record = makeInvalidMarriage("1");
 
-        return BirthBrideIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthBrideIdentityLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean birthBrideSiblingLinkViable(final int birth_day, final int birth_month, final int birth_year, final int marriage_day, final int marriage_month, final int marriage_year, final String marriage_age_or_date_of_birth) {
 
-        final LXP record1 = makeBirth(birth_day, birth_month, birth_year);
-        final LXP record2 = makeMarriage(marriage_day, marriage_month, marriage_year, marriage_age_or_date_of_birth, true, "1");
+        final LXP birth_record = makeBirth(birth_day, birth_month, birth_year);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, marriage_age_or_date_of_birth, true, "1");
 
-        return BirthBrideSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthBrideSiblingLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean birthBrideSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidBirth();
+        final LXP marriage_record = makeInvalidMarriage("1");
+        final LXP birth_record = makeInvalidBirth();
 
-        return BirthBrideSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthBrideSiblingLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean birthDeathSiblingLinkViable(final int birth_day, final int birth_month, final int birth_year, final int death_year, final int age_at_death, final String date_of_birth) {
 
-        final LXP record1 = makeBirth(birth_day, birth_month, birth_year);
-        final LXP record2 = makeDeath(death_year, age_at_death, date_of_birth);
+        final LXP birth_record = makeBirth(birth_day, birth_month, birth_year);
+        final LXP death_record = makeDeath(death_year, age_at_death, date_of_birth);
 
-        return BirthDeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthDeathSiblingLinkageRecipe.isViable(new RecordPair(birth_record, death_record, 0.0));
     }
 
     private boolean birthDeathSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidBirth();
-        final LXP record2 = makeInvalidDeath();
+        final LXP birth_record = makeInvalidBirth();
+        final LXP death_record = makeInvalidDeath();
 
-        return BirthDeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthDeathSiblingLinkageRecipe.isViable(new RecordPair(birth_record, death_record, 0.0));
     }
 
     private boolean birthGroomIdentityLinkViable(final int birth_day, final int birth_month, final int birth_year, final int marriage_day, final int marriage_month, final int marriage_year, final String age_or_date_of_birth) {
 
-        final LXP record1 = makeBirth(birth_day, birth_month, birth_year);
-        final LXP record2 = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, false, "1");
+        final LXP birth_record = makeBirth(birth_day, birth_month, birth_year);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, false, "1");
 
-        return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean birthGroomSiblingLinkViable(final int birth_day, final int birth_month, final int birth_year, final int marriage_day, final int marriage_month, final int marriage_year, final String marriage_age_or_date_of_birth) {
 
-        final LXP record1 = makeBirth(birth_day, birth_month, birth_year);
-        final LXP record2 = makeMarriage(marriage_day, marriage_month, marriage_year, marriage_age_or_date_of_birth, false, "1");
+        final LXP birth_record = makeBirth(birth_day, birth_month, birth_year);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, marriage_age_or_date_of_birth, false, "1");
 
-        return BirthGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthGroomSiblingLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean birthGroomSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidBirth();
+        final LXP birth_record = makeInvalidBirth();
+        final LXP marriage_record = makeInvalidMarriage("1");
 
-        return BirthGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BirthGroomSiblingLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean brideBrideSiblingLinkViable(final int marriage_day1, final int marriage_month1, final int marriage_year1, final String age_or_date_of_birth1, final int marriage_day2, final int marriage_month2, final int marriage_year2, final String age_or_date_of_birth2) {
 
-        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true, "1");
-        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, true, "2");
+        final LXP marriage_record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true, "1");
+        final LXP marriage_record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, true, "2");
 
-        return BrideBrideSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BrideBrideSiblingLinkageRecipe.isViable(new RecordPair(marriage_record1, marriage_record2, 0.0));
     }
 
     private boolean brideBrideSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidMarriage("2");
+        final LXP marriage_record1 = makeInvalidMarriage("1");
+        final LXP marriage_record2 = makeInvalidMarriage("2");
 
-        return BrideBrideSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BrideBrideSiblingLinkageRecipe.isViable(new RecordPair(marriage_record1, marriage_record2, 0.0));
     }
 
     private boolean brideGroomSiblingLinkViable(final int marriage_day1, final int marriage_month1, final int marriage_year1, final String age_or_date_of_birth1, final int marriage_day2, final int marriage_month2, final int marriage_year2, final String age_or_date_of_birth2) {
 
-        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true, "1");
-        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false, "2");
+        final LXP marriage_record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, true, "1");
+        final LXP marriage_record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false, "2");
 
-        return BrideGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BrideGroomSiblingLinkageRecipe.isViable(new RecordPair(marriage_record1, marriage_record2, 0.0));
     }
 
     private boolean brideGroomSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidMarriage("2");
+        final LXP marriage_record1 = makeInvalidMarriage("1");
+        final LXP marriage_record2 = makeInvalidMarriage("2");
 
-        return BrideGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return BrideGroomSiblingLinkageRecipe.isViable(new RecordPair(marriage_record1, marriage_record2, 0.0));
     }
 
     private boolean deathSiblingLinkViable(final int death_year1, final int age_at_death1, final int death_year2, final int age_at_death2) {
 
-        final LXP record1 = makeDeath(death_year1, age_at_death1);
-        final LXP record2 = makeDeath(death_year2, age_at_death2);
+        final LXP death_record1 = makeDeath(death_year1, age_at_death1);
+        final LXP death_record2 = makeDeath(death_year2, age_at_death2);
 
-        return DeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return DeathSiblingLinkageRecipe.isViable(new RecordPair(death_record1, death_record2, 0.0));
     }
 
     private boolean deathDeathSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidDeath();
-        final LXP record2 = makeInvalidDeath();
+        final LXP death_record1 = makeInvalidDeath();
+        final LXP death_record2 = makeInvalidDeath();
 
-        return DeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return DeathSiblingLinkageRecipe.isViable(new RecordPair(death_record1, death_record2, 0.0));
     }
 
-    private boolean deathBrideOwnMarriageIdentityLinkViable(final int death_year, final int marriage_year) {
+    private boolean deathBrideIdentityLinkViable(final int death_year, final int marriage_year) {
 
-        final LXP record1 = makeDeath(death_year);
-        final LXP record2 = makeMarriage(marriage_year);
+        final LXP death_record = makeDeath(death_year);
+        final LXP marriage_record = makeMarriage(marriage_year);
 
-        return DeathBrideOwnMarriageIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return DeathBrideIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
     }
 
-    private boolean deathBrideMarriageIdentityLinkViableWithInvalidData() {
+    private boolean deathBrideIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidBirth();
+        final LXP death_record = makeInvalidDeath();
+        final LXP marriage_record = makeInvalidMarriage("1");
 
-        return DeathBrideOwnMarriageIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return DeathBrideIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
     }
-    private boolean deathGroomOwnMarriageIdentityLinkViable(final int death_year, final int marriage_year) {
+    private boolean deathGroomIdentityLinkViable(final int death_year, final int marriage_year) {
 
-        final LXP record1 = makeDeath(death_year);
-        final LXP record2 = makeMarriage(marriage_year);
+        final LXP death_record = makeDeath(death_year);
+        final LXP marriage_record = makeMarriage(marriage_year);
 
-        return DeathGroomOwnMarriageIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
-    }
-
-    private boolean deathGroomMarriageIdentityLinkViableWithInvalidData() {
-
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidBirth();
-
-        return DeathGroomOwnMarriageIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return DeathGroomIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
     }
 
-    private boolean groomBirthIdentityLinkViableWithInvalidData() {
+    private boolean deathGroomIdentityLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidBirth();
+        final LXP death_record = makeInvalidDeath();
+        final LXP marriage_record = makeInvalidMarriage("1");
 
-        return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return DeathGroomIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
+    }
+
+    private boolean birthGroomIdentityLinkViableWithInvalidData() {
+
+        final LXP birth_record = makeInvalidBirth();
+        final LXP marriage_record = makeInvalidMarriage("1");
+
+        return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean groomGroomSiblingLinkViable(final int marriage_day1, final int marriage_month1, final int marriage_year1, final String age_or_date_of_birth1, final int marriage_day2, final int marriage_month2, final int marriage_year2, final String age_or_date_of_birth2) {
 
-        final LXP record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, false, "1");
-        final LXP record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false, "2");
+        final LXP marriage_record1 = makeMarriage(marriage_day1, marriage_month1, marriage_year1, age_or_date_of_birth1, false, "1");
+        final LXP marriage_record2 = makeMarriage(marriage_day2, marriage_month2, marriage_year2, age_or_date_of_birth2, false, "2");
 
-        return GroomGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return GroomGroomSiblingLinkageRecipe.isViable(new RecordPair(marriage_record1, marriage_record2, 0.0));
     }
 
     private boolean groomGroomSiblingLinkViableWithInvalidData() {
 
-        final LXP record1 = makeInvalidMarriage("1");
-        final LXP record2 = makeInvalidMarriage("2");
+        final LXP marriage_record1 = makeInvalidMarriage("1");
+        final LXP marriage_record2 = makeInvalidMarriage("2");
 
-        return GroomGroomSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+        return GroomGroomSiblingLinkageRecipe.isViable(new RecordPair(marriage_record1, marriage_record2, 0.0));
     }
 
-    private Birth makeBirth(int birth_year) {
+    private Birth makeBirth(final int birth_year) {
 
         final Birth record = new Birth();
 
@@ -650,17 +650,12 @@ public class LinkViabilityTest {
         return record;
     }
 
-    private Birth makeBirth(int birth_day, int birth_month, int birth_year) {
+    private Birth makeBirth(final int birth_day, final int birth_month, final int birth_year) {
 
-        final Birth record = new Birth();
-
-        for (int i = 0; i < Birth.BIRTH_DAY; i++) {
-            record.put(i, "");
-        }
+        final Birth record = makeBirth(birth_year);
 
         record.put(Birth.BIRTH_DAY, String.valueOf(birth_day));
         record.put(Birth.BIRTH_MONTH, String.valueOf(birth_month));
-        record.put(Birth.BIRTH_YEAR, String.valueOf(birth_year));
         return record;
     }
 
@@ -676,7 +671,7 @@ public class LinkViabilityTest {
         return record;
     }
 
-    private Death makeDeath(int death_year) {
+    private Death makeDeath(final int death_year) {
 
         final Death record = new Death();
 
@@ -688,29 +683,18 @@ public class LinkViabilityTest {
         return record;
     }
 
-    private Death makeDeath(int death_year, int age_at_death) {
+    private Death makeDeath(final int death_year, final int age_at_death) {
 
-        final Death record = new Death();
+        final Death record = makeDeath(death_year);
 
-        for (int i = 0; i < Death.DEATH_YEAR; i++) {
-            record.put(i, "");
-        }
-
-        record.put(Death.DEATH_YEAR, String.valueOf(death_year));
         record.put(Death.AGE_AT_DEATH, String.valueOf(age_at_death));
         return record;
     }
 
-    private Death makeDeath(int death_year, int age_at_death, String date_of_birth) {
+    private Death makeDeath(final int death_year, final int age_at_death, final String date_of_birth) {
 
-        final Death record = new Death();
+        final Death record = makeDeath(death_year, age_at_death);
 
-        for (int i = 0; i < Death.DEATH_YEAR; i++) {
-            record.put(i, "");
-        }
-
-        record.put(Death.DEATH_YEAR, String.valueOf(death_year));
-        record.put(Death.AGE_AT_DEATH, String.valueOf(age_at_death));
         record.put(Death.DATE_OF_BIRTH, date_of_birth);
         return record;
     }
@@ -737,7 +721,6 @@ public class LinkViabilityTest {
         }
 
         record.put(Marriage.MARRIAGE_YEAR, String.valueOf(marriage_year));
-
         return record;
     }
 

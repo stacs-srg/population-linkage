@@ -127,7 +127,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     public static boolean isViable(RecordPair proposedLink) {
 
         // TODO is the pair the wrong way round?
-        return CommonLinkViabilityLogic.marriageBirthIdentityLinkIsViable(proposedLink, true);
+        return CommonLinkViabilityLogic.birthMarriageIdentityLinkIsViable(proposedLink, true);
     }
 
     @Override
