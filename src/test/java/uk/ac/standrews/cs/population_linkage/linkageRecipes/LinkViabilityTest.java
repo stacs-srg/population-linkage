@@ -143,16 +143,27 @@ public class LinkViabilityTest {
     @Test
     public void birthGroomIdentityViability() {
 
-        assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, "20"));
-        assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, "01/01/1900"));
-        assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, "19"));
-        assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, "01/01/1901"));
-        assertTrue(groomBirthIdentityLinkViable(1,7,1920, 1,1,1900, String.valueOf(20 + LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY)));
-        assertTrue(groomBirthIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY)));
+        // All consistent.
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "20"));
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "01/01/1900"));
 
-        assertFalse(groomBirthIdentityLinkViable(1,7,1920, 1,1,1910, "10"));
-        assertFalse(groomBirthIdentityLinkViable(1,7,1920, 1,1,1910, "20"));
-        assertFalse(groomBirthIdentityLinkViable(1,7,1930, 1,1,1900, String.valueOf(30 - LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY - 1)));
+        // Slight differences between ages derived from different records.
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "19"));
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "01/01/1901"));
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "21"));
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "01/01/1899"));
+
+        // Significant differences between ages derived from different records, but within acceptable bounds.
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1900, "24"));
+        assertTrue(birthGroomIdentityLinkViable(1, 7, 1930, 1, 1, 1900, "26"));
+
+        // Invalid age of marriage on marriage record.
+        assertFalse(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1910, "10"));
+
+        // Significant differences between ages derived from different records, exceeding acceptable bounds.
+        assertFalse(birthGroomIdentityLinkViable(1, 7, 1920, 1, 1, 1910, "20"));
+        assertFalse(birthGroomIdentityLinkViable(1, 7, 1930, 1, 1, 1900, "25"));
+        assertFalse(birthGroomIdentityLinkViable(1, 7, 1910, 1, 1, 1920, "25"));
 
         assertTrue(groomBirthIdentityLinkViableWithInvalidData());
     }
@@ -160,21 +171,26 @@ public class LinkViabilityTest {
     @Test
     public void birthGroomSiblingViability() {
 
+        // All consistent.
         assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1920, "20"));
         assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1920, "30"));
         assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1910, "20"));
         assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1899, "20"));
 
+        // Consistent, with full or partial date of birth on marriage record.
         assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1910, "--/--/1890"));
         assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1910, "29/02/1890"));
-        assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1710, "--/--/"));
 
-        assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1920, String.valueOf(20 + LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE)));
+        // Significant difference between sibling ages, but within acceptable bounds.
+        assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1920, "60"));
 
+        // Significant difference between sibling ages, exceeding acceptable bounds.
+        assertFalse(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1920, "61"));
         assertFalse(birthGroomSiblingLinkViable(1, 1, 1800, 1,7,1920, "20"));
         assertFalse(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1910, "--/--/1790"));
-        assertFalse(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1920, String.valueOf(20 + LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE + 1)));
 
+        // Treat as viable if necessary data missing or invalid.
+        assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1,7,1710, "--/--/"));
         assertTrue(birthGroomSiblingLinkViableWithInvalidData());
     }
 
@@ -495,6 +511,14 @@ public class LinkViabilityTest {
         return BirthDeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
 
+    private boolean birthGroomIdentityLinkViable(final int birth_day, final int birth_month, final int birth_year, final int marriage_day, final int marriage_month, final int marriage_year, final String age_or_date_of_birth) {
+
+        final LXP record1 = makeBirth(birth_day, birth_month, birth_year);
+        final LXP record2 = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, false, "1");
+
+        return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
+    }
+
     private boolean birthGroomSiblingLinkViable(final int birth_day, final int birth_month, final int birth_year, final int marriage_day, final int marriage_month, final int marriage_year, final String marriage_age_or_date_of_birth) {
 
         final LXP record1 = makeBirth(birth_day, birth_month, birth_year);
@@ -588,14 +612,6 @@ public class LinkViabilityTest {
         final LXP record2 = makeInvalidBirth();
 
         return DeathGroomOwnMarriageIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
-    }
-
-    private boolean groomBirthIdentityLinkViable(final int marriage_day, final int marriage_month, final int marriage_year, final int birth_day, final int birth_month, final int birth_year, final String age_or_date_of_birth) {
-
-        final LXP record1 = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, false, "1");
-        final LXP record2 = makeBirth(birth_day, birth_month, birth_year);
-
-        return BirthGroomIdentityLinkageRecipe.isViable(new RecordPair(record1, record2, 0.0));
     }
 
     private boolean groomBirthIdentityLinkViableWithInvalidData() {
@@ -737,7 +753,7 @@ public class LinkViabilityTest {
         record.put(Marriage.MARRIAGE_DAY, String.valueOf(marriage_day));
         record.put(Marriage.MARRIAGE_MONTH, String.valueOf(marriage_month));
         record.put(Marriage.MARRIAGE_YEAR, String.valueOf(marriage_year));
-        record.put(spouse_is_bride ? Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH : Marriage.GROOM_AGE_OR_DATE_OF_BIRTH, age_or_date_of_birth);
+        record.put((spouse_is_bride ? Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH : Marriage.GROOM_AGE_OR_DATE_OF_BIRTH), age_or_date_of_birth);
 
         return record;
     }
