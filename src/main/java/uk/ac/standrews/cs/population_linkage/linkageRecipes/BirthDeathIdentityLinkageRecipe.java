@@ -28,7 +28,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
-    // TODO Why not father/mother occupation?
+    // TODO Why not father/mother occupation? - even longer duration
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
@@ -113,7 +113,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
      */
     public static boolean isViable(final RecordPair proposedLink) {
 
-        // TODO is it correct to check for internal consistency with death records?
+        // TODO is it correct to check for internal consistency with death records? - maybe not all populated - check
 
         try {
             final LXP birth_record = proposedLink.record1;

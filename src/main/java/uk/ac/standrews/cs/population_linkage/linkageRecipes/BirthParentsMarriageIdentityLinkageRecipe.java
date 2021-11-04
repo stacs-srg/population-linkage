@@ -106,7 +106,7 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
             final int year_of_child_birth = Integer.parseInt(birth_record.getString(Birth.BIRTH_YEAR));
             final int year_of_parents_marriage = Integer.parseInt(marriage_record.getString(Marriage.MARRIAGE_YEAR));
 
-            // TODO Do we want to rule out children born before marriage?
+            // TODO Do we want to rule out children born before marriage? - relax a little
             return year_of_child_birth >= year_of_parents_marriage && year_of_child_birth <= year_of_parents_marriage + LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE;
 
         } catch (NumberFormatException e) {

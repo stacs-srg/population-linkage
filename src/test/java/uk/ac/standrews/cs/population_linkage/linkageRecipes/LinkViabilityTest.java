@@ -277,7 +277,7 @@ public class LinkViabilityTest {
     }
 
     @Test
-    public void deathBrideOwnMarriageIdentityViability() {
+    public void deathBrideIdentityViability() {
 
         assertTrue(deathBrideIdentityLinkViable(1920,1920));
         assertTrue(deathBrideIdentityLinkViable(1921,1920));
@@ -294,7 +294,7 @@ public class LinkViabilityTest {
     }
 
     @Test
-    public void deathGroomOwnMarriageIdentityViability() {
+    public void deathGroomIdentityViability() {
 
         assertTrue(deathGroomIdentityLinkViable(1920,1920));
         assertTrue(deathGroomIdentityLinkViable(1921,1920));

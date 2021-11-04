@@ -27,8 +27,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
-            // Could have Death.DECEASED_OCCUPATION
-            // TODO No - this is sibling linkage.
+
             Death.MOTHER_FORENAME,
             Death.MOTHER_MAIDEN_SURNAME,
             Death.FATHER_FORENAME,
@@ -37,7 +36,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
-            // Could have BRIDE.BRIDE_OCCUPATION
+
             Marriage.BRIDE_MOTHER_FORENAME,
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
             Marriage.BRIDE_FATHER_FORENAME,

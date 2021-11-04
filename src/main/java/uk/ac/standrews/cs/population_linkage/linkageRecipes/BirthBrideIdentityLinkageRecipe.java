@@ -26,7 +26,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    // TODO Why not father/mother occupation?
+    // TODOxxx Why not father/mother occupation? - high temporal distance, occupation likely to have changed
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
@@ -126,7 +126,6 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
      */
     public static boolean isViable(RecordPair proposedLink) {
 
-        // TODO is the pair the wrong way round?
         return CommonLinkViabilityLogic.birthMarriageIdentityLinkIsViable(proposedLink, true);
     }
 

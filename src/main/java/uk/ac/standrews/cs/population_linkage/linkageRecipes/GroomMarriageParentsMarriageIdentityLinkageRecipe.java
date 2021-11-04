@@ -79,7 +79,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     @Override
     public String getStoredRole() {
-        return Marriage.ROLE_GROOM; // TODO doesn't seem right - does it matter?
+        return Marriage.ROLE_GROOM; // TODO doesn't seem right - does it matter? - new role for spouses
     }
 
     @Override

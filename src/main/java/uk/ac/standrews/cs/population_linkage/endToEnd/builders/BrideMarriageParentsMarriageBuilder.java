@@ -5,7 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideMarriageParentsMarriageSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -24,7 +24,7 @@ public class BrideMarriageParentsMarriageBuilder {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BrideMarriageParentsMarriageSubsetLinkageRecipe linkageRecipe = new BrideMarriageParentsMarriageSubsetLinkageRecipe(sourceRepo, number_of_records, bridge, BrideMarriageParentsMarriageBuilder.class.getCanonicalName());
+            BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe linkageRecipe = new BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe(sourceRepo, number_of_records, bridge, BrideMarriageParentsMarriageBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
