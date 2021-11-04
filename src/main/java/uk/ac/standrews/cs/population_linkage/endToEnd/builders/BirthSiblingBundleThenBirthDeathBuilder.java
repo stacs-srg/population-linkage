@@ -50,9 +50,9 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-            String resultsRepo = args[1]; // e.g. synth_results
+            String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
+            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, number_of_records, bridge, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
             LinkageResult lr = runner1.run(bb_recipe, false, false, false, false);

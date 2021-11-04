@@ -31,12 +31,16 @@ public class EstablishGTLinks {
     private final List<Marriage> marriageList = new ArrayList<>();
     private final List<Death> deathList = new ArrayList<>();
 
+    public static final String BIRTHS_BUCKET_NAME = "birth_records";
+    public static final String MARRIAGE_BUCKET_NAME = "marriage_records";
+    public static final String DEATHS_BUCKET_NAME = "death_records";
+
     public EstablishGTLinks(String source_repo_name, NeoDbCypherBridge bridge) throws BucketException {
         this.record_repository = new RecordRepository(source_repo_name);
         this.bridge = bridge;
-        this.births = record_repository.getBucket("birth_records");
-        this.marriages = record_repository.getBucket("marriage_records");
-        this.deaths = record_repository.getBucket("death_records");
+        this.births = record_repository.getBucket(BIRTHS_BUCKET_NAME);
+        this.marriages = record_repository.getBucket(MARRIAGE_BUCKET_NAME);
+        this.deaths = record_repository.getBucket(DEATHS_BUCKET_NAME);
         initializeRecordsToList();
     }
 
@@ -49,15 +53,15 @@ public class EstablishGTLinks {
     }
 
     private void checkConnections(RecordRepository record_repository) throws BucketException {
-        if( record_repository.getBucket("birth_records").size() == 0 ) {
+        if( record_repository.getBucket(BIRTHS_BUCKET_NAME).size() == 0 ) {
             System.out.println( "Zero birth records found - giving up!" );
             throw new RuntimeException("No records found");
         }
-        if( record_repository.getBucket("marriage_records").size() == 0 ) {
+        if( record_repository.getBucket(MARRIAGE_BUCKET_NAME).size() == 0 ) {
             System.out.println( "Zero marriage records found - giving up!" );
             throw new RuntimeException("No records found");
         }
-        if( record_repository.getBucket("death_records").size() == 0 ) {
+        if( record_repository.getBucket(DEATHS_BUCKET_NAME).size() == 0 ) {
             System.out.println( "Zero death records found - giving up!" );
             throw new RuntimeException("No records found");
         }

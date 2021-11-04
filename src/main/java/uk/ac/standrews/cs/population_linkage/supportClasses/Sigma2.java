@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * Sigma function for combining metrics  - compares different field lists over data
+ * SigmaIntolerant function for combining metrics  - compares different field lists over data
  * Created by al on 13/12/18
  */
 public class Sigma2 extends Metric<LXP> {

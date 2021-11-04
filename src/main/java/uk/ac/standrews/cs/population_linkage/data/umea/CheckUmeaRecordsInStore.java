@@ -55,5 +55,6 @@ public class CheckUmeaRecordsInStore {
         String repo_name = ApplicationProperties.getRepositoryName();
 
         new CheckUmeaRecordsInStore(store_path, repo_name).run();
+        System.exit(0);
     }
 }

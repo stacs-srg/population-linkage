@@ -10,7 +10,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import java.util.List;
 
 /**
- * Weighted Sigma function for combining metrics.
+ * Weighted SigmaIntolerant function for combining metrics.
  * Compares a single set field_list using multiple metrics and assigns arbitrary weights to each.
  * Created by al on 29/6/2020
  *

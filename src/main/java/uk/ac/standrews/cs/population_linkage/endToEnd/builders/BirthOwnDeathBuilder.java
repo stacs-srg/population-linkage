@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 /**
- *  This class attempts to find birth-groom links: links a baby on a birth to the same person as a groom on a marriage.
+ *  This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
  *  This is NOT STRONG: uses the 3 names: the groom/baby and the names of the mother and father.
  */
 public class BirthOwnDeathBuilder {
@@ -19,10 +19,10 @@ public class BirthOwnDeathBuilder {
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
+        String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathSubsetIdentityLinkageRecipe linkageRecipe = new BirthDeathSubsetIdentityLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthOwnDeathBuilder.class.getCanonicalName());
+            BirthDeathSubsetIdentityLinkageRecipe linkageRecipe = new BirthDeathSubsetIdentityLinkageRecipe(sourceRepo, number_of_records, bridge, BirthOwnDeathBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 

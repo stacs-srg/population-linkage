@@ -36,7 +36,7 @@ public class GroundTruthResultsFilter {
                 String metric = values[5];
                 String threshold = values[6];
 
-                if (metric.startsWith("Sigma-Levenshtein") && thresholds.contains(threshold)) {
+                if (metric.startsWith("SigmaIntolerant-Levenshtein") && thresholds.contains(threshold)) {
                     writer.println(line);
                 }
             }

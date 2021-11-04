@@ -18,11 +18,11 @@ public class GroomGroomSiblingBuilder {
     public static void main(String[] args) throws Exception {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
+        String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, GroomGroomSiblingBuilder.class.getCanonicalName());
+            GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, number_of_records, bridge, GroomGroomSiblingBuilder.class.getCanonicalName());
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 

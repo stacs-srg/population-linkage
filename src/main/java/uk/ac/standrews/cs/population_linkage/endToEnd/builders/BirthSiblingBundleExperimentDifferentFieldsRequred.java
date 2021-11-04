@@ -19,7 +19,6 @@ public class BirthSiblingBundleExperimentDifferentFieldsRequred {
     public static void main(String[] args) throws BucketException, RepositoryException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
 
         LinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleExperimentDifferentFieldsRequred.class.getCanonicalName());
 

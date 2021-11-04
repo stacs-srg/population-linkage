@@ -5,7 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideMarriageParentsMarriageSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -20,11 +20,11 @@ public class BrideMarriageParentsMarriageBuilder {
     public static void main(String[] args) throws Exception {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
+        String number_of_records = args[1]; // e.g. 10000, EVERYTHING
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe linkageRecipe = new BrideMarriageParentsMarriageSubsetIdentityLinkageRecipe(sourceRepo, resultsRepo, bridge, BrideMarriageParentsMarriageBuilder.class.getCanonicalName());
+            BrideMarriageParentsMarriageSubsetLinkageRecipe linkageRecipe = new BrideMarriageParentsMarriageSubsetLinkageRecipe(sourceRepo, number_of_records, bridge, BrideMarriageParentsMarriageBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 

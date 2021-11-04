@@ -4,21 +4,26 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
 
+import org.neo4j.driver.Result;
+import org.neo4j.driver.types.Relationship;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
+ * In all linkage recipes the naming convention is:
  *     the stored type is the first part of the name
  *     the query type is the second part of the name
  * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
@@ -81,4 +86,27 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public int getNumberOfGroundTruthTrueLinks() {
+        int count = 0;
+        for( LXP stored_record : getStoredRecords() ) {
+            count += countBirthDeathIdentityGTLinks( bridge, stored_record );
+        }
+        System.out.println( "Number of GT links = " + count);
+        return count;
+    }
+
+    private static final String BD_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN r";
+
+    public static int countBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
+        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID );
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("standard_id_from", standard_id_from);
+        Result result = bridge.getNewSession().run(BD_DEATH_GT_IDENTITY_LINKS_QUERY,parameters);
+        List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
+        return relationships.size();
+    }
+
 }

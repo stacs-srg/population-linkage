@@ -19,11 +19,11 @@ public class DeathSiblingBundleBuilder {
     public static void main(String[] args) throws Exception {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
+        String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
+            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, number_of_records, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;

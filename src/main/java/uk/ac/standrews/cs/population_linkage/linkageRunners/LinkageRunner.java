@@ -45,11 +45,11 @@ public abstract class LinkageRunner {
         linkageRecipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
 
         int numberOGroundTruthLinks = 0;
-        if(evaluateQuality) {
-            System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
-            numberOGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
-            System.out.println( "Number of GroundTruth true Links = " + numberOGroundTruthLinks );
-        }
+//        if(evaluateQuality) {
+//            System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
+//            numberOGroundTruthLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
+//            System.out.println( "Number of GroundTruth true Links = " + numberOGroundTruthLinks );
+//        }
 
         MemoryLogger.update();
 
@@ -175,13 +175,16 @@ public abstract class LinkageRunner {
 
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now().toString());
 
-        Map<String, Link> groundTruthLinks = linkageRecipe.getGroundTruthLinks();
-
+        // Map<String, Link> groundTruthLinks = linkageRecipe.getGroundTruthLinks();
+        // Don't really need this - delete the method - al.
+        System.out.println( "Al has temporarily removed getGroundTruthLinks() and references to groundTruthLinks from LinkageRunner.link");
+        
         try {
             for (Link linkage_says_true_link : links) {
 
-                groundTruthLinks.remove(linkageRecipe.toKey(linkage_says_true_link.getRecord1().getReferend(), linkage_says_true_link.getRecord2().getReferend()));
-
+                // groundTruthLinks.remove(linkageRecipe.toKey(linkage_says_true_link.getRecord1().getReferend(), linkage_says_true_link.getRecord2().getReferend()));
+                // Don't really need this - delete the method - al.
+                
                 if (persist_links) {
                     linkageRecipe.makeLinkPersistent(linkage_says_true_link);
                 }
@@ -199,8 +202,8 @@ public abstract class LinkageRunner {
                     if (doesGTSayIsTrue(linkage_says_true_link)) {
                         tp++;
                     } else {
-                        final boolean printFPs = false;
-                        if(printFPs) printLink(linkage_says_true_link, "FP");
+//                        final boolean printFPs = false;
+//                        if(printFPs) printLink(linkage_says_true_link, "FP");
                         fp++;
                     }
                 }
@@ -214,21 +217,30 @@ public abstract class LinkageRunner {
         MemoryLogger.update();
         nextTimeStamp(time_stamp, "perform and evaluate linkageRecipe");
 
-        LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
-        lq.print( System.out );
-
-        final boolean printFNs = false; // this does not appear to work - values yields an empty set!!!
-        if(printFNs) {
-            for (Link missingLink : groundTruthLinks.values()) {
-                printLink(missingLink, "FN");
-            }
-        }
-
-        if(generateMapOfLinks) {
-            return new LinkageResult(lq, linksByRecordID);
-        } else {
+        if(evaluate_quality) {
+            System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
+            numberOfGroundTruthTrueLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
+            System.out.println( "Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks );
+            LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
+            lq.print( System.out );
             return new LinkageResult(lq);
+        } else {
+            return new LinkageResult(null); // TODO What should this return in this case?
         }
+
+
+//        final boolean printFNs = false; // this does not appear to work - values yields an empty set!!!
+//        if(printFNs) {
+//            for (Link missingLink : groundTruthLinks.values()) {
+//                printLink(missingLink, "FN");
+//            }
+//        }
+//
+//        if(generateMapOfLinks) {
+//            return new LinkageResult(lq, linksByRecordID);
+//        } else {
+//            return new LinkageResult(lq);
+//        }
     }
 
     private LinkageQuality getLinkageQuality(boolean evaluate_quality, int numberOfGroundTruthTrueLinks, int tp, int fp) {

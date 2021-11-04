@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.runners.BitBlasterSubsetOf
 import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.ParentsMarriageBirthIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.ParentsMarriageBirthLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -50,9 +50,9 @@ public class BirthSiblingBundleThenParentsBuilder {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-            String resultsRepo = args[1]; // e.g. synth_results
+            String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-            BirthSiblingSubsetLinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge,BirthSiblingBundleThenParentsBuilder.class.getCanonicalName() );
+            BirthSiblingSubsetLinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, number_of_records, bridge,BirthSiblingBundleThenParentsBuilder.class.getCanonicalName() );
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
 
@@ -64,7 +64,7 @@ public class BirthSiblingBundleThenParentsBuilder {
 
                 LinkageResult lr = runner1.run(bb_recipe, false, false, false, false);
                 HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
-                ParentsMarriageBirthIdentityLinkageRecipe parents_recipe = new ParentsMarriageBirthIdentityLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
+                ParentsMarriageBirthLinkageRecipe parents_recipe = new ParentsMarriageBirthLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleThenParentsBuilder.class.getCanonicalName());
                 LinkageConfig.numberOfROs = 20;
                 Iterable<LXP> marriage_records = parents_recipe.getStoredRecords();
                 StringMetric baseMetric = new JensenShannon(2048);
