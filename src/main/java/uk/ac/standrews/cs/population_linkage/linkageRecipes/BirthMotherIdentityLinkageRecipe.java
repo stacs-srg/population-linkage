@@ -95,7 +95,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
         // appearing as mother on the second record. Check that a plausible period has elapsed for
         // the person to be the mother.
 
-        return CommonLinkViabilityLogic.birthParentIdentityLinkIsViable(proposedLink);
+        return CommonLinkViabilityLogic.birthParentIdentityLinkIsViable(proposedLink, true);
     }
 
     @Override

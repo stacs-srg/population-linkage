@@ -99,14 +99,6 @@ public class LinkViabilityTest {
         // Too old at death.
         assertFalse(birthDeathIdentityLinkViable(1841, 1970, 40, "01/01/1930"));
 
-        // Details on death record slightly internally inconsistent.
-        assertTrue(birthDeathIdentityLinkViable(1900, 1940, 40, "01/01/1902"));
-        assertTrue(birthDeathIdentityLinkViable(1900, 1940, 40, "01/01/1898"));
-
-        // Details on death record significantly internally inconsistent.
-        assertFalse(birthDeathIdentityLinkViable(1900, 1940, 40, "01/01/1905"));
-        assertFalse(birthDeathIdentityLinkViable(1900, 1940, 40, "01/01/1895"));
-
         assertTrue(birthDeathIdentityLinkViableWithInvalidData());
     }
 
@@ -140,13 +132,21 @@ public class LinkViabilityTest {
     @Test
     public void birthFatherIdentityViability() {
 
+        // Unsurprising father age at birth.
         assertTrue(birthFatherIdentityLinkViable(1920, 1940));
-        assertTrue(birthFatherIdentityLinkViable(1920, 1920 + LinkageConfig.MIN_PARENT_AGE_AT_BIRTH));
-        assertTrue(birthFatherIdentityLinkViable(1920, 1920 + LinkageConfig.MAX_PARENT_AGE_AT_BIRTH));
 
+        // Extremes of plausible father age at birth.
+        assertTrue(birthFatherIdentityLinkViable(1920, 1935));
+        assertTrue(birthFatherIdentityLinkViable(1920, 1990));
+
+        // Father born after birth.
         assertFalse(birthFatherIdentityLinkViable(1940, 1920));
-        assertFalse(birthFatherIdentityLinkViable(1920, 1920 + LinkageConfig.MIN_PARENT_AGE_AT_BIRTH - 1));
-        assertFalse(birthFatherIdentityLinkViable(1920, 1920 + LinkageConfig.MAX_PARENT_AGE_AT_BIRTH + 1));
+
+        // Father too young.
+        assertFalse(birthFatherIdentityLinkViable(1920, 1934));
+
+        // Father too old.
+        assertFalse(birthFatherIdentityLinkViable(1920, 1991));
 
         assertTrue(birthFatherIdentityLinkViableWithInvalidData());
     }
@@ -218,14 +218,20 @@ public class LinkViabilityTest {
     @Test
     public void birthMotherIdentityViability() {
 
-        // Age of mother at birth of child within acceptable bounds.
+        // Unsurprising mother age at birth.
         assertTrue(birthMotherIdentityLinkViable(1920, 1940));
+
+        // Extremes of plausible mother age at birth.
         assertTrue(birthMotherIdentityLinkViable(1920, 1935));
         assertTrue(birthMotherIdentityLinkViable(1920, 1970));
 
-        // Age of mother at birth of child outwith acceptable bounds.
+        // Mother born after birth.
         assertFalse(birthMotherIdentityLinkViable(1940, 1920));
+
+        // Mother too young.
         assertFalse(birthMotherIdentityLinkViable(1920, 1934));
+
+        // Mother too old.
         assertFalse(birthMotherIdentityLinkViable(1920, 1971));
 
         assertTrue(birthMotherIdentityLinkViableWithInvalidData());
@@ -490,14 +496,7 @@ public class LinkViabilityTest {
 
     private boolean birthDeathIdentityLinkViable(final int birth_year, final int death_year, int age_at_death, String date_of_birth) {
 
-        final Birth record = new Birth();
-
-        for (int i = 0; i < Birth.BIRTH_YEAR; i++) {
-            record.put(i, "");
-        }
-
-        record.put(Birth.BIRTH_YEAR, String.valueOf(birth_year));
-        final LXP birth_record = record;
+        final LXP birth_record = makeBirth(birth_year);
         final LXP death_record = makeDeath(death_year, age_at_death, date_of_birth);
 
         return BirthDeathIdentityLinkageRecipe.isViable(new RecordPair(birth_record, death_record, 0.0));
@@ -513,23 +512,8 @@ public class LinkViabilityTest {
 
     private boolean birthFatherIdentityLinkViable(final int birth_year1, final int birth_year2) {
 
-        final Birth record1 = new Birth();
-
-        for (int i1 = 0; i1 < Birth.BIRTH_YEAR; i1++) {
-            record1.put(i1, "");
-        }
-
-        record1.put(Birth.BIRTH_YEAR, String.valueOf(birth_year1));
-        final LXP birth_record1 = record1;
-
-        final Birth record = new Birth();
-
-        for (int i = 0; i < Birth.BIRTH_YEAR; i++) {
-            record.put(i, "");
-        }
-
-        record.put(Birth.BIRTH_YEAR, String.valueOf(birth_year2));
-        final LXP birth_record2 = record;
+        final LXP birth_record1 = makeBirth(birth_year1);
+        final LXP birth_record2 = makeBirth(birth_year2);
 
         return BirthFatherIdentityLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }
@@ -544,23 +528,8 @@ public class LinkViabilityTest {
 
     private boolean birthMotherIdentityLinkViable(final int birth_year1, final int birth_year2) {
 
-        final Birth record1 = new Birth();
-
-        for (int i1 = 0; i1 < Birth.BIRTH_YEAR; i1++) {
-            record1.put(i1, "");
-        }
-
-        record1.put(Birth.BIRTH_YEAR, String.valueOf(birth_year1));
-        final LXP birth_record1 = record1;
-
-        final Birth record = new Birth();
-
-        for (int i = 0; i < Birth.BIRTH_YEAR; i++) {
-            record.put(i, "");
-        }
-
-        record.put(Birth.BIRTH_YEAR, String.valueOf(birth_year2));
-        final LXP birth_record2 = record;
+        final LXP birth_record1 = makeBirth(birth_year1);
+        final LXP birth_record2 = makeBirth(birth_year2);
 
         return BirthMotherIdentityLinkageRecipe.isViable(new RecordPair(birth_record1, birth_record2, 0.0));
     }

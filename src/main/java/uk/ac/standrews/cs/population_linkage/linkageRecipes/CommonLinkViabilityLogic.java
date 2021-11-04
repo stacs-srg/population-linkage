@@ -14,7 +14,6 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
@@ -164,7 +163,7 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    protected static boolean birthParentIdentityLinkIsViable(final RecordPair proposedLink) {
+    protected static boolean birthParentIdentityLinkIsViable(final RecordPair proposedLink, final boolean parent_role_is_mother) {
 
         // Returns true if difference in birth years is within acceptable range.
 
@@ -177,7 +176,8 @@ public class CommonLinkViabilityLogic {
 
             final int parent_age_at_birth_of_child = child_year_of_birth - parent_year_of_birth;
 
-            return parent_age_at_birth_of_child >= LinkageConfig.MIN_PARENT_AGE_AT_BIRTH && parent_age_at_birth_of_child <= LinkageConfig.MAX_PARENT_AGE_AT_BIRTH;
+            return parent_age_at_birth_of_child >= LinkageConfig.MIN_PARENT_AGE_AT_BIRTH &&
+                    parent_age_at_birth_of_child <= (parent_role_is_mother ? LinkageConfig.MAX_MOTHER_AGE_AT_BIRTH : LinkageConfig.MAX_FATHER_AGE_AT_BIRTH);
 
         } catch (NumberFormatException e) { // BIRTH_YEAR is invalid.
             return true;

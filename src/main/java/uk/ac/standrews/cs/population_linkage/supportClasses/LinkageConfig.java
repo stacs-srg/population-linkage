@@ -21,7 +21,8 @@ public class LinkageConfig {
     public static Integer MIN_CHILD_PARENTS_MARRIAGE_DIFFERENCE = 15;  // Minimum time between parents' marriage and child's marriage, in years.
     public static Integer MAX_CHILD_PARENTS_MARRIAGE_DIFFERENCE = 100; // Maximum time between parents' marriage and child's marriage, in years.
     public static Integer MIN_PARENT_AGE_AT_BIRTH = 15;                // Minimum age of parent at child birth.
-    public static Integer MAX_PARENT_AGE_AT_BIRTH = 50;                // Maximum age of parent at child birth.
+    public static Integer MAX_MOTHER_AGE_AT_BIRTH = 50;                // Maximum age of mother at child birth.
+    public static Integer MAX_FATHER_AGE_AT_BIRTH = 70;                // Maximum age of father at child birth.
     public static Integer MAX_ALLOWABLE_AGE_DISCREPANCY = 4;           // Maximum tolerated discrepancy in years between ages calculated from different records in potential identity link.
     public static Integer MAX_INTER_MARRIAGE_DIFFERENCE = 50;          // Maximum time in years between consecutive marriages of a given person.
     public static Integer MAX_AGE_AT_DEATH = 120;

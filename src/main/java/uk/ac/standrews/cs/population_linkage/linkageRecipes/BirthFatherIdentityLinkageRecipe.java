@@ -95,7 +95,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
         // appearing as father on the second record. Check that a plausible period has elapsed for
         // the person to be the father.
 
-        return CommonLinkViabilityLogic.birthParentIdentityLinkIsViable(proposedLink);
+        return CommonLinkViabilityLogic.birthParentIdentityLinkIsViable(proposedLink, false);
     }
 
     @Override
