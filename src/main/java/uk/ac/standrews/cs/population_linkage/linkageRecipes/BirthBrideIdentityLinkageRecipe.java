@@ -19,6 +19,12 @@ import java.util.Map;
  */
 public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
+    // TODO Some Wrigley rules not obvious where to place in viability checks.
+    // e.g. date of birth should not be after death of mother - identity linkage of mother on birth record to
+    // deceased on death record, but not a strong linkage.
+    //
+    // Maybe better to do such checks on linked population at a later stage?
+
     private static final double DISTANCE_THRESHOLD = 0.49;
 
     public static final String LINKAGE_TYPE = "birth-bride-identity";

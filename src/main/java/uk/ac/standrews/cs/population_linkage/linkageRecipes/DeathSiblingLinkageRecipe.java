@@ -11,8 +11,11 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic.siblingBirthDatesAreViable;
 
 /**
  * Links a person appearing as the deceased on a death record with a sibling appearing as the deceased on another death record.
@@ -92,13 +95,14 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
-
         try {
-            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record1.getString(Death.AGE_AT_DEATH));
-            int year_of_birth2 = Integer.parseInt(proposedLink.record2.getString(Death.DEATH_YEAR)) - Integer.parseInt(proposedLink.record2.getString(Death.AGE_AT_DEATH));
+            final LXP death_record1 = proposedLink.record1;
+            final LXP death_record2 = proposedLink.record2;
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
+            final LocalDate date_of_birth_from_death_record1 = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record1);
+            final LocalDate date_of_birth_from_death_record2 = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record2);
+
+            return siblingBirthDatesAreViable(date_of_birth_from_death_record1, date_of_birth_from_death_record2);
 
         } catch(NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
             return true;

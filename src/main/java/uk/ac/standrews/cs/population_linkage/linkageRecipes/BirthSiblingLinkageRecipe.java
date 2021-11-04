@@ -11,8 +11,11 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic.siblingBirthDatesAreViable;
 
 /**
  * Links a person appearing as the child on a birth record with a sibling appearing as the child on another birth record.
@@ -94,10 +97,13 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     public static boolean isViable(RecordPair proposedLink) {
 
         try {
-            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int year_of_birth2 = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
+            final LXP birth_record1 = proposedLink.record1;
+            final LXP birth_record2 = proposedLink.record2;
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
+            final LocalDate date_of_birth_from_birth_record1 = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record1);
+            final LocalDate date_of_birth_from_birth_record2 = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record2);
+
+            return siblingBirthDatesAreViable(date_of_birth_from_birth_record1, date_of_birth_from_birth_record2);
 
         } catch (NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
             return true;

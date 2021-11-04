@@ -7,14 +7,15 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic.siblingBirthDatesAreViable;
 
 /**
  * Links a person appearing as the child on a birth record with a sibling appearing as the deceased on a death record.
@@ -23,7 +24,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     // TODO Do we need to do something to avoid self-links (linker & ground truth)?
 
-    private static final double DISTANCE_THESHOLD = 0.36;
+    private static final double DISTANCE_THRESHOLD = 0.36;
 
     public static final String LINKAGE_TYPE = "birth-death-sibling";
 
@@ -105,8 +106,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     /**
-     * Checks whether the age difference between the potential siblings is plausible, and that the age at death
-     * recorded on the death record is consistent with the difference between birth year on death record and death year.
+     * Checks whether the age difference between the potential siblings is plausible.
      *
      * @param proposedLink the proposed link
      * @return true if the link is viable
@@ -117,19 +117,10 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
             final LXP birth_record = proposedLink.record1;
             final LXP death_record = proposedLink.record2;
 
-            final int year_of_birth_from_birth_record = Integer.parseInt(birth_record.getString(Birth.BIRTH_YEAR));
-            final int year_of_birth_from_death_record = Integer.parseInt(Normalisation.extractYear(death_record.getString(Death.DATE_OF_BIRTH)));
-            final int year_of_death_from_death_record = Integer.parseInt(death_record.getString(Death.DEATH_YEAR));
+            final LocalDate date_of_birth_from_birth_record = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
+            final LocalDate date_of_birth_from_death_record = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
 
-            final int age_difference_between_siblings = Math.abs(year_of_birth_from_birth_record - year_of_birth_from_death_record);
-
-            final int age_at_death_recorded_on_death_record = Integer.parseInt(death_record.getString(Death.AGE_AT_DEATH));
-            final int age_at_death_calculated_from_death_record = year_of_death_from_death_record - year_of_birth_from_death_record;
-
-            final int age_at_death_discrepancy = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
-
-            return  age_difference_between_siblings <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE &&
-                    age_at_death_discrepancy <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
+            return siblingBirthDatesAreViable(date_of_birth_from_birth_record, date_of_birth_from_death_record);
 
         } catch (NumberFormatException e) { // Invalid year.
             return true;
@@ -148,6 +139,6 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THESHOLD;
+        return DISTANCE_THRESHOLD;
     }
 }

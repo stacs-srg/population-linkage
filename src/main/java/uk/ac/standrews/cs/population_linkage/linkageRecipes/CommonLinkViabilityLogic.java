@@ -14,8 +14,13 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 
 public class CommonLinkViabilityLogic {
+
+    // TODO factor out sibling age difference logic.
 
     protected static int getBirthYearOfPersonBeingMarried(final LXP record, final boolean spouse_is_bride) {
 
@@ -43,7 +48,7 @@ public class CommonLinkViabilityLogic {
         return LocalDate.of(marriage_year, marriage_month, marriage_day);
     }
 
-    private static LocalDate getBirthDateFromBirthRecord(LXP record) {
+    protected static LocalDate getBirthDateFromBirthRecord(LXP record) {
 
         int birth_day = Integer.parseInt(record.getString(Birth.BIRTH_DAY));
         int birth_month = Integer.parseInt(record.getString(Birth.BIRTH_MONTH));
@@ -52,11 +57,61 @@ public class CommonLinkViabilityLogic {
         return LocalDate.of(birth_year, birth_month, birth_day);
     }
 
+    protected static LocalDate getBirthDateFromDeathRecord(LXP record) {
+
+        try {
+            return Normalisation.parseDate(record.getString(Death.DATE_OF_BIRTH));
+        }
+        catch (DateTimeParseException e) {
+
+            // Try approximating date from year of death and age at death.
+            int year_of_birth = Integer.parseInt(record.getString(Death.DEATH_YEAR)) - Integer.parseInt(record.getString(Death.AGE_AT_DEATH));
+            return LocalDate.of(year_of_birth, 1, 1);
+        }
+    }
+
+    /**
+     * Checks the age at death
+     * recorded on the death record is consistent with the difference between birth year on death record and death year.
+     *
+     * @param death_record the record
+     * @return true if the record is consistent
+     */
+    public static boolean checkInternalConsistency(final LXP death_record) {
+
+        try {
+            final int year_of_birth_from_death_record = Integer.parseInt(Normalisation.extractYear(death_record.getString(Death.DATE_OF_BIRTH)));
+            final int year_of_death_from_death_record = Integer.parseInt(death_record.getString(Death.DEATH_YEAR));
+
+            final int age_at_death_recorded_on_death_record = Integer.parseInt(death_record.getString(Death.AGE_AT_DEATH));
+            final int age_at_death_calculated_from_death_record = year_of_death_from_death_record - year_of_birth_from_death_record;
+
+            final int age_at_death_discrepancy = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
+
+            return age_at_death_discrepancy <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
+
+        } catch (NumberFormatException e) { // Invalid year.
+            return true;
+        }
+    }
+
+    public static boolean siblingBirthDatesAreViable(final LocalDate date_of_birth1, final LocalDate date_of_birth2) {
+
+        final long days_between_sibling_births = Math.abs(ChronoUnit.DAYS.between(date_of_birth1, date_of_birth2));
+
+        return (days_between_sibling_births <= LinkageConfig.MAX_TWIN_AGE_DIFFERENCE_IN_DAYS ||
+                days_between_sibling_births >= LinkageConfig.MIN_SIBLING_AGE_DIFFERENCE_IN_DAYS) &&
+                days_between_sibling_births <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE_IN_DAYS;
+    }
+
     protected static boolean birthMarriageSiblingLinkIsViable(RecordPair proposedLink, boolean marriage_role_is_bride) {
 
         try {
-            int year_of_birth1 = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record2, marriage_role_is_bride);
+            final LXP birth_record = proposedLink.record1;
+            final LXP marriage_record = proposedLink.record2;
+
+            int year_of_birth1 = Integer.parseInt(birth_record.getString(Birth.BIRTH_YEAR));
+            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(marriage_record, marriage_role_is_bride);
 
             return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
 
@@ -114,12 +169,15 @@ public class CommonLinkViabilityLogic {
         // Returns true if difference in birth years is within acceptable range.
 
         try {
-            final int parent_year_of_birth = Integer.parseInt(proposedLink.record1.getString(Birth.BIRTH_YEAR));
-            final int child_year_of_birth = Integer.parseInt(proposedLink.record2.getString(Birth.BIRTH_YEAR));
+            final LXP birth_of_parent = proposedLink.record1;
+            final LXP birth_of_child = proposedLink.record2;
 
-            final int parent_age_at_child_birth = child_year_of_birth - parent_year_of_birth;
+            final int parent_year_of_birth = Integer.parseInt(birth_of_parent.getString(Birth.BIRTH_YEAR));
+            final int child_year_of_birth = Integer.parseInt(birth_of_child.getString(Birth.BIRTH_YEAR));
 
-            return parent_age_at_child_birth >= LinkageConfig.MIN_PARENT_AGE_AT_BIRTH && parent_age_at_child_birth <= LinkageConfig.MAX_PARENT_AGE_AT_BIRTH;
+            final int parent_age_at_birth_of_child = child_year_of_birth - parent_year_of_birth;
+
+            return parent_age_at_birth_of_child >= LinkageConfig.MIN_PARENT_AGE_AT_BIRTH && parent_age_at_birth_of_child <= LinkageConfig.MAX_PARENT_AGE_AT_BIRTH;
 
         } catch (NumberFormatException e) { // BIRTH_YEAR is invalid.
             return true;
