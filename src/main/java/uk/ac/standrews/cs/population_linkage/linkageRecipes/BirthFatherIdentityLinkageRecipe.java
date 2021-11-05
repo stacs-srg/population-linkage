@@ -86,20 +86,24 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return isViable( proposedLink );
+        return isViable(proposedLink);
     }
 
+    /**
+     * Checks whether a plausible period has elapsed for the person to be the father.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
     public static boolean isViable(RecordPair proposedLink) {
-
-        // Proposed link is between a person being born on the first record, and the same person
-        // appearing as father on the second record. Check that a plausible period has elapsed for
-        // the person to be the father.
 
         return CommonLinkViabilityLogic.birthParentIdentityLinkIsViable(proposedLink, false);
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

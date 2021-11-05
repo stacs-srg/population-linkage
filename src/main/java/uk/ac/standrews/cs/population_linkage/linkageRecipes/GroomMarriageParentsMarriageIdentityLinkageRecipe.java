@@ -84,7 +84,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     @Override
     public String getQueryRole() {
-        return Marriage.ROLE_PARENTS;  // bride and groom
+        return Marriage.ROLE_SPOUSES;  // bride and groom
     }
 
     @Override

@@ -89,11 +89,13 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
         return isViable( proposedLink );
     }
 
+    /**
+     * Checks whether a plausible period has elapsed for the person to be the mother.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
     public static boolean isViable(RecordPair proposedLink) {
-
-        // Proposed link is between a person being born on the first record, and the same person
-        // appearing as mother on the second record. Check that a plausible period has elapsed for
-        // the person to be the mother.
 
         return CommonLinkViabilityLogic.birthParentIdentityLinkIsViable(proposedLink, true);
     }

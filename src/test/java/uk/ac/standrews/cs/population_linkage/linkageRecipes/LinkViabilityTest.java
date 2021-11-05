@@ -244,7 +244,23 @@ public class LinkViabilityTest {
     @Test
     public void birthParentsMarriageIdentityViability() {
 
-        fail();
+        // Birth 5 years after marriage.
+        assertTrue(birthParentsMarriageIdentityLinkViable(1, 1, 1915, 1, 7, 1910));
+
+        // Birth shortly after marriage.
+        assertTrue(birthParentsMarriageIdentityLinkViable(1, 1, 1915, 1, 7, 1914));
+
+        // Birth 2 years before marriage.
+        assertTrue(birthParentsMarriageIdentityLinkViable(1, 1, 1915, 1, 7, 1917));
+
+        // Birth 60 years after marriage.
+        assertFalse(birthParentsMarriageIdentityLinkViable(1, 1, 1975, 1, 7, 1914));
+
+        // Birth 10 years before marriage.
+        assertFalse(birthParentsMarriageIdentityLinkViable(1, 1, 1975, 1, 7, 1985));
+
+        // Treat as viable if necessary data missing or invalid.
+        assertTrue(birthParentsMarriageIdentityLinkViableWithInvalidData());
     }
 
     @Test
@@ -671,6 +687,22 @@ public class LinkViabilityTest {
         final LXP marriage_record = makeInvalidMarriage("1");
 
         return BirthGroomSiblingLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
+    }
+
+    private boolean birthParentsMarriageIdentityLinkViable(final int birth_day, final int birth_month, final int birth_year, final int marriage_day, final int marriage_month, final int marriage_year) {
+
+        final LXP birth_record = makeBirth(birth_day, birth_month, birth_year);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, "0", false, "1");
+
+        return BirthParentsMarriageIdentityLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
+    }
+
+    private boolean birthParentsMarriageIdentityLinkViableWithInvalidData() {
+
+        final LXP birth_record = makeInvalidBirth();
+        final LXP marriage_record = makeInvalidMarriage("1");
+
+        return BirthParentsMarriageIdentityLinkageRecipe.isViable(new RecordPair(birth_record, marriage_record, 0.0));
     }
 
     private boolean brideBrideSiblingLinkViable(final int marriage_day1, final int marriage_month1, final int marriage_year1, final String age_or_date_of_birth1, final int marriage_day2, final int marriage_month2, final int marriage_year2, final String age_or_date_of_birth2) {

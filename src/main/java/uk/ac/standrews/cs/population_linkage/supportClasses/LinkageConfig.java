@@ -18,6 +18,7 @@ public class LinkageConfig {
     public static Integer MIN_AGE_AT_MARRIAGE = 15;                    // Minimum age of bride or groom at marriage.
     public static Integer MAX_SIBLING_AGE_DIFFERENCE = 40;             // Maximum difference in age between siblings, in years.
     public static Integer MAX_MARRIAGE_BIRTH_DIFFERENCE = 40;          // Maximum time between marriage and child being born, in years.
+    public static Integer MIN_MARRIAGE_BIRTH_DIFFERENCE = -5;          // Minimum time between marriage and child being born, in years.
     public static Integer MIN_CHILD_PARENTS_MARRIAGE_DIFFERENCE = 15;  // Minimum time between parents' marriage and child's marriage, in years.
     public static Integer MAX_CHILD_PARENTS_MARRIAGE_DIFFERENCE = 100; // Maximum time between parents' marriage and child's marriage, in years.
     public static Integer MIN_PARENT_AGE_AT_BIRTH = 15;                // Minimum age of parent at child birth.
@@ -27,7 +28,9 @@ public class LinkageConfig {
     public static Integer MAX_INTER_MARRIAGE_DIFFERENCE = 50;          // Maximum time in years between consecutive marriages of a given person.
     public static Integer MAX_AGE_AT_DEATH = 120;
 
-    public static Integer MIN_SIBLING_AGE_DIFFERENCE_IN_DAYS = 274; // Approximation to 9 months
+    public static Integer MIN_SIBLING_AGE_DIFFERENCE_IN_DAYS = (int)(9 * 30.4); // Approximation to 9 months
     public static Integer MAX_SIBLING_AGE_DIFFERENCE_IN_DAYS = (int)(MAX_SIBLING_AGE_DIFFERENCE * 365.25);
     public static Integer MAX_TWIN_AGE_DIFFERENCE_IN_DAYS = 2;
+    public static Integer MAX_MARRIAGE_BIRTH_DIFFERENCE_IN_DAYS = (int)(MAX_MARRIAGE_BIRTH_DIFFERENCE * 365.25);
+    public static Integer MIN_MARRIAGE_BIRTH_DIFFERENCE_IN_DAYS = (int)(MIN_MARRIAGE_BIRTH_DIFFERENCE * 365.25);
 }

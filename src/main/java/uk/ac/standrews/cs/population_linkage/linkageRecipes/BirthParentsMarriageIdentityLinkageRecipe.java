@@ -12,6 +12,8 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -85,12 +87,12 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public String getStoredRole() {
-        return Birth.ROLE_PARENTS;
-    } // mother and father
+        return Birth.ROLE_PARENTS;  // mother and father
+    }
 
     @Override
     public String getQueryRole() {
-        return Marriage.ROLE_PARENTS;  // bride and groom
+        return Marriage.ROLE_SPOUSES;  // bride and groom
     }
 
     @Override
@@ -98,16 +100,25 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
+    /**
+     * Checks whether a plausible period has elapsed between the marriage and the birth.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
     public static boolean isViable(final RecordPair proposedLink) {
+
         try {
-            final Birth birth_record = (Birth) proposedLink.record1;
-            final Marriage marriage_record = (Marriage) proposedLink.record2;
+            final LXP birth_record = proposedLink.record1;
+            final LXP marriage_record = proposedLink.record2;
 
-            final int year_of_child_birth = Integer.parseInt(birth_record.getString(Birth.BIRTH_YEAR));
-            final int year_of_parents_marriage = Integer.parseInt(marriage_record.getString(Marriage.MARRIAGE_YEAR));
+            final LocalDate date_of_child_birth = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
+            final LocalDate date_of_parents_marriage = CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(marriage_record);
 
-            // TODO Do we want to rule out children born before marriage? - relax a little
-            return year_of_child_birth >= year_of_parents_marriage && year_of_child_birth <= year_of_parents_marriage + LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE;
+            final long days_from_marriage_to_birth = date_of_parents_marriage.until(date_of_child_birth, ChronoUnit.DAYS);
+
+            return days_from_marriage_to_birth >= LinkageConfig.MIN_MARRIAGE_BIRTH_DIFFERENCE_IN_DAYS &&
+                    days_from_marriage_to_birth <= LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE_IN_DAYS;
 
         } catch (NumberFormatException e) {
             return true;

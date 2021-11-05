@@ -38,7 +38,7 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    private static LocalDate getMarriageDateFromMarriageRecord(LXP record) {
+    public static LocalDate getMarriageDateFromMarriageRecord(LXP record) {
 
         int marriage_day = Integer.parseInt(record.getString(Marriage.MARRIAGE_DAY));
         int marriage_month = Integer.parseInt(record.getString(Marriage.MARRIAGE_MONTH));
@@ -47,7 +47,7 @@ public class CommonLinkViabilityLogic {
         return LocalDate.of(marriage_year, marriage_month, marriage_day);
     }
 
-    protected static LocalDate getBirthDateFromBirthRecord(LXP record) {
+    public static LocalDate getBirthDateFromBirthRecord(LXP record) {
 
         int birth_day = Integer.parseInt(record.getString(Birth.BIRTH_DAY));
         int birth_month = Integer.parseInt(record.getString(Birth.BIRTH_MONTH));
@@ -56,7 +56,7 @@ public class CommonLinkViabilityLogic {
         return LocalDate.of(birth_year, birth_month, birth_day);
     }
 
-    protected static LocalDate getBirthDateFromDeathRecord(LXP record) {
+    public static LocalDate getBirthDateFromDeathRecord(LXP record) {
 
         try {
             return Normalisation.parseDate(record.getString(Death.DATE_OF_BIRTH));
