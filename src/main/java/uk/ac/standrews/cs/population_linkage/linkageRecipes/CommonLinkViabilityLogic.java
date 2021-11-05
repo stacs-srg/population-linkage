@@ -148,15 +148,24 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    protected static boolean deathMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
+    protected static boolean deathMarriageIdentityLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
 
-        // Returns true if year of death is after year of marriage.
+        // Returns true if year of death is not before year of marriage, and year of birth inferred from death record is
+        // consistent with year of birth inferred from marriage record.
 
         try {
-            final int year_of_death = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
-            final int year_of_marriage = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
+            LXP death_record = proposedLink.record1;
+            LXP marriage_record = proposedLink.record2;
 
-            return year_of_death >= year_of_marriage;
+            final int year_of_death = Integer.parseInt(death_record.getString(Death.DEATH_YEAR));
+            final int year_of_marriage = Integer.parseInt(marriage_record.getString(Marriage.MARRIAGE_YEAR));
+
+            final LocalDate birth_date_from_death_record = getBirthDateFromDeathRecord(death_record);
+            final int birth_year_from_marriage_record = getBirthYearOfPersonBeingMarried(marriage_record, marriage_role_is_bride);
+
+            final int birth_year_discrepancy = Math.abs(birth_date_from_death_record.getYear() - birth_year_from_marriage_record);
+
+            return year_of_death >= year_of_marriage && birth_year_discrepancy <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
 
         } catch (NumberFormatException e) { // DEATH_YEAR or MARRIAGE_YEAR is invalid.
             return true;

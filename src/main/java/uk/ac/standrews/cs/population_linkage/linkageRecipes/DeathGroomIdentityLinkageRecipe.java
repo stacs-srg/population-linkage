@@ -95,7 +95,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     public static boolean isViable(final RecordPair proposedLink) {
-        return CommonLinkViabilityLogic.deathMarriageIdentityLinkIsViable(proposedLink);
+        return CommonLinkViabilityLogic.deathMarriageIdentityLinkIsViable(proposedLink, false);
     }
 
     @Override
