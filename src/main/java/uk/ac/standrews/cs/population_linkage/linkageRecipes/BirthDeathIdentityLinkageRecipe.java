@@ -113,7 +113,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
      */
     public static boolean isViable(final RecordPair proposedLink) {
 
-        // TODO run separate profiling to check for internal consistency with death records - all fields populated in Umea.
+        // TODO run separate profiling to check for internal consistency with death records - all fields populated in Umea. Plus plausible age at death.
 
         try {
             final LXP birth_record = proposedLink.record1;

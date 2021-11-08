@@ -112,24 +112,20 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
         return isViable( proposedLink );
     }
 
-    private boolean isViable(RecordPair proposedLink) {
+    /**
+     * Checks whether the discrepancy between the recorded or calculated dates of birth on the two records is acceptably low.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
+    public static boolean isViable(RecordPair proposedLink) {
 
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
-
-//        try {
-//            int groom_age_or_dob1 = Integer.parseInt(proposedLink.record1.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH));
-//            int groom_age_or_dob2 = Integer.parseInt(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH));
-//            // in Umea the GROOM_AGE_OR_DATE_OF_BIRTH all seem to be --/--/----
-//            IF YOU UNCOMMENT THIS CODE IS UNFINISHED!!!! LINE BELOW WILL NOT WORK!
-//            return ...
-//        } catch (NumberFormatException e) {
-//            return true;
-//        }
-        // Although above doesn't work can still check inter marriage range
         try {
-            int yom1 = Integer.parseInt(proposedLink.record1.getString(Marriage.MARRIAGE_YEAR));
-            int yom2 = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
-            return Math.abs(yom1 - yom2) <= LinkageConfig.MAX_INTER_MARRIAGE_DIFFERENCE;
+            int year_of_birth1 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
+            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record2, false);
+
+            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
+
         } catch (NumberFormatException e) {
             return true;
         }

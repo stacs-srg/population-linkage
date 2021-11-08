@@ -101,7 +101,15 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
         return isViable(proposedLink);
     }
 
+    /**
+     * Checks whether the recorded or calculated dates of birth are acceptably close for siblings.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
     public static boolean isViable(RecordPair proposedLink) {
+
+        // TODO run separate profiling to check for internal consistency of age-at-marriage on marriage records. Also dates of birth plausible relative to marriage date.
 
         if (proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID))) { // avoid self links.
             return false;
