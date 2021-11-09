@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLinkageRecipe {
 
-    private int NUMBER_OF_BIRTHS = EVERYTHING; // 10000; // for testing
+    private int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
     private final NeoDbCypherBridge bridge;
 
     public int ALL_LINKAGE_FIELDS = 6;
@@ -43,9 +43,9 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
     public BirthDeathSubsetIdentityLinkageRecipe(String source_repository_name, String number_of_records,  NeoDbCypherBridge bridge, String links_persistent_name ) {
         super( source_repository_name,links_persistent_name );
         if( number_of_records.equals(EVERYTHING_STRING) ) {
-            NUMBER_OF_BIRTHS = EVERYTHING;
+            NUMBER_OF_DEATHS = EVERYTHING;
         } else {
-            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
         }
         this.bridge = bridge;
     }
@@ -58,12 +58,36 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
      * @return
      */
     @Override
-    protected Iterable<LXP> getBirthRecords() {
+    protected Iterable<LXP> getDeathRecords() {
+        System.out.println( "Problem with getDeathRecords - Bitblaster cannot work with null fields from getBirthRecords"); // TODO
         if( cached_records == null ) {
-            cached_records = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+            cached_records = filter(linkage_fields, NUMBER_OF_DEATHS, super.getDeathRecords(), getQueryMappingFields());
         }
         return cached_records;
     }
+
+//    @Override
+//    protected Iterable<LXP> getBirthRecords() {
+//        if( cached_records == null ) {
+//            cached_records = filter(linkage_fields, EVERYTHING, super.getBirthRecords(), getLinkageFields()); // was NUMBER_OF_BIRTHS not EVERYTHING.
+//        }
+//        return cached_records;
+//    }
+
+    /* When above was in we got:
+    tolerant option selected with 6 fields required to be non-empty
+    Filtering: accepted: 100 rejected: 3 from 103
+    Number of GT links = 26
+    Number of GroundTruth true Links = 26
+    TP: 0
+    FN: 26
+    FP: 1
+    precision: 0.00
+    recall: 0.00
+    f measure: 0.00
+    Now swapped filtering to Death records - the query type.
+     */
+
 
     @Override
     public void makeLinkPersistent(Link link) {
@@ -90,17 +114,20 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
     @Override
     public int getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP stored_record : getStoredRecords() ) {
-            count += countBirthDeathIdentityGTLinks( bridge, stored_record );
+        int num = 0;
+        for( LXP query_record : getQueryRecords() ) {
+            count += countBirthDeathIdentityGTLinks( bridge, query_record );
+            num++;
         }
         System.out.println( "Number of GT links = " + count);
+        System.out.println( "Number of queries = " + num );
         return count;
     }
 
-    private static final String BD_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BD_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
-        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID );
+    public static int countBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP death_query_record ) {
+        String standard_id_from = death_query_record.getString(Death.STANDARDISED_ID );
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
