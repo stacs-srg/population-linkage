@@ -23,7 +23,7 @@ public class LinkageResult {
 
     public Map<String, Collection<Link>> getMapOfLinks() {
         if(mapOfLinks == null) {
-            throw new MapNotRequestedException();
+            throw new RuntimeException("map not requested");
         }
         return mapOfLinks;
     }

@@ -100,6 +100,11 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
+    @Override
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
+
     /**
      * Checks whether a plausible period has elapsed between the marriage and the birth.
      *
@@ -115,19 +120,14 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
             final LocalDate date_of_child_birth = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_parents_marriage = CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(marriage_record);
 
-            final long days_from_marriage_to_birth = date_of_parents_marriage.until(date_of_child_birth, ChronoUnit.DAYS);
+            final long years_from_marriage_to_birth = date_of_parents_marriage.until(date_of_child_birth, ChronoUnit.YEARS);
 
-            return days_from_marriage_to_birth >= LinkageConfig.MIN_MARRIAGE_BIRTH_DIFFERENCE_IN_DAYS &&
-                    days_from_marriage_to_birth <= LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE_IN_DAYS;
+            return years_from_marriage_to_birth >= LinkageConfig.MIN_MARRIAGE_BIRTH_DIFFERENCE &&
+                    years_from_marriage_to_birth <= LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE;
 
         } catch (NumberFormatException e) {
             return true;
         }
-    }
-
-    @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
     }
 
     @Override

@@ -92,32 +92,15 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
 
+    /**
+     * Checks whether the difference in age between the potential siblings is within the acceptable range.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
     private boolean isViable(RecordPair proposedLink) {
 
-        return true; // see *** below
-
-//        if (LinkageConfig.MAX_SIBLING_AGE_DIFF == null) return true;
-//
-////        try {
-////            int death = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
-////            int groom_age_or_dob = Integer.parseInt(proposedLink.record2.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH));
-////            // in Umea the GROOM_AGE_OR_DATE_OF_BIRTH all seem to be --/--/----
-////            IF YOU UNCOMMENT THIS CODE IS UNFINISHED!!!! LINE BELOW WILL NOT WORK!
-////            return ...
-////        } catch (NumberFormatException e) { // in this case a BIRTH_YEAR is invalid
-////            return true;
-////        }
-//        // Although above doesn't work can still check yom > yob (crude)
-//        try {
-//            int year_of_death = Integer.parseInt(proposedLink.record1.getString(Death.DEATH_YEAR));
-//            int year_of_marriage = Integer.parseInt(proposedLink.record2.getString(Marriage.MARRIAGE_YEAR));
-//            return year_of_marriage < year_of_death;
-//            // This is very conservative and may field false negatives.
-//            // *** Siblings could be married after the death of another sibling
-//
-//        } catch (NumberFormatException e) {
-//            return true;
-//        }
+        return CommonLinkViabilityLogic.deathMarriageSiblingLinkIsViable(proposedLink, false);
     }
 
     @Override

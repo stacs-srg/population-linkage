@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.endToEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBirthIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -31,7 +31,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.endToEnd.util.Util.getBirthSiblings;
-import static uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathBirthIdentityLinkageRecipe.trueMatch;
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe.trueMatch;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
@@ -48,7 +48,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
         BitBlasterSearchStructure bb = null;        // initialised in try block - decl is here so we can finally shut it.
 
-        try(NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
+        try(NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
@@ -59,7 +59,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 
-            LinkageRecipe death_birth_recipe = new DeathBirthIdentityLinkageRecipe(sourceRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
+            LinkageRecipe death_birth_recipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
 
             LinkageConfig.numberOfROs = 20;
 
@@ -230,7 +230,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
         if( birth instanceof Birth ) {
             return death_birth_recipe.convertToOtherRecordType(birth);
         } else if( birth instanceof DynamicLXP) {
-            uk.ac.standrews.cs.neoStorr.impl.LXP result = new Death();
+            LXP result = new Death();
             for (int i = 0; i < death_birth_recipe.getLinkageFields().size(); i++) {
                 result.put(death_birth_recipe.getLinkageFields().get(i), birth.get(death_birth_recipe.getQueryMappingFields().get(i)));
             }
@@ -246,7 +246,6 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
      *      adding a link from each child to all the parents marriage records
      * @param bridge - a neo4J bridge
      * @param sibling_deaths - a record containing the sibling Death records of that sibling.
-     * @throws Exception
      */
     private static void addBirthDeathToNeo4J(NeoDbCypherBridge bridge, List<SiblingDeath> sibling_deaths, List<String> seen_already) {
 
@@ -319,18 +318,18 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
         sb.append( death.getString(Death.MOTHER_FORENAME ) );
         sb.append( "-" );
         sb.append( death.getString(Death.MOTHER_SURNAME ) );
-//        sb.append( "-" );
-//        sb.append( death.getString(Death.FATHER_OCCUPATION ) );
+
+
         return sb.toString();
     }
 
-    private static List<SiblingDeath> adjustMarriagesInGrouping(List<SiblingDeath> sibling_deaths) throws BucketException {
+    private static List<SiblingDeath> adjustMarriagesInGrouping(List<SiblingDeath> sibling_deaths) {
 
         TreeMap<String, Integer> marriage_counts = new TreeMap<>();     // map from the marriages to number of occurances.
 
         int sibling_index = 0;
 
-        // build a map from marriage id to number of occurences of that marriage in the set.
+        // build a map from marriage id to number of occurrences of that marriage in the set.
 
         for (SiblingDeath sd : sibling_deaths) {  // TODO fix this - this code is repeated from countDifferentMarriagesInGrouping above.
 
@@ -466,7 +465,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
             for (DataDistance<Marriage> distance : spm.parents_marriages) {
                 final LXP marriage = distance.value;
                 String id = marriage.getString(Marriage.STANDARDISED_ID);
-                if (marriage_counts.keySet().contains(id)) {
+                if (marriage_counts.containsKey(id)) {
                     int count = marriage_counts.get(id);
                     marriage_counts.put(id, count + 1);
                 } else {

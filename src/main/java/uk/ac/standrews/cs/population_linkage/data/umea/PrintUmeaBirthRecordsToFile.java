@@ -30,6 +30,6 @@ public class PrintUmeaBirthRecordsToFile {
 
     public static void main(String[] args) throws Exception {
 
-        new PrintUmeaBirthRecordsToFile(Paths.get("/Users/al/Desktop/births.csv")).run();
+        new PrintUmeaBirthRecordsToFile(Paths.get("/Users/graham/Desktop/births.csv")).run();
     }
 }

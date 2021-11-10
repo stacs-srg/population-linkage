@@ -102,21 +102,7 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
      */
     public static boolean isViable(final RecordPair proposedLink) {
 
-        try {
-            final LXP parents_marriage = proposedLink.record1;
-            final LXP bride_marriage = proposedLink.record2;
-
-            final int parents_year_of_marriage = CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(parents_marriage).getYear();
-            final int bride_year_of_marriage = CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(bride_marriage).getYear();
-
-            final int years_between_marriages = bride_year_of_marriage - parents_year_of_marriage;
-
-            return years_between_marriages >= LinkageConfig.MIN_CHILD_PARENTS_MARRIAGE_DIFFERENCE &&
-                    years_between_marriages <= LinkageConfig.MAX_CHILD_PARENTS_MARRIAGE_DIFFERENCE;
-
-        } catch (NumberFormatException e) {
-            return true;
-        }
+        return CommonLinkViabilityLogic.spouseMarriageParentsMarriageIdentityLinkIsViable(proposedLink);
     }
 
     @Override

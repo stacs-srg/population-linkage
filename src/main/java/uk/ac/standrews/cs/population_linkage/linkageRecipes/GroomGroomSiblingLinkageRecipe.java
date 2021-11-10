@@ -11,6 +11,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -39,19 +40,19 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
      */
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(   pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY),
+            list(pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY),
                     pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY)),
-            list(   pair(Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY),
+            list(pair(Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_MOTHER_BIRTH_RECORD_IDENTITY),
                     pair(Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY, Marriage.GROOM_FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public GroomGroomSiblingLinkageRecipe(String source_repository_name , String links_persistent_name) {
+    public GroomGroomSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
-         return trueMatch(record1, record2);
+        return trueMatch(record1, record2);
     }
 
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
@@ -97,23 +98,22 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return isViable( proposedLink );
+        return isViable(proposedLink);
     }
 
     public static boolean isViable(RecordPair proposedLink) {
 
-        if( proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID ))) { // avoid self links.
+        if (proposedLink.record1.getString(Marriage.STANDARDISED_ID).equals(proposedLink.record2.getString(Marriage.STANDARDISED_ID))) { // avoid self links.
             return false;
         }
-        if (LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE == null) return true;
 
         try {
-            int year_of_birth1 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record1, false);
-            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.record2, false);
+            final LocalDate date_of_birth1 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.record1, false);
+            final LocalDate date_of_birth2 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.record2, false);
 
-            return Math.abs(year_of_birth1 - year_of_birth2) <= LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE;
+            return CommonLinkViabilityLogic.siblingBirthDatesAreViable(date_of_birth1, date_of_birth2);
 
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return true;
         }
     }

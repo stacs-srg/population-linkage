@@ -13,6 +13,8 @@ import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -100,7 +102,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return isViable( proposedLink );
+        return isViable(proposedLink);
     }
 
     /**
@@ -119,19 +121,19 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
             final LXP birth_record = proposedLink.record1;
             final LXP death_record = proposedLink.record2;
 
-            final int year_of_birth_from_birth_record = Integer.parseInt(birth_record.getString(Birth.BIRTH_YEAR));
-            final int year_of_birth_from_death_record = Integer.parseInt(Normalisation.extractYear(death_record.getString(Death.DATE_OF_BIRTH)));
-            final int year_of_death_from_death_record = Integer.parseInt(death_record.getString(Death.DEATH_YEAR));
+            final LocalDate date_of_birth_from_birth_record = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
+            final LocalDate date_of_birth_from_death_record = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
+            final LocalDate date_of_death_from_death_record = CommonLinkViabilityLogic.getDeathDateFromDeathRecord(death_record);
 
             final int age_at_death_recorded_on_death_record = Integer.parseInt(death_record.getString(Death.AGE_AT_DEATH));
 
-            final int age_at_death_calculated_from_both_records = year_of_death_from_death_record - year_of_birth_from_birth_record;
-            final int age_at_death_calculated_from_death_record = year_of_death_from_death_record - year_of_birth_from_death_record;
+            final long age_at_death_calculated_from_both_records = date_of_birth_from_birth_record.until(date_of_death_from_death_record, ChronoUnit.YEARS);
+            final long age_at_death_calculated_from_death_record = date_of_birth_from_death_record.until(date_of_death_from_death_record, ChronoUnit.YEARS);
 
-            final int age_at_death_discrepancy_1 = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_both_records);
-            final int age_at_death_discrepancy_2 = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
+            final long age_at_death_discrepancy_1 = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_both_records);
+            final long age_at_death_discrepancy_2 = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
 
-            return  age_at_death_calculated_from_both_records >= 0 &&
+            return age_at_death_calculated_from_both_records >= 0 &&
                     age_at_death_calculated_from_both_records <= LinkageConfig.MAX_AGE_AT_DEATH &&
                     age_at_death_discrepancy_1 <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY &&
                     age_at_death_discrepancy_2 <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
@@ -142,7 +144,9 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {

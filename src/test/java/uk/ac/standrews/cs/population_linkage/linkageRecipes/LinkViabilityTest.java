@@ -5,13 +5,14 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import org.junit.Test;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+
+import java.time.LocalDate;
 
 import static org.junit.Assert.*;
 
@@ -67,7 +68,7 @@ public class LinkViabilityTest {
         assertTrue(birthBrideSiblingLinkViable(1, 1, 1900, 1, 7, 1920, "60"));
 
         // Significant difference between sibling ages, exceeding acceptable bounds.
-        assertFalse(birthBrideSiblingLinkViable(1, 1, 1900, 1, 7, 1920, "61"));
+        assertFalse(birthBrideSiblingLinkViable(1, 1, 1900, 1, 7, 1920, "62"));
         assertFalse(birthBrideSiblingLinkViable(1, 1, 1800, 1, 7, 1920, "20"));
         assertFalse(birthBrideSiblingLinkViable(1, 1, 1900, 1, 7, 1910, "--/--/1790"));
 
@@ -120,9 +121,6 @@ public class LinkViabilityTest {
         // Sibling age difference too high.
         assertFalse(birthDeathSiblingLinkViable(1, 1, 1900, 1991, 50, "01/01/1941"));
         assertFalse(birthDeathSiblingLinkViable(1, 1, 1900, 1909, 50, "01/01/1859"));
-
-        // Implausibly small gap between non-twin sibling births.
-        assertFalse(birthDeathSiblingLinkViable(1, 1, 1900, 1950, 50, "01/07/1900"));
 
         // Treat as viable if necessary data missing or invalid.
         assertTrue(birthDeathSiblingLinkViableWithInvalidData());
@@ -201,7 +199,7 @@ public class LinkViabilityTest {
         assertTrue(birthGroomSiblingLinkViable(1, 1, 1900, 1, 7, 1920, "60"));
 
         // Significant difference between sibling ages, exceeding acceptable bounds.
-        assertFalse(birthGroomSiblingLinkViable(1, 1, 1900, 1, 7, 1920, "61"));
+        assertFalse(birthGroomSiblingLinkViable(1, 1, 1900, 1, 7, 1920, "62"));
         assertFalse(birthGroomSiblingLinkViable(1, 1, 1800, 1, 7, 1920, "20"));
         assertFalse(birthGroomSiblingLinkViable(1, 1, 1900, 1, 7, 1910, "--/--/1790"));
 
@@ -279,9 +277,6 @@ public class LinkViabilityTest {
         // Gap between siblings beyond acceptable bounds.
         assertFalse(birthSiblingLinkViable(1920, 1980));
         assertFalse(birthSiblingLinkViable(1961, 1920));
-
-        // Implausibly small gap between non-twin sibling births.
-        assertFalse(birthSiblingLinkViable("01/10/1900", "01/04/1901"));
 
         // Treat as viable if necessary data missing or invalid.
         assertTrue(birthBirthSiblingLinkViableWithInvalidData());
@@ -405,12 +400,6 @@ public class LinkViabilityTest {
     }
 
     @Test
-    public void deathBirthIdentityViability() {
-
-        fail();
-    }
-
-    @Test
     public void deathBrideIdentityViability() {
 
         // All reasonably consistent.
@@ -433,7 +422,35 @@ public class LinkViabilityTest {
     @Test
     public void deathBrideSiblingViability() {
 
-        fail();
+        // All consistent.
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1920, "20"));
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 2, 8, 1920, "30"));
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "20"));
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1899, "20"));
+
+        // Consistent, with full or partial date of birth on marriage record.
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "--/--/1890"));
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "29/02/1890"));
+
+        // Twins.
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "01/07/1900"));
+
+        // Rapid succession.
+        assertTrue(deathBrideSiblingLinkViable(1960, 60, "01/01/1900", 1, 7, 1910, "01/10/1900"));
+
+        // Significant difference between sibling ages, but within acceptable bounds.
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1920, "60"));
+
+        // Significant difference between sibling ages, exceeding acceptable bounds.
+        assertFalse(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1920, "61"));
+        assertFalse(deathBrideSiblingLinkViable(1970, 70, "01/07/1800", 1, 7, 1920, "20"));
+        assertFalse(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "--/--/1790"));
+
+        // Don't check for implausibly small gap between non-twin sibling births, since don't have enough precision where age rather than date of birth recorded on marriage record.
+
+        // Treat as viable if necessary data missing or invalid.
+        assertTrue(deathBrideSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1710, "--/--/"));
+        assertTrue(deathBrideSiblingLinkViableWithInvalidData());
     }
 
     @Test
@@ -459,7 +476,35 @@ public class LinkViabilityTest {
     @Test
     public void deathGroomSiblingViability() {
 
-        fail();
+        // All consistent.
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1920, "20"));
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 2, 8, 1920, "30"));
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "20"));
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1899, "20"));
+
+        // Consistent, with full or partial date of birth on marriage record.
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "--/--/1890"));
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "29/02/1890"));
+
+        // Twins.
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "01/07/1900"));
+
+        // Rapid succession.
+        assertTrue(deathGroomSiblingLinkViable(1960, 60, "01/01/1900", 1, 7, 1910, "01/10/1900"));
+
+        // Significant difference between sibling ages, but within acceptable bounds.
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1920, "60"));
+
+        // Significant difference between sibling ages, exceeding acceptable bounds.
+        assertFalse(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1920, "61"));
+        assertFalse(deathGroomSiblingLinkViable(1970, 70, "01/07/1800", 1, 7, 1920, "20"));
+        assertFalse(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1910, "--/--/1790"));
+
+        // Don't check for implausibly small gap between non-twin sibling births, since don't have enough precision where age rather than date of birth recorded on marriage record.
+
+        // Treat as viable if necessary data missing or invalid.
+        assertTrue(deathGroomSiblingLinkViable(1970, 70, "01/07/1900", 1, 7, 1710, "--/--/"));
+        assertTrue(deathGroomSiblingLinkViableWithInvalidData());
     }
 
     @Test
@@ -486,9 +531,6 @@ public class LinkViabilityTest {
         // Gap between siblings beyond acceptable bounds (90 years, 51 years).
         assertFalse(deathSiblingLinkViable(1920, 50, 1980, 20));
         assertFalse(deathSiblingLinkViable(1930, 50, 1971, 50));
-
-        // Implausibly small gap between non-twin sibling births.
-        assertFalse(deathSiblingLinkViable("01/10/1900", "01/04/1901"));
 
         // Treat as viable if necessary data missing or invalid.
         assertTrue(deathSiblingLinkViableWithInvalidData());
@@ -580,29 +622,108 @@ public class LinkViabilityTest {
     }
 
     @Test
-    public void parentsMarriageBirthIdentityViability() {
+    public void deathParentsMarriageIdentityViability() {
 
-        fail();
+        // Child death 5 years after marriage, born after marriage.
+        assertTrue(deathParentsMarriageIdentityLinkViable(1915, 4, "01/07/1911", 1, 7, 1910));
+
+        // Child death 5 years after marriage, born long before marriage.
+        assertFalse(deathParentsMarriageIdentityLinkViable(1915, 65, "01/07/1850", 1, 7, 1910));
+
+        // Child death shortly after marriage, born after marriage.
+        assertTrue(deathParentsMarriageIdentityLinkViable(1913, 1, "01/01/1913", 1, 7, 1912));
+
+        // Child death shortly after marriage, born long before marriage.
+        assertFalse(deathParentsMarriageIdentityLinkViable(1913, 33, "01/01/1880", 1, 7, 1912));
+
+        // Child death 2 years before marriage, born 4 years before marriage.
+        assertTrue(deathParentsMarriageIdentityLinkViable(1910, 2, "01/01/1908", 1, 7, 1912));
+
+        // Child death 2 years before marriage, born 20 years before marriage.
+        assertFalse(deathParentsMarriageIdentityLinkViable(1910, 18, "01/01/1892", 1, 7, 1912));
+
+        // Child death 60 years after marriage.
+        assertTrue(deathParentsMarriageIdentityLinkViable(1970, 49, "01/07/1921", 1, 7, 1910));
+
+        // Child death 60 years after marriage, born 50 years after marriage.
+        assertFalse(deathParentsMarriageIdentityLinkViable(1970, 10, "01/07/1960", 1, 7, 1910));
+
+        // Child death 170 years after marriage.
+        assertFalse(deathParentsMarriageIdentityLinkViable(2020, 120, "01/07/1900", 1, 7, 1850));
+
+        // Child death long before marriage.
+        assertFalse(deathParentsMarriageIdentityLinkViable(1880, 4, "01/07/1876", 1, 7, 1910));
+
+        // Treat as viable if necessary data missing or invalid.
+        assertTrue(deathParentsMarriageIdentityLinkViableWithInvalidData());
     }
 
     @Test
-    public void parentsMarriageDeathIdentityViability() {
+    public void getBirthDateFromBirthRecord() {
 
-        fail();
+        final LXP record1 = makeBirth(1890);
+        final LXP record2 = makeBirth(3, 3, 1890);
+        final LXP record3 = makeBirth("03/03/1890");
+        final LXP record4 = makeBirth("--/--/1890");
+
+        assertEquals(LocalDate.of(1890, 7, 1), CommonLinkViabilityLogic.getBirthDateFromBirthRecord(record1));
+        assertEquals(LocalDate.of(1890, 3, 3), CommonLinkViabilityLogic.getBirthDateFromBirthRecord(record2));
+        assertEquals(LocalDate.of(1890, 3, 3), CommonLinkViabilityLogic.getBirthDateFromBirthRecord(record3));
+        assertEquals(LocalDate.of(1890, 7, 1), CommonLinkViabilityLogic.getBirthDateFromBirthRecord(record4));
     }
 
     @Test
-    public void extractBirthYearFromMarriageRecord() {
+    public void getBirthDateFromMarriageRecord() {
 
-        LXP record1 = makeMarriage(1, 1, 1890, "27", true, "1");
-        LXP record2 = makeMarriage(1, 1, 1904, "05/10/1863", true, "1");
-        LXP record3 = makeMarriage(1, 1, 1890, "27", false, "1");
-        LXP record4 = makeMarriage(1, 1, 1904, "05/10/1863", false, "1");
+        final LXP record1 = makeMarriage(1, 1, 1890, "27", true, "1");
+        final LXP record2 = makeMarriage(1, 1, 1904, "05/10/1863", true, "1");
+        final LXP record3 = makeMarriage(1, 1, 1890, "27", false, "1");
+        final LXP record4 = makeMarriage(1, 1, 1904, "05/10/1863", false, "1");
+        final LXP record5 = makeMarriage(1, 1, 1904, "--/--/1863", false, "1");
 
-        assertEquals(1863, CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(record1, true));
-        assertEquals(1863, CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(record2, true));
-        assertEquals(1863, CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(record3, false));
-        assertEquals(1863, CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(record4, false));
+        assertEquals(LocalDate.of(1863, 7, 1), CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record1, true));
+        assertEquals(LocalDate.of(1863, 10, 5), CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record2, true));
+        assertEquals(LocalDate.of(1863, 7, 1), CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record3, false));
+        assertEquals(LocalDate.of(1863, 10, 5), CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record4, false));
+        assertEquals(LocalDate.of(1863, 7, 1), CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record5, false));
+    }
+
+    @Test
+    public void getMarriageDateFromMarriageRecord() {
+
+        final LXP record1 = makeMarriage(3, 3, 1890);
+        final LXP record2 = makeMarriage(1863);
+
+        assertEquals(LocalDate.of(1890, 3, 3), CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(record1));
+        assertEquals(LocalDate.of(1863, 7, 1), CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(record2));
+    }
+
+    @Test
+    public void getBirthDateFromDeathRecord() {
+
+        final LXP record1 = makeDeath("03/03/1890");
+        final LXP record2 = makeDeath("--/--/1890");
+        final LXP record3 = makeDeath(1923, 65);
+        final LXP record4 = makeDeath("--/--/1890", 65);
+
+        assertEquals(LocalDate.of(1890, 3, 3), CommonLinkViabilityLogic.getBirthDateFromDeathRecord(record1));
+        assertEquals(LocalDate.of(1890, 7, 1), CommonLinkViabilityLogic.getBirthDateFromDeathRecord(record2));
+        assertEquals(LocalDate.of(1858, 7, 1), CommonLinkViabilityLogic.getBirthDateFromDeathRecord(record3));
+        assertEquals(LocalDate.of(1890, 7, 1), CommonLinkViabilityLogic.getBirthDateFromDeathRecord(record4));
+    }
+
+    @Test
+    public void getDeathDateFromDeathRecord() {
+
+        final LXP record1 = makeDeath(3, 3, 1890);
+        final LXP record2 = makeDeath(1890);
+        final LXP record3 = makeDeath("03/03/1890", 65);
+        final LXP record4 = makeDeath("--/--/1890", 65);
+
+        assertEquals(LocalDate.of(1890, 3, 3), CommonLinkViabilityLogic.getDeathDateFromDeathRecord(record1));
+        assertEquals(LocalDate.of(1890, 7, 1), CommonLinkViabilityLogic.getDeathDateFromDeathRecord(record2));
+        assertEquals(LocalDate.of(1955, 3, 3), CommonLinkViabilityLogic.getDeathDateFromDeathRecord(record3));
+        assertEquals(LocalDate.of(1955, 7, 1), CommonLinkViabilityLogic.getDeathDateFromDeathRecord(record4));
     }
 
     @Test(expected = NumberFormatException.class)
@@ -610,7 +731,7 @@ public class LinkViabilityTest {
 
         final LXP record = makeMarriage(1, 1, 1904, "05/10/----", false, "1");
 
-        CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(record, false);
+        CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record, false);
     }
 
     @Test(expected = NumberFormatException.class)
@@ -618,7 +739,7 @@ public class LinkViabilityTest {
 
         final LXP record = makeInvalidMarriage("1");
 
-        CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(record, true);
+        CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record, true);
     }
 
     private boolean birthSiblingLinkViable(final int birth_year1, final int birth_year2) {
@@ -885,6 +1006,22 @@ public class LinkViabilityTest {
         return DeathBrideIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
     }
 
+    private boolean deathBrideSiblingLinkViable(final int death_year, final int age_at_death, final String date_of_birth, final int marriage_day, final int marriage_month, final int marriage_year, String age_or_date_of_birth) {
+
+        final LXP death_record = makeDeath(death_year, age_at_death, date_of_birth);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, true, "1");
+
+        return DeathBrideSiblingLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
+    }
+
+    private boolean deathBrideSiblingLinkViableWithInvalidData() {
+
+        final LXP death_record = makeInvalidDeath();
+        final LXP marriage_record = makeInvalidMarriage("1");
+
+        return DeathBrideSiblingLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
+    }
+
     private boolean deathGroomIdentityLinkViable(final int death_year, final int age_at_death, final String date_of_birth, final int marriage_day, final int marriage_month, final int marriage_year, String age_or_date_of_birth) {
 
         final LXP death_record = makeDeath(death_year, age_at_death, date_of_birth);
@@ -899,6 +1036,38 @@ public class LinkViabilityTest {
         final LXP marriage_record = makeInvalidMarriage("1");
 
         return DeathGroomIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
+    }
+
+    private boolean deathGroomSiblingLinkViable(final int death_year, final int age_at_death, final String date_of_birth, final int marriage_day, final int marriage_month, final int marriage_year, String age_or_date_of_birth) {
+
+        final LXP death_record = makeDeath(death_year, age_at_death, date_of_birth);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, age_or_date_of_birth, true, "1");
+
+        return DeathBrideSiblingLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
+    }
+
+    private boolean deathGroomSiblingLinkViableWithInvalidData() {
+
+        final LXP death_record = makeInvalidDeath();
+        final LXP marriage_record = makeInvalidMarriage("1");
+
+        return DeathBrideSiblingLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
+    }
+
+    private boolean deathParentsMarriageIdentityLinkViable(final int death_year, final int age_at_death, final String date_of_birth, final int marriage_day, final int marriage_month, final int marriage_year) {
+
+        final LXP death_record = makeDeath(death_year, age_at_death, date_of_birth);
+        final LXP marriage_record = makeMarriage(marriage_day, marriage_month, marriage_year, "0", false, "1");
+
+        return DeathParentsMarriageIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
+    }
+
+    private boolean deathParentsMarriageIdentityLinkViableWithInvalidData() {
+
+        final LXP death_record = makeInvalidDeath();
+        final LXP marriage_record = makeInvalidMarriage("1");
+
+        return DeathParentsMarriageIdentityLinkageRecipe.isViable(new RecordPair(death_record, marriage_record, 0.0));
     }
 
     private boolean birthGroomIdentityLinkViableWithInvalidData() {
@@ -959,12 +1128,25 @@ public class LinkViabilityTest {
 
     private Birth makeBirth(final int birth_year) {
 
-        return makeBirth(1, 1, birth_year);
+        return makeBirth(1, CommonLinkViabilityLogic.DEFAULT_MONTH, birth_year);
     }
 
     private Birth makeBirth(final String date_of_birth) {
 
-        return makeBirth(Integer.parseInt(Normalisation.extractDay(date_of_birth)), Integer.parseInt(Normalisation.extractMonth(date_of_birth)), Integer.parseInt(Normalisation.extractYear(date_of_birth)));
+        int birth_day = 1;
+        int birth_month = CommonLinkViabilityLogic.DEFAULT_MONTH;
+
+        try {
+            birth_day = Integer.parseInt(Normalisation.extractDay(date_of_birth));
+            birth_month = Integer.parseInt(Normalisation.extractMonth(date_of_birth));
+        }
+        catch (NumberFormatException e) {
+            // Ignore, use default values.
+        }
+
+        final int birth_year = Integer.parseInt(Normalisation.extractYear(date_of_birth));
+
+        return makeBirth(birth_day, birth_month, birth_year);
     }
 
     private Birth makeBirth(final int birth_day, final int birth_month, final int birth_year) {
@@ -1005,6 +1187,15 @@ public class LinkViabilityTest {
         return record;
     }
 
+    private Death makeDeath(final int death_day, final int death_month, final int death_year) {
+
+        final Death record = makeDeath(death_year);
+
+        record.put(Death.DEATH_DAY, String.valueOf(death_day));
+        record.put(Death.DEATH_MONTH, String.valueOf(death_month));
+        return record;
+    }
+
     private Death makeDeath(final int death_year, final int age_at_death) {
 
         final Death record = makeDeath(death_year);
@@ -1028,6 +1219,19 @@ public class LinkViabilityTest {
         final Death record = makeDeath(year_of_birth + 50, 50, date_of_birth);
 
         record.put(Death.DATE_OF_BIRTH, date_of_birth);
+        return record;
+    }
+
+    private Death makeDeath(final String date_of_birth, int age_at_death) {
+
+        final Death record = new Death();
+
+        for (int i = 0; i <= Death.DEATH_YEAR; i++) {
+            record.put(i, "");
+        }
+
+        record.put(Death.DATE_OF_BIRTH, date_of_birth);
+        record.put(Death.AGE_AT_DEATH, String.valueOf(age_at_death));
         return record;
     }
 

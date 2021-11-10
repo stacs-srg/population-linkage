@@ -92,24 +92,19 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
         return LINKAGE_FIELDS;
     }
 
-    public static boolean isViable(RecordPair proposedLink) {
-
-        try {
-            Marriage child_marriage = (Marriage) proposedLink.record1;
-            Marriage parent_marriage = (Marriage) proposedLink.record2;
-
-            int child_yom = Integer.parseInt( child_marriage.getString( Marriage.MARRIAGE_YEAR ) );
-            int parent_yom = Integer.parseInt( parent_marriage.getString( Marriage.MARRIAGE_YEAR ) );
-
-            return parent_yom < child_yom && child_yom < parent_yom + LinkageConfig.MAX_CHILD_PARENTS_MARRIAGE_DIFFERENCE;
-
-        } catch (NumberFormatException e) {
-            return true;
-        }
-    }
-
     @Override
     public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+
+    /**
+     * Checks whether a plausible period has elapsed between the marriage and the marriage of the daughter.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
+    public static boolean isViable(final RecordPair proposedLink) {
+
+        return CommonLinkViabilityLogic.spouseMarriageParentsMarriageIdentityLinkIsViable(proposedLink);
+    }
 
     @Override
     public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }

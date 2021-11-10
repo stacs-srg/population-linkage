@@ -8,38 +8,41 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
  * Links two people appearing as the spouses on a marriage record with the same people appearing as the parents on a death record.
  */
-public class ParentsMarriageDeathIdentityLinkageRecipe extends LinkageRecipe {
+public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     private static final double DISTANCE_THRESHOLD = 0; // TODO ??
 
     public static final String LINKAGE_TYPE = "parents-marriage-death-identity";
 
     public static final List<Integer> LINKAGE_FIELDS = list(
-            Marriage.BRIDE_FORENAME,
-            Marriage.BRIDE_SURNAME,
-            Marriage.GROOM_FORENAME,
-            Marriage.GROOM_SURNAME
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
             Death.MOTHER_FORENAME,
             Death.MOTHER_MAIDEN_SURNAME,
             Death.FATHER_FORENAME,
             Death.FATHER_SURNAME
     );
 
-    public ParentsMarriageDeathIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Marriage.BRIDE_FORENAME,
+            Marriage.BRIDE_SURNAME,
+            Marriage.GROOM_FORENAME,
+            Marriage.GROOM_SURNAME
+    );
+
+    public DeathParentsMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
     }
 
@@ -54,33 +57,28 @@ public class ParentsMarriageDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Class getStoredType() {
-        return Marriage.class;
-    }
-
-    @Override
-    public Class<? extends LXP> getQueryType() {
+    public Class<? extends LXP> getStoredType() {
         return Death.class;
     }
 
     @Override
+    public Class<? extends LXP> getQueryType() {
+        return Marriage.class;
+    }
+
+    @Override
     public String getStoredRole() {
+        return Death.ROLE_PARENTS;
+    } // mother and father
+
+    @Override
+    public String getQueryRole() {
         return Marriage.ROLE_SPOUSES;  // bride and groom
     }
 
     @Override
-    public String getQueryRole() {
-        return Death.ROLE_MOTHER + Death.ROLE_FATHER;
-    } // mother and father
-
-    @Override
     public List<Integer> getLinkageFields() {
         return LINKAGE_FIELDS;
-    }
-
-    @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return true;
     }
 
     @Override
@@ -113,6 +111,40 @@ public class ParentsMarriageDeathIdentityLinkageRecipe extends LinkageRecipe {
         }
 
         return links;
+    }
+
+    @Override
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
+
+    /**
+     * Checks whether a plausible period has elapsed between the marriage and the child's death.
+     *
+     * @param proposedLink the proposed link
+     * @return true if the link is viable
+     */
+    public static boolean isViable(final RecordPair proposedLink) {
+
+        try {
+            final LXP death_record = proposedLink.record1;
+            final LXP marriage_record = proposedLink.record2;
+
+            final LocalDate date_of_child_birth = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
+            final LocalDate date_of_child_death = CommonLinkViabilityLogic.getDeathDateFromDeathRecord(death_record);
+            final LocalDate date_of_parents_marriage = CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(marriage_record);
+
+            final long years_from_marriage_to_birth = date_of_parents_marriage.until(date_of_child_birth, ChronoUnit.YEARS);
+            final long years_from_marriage_to_death = date_of_parents_marriage.until(date_of_child_death, ChronoUnit.YEARS);
+
+            return years_from_marriage_to_birth >= LinkageConfig.MIN_MARRIAGE_BIRTH_DIFFERENCE &&
+                    years_from_marriage_to_birth <= LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE &&
+                    years_from_marriage_to_death >= LinkageConfig.MIN_MARRIAGE_BIRTH_DIFFERENCE &&
+                    years_from_marriage_to_death <= LinkageConfig.MAX_MARRIAGE_BIRTH_DIFFERENCE + LinkageConfig.MAX_AGE_AT_DEATH;
+
+        } catch (NumberFormatException e) {
+            return true;
+        }
     }
 
     private static String toKeyFromDeath(LXP death_record) {
