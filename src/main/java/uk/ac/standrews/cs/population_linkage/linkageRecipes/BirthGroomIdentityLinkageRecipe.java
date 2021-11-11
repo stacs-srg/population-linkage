@@ -26,7 +26,6 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    // TODO Why not father occupation given that's used in birthGroomSibling? - temporal? try multiple linkages?
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
             Birth.SURNAME,

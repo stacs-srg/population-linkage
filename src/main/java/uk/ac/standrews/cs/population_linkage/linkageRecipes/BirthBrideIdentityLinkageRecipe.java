@@ -25,14 +25,14 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     //
     // Maybe better to do such checks on linked population at a later stage?
 
+    // TODO Experiment with including father/mother occupation in all relevant linkages.
+
     private static final double DISTANCE_THRESHOLD = 0.49;
 
     public static final String LINKAGE_TYPE = "birth-bride-identity";
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
-
-    // TODOxxx Why not father/mother occupation? - high temporal distance, occupation likely to have changed
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,

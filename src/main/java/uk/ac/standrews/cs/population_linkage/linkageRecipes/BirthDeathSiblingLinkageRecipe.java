@@ -22,7 +22,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    // TODO Do we need to do something to avoid self-links (linker & ground truth)?
+    // TODO Do something to avoid self-links (linker & ground truth)
 
     private static final double DISTANCE_THRESHOLD = 0.36;
 
@@ -31,7 +31,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
-    // TODO Why not father/mother occupation?
+    // Don't use father/mother occupation due to likely long duration between birth and death events.
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.MOTHER_FORENAME,

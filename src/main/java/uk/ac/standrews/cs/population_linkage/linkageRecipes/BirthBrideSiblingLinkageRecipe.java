@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
-    // TODO Do we need to do something to avoid self-links (linker & ground truth)? - yes
+    // TODO Do something to avoid self-links (linker & ground truth)
 
     private static final double DISTANCE_THRESHOLD = 0.5; // TODO THIS THRESHOLD WAS NOT MEASURED - 0.15 in table
 

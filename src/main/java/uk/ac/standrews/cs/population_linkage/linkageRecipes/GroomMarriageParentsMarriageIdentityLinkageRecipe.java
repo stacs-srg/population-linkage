@@ -31,16 +31,14 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
             Marriage.GROOM_MOTHER_FORENAME,
             Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
             Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME,
-            Marriage.GROOM_FATHER_OCCUPATION
+            Marriage.GROOM_FATHER_SURNAME
     );
 
     public static final List<Integer> SEARCH_FIELDS= list(
             Marriage.BRIDE_FORENAME,
             Marriage.BRIDE_SURNAME,
             Marriage.GROOM_FORENAME,
-            Marriage.GROOM_SURNAME,
-            Marriage.GROOM_OCCUPATION
+            Marriage.GROOM_SURNAME
     );
 
     @SuppressWarnings("unchecked")
@@ -79,7 +77,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     @Override
     public String getStoredRole() {
-        return Marriage.ROLE_GROOM; // TODO doesn't seem right - does it matter? - new role for spouses
+        return Marriage.ROLE_GROOMS_PARENTS;
     }
 
     @Override

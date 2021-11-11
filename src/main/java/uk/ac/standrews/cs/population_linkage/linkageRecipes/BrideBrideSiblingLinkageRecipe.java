@@ -109,8 +109,6 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
      */
     public static boolean isViable(RecordPair proposedLink) {
 
-        // TODO run separate profiling to check for internal consistency of age-at-marriage on marriage records. Also dates of birth plausible relative to marriage date.
-
         if (proposedLink.stored_record.getString(Marriage.STANDARDISED_ID).equals(proposedLink.query_record.getString(Marriage.STANDARDISED_ID))) { // avoid self links.
             return false;
         }

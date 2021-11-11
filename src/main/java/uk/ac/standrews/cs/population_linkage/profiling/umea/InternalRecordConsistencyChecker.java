@@ -1,0 +1,181 @@
+/*
+ * Copyright 2020 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
+package uk.ac.standrews.cs.population_linkage.profiling.umea;
+
+import uk.ac.standrews.cs.data.umea.UmeaDeathsDataSet;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
+import uk.ac.standrews.cs.population_records.Normalisation;
+import uk.ac.standrews.cs.population_records.record_types.Death;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+public class InternalRecordConsistencyChecker {
+
+    // TODO Check for internal consistency of age-at-marriage on marriage records. Also dates of birth plausible relative to marriage date.
+
+    private static final List<String> DEATH_FIELDS_CHECKED = Arrays.asList("birth date", "death date", "death age");
+
+    private final Results death_results;
+    private final boolean verbose;
+    private int discrepancy_count = 0;
+
+    public static void main(String[] args) throws IOException {
+
+        InternalRecordConsistencyChecker checker = new InternalRecordConsistencyChecker(false);
+
+        checker.checkDeathRecordsConsistency();
+    }
+
+    public InternalRecordConsistencyChecker(boolean verbose) {
+
+        this.verbose = verbose;
+        death_results = new Results(DEATH_FIELDS_CHECKED);
+    }
+
+    private void checkDeathRecordsConsistency() throws IOException {
+
+        for (LXP death_record : Death.convertToRecords(new UmeaDeathsDataSet())) {
+            checkDeathRecordInternalConsistency(death_record);
+        }
+
+        summariseDeathsResults();
+    }
+
+    private void summariseDeathsResults() {
+
+        System.out.println();
+        death_results.summariseFieldPresenceCounts();
+
+        System.out.println();
+        System.out.println("discrepancy count: " + discrepancy_count);
+    }
+
+    /**
+     * Checks the age at death recorded on the death record is plausible, and consistent with the difference between
+     * birth year on death record and death year.
+     *
+     * @param death_record the record
+     * @return true if the record is consistent
+     */
+    public void checkDeathRecordInternalConsistency(final LXP death_record) {
+
+        final String birth_date = death_record.getString(Death.DATE_OF_BIRTH);
+        final String death_year = death_record.getString(Death.DEATH_YEAR);
+        final String death_age = death_record.getString(Death.AGE_AT_DEATH);
+
+        death_results.recordUsableFields(usableDate(birth_date), usableNumber(death_year), usableNumber(death_age));
+
+        boolean discrepancy = false;
+
+        if (usableNumber(death_age)) {
+
+            final int age_at_death_recorded_on_death_record = Integer.parseInt(death_age);
+
+            if (age_at_death_recorded_on_death_record > LinkageConfig.MAX_AGE_AT_DEATH) {
+
+                discrepancy = true;
+
+                if (verbose) {
+                    outputInconsistentAgeAtDeath(death_record, age_at_death_recorded_on_death_record);
+                }
+            }
+
+            if (usableDate(birth_date) && usableNumber(death_year)) {
+
+                final int year_of_birth_from_death_record = Integer.parseInt(Normalisation.extractYear(birth_date));
+                final int year_of_death_from_death_record = Integer.parseInt(death_year);
+
+                final int age_at_death_calculated_from_death_record = year_of_death_from_death_record - year_of_birth_from_death_record;
+
+                final int age_at_death_discrepancy = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
+
+                if (age_at_death_discrepancy > LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY) {
+
+                    discrepancy = true;
+
+                    if (verbose) {
+                        outputDeathRecordInternalInconsistency(death_record, age_at_death_recorded_on_death_record, year_of_birth_from_death_record, year_of_death_from_death_record, age_at_death_calculated_from_death_record, age_at_death_discrepancy);
+                    }
+                }
+            }
+        }
+
+        if (discrepancy) discrepancy_count++;
+    }
+
+    private void outputDeathRecordInternalInconsistency(LXP death_record, int age_at_death_recorded_on_death_record, int year_of_birth_from_death_record, int year_of_death_from_death_record, int age_at_death_calculated_from_death_record, int age_at_death_discrepancy) {
+
+        System.out.println();
+        System.out.println("ID: " + death_record.getString(Death.STANDARDISED_ID));
+        System.out.println("year_of_birth_from_death_record: " + year_of_birth_from_death_record);
+        System.out.println("year_of_death_from_death_record: " + year_of_death_from_death_record);
+        System.out.println("age_at_death_recorded_on_death_record: " + age_at_death_recorded_on_death_record);
+        System.out.println("age_at_death_calculated_from_death_record: " + age_at_death_calculated_from_death_record);
+        System.out.println("age_at_death_discrepancy: " + age_at_death_discrepancy);
+    }
+
+    private void outputInconsistentAgeAtDeath(LXP death_record, int age_at_death_recorded_on_death_record) {
+
+        System.out.println();
+        System.out.println("ID: " + death_record.getString(Death.STANDARDISED_ID));
+        System.out.println("age_at_death_recorded_on_death_record: " + age_at_death_recorded_on_death_record);
+    }
+
+    private static boolean usableDate(String date) {
+
+        return usableNumber(Normalisation.extractYear(date));
+    }
+
+    private static boolean usableNumber(String s) {
+
+        if (s == null) return false;
+        if (s.isEmpty()) return false;
+
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private static class Results {
+
+        private final List<String> fields_checked ;
+        private final Map<String, Integer> field_presence_counts = new TreeMap<>();
+
+        private Results(List<String> fields_checked) {
+            this.fields_checked = fields_checked;
+        }
+
+        public void recordUsableFields(boolean... fields_usable) {
+
+            StringBuilder description_builder = new StringBuilder();
+
+            for (int i = 0; i < fields_usable.length; i++) {
+
+                boolean field_usable = fields_usable[i];
+                if (!field_usable) description_builder.append("no ");
+                description_builder.append(fields_checked.get(i));
+                if (i < fields_usable.length - 1) description_builder.append(", "); else description_builder.append(":");
+            }
+
+            String description = description_builder.toString();
+            field_presence_counts.putIfAbsent(description, 0);
+            field_presence_counts.put(description, field_presence_counts.get(description) + 1);
+        }
+
+        public void summariseFieldPresenceCounts() {
+            for (Map.Entry<String, Integer> entry : field_presence_counts.entrySet()) {
+                System.out.println(entry.getKey() + " " + entry.getValue());
+            }
+        }
+    }
+}

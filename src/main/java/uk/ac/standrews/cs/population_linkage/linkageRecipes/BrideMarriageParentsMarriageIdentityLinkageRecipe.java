@@ -27,22 +27,18 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    // TODO should occupation be used, given long elapsed time?
-
     public static final List<Integer> LINKAGE_FIELDS = list(
             Marriage.BRIDE_FORENAME,
             Marriage.BRIDE_SURNAME,
             Marriage.GROOM_FORENAME,
-            Marriage.GROOM_SURNAME,
-            Marriage.GROOM_OCCUPATION
+            Marriage.GROOM_SURNAME
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
             Marriage.BRIDE_MOTHER_FORENAME,
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
             Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_FATHER_OCCUPATION
+            Marriage.BRIDE_FATHER_SURNAME
     );
 
     @SuppressWarnings("unchecked")
