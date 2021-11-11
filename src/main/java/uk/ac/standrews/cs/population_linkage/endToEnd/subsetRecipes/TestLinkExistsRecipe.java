@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -48,7 +49,7 @@ public class TestLinkExistsRecipe extends DeathGroomIdentityLinkageRecipe {
      */
     @Override
     public Iterable<LXP> getDeathRecords() {
-        return filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
+        return RecordFiltering.filter( PREFILTER_FIELDS, NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
     }
 
     private Iterable<LXP> reverse(Iterable<LXP> records) {

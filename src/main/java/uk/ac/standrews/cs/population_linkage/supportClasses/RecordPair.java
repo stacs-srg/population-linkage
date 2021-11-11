@@ -9,19 +9,19 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 
 public class RecordPair {
 
-    public LXP record1;     // This is the stored type? TODO relabel these? - al
-    public LXP record2;     // This is the query type?
+    public LXP stored_record;
+    public LXP query_record;
     public double distance;
 
-    public RecordPair(LXP record1, LXP record2, double distance) {
+    public RecordPair(LXP stored_record, LXP query_record, double distance) {
 
-        this.record1 = record1;
-        this.record2 = record2;
+        this.stored_record = stored_record;
+        this.query_record = query_record;
         this.distance = distance;
     }
 
     public String toString() {
 
-        return "{" + record1 + ", " + record2 + "}";
+        return "{" + stored_record + ", " + query_record + "}";
     }
 }

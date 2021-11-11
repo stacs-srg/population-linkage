@@ -7,7 +7,8 @@ package uk.ac.standrews.cs.population_linkage.missingData.linkageRunners;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.SigmaIntolerant;
+import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.SigmaMean;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 /*
@@ -18,7 +19,7 @@ public class BBLinkageRunnerMean extends BitBlasterLinkageRunner {
 
     @Override
     protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new SigmaIntolerant(getBaseMetric(), linkageRecipe.getLinkageFields(), 0);
+        return new SigmaMean(getBaseMetric(), linkageRecipe.getLinkageFields(), Birth.STANDARDISED_ID);
     }
 
 }

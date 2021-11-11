@@ -49,7 +49,7 @@ public abstract class LinkageRecipe {
     protected static final boolean TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN = false;
 
     protected static final String EVERYTHING_STRING = "EVERYTHING";
-    protected static final int EVERYTHING = Integer.MAX_VALUE;
+    public static final int EVERYTHING = Integer.MAX_VALUE;
     public static final JensenShannon DEFAULT_METRIC = new JensenShannon(2048);
 
     protected final String source_repository_name;
@@ -73,21 +73,7 @@ public abstract class LinkageRecipe {
         this.record_repository = new RecordRepository(source_repository_name);
     }
 
-    protected ArrayList<LXP> filter(int number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
 
-        ArrayList<LXP> filtered_source_records = new ArrayList<>();
-
-        for (LXP record : records_to_filter) {
-            if (passesFilter(record, linkageFields, number_of_required_fields)) {
-                filtered_source_records.add(record);
-            }
-            if (filtered_source_records.size() >= number_of_records_required) {
-                break;
-            }
-        }
-
-        return filtered_source_records;
-    }
 
     public static LinkStatus trueMatch(final LXP record1, final LXP record2, final List<List<Pair>> true_match_alternatives) {
 
@@ -204,6 +190,10 @@ public abstract class LinkageRecipe {
 
     public Iterable<LXP> getQueryRecords() {
         return getByType(getQueryType());
+    }
+
+    public void makeLinkPersistent(Link link) {
+        throw new RuntimeException("makeLinkPersistent unimplemented");
     }
 
     public abstract LinkStatus isTrueMatch(LXP record1, LXP record2);
@@ -435,20 +425,6 @@ public abstract class LinkageRecipe {
     ------- PERSISTENCE CODE ------------
      */
 
-    public boolean passesFilter(LXP record, List<Integer> filterOn, int reqPopulatedFields) {
-        int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
-        int numberOfEmptyFields = 0;
-
-        for (int attribute : filterOn) {
-            String value = record.getString(attribute).toLowerCase().trim();
-            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----")) {
-                numberOfEmptyFields++;
-            }
-        }
-
-        return numberOfEmptyFields <= numberOfEmptyFieldsPermitted;
-    }
-
     protected Iterable<LXP> filterBySex(Iterable<LXP> records, int sexField, String keepSex) {
         Collection<LXP> filteredRecords = new HashSet<>();
 
@@ -457,10 +433,6 @@ public abstract class LinkageRecipe {
                 filteredRecords.add(record);
         });
         return filteredRecords;
-    }
-
-    public void makeLinkPersistent(Link link) {
-        throw new RuntimeException("makeLinkPersistent unimplemented");
     }
 
     public String getLinks_persistent_name() {

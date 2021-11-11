@@ -7,7 +7,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -96,8 +95,8 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     public static boolean isViable(RecordPair proposedLink) {
 
         try {
-            final LXP death_record1 = proposedLink.record1;
-            final LXP death_record2 = proposedLink.record2;
+            final LXP death_record1 = proposedLink.stored_record;
+            final LXP death_record2 = proposedLink.query_record;
 
             final LocalDate date_of_birth_from_death_record1 = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record1);
             final LocalDate date_of_birth_from_death_record2 = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record2);

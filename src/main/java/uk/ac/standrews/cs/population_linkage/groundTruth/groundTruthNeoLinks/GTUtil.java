@@ -1,5 +1,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks;
 
+// TODO delete me once sure we have what we need from here.
 public class GTUtil {
 
 //    private static final String BD_BIRTH_DEATH_GT_IDENTITY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]->(b:Death) return r";
@@ -12,7 +13,7 @@ public class GTUtil {
 //    private static final String BD_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN r";
 //
 //
-//    public static Map getBirthDeathIdentityLinks( ) {  // TODO Do we need?
+//    public static Map getBirthDeathIdentityLinks( ) {
 //        return null;
 //    }
 //

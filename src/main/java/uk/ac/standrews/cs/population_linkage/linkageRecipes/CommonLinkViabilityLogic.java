@@ -14,7 +14,6 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
@@ -212,8 +211,8 @@ public class CommonLinkViabilityLogic {
     public static boolean birthMarriageSiblingLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
 
         try {
-            final LXP birth_record = proposedLink.record1;
-            final LXP marriage_record = proposedLink.record2;
+            final LXP birth_record = proposedLink.stored_record;
+            final LXP marriage_record = proposedLink.query_record;
 
             final LocalDate date_of_birth1 = getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_birth2 = getBirthDateFromMarriageRecord(marriage_record, marriage_role_is_bride);
@@ -228,8 +227,8 @@ public class CommonLinkViabilityLogic {
     public static boolean deathMarriageSiblingLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
 
         try {
-            final LXP death_record = proposedLink.record1;
-            final LXP marriage_record = proposedLink.record2;
+            final LXP death_record = proposedLink.stored_record;
+            final LXP marriage_record = proposedLink.query_record;
 
             final LocalDate date_of_birth1 = getBirthDateFromDeathRecord(death_record);
             final LocalDate date_of_birth2 = getBirthDateFromMarriageRecord(marriage_record, marriage_role_is_bride);
@@ -244,8 +243,8 @@ public class CommonLinkViabilityLogic {
     public static boolean spouseMarriageParentsMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
 
         try {
-            final LXP parents_marriage = proposedLink.record1;
-            final LXP spouse_marriage = proposedLink.record2;
+            final LXP parents_marriage = proposedLink.stored_record;
+            final LXP spouse_marriage = proposedLink.query_record;
 
             final LocalDate parents_date_of_marriage = getMarriageDateFromMarriageRecord(parents_marriage);
             final LocalDate spouse_date_of_marriage = getMarriageDateFromMarriageRecord(spouse_marriage);
@@ -267,8 +266,8 @@ public class CommonLinkViabilityLogic {
         // marriage record is acceptably low.
 
         try {
-            final LXP birth_record = proposedLink.record1;
-            final LXP marriage_record = proposedLink.record2;
+            final LXP birth_record = proposedLink.stored_record;
+            final LXP marriage_record = proposedLink.query_record;
 
             final LocalDate birth_date_from_birth_record = getBirthDateFromBirthRecord(birth_record);
             final LocalDate birth_date_from_marriage_record = getBirthDateFromMarriageRecord(marriage_record, marriage_role_is_bride);
@@ -293,8 +292,8 @@ public class CommonLinkViabilityLogic {
         // consistent with year of birth inferred from marriage record.
 
         try {
-            final LXP death_record = proposedLink.record1;
-            final LXP marriage_record = proposedLink.record2;
+            final LXP death_record = proposedLink.stored_record;
+            final LXP marriage_record = proposedLink.query_record;
 
             final LocalDate death_date = getDeathDateFromDeathRecord(death_record);
             final LocalDate marriage_date = getMarriageDateFromMarriageRecord(marriage_record);
@@ -316,8 +315,8 @@ public class CommonLinkViabilityLogic {
         // Returns true if difference in birth years is within acceptable range.
 
         try {
-            final LXP birth_of_parent = proposedLink.record1;
-            final LXP birth_of_child = proposedLink.record2;
+            final LXP birth_of_parent = proposedLink.stored_record;
+            final LXP birth_of_child = proposedLink.query_record;
 
             final LocalDate parent_birth_date = getBirthDateFromBirthRecord(birth_of_parent);
             final LocalDate child_birth_date = getBirthDateFromBirthRecord(birth_of_child);

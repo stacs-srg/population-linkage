@@ -2,11 +2,11 @@
   <configuration default="false" name="BirthOwnDeathMissingDataBuilder" type="Application" factoryName="Application" nameIsGenerated="true">
     <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.missingData.builders.BirthOwnDeathMissingDataBuilder" />
     <module name="population-linkage" />
-    <option name="PROGRAM_PARAMETERS" value="Umea 100 tolerant" />
+    <option name="PROGRAM_PARAMETERS" value="Umea 100 mean" />
     <option name="VM_PARAMETERS" value="-Xmx16G" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="uk.ac.standrews.cs.population_linkage.missingData.builders.*" />
+        <option name="PATTERN" value="uk.ac.standrews.cs.population_linkage.missingData.builders.failureinvestigation.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

@@ -127,8 +127,8 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public static boolean isViable(final RecordPair proposedLink) {
 
         try {
-            final LXP death_record = proposedLink.record1;
-            final LXP marriage_record = proposedLink.record2;
+            final LXP death_record = proposedLink.stored_record;
+            final LXP marriage_record = proposedLink.query_record;
 
             final LocalDate date_of_child_birth = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
             final LocalDate date_of_child_death = CommonLinkViabilityLogic.getDeathDateFromDeathRecord(death_record);

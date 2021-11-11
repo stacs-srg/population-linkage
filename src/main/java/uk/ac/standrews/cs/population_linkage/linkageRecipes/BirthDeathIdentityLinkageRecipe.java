@@ -118,8 +118,8 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         // TODO run separate profiling to check for internal consistency with death records - all fields populated in Umea. Plus plausible age at death.
 
         try {
-            final LXP birth_record = proposedLink.record1;
-            final LXP death_record = proposedLink.record2;
+            final LXP birth_record = proposedLink.stored_record;
+            final LXP death_record = proposedLink.query_record;
 
             final LocalDate date_of_birth_from_birth_record = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_birth_from_death_record = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);

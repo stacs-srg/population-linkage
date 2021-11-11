@@ -35,7 +35,9 @@ public class SigmaTolerant extends Metric<LXP> {
         double total_distance = 0.0d;
 
         for (int field_index : field_list) {
+
             try {
+
                 String field_value1 = a.getString(field_index);
                 String field_value2 = b.getString(field_index);
 
@@ -47,7 +49,9 @@ public class SigmaTolerant extends Metric<LXP> {
 
             } catch (Exception e) {
                 printExceptionDebug(a, b, field_index);
-                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(field_index) + " in records \n" + a + "\n and \n" + b, e);
+                System.out.println( "Exception in SigmaTolerant");
+                e.printStackTrace();
+                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(field_index) + "\n" + "in records \n" + a + "\n and \n" + b, e);
             }
         }
 

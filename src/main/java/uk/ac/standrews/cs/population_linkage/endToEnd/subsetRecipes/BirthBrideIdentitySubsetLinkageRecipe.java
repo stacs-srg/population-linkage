@@ -16,6 +16,8 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.util.ArrayList;
 
+import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
+
 /**
  * EvidencePair Recipe
  * In all linkage recipies the naming convention is:

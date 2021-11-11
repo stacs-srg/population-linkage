@@ -114,8 +114,8 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     public static boolean isViable(RecordPair proposedLink) {
 
         try {
-            final LXP birth_record = proposedLink.record1;
-            final LXP death_record = proposedLink.record2;
+            final LXP birth_record = proposedLink.stored_record;
+            final LXP death_record = proposedLink.query_record;
 
             final LocalDate date_of_birth_from_birth_record = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_birth_from_death_record = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);

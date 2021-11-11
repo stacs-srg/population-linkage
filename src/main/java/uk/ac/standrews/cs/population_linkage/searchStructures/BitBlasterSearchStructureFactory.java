@@ -6,19 +6,25 @@ package uk.ac.standrews.cs.population_linkage.searchStructures;
 
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
+import java.util.List;
+
 public class BitBlasterSearchStructureFactory<T> implements SearchStructureFactory<T> {
 
     private final Metric<T> composite_metric;
-    private int numberOfReferenceObjects;
+    private List<T> reference_points;
 
-    public BitBlasterSearchStructureFactory(Metric<T> composite_metric, int numberOfReferenceObjects) {
+    public BitBlasterSearchStructureFactory(Metric<T> composite_metric, List<T> reference_points) {
         this.composite_metric = composite_metric;
-        this.numberOfReferenceObjects = numberOfReferenceObjects;
+        this.reference_points = reference_points;
     }
 
-    @Override
-    public SearchStructure<T> newSearchStructure(final Iterable<T> records) {
-        return new BitBlasterSearchStructure<>(composite_metric, records, numberOfReferenceObjects);
+//    @Override
+//    public SearchStructure<T> newSearchStructure(final Iterable<T> records) {
+//        return new BitBlasterSearchStructure<>(composite_metric, records, numberOfReferenceObjects);
+//    }
+
+    public SearchStructure<T> newSearchStructure(final Iterable<T> records, List<T> reference_points) {
+        return new BitBlasterSearchStructure<>(composite_metric, reference_points, records);
     }
 
     @Override

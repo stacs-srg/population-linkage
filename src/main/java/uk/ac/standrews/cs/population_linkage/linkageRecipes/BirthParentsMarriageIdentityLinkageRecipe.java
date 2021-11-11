@@ -114,8 +114,8 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public static boolean isViable(final RecordPair proposedLink) {
 
         try {
-            final LXP birth_record = proposedLink.record1;
-            final LXP marriage_record = proposedLink.record2;
+            final LXP birth_record = proposedLink.stored_record;
+            final LXP marriage_record = proposedLink.query_record;
 
             final LocalDate date_of_child_birth = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_parents_marriage = CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(marriage_record);

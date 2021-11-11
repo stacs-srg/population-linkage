@@ -10,7 +10,6 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
-import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.supportClasses.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -20,7 +19,10 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
@@ -28,7 +30,7 @@ import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.
 public abstract class LinkageRunner {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
-    private StringMetric baseMetric;
+    protected StringMetric baseMetric;
     protected Linker linker;
     protected LinkageRecipe linkageRecipe;
 
@@ -40,7 +42,7 @@ public abstract class LinkageRunner {
         this.baseMetric = linkageRecipe.getMetric();
         this.linkageRecipe = linkageRecipe;
 
-        linker = getLinker(this.linkageRecipe);
+        linker = getLinker(this.linkageRecipe,getReferencePoints());
 
         linkageRecipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
 
@@ -59,6 +61,8 @@ public abstract class LinkageRunner {
 
         return result;
     }
+
+    protected abstract List<LXP> getReferencePoints();
 
     public TreeMap<Double, LinkageQuality> evaluateThresholds(String source_repository_name, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, double minThreshold, double step, double maxThreshold) throws BucketException, RepositoryException {
 
@@ -155,78 +159,80 @@ public abstract class LinkageRunner {
         }
     }
 
-    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
-
-        System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
-
-        linker.addRecords(linkageRecipe.getStoredRecords(), linkageRecipe.getQueryRecords());
-
-        MemoryLogger.update();
-        System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
-
-        Iterable<Link> links = linker.getLinks();
-        LocalDateTime time_stamp = LocalDateTime.now();
-
-        MemoryLogger.update();
-        int tp = 0; // these are counters with which we use if evaluating
-        int fp = 0;
-
-        Map<String, Collection<Link>> linksByRecordID = new HashMap<>(); // this is for the map of links if requested
-
-        System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now().toString());
-
-        // Map<String, Link> groundTruthLinks = linkageRecipe.getGroundTruthLinks();
-        // Don't really need this - delete the method - al.
-        System.out.println( "Al has temporarily removed getGroundTruthLinks() and references to groundTruthLinks from LinkageRunner.link");
-        
-        try {
-            for (Link linkage_says_true_link : links) {
-
-                // groundTruthLinks.remove(linkageRecipe.toKey(linkage_says_true_link.getRecord1().getReferend(), linkage_says_true_link.getRecord2().getReferend()));
-                // Don't really need this - delete the method - al.
-                
-                if (persist_links) {
-                    linkageRecipe.makeLinkPersistent(linkage_says_true_link);
-                }
-                if (generateMapOfLinks) {
-                    String originalID;
-                    if(reverseMap) { // defined if the map should be based on the ID of the stored or the search records
-                        originalID = Utilities.originalId(linkage_says_true_link.getRecord2().getReferend());
-                    } else {
-                        originalID = Utilities.originalId(linkage_says_true_link.getRecord1().getReferend());
-                    }
-                    linksByRecordID.computeIfAbsent(originalID, k -> new LinkedList<>());
-                    linksByRecordID.get(originalID).add(linkage_says_true_link);
-                }
-                if (evaluate_quality) {
-                    if (doesGTSayIsTrue(linkage_says_true_link)) {
-                        tp++;
-                    } else {
-//                        final boolean printFPs = false;
-//                        if(printFPs) printLink(linkage_says_true_link, "FP");
-                        fp++;
-                    }
-                }
-            }
-        } catch(NoSuchElementException ignore) {} catch (RepositoryException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now().toString());
-
-        MemoryLogger.update();
-        nextTimeStamp(time_stamp, "perform and evaluate linkageRecipe");
-
-        if(evaluate_quality) {
-            System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
-            numberOfGroundTruthTrueLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
-            System.out.println( "Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks );
-            LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
-            lq.print( System.out );
-            return new LinkageResult(lq);
-        } else {
-            return new LinkageResult(null); // TODO What should this return in this case?
-        }
+    public abstract LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException;
+//
+//    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
+//
+//        System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
+//
+//        linker.addRecords(linkageRecipe.getStoredRecords(), linkageRecipe.getQueryRecords());
+//
+//        MemoryLogger.update();
+//        System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
+//
+//        Iterable<Link> links = linker.getLinks();
+//        LocalDateTime time_stamp = LocalDateTime.now();
+//
+//        MemoryLogger.update();
+//        int tp = 0; // these are counters with which we use if evaluating
+//        int fp = 0;
+//
+//        Map<String, Collection<Link>> linksByRecordID = new HashMap<>(); // this is for the map of links if requested
+//
+//        System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now().toString());
+//
+//        // Map<String, Link> groundTruthLinks = linkageRecipe.getGroundTruthLinks();
+//        // Don't really need this - delete the method - al.
+//        System.out.println( "Al has temporarily removed getGroundTruthLinks() and references to groundTruthLinks from LinkageRunner.link");
+//
+//        try {
+//            for (Link linkage_says_true_link : links) {
+//
+//                // groundTruthLinks.remove(linkageRecipe.toKey(linkage_says_true_link.getRecord1().getReferend(), linkage_says_true_link.getRecord2().getReferend()));
+//                // Don't really need this - delete the method - al.
+//
+//                if (persist_links) {
+//                    linkageRecipe.makeLinkPersistent(linkage_says_true_link);
+//                }
+//                if (generateMapOfLinks) {
+//                    String originalID;
+//                    if(reverseMap) { // defined if the map should be based on the ID of the stored or the search records
+//                        originalID = Utilities.originalId(linkage_says_true_link.getRecord2().getReferend());
+//                    } else {
+//                        originalID = Utilities.originalId(linkage_says_true_link.getRecord1().getReferend());
+//                    }
+//                    linksByRecordID.computeIfAbsent(originalID, k -> new LinkedList<>());
+//                    linksByRecordID.get(originalID).add(linkage_says_true_link);
+//                }
+//                if (evaluate_quality) {
+//                    if (doesGTSayIsTrue(linkage_says_true_link)) {
+//                        tp++;
+//                    } else {
+////                        final boolean printFPs = false;
+////                        if(printFPs) printLink(linkage_says_true_link, "FP");
+//                        fp++;
+//                    }
+//                }
+//            }
+//        } catch(NoSuchElementException ignore) {} catch (RepositoryException e) {
+//            e.printStackTrace();
+//        }
+//
+//        System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now().toString());
+//
+//        MemoryLogger.update();
+//        nextTimeStamp(time_stamp, "perform and evaluate linkageRecipe");
+//
+//        if(evaluate_quality) {
+//            System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
+//            numberOfGroundTruthTrueLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
+//            System.out.println( "Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks );
+//            LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
+//            lq.print( System.out );
+//            return new LinkageResult(lq);
+//        } else {
+//            return new LinkageResult(null); // TODO What should this return in this case?
+//        }
 
 
 //        final boolean printFNs = false; // this does not appear to work - values yields an empty set!!!
@@ -241,9 +247,9 @@ public abstract class LinkageRunner {
 //        } else {
 //            return new LinkageResult(lq);
 //        }
-    }
+//    }
 
-    private LinkageQuality getLinkageQuality(boolean evaluate_quality, int numberOfGroundTruthTrueLinks, int tp, int fp) {
+    protected LinkageQuality getLinkageQuality(boolean evaluate_quality, int numberOfGroundTruthTrueLinks, int tp, int fp) {
         if(evaluate_quality) {
             if(linkageRecipe.isSymmetric()) {
                 // if the linkageRecipe is a dataset to itself (i.e birth-birth) we should not be rewarded or penalised
@@ -331,12 +337,7 @@ public abstract class LinkageRunner {
         } catch (Exception ignored) { }
     }
 
-    public Linker getLinker( LinkageRecipe linkageRecipe ) {
-        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
-        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
-                linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
-
-    }
+    public abstract Linker getLinker( LinkageRecipe linkageRecipe, List<LXP> reference_points ); // TODO ref points shouldn't be in here might not have any! But doesn't work otherwise!
 
     public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
@@ -344,7 +345,7 @@ public abstract class LinkageRunner {
         return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields(), 0);
     }
 
-    abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric);
+    abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric, List<LXP> reference_objects);
 
     protected int getNumberOfProgressUpdates() {
         return DEFAULT_NUMBER_OF_PROGRESS_UPDATES;

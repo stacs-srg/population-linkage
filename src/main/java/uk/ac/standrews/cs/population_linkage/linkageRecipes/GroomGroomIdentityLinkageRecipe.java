@@ -122,8 +122,8 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static boolean isViable(RecordPair proposedLink) {
 
         try {
-            final LocalDate date_of_birth1 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.record1, false);
-            final LocalDate date_of_birth2 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.record2, false);
+            int year_of_birth1 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.stored_record, false);
+            int year_of_birth2 = CommonLinkViabilityLogic.getBirthYearOfPersonBeingMarried(proposedLink.query_record, false);
 
             return CommonLinkViabilityLogic.alternativeIdentityBirthDatesAreViable(date_of_birth1, date_of_birth2);
 

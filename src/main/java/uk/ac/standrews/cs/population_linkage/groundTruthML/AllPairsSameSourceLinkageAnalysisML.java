@@ -81,7 +81,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         for (int attribute : filterOn) {
             String value = record.getString(attribute).toLowerCase().trim();
-            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----") ) {  // TODO could make this field specific
+            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----") ) {  // TODO could make this field specific/ why is missing contains?
                 numberOfEmptyFields++;
             }
         }

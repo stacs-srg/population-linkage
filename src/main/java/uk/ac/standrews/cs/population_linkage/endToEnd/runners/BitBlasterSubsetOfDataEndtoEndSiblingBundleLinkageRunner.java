@@ -8,6 +8,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
@@ -45,7 +46,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
 
         Iterable<LXP> stored_records = linkageRecipe.getStoredRecords(); // in this recipe source and search are the same but not in general
 
-        linker.addRecords(stored_records, stored_records);
+        ((SimilaritySearchLinker)linker).addRecords(stored_records, stored_records, getReferencePoints());
 
         System.out.println("Records added records to linker @ " + LocalDateTime.now().toString());
 

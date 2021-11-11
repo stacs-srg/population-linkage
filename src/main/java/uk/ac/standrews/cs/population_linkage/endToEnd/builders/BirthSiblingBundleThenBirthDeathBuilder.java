@@ -222,17 +222,17 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
     /**
      * performs conversion from birth to death and is tolerant of DynamicLXPs which are created during linkage.
-     * @param death_birth_recipe - the recipe being used
+     * @param recipe - the recipe being used
      * @param birth - a record to convert
      * @return a death record
      */
-    private static LXP convert(LinkageRecipe death_birth_recipe, LXP birth) {
+    private static LXP convert(LinkageRecipe recipe, LXP birth) {
         if( birth instanceof Birth ) {
-            return death_birth_recipe.convertToOtherRecordType(birth);
+            return recipe.convertToOtherRecordType(birth);
         } else if( birth instanceof DynamicLXP) {
             LXP result = new Death();
-            for (int i = 0; i < death_birth_recipe.getLinkageFields().size(); i++) {
-                result.put(death_birth_recipe.getLinkageFields().get(i), birth.get(death_birth_recipe.getQueryMappingFields().get(i)));
+            for (int i = 0; i < recipe.getLinkageFields().size(); i++) {
+                result.put(recipe.getLinkageFields().get(i), birth.get(recipe.getQueryMappingFields().get(i)));
             }
             return result;
         } else {
@@ -255,7 +255,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
             LXP birth = sd.sibling_birth_record;
 
-            for( DataDistance<LXP> dd_death : sd.deaths ) { // TODO could get closest and filter out far ones?
+            for( DataDistance<LXP> dd_death : sd.deaths ) { // TODO could get closest and filter out far ones? also looking for 1 result!
 
                 LXP death = dd_death.value;
                 double dist = dd_death.distance;

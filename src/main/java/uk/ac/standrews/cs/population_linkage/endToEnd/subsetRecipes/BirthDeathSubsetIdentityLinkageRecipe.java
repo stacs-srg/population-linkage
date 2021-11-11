@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
+
 /**
  * EvidencePair Recipe
  * In all linkage recipes the naming convention is:
@@ -59,7 +61,6 @@ public class BirthDeathSubsetIdentityLinkageRecipe extends BirthDeathIdentityLin
      */
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        System.out.println( "Problem with getDeathRecords - Bitblaster cannot work with null fields from getBirthRecords"); // TODO
         if( cached_records == null ) {
             cached_records = filter(linkage_fields, NUMBER_OF_DEATHS, super.getDeathRecords(), getQueryMappingFields());
         }

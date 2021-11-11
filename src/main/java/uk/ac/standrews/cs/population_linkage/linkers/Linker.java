@@ -107,7 +107,7 @@ public abstract class Linker {
                     if (pair.distance <= threshold && is_viable_link.apply(pair)) {
 
                         try {
-                            next = new Link(pair.record1, getRoleType1(), pair.record2, getRoleType2(), 1.0f,
+                            next = new Link(pair.stored_record, getRoleType1(), pair.query_record, getRoleType2(), 1.0f,
                                     getLinkType(), pair.distance, getProvenance() + ", distance: " + pair.distance);
                         } catch (PersistentObjectException e) {
                             throw new RuntimeException(e);

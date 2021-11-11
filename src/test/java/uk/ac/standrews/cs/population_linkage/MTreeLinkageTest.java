@@ -10,20 +10,23 @@ import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 
+import java.util.List;
+
 public class MTreeLinkageTest extends SimilaritySearchLinkageTest {
 
     @Override
     public Linker getLinker() {
 
         SearchStructureFactory<LXP> factory = new SearchStructureFactory<LXP>() {
-            @Override
-            public SearchStructure<LXP> newSearchStructure(final Iterable<LXP> records) {
-                return new MTreeSearchStructure<>(metric, records);
-            }
 
             @Override
             public String getSearchStructureType() {
                 return "MTree";
+            }
+
+            @Override
+            public SearchStructure<LXP> newSearchStructure(Iterable<LXP> records, List<LXP> reference_objects) {
+                return new MTreeSearchStructure<>(metric, records);
             }
         };
 

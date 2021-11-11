@@ -23,25 +23,24 @@ public class BirthOwnDeathMissingDataBuilder {
 
         // TODO add post filtering too.
 
-        BitBlasterLinkageRunner runner;
         System.out.println(mode + " option selected with " + linkage_fields + " fields required to be non-empty");
         switch (mode) {
 
             // tolerant, intolerant, standard, mean
             case "tolerant": {
-                runner = new BBLinkageRunnerTolerant();
+                new BBLinkageRunnerTolerant().run(linkageRecipe, false, false, true, false);
                 break;
             }
             case "intolerant": {
-                runner = new BBLinkageRunnerIntolerant();
-                break;
-            }
-            case "standard": {
-                runner = new BitBlasterLinkageRunner();
+                new BBLinkageRunnerIntolerant().run(linkageRecipe,false, false, true, false);
                 break;
             }
             case "mean": {
-                runner = new BBLinkageRunnerMean();
+                new BBLinkageRunnerMean().run(linkageRecipe,false, false, true, false);
+                break;
+            }
+            case "standard": {
+                new BitBlasterLinkageRunner().run(linkageRecipe, false, false, true, false);
                 break;
             }
             default: {
@@ -49,7 +48,6 @@ public class BirthOwnDeathMissingDataBuilder {
             }
 
         }
-        runner.run(linkageRecipe, false, false, true, true);
     }
 
     public static void main(String[] args) throws BucketException {

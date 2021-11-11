@@ -33,11 +33,11 @@ public class SimilaritySearchLinker extends Linker {
         this.linkage_recipe = linkage_recipe;
     }
 
-    public void addRecords(Iterable<LXP> storedSet, Iterable<LXP> searchSet) {
+    public void addRecords(Iterable<LXP> storedSet, Iterable<LXP> searchSet, List<LXP> reference_objects) {
         super.addRecords(storedSet, searchSet);
         this.search_set = searchSet;
 
-        search_structure = search_structure_factory.newSearchStructure(storedSet);
+        search_structure = search_structure_factory.newSearchStructure(storedSet,reference_objects);
     }
 
     public void terminate() {
@@ -128,7 +128,7 @@ public class SimilaritySearchLinker extends Linker {
 
                 private boolean pairShouldBeSkipped() {
 
-                    return next_pair == null || (datasets_same && next_pair.record1.getId() == next_pair.record2.getId());
+                    return next_pair == null || (datasets_same && next_pair.stored_record.getId() == next_pair.query_record.getId());
                 }
 
                 private void getNextRecordFromSearchSet() {

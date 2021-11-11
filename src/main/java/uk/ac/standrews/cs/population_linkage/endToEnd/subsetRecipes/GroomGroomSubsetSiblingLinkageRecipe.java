@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -55,7 +56,7 @@ public class GroomGroomSubsetSiblingLinkageRecipe extends GroomGroomSiblingLinka
     @Override
     protected Iterable<LXP> getMarriageRecords() {
         if( cached_records == null ) {
-            cached_records = filter(linkage_fields, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(linkage_fields, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
         }
         return cached_records;
     }
