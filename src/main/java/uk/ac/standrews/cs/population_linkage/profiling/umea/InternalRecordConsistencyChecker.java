@@ -5,10 +5,13 @@
 package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
 import uk.ac.standrews.cs.data.umea.UmeaDeathsDataSet;
+import uk.ac.standrews.cs.data.umea.UmeaMarriagesDataSet;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -18,25 +21,38 @@ import java.util.TreeMap;
 
 public class InternalRecordConsistencyChecker {
 
-    // TODO Check for internal consistency of age-at-marriage on marriage records. Also dates of birth plausible relative to marriage date.
-
+    private static final List<String> MARRIAGE_FIELDS_CHECKED = Arrays.asList("bride birth date", "groom birth date", "marriage year");
     private static final List<String> DEATH_FIELDS_CHECKED = Arrays.asList("birth date", "death date", "death age");
 
+    private final Results marriage_results;
     private final Results death_results;
+
     private final boolean verbose;
-    private int discrepancy_count = 0;
+    private int marriage_discrepancy_count = 0;
+    private int death_discrepancy_count = 0;
 
     public static void main(String[] args) throws IOException {
 
         InternalRecordConsistencyChecker checker = new InternalRecordConsistencyChecker(false);
 
+        checker.checkMarriageRecordsConsistency();
         checker.checkDeathRecordsConsistency();
     }
 
     public InternalRecordConsistencyChecker(boolean verbose) {
 
         this.verbose = verbose;
+        marriage_results = new Results(MARRIAGE_FIELDS_CHECKED);
         death_results = new Results(DEATH_FIELDS_CHECKED);
+    }
+
+    private void checkMarriageRecordsConsistency() throws IOException {
+
+        for (LXP marriage_record : Marriage.convertToRecords(new UmeaMarriagesDataSet())) {
+            checkMarriageRecordInternalConsistency(marriage_record);
+        }
+
+        summariseMarriagesResults();
     }
 
     private void checkDeathRecordsConsistency() throws IOException {
@@ -45,16 +61,114 @@ public class InternalRecordConsistencyChecker {
             checkDeathRecordInternalConsistency(death_record);
         }
 
-        summariseDeathsResults();
+        summariseDeathResults();
     }
 
-    private void summariseDeathsResults() {
+    private void summariseMarriagesResults() {
+
+        System.out.println();
+        marriage_results.summariseFieldPresenceCounts();
+
+        System.out.println();
+        System.out.println("discrepancy count: " + marriage_discrepancy_count);
+    }
+
+    private void summariseDeathResults() {
 
         System.out.println();
         death_results.summariseFieldPresenceCounts();
 
         System.out.println();
-        System.out.println("discrepancy count: " + discrepancy_count);
+        System.out.println("discrepancy count: " + death_discrepancy_count);
+    }
+
+    /**
+     * Checks the ages of bride and groom are plausible plausible, either as recorded or as calculated from birth
+     * date and marriage date.
+     *
+     * @param marriage_record the record
+     * @return true if the record is consistent
+     */
+    public void checkMarriageRecordInternalConsistency(final LXP marriage_record) {
+
+        final String bride_age_or_birth_date = marriage_record.getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH);
+        final String groom_age_or_birth_date = marriage_record.getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH);
+        final String marriage_year = marriage_record.getString(Marriage.MARRIAGE_YEAR);
+
+        marriage_results.recordUsableFields(
+                usableDate(bride_age_or_birth_date) || usableNumber(bride_age_or_birth_date),
+                usableDate(groom_age_or_birth_date) || usableNumber(groom_age_or_birth_date),
+                usableNumber(marriage_year));
+
+        boolean discrepancy = false;
+
+        if (usableNumber(bride_age_or_birth_date)) {
+
+            final int bride_age_at_marriage = Integer.parseInt(bride_age_or_birth_date);
+
+            if (bride_age_at_marriage < LinkageConfig.MIN_AGE_AT_MARRIAGE || bride_age_at_marriage > LinkageConfig.MAX_AGE_AT_DEATH) {
+
+                discrepancy = true;
+                if (verbose) {
+                    System.out.println();
+                    System.out.println("ID: " + marriage_record.getString(Marriage.STANDARDISED_ID));
+                    System.out.println("bride_age_at_marriage: " + bride_age_at_marriage);
+                }
+            }
+        }
+        else {
+            if (usableDate(bride_age_or_birth_date) && usableNumber(marriage_year)) {
+                int bride_birth_year = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(marriage_record, true).getYear();
+
+                final int bride_age_at_marriage = Integer.parseInt(marriage_year) - bride_birth_year;
+
+                if (bride_age_at_marriage < LinkageConfig.MIN_AGE_AT_MARRIAGE || bride_age_at_marriage > LinkageConfig.MAX_AGE_AT_DEATH) {
+
+                    discrepancy = true;
+                    if (verbose) {
+                        System.out.println();
+                        System.out.println("ID: " + marriage_record.getString(Marriage.STANDARDISED_ID));
+                        System.out.println("bride_birth_year: " + bride_birth_year);
+                        System.out.println("marriage_year: " + marriage_year);
+                    }
+                }
+            }
+        }
+
+        if (usableNumber(groom_age_or_birth_date)) {
+
+            final int groom_age_at_marriage = Integer.parseInt(groom_age_or_birth_date);
+
+            if (groom_age_at_marriage < LinkageConfig.MIN_AGE_AT_MARRIAGE || groom_age_at_marriage > LinkageConfig.MAX_AGE_AT_DEATH) {
+
+                discrepancy = true;
+                if (verbose) {
+                    System.out.println();
+                    System.out.println("ID: " + marriage_record.getString(Marriage.STANDARDISED_ID));
+                    System.out.println("groom_age_at_marriage: " + groom_age_at_marriage);
+                }
+            }
+        }
+        else {
+            if (usableDate(groom_age_or_birth_date) && usableNumber(marriage_year)) {
+                int groom_birth_year = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(marriage_record, false).getYear();
+
+                final int groom_age_at_marriage = Integer.parseInt(marriage_year) - groom_birth_year;
+
+                if (groom_age_at_marriage < LinkageConfig.MIN_AGE_AT_MARRIAGE || groom_age_at_marriage > LinkageConfig.MAX_AGE_AT_DEATH) {
+
+                    discrepancy = true;
+                    if (verbose) {
+                        System.out.println();
+                        System.out.println("ID: " + marriage_record.getString(Marriage.STANDARDISED_ID));
+                        System.out.println("groom_birth_year: " + groom_birth_year);
+                        System.out.println("marriage_year: " + marriage_year);
+                    }
+                }
+            }
+        }
+
+        if (discrepancy) marriage_discrepancy_count++;
     }
 
     /**
@@ -107,7 +221,7 @@ public class InternalRecordConsistencyChecker {
             }
         }
 
-        if (discrepancy) discrepancy_count++;
+        if (discrepancy) death_discrepancy_count++;
     }
 
     private void outputDeathRecordInternalInconsistency(LXP death_record, int age_at_death_recorded_on_death_record, int year_of_birth_from_death_record, int year_of_death_from_death_record, int age_at_death_calculated_from_death_record, int age_at_death_discrepancy) {

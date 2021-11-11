@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Links a person appearing as the child on a birth record with the a sibling appearing as the groom on a marriage record.
+ * Links a person appearing as the child on a birth record with a sibling appearing as the groom on a marriage record.
  */
 public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
 
