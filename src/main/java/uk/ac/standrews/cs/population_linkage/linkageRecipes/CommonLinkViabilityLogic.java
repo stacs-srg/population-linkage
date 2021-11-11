@@ -169,31 +169,6 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    /**
-     * Checks the age at death
-     * recorded on the death record is consistent with the difference between birth year on death record and death year.
-     *
-     * @param death_record the record
-     * @return true if the record is consistent
-     */
-    public static boolean checkInternalConsistency(final LXP death_record) {
-
-        try {
-            final int year_of_birth_from_death_record = Integer.parseInt(Normalisation.extractYear(death_record.getString(Death.DATE_OF_BIRTH)));
-            final int year_of_death_from_death_record = Integer.parseInt(death_record.getString(Death.DEATH_YEAR));
-
-            final int age_at_death_recorded_on_death_record = Integer.parseInt(death_record.getString(Death.AGE_AT_DEATH));
-            final int age_at_death_calculated_from_death_record = year_of_death_from_death_record - year_of_birth_from_death_record;
-
-            final int age_at_death_discrepancy = Math.abs(age_at_death_recorded_on_death_record - age_at_death_calculated_from_death_record);
-
-            return age_at_death_discrepancy <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
-
-        } catch (NumberFormatException e) { // Invalid year.
-            return true;
-        }
-    }
-
     public static boolean siblingBirthDatesAreViable(final LocalDate date_of_birth1, final LocalDate date_of_birth2) {
 
         final long years_between_sibling_births = Math.abs(date_of_birth1.until(date_of_birth2, ChronoUnit.YEARS));
