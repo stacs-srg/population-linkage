@@ -10,13 +10,13 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.endToEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -37,7 +37,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIde
  * This class attempts to perform birth-birth sibling linkage.
  * It creates a Map of families indexed (at the moment) from birth ids to families
  */
-public class BirthSiblingBundleThenBirthDeathBuilder {
+public class BirthSiblingBundleThenBirthDeathBuilder implements MakePersistent {
 
     private static final double THRESHOLD = 0.0000001;
     private static final double COMBINED_AVERAGE_DISTANCE_THRESHOLD = 0.2;
@@ -52,16 +52,14 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-            LinkageRecipe bb_recipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, number_of_records, bridge, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
+            LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName(), bridge);
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, false, false, false, false);
+            LinkageResult lr = runner1.run(bb_recipe, new BirthSiblingBundleThenBirthDeathBuilder(), false, false, false, false);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 
-            LinkageRecipe death_birth_recipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName());
-
-            LinkageConfig.numberOfROs = 20;
+            LinkageRecipe death_birth_recipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName(), bridge);
 
             Iterable<LXP> death_records = death_birth_recipe.getStoredRecords();
 
@@ -494,5 +492,10 @@ public class BirthSiblingBundleThenBirthDeathBuilder {
 
     protected static Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe, StringMetric baseMetric) {
         return new Sigma(baseMetric, linkageRecipe.getLinkageFields(), 0);
+    }
+
+    @Override
+    public void makePersistent(LinkageRecipe linkage_recipe, Link link) {
+        throw new RuntimeException( "makePersistent not implemented or used in this recipe" );
     }
 }

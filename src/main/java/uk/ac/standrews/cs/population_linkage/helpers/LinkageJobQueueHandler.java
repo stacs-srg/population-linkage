@@ -5,6 +5,8 @@
 package uk.ac.standrews.cs.population_linkage.helpers;
 
 import com.google.common.collect.Sets;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.*;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -13,7 +15,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.io.BufferedReader;
@@ -43,127 +44,139 @@ public class LinkageJobQueueHandler {
     private static final String COMMENT_INDICATOR = "#";
 
     public static void main(String[] args) throws Exception {
-        Path jobQ = Paths.get(args[0]);
-        Path linkageResultsFile = Paths.get(args[1]);
-        Path recordCountsFile = Paths.get(args[2]);
-        Path statusFile = Paths.get(args[3]);
 
-        while (getStatus(statusFile)) {
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
 
-            FileChannel fileChannel = getFileChannel(jobQ);
-            System.out.println("Locking job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            fileChannel.lock(0, Long.MAX_VALUE, false);
-            System.out.println("Locked job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            List<List<String>> jobs = readInJobFile(fileChannel);
+            Path jobQ = Paths.get(args[0]);
+            Path linkageResultsFile = Paths.get(args[1]);
+            Path recordCountsFile = Paths.get(args[2]);
+            Path statusFile = Paths.get(args[3]);
 
-            if (jobs.size() > 1) {
-                // jobs in queue
-                List<String> columnLabels = jobs.get(0);
-                List<String> job = jobs.remove(1);
+            while (getStatus(statusFile)) {
 
-                System.out.println("Job taken: " + job);
+                FileChannel fileChannel = getFileChannel(jobQ);
+                System.out.println("Locking job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                fileChannel.lock(0, Long.MAX_VALUE, false);
+                System.out.println("Locked job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                List<List<String>> jobs = readInJobFile(fileChannel);
 
-                overwriteToJobFile(fileChannel, jobs);
-                fileChannel.close();
-                System.out.println("Released job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                if (jobs.size() > 1) {
+                    // jobs in queue
+                    List<String> columnLabels = jobs.get(0);
+                    List<String> job = jobs.remove(1);
 
-                // At this point we have a linkage job no body else has - now we need to:
-                // put job info into variables
+                    System.out.println("Job taken: " + job);
 
-                String populationName = job.get(columnLabels.indexOf("population")).trim();
-                String populationSize = job.get(columnLabels.indexOf("size")).trim();
-                String populationNumber = job.get(columnLabels.indexOf("pop_number")).trim();
-                String corruptionNumber = job.get(columnLabels.indexOf("corruption_number")).trim();
-                boolean corrupted = !corruptionNumber.equals("0");
-                double threshold = Double.parseDouble(job.get(columnLabels.indexOf("threshold")).trim());
-                String metric = job.get(columnLabels.indexOf("metric")).trim();
-                String maxSiblingGapString = job.get(columnLabels.indexOf("max-sibling-gap")).trim();
-                int maxSiblingGap = (maxSiblingGapString.equals("")) ? 0 : Integer.valueOf(maxSiblingGapString);
-                int birthsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("births-cache-size")).trim());
-                int marriagesCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
-                int deathsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
-                int numROs = Integer.parseInt(job.get(columnLabels.indexOf("ROs")).trim());
-                String linkageType = job.get(columnLabels.indexOf("linkage-type")).trim();
+                    overwriteToJobFile(fileChannel, jobs);
+                    fileChannel.close();
+                    System.out.println("Released job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-                String resultsRepo = job.get(columnLabels.indexOf("results-repo")).trim();
-                String links_persistent_name = job.get(columnLabels.indexOf("links_persistent_name")).trim();
+                    // At this point we have a linkage job no body else has - now we need to:
+                    // put job info into variables
 
-                boolean preFilter = job.get(columnLabels.indexOf("preFilter")).trim().toLowerCase().equals("true");
-                int preFilterRequiredFields = Integer.parseInt(job.get(columnLabels.indexOf("preFilterRequiredFields")).trim());
-                boolean persist_links = job.get(columnLabels.indexOf("persist_links")).trim().toLowerCase().equals("true");
-                boolean evaluate_quality = job.get(columnLabels.indexOf("evaluate_quality")).trim().toLowerCase().equals("true");
+                    String populationName = job.get(columnLabels.indexOf("population")).trim();
+                    String populationSize = job.get(columnLabels.indexOf("size")).trim();
+                    String populationNumber = job.get(columnLabels.indexOf("pop_number")).trim();
+                    String corruptionNumber = job.get(columnLabels.indexOf("corruption_number")).trim();
+                    boolean corrupted = !corruptionNumber.equals("0");
+                    double threshold = Double.parseDouble(job.get(columnLabels.indexOf("threshold")).trim());
+                    String metric = job.get(columnLabels.indexOf("metric")).trim();
+                    String maxSiblingGapString = job.get(columnLabels.indexOf("max-sibling-gap")).trim();
+                    int maxSiblingGap = (maxSiblingGapString.equals("")) ? 0 : Integer.valueOf(maxSiblingGapString);
+                    int birthsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("births-cache-size")).trim());
+                    int marriagesCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("marriages-cache-size")).trim());
+                    int deathsCacheSize = Integer.parseInt(job.get(columnLabels.indexOf("deaths-cache-size")).trim());
+                    int numROs = Integer.parseInt(job.get(columnLabels.indexOf("ROs")).trim());
+                    String linkageType = job.get(columnLabels.indexOf("linkage-type")).trim();
 
-                String sourceRepo = toRepoName(populationName, populationSize, populationNumber, corruptionNumber, corrupted);
+                    String resultsRepo = job.get(columnLabels.indexOf("results-repo")).trim();
+                    String links_persistent_name = job.get(columnLabels.indexOf("links_persistent_name")).trim();
 
-                LinkageConfig.birthCacheSize = birthsCacheSize;
-                LinkageConfig.marriageCacheSize = marriagesCacheSize;
-                LinkageConfig.deathCacheSize = deathsCacheSize;
-                LinkageConfig.numberOfROs = numROs;
-                LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE = maxSiblingGap;
+                    boolean preFilter = job.get(columnLabels.indexOf("preFilter")).trim().toLowerCase().equals("true");
+                    int preFilterRequiredFields = Integer.parseInt(job.get(columnLabels.indexOf("preFilterRequiredFields")).trim());
+                    boolean persist_links = job.get(columnLabels.indexOf("persist_links")).trim().toLowerCase().equals("true");
+                    boolean evaluate_quality = job.get(columnLabels.indexOf("evaluate_quality")).trim().toLowerCase().equals("true");
 
-                // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
-                new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber).validate(recordCountsFile);
+                    String sourceRepo = toRepoName(populationName, populationSize, populationNumber, corruptionNumber, corrupted);
 
-                StringMetric chosenMetric = Constants.get(metric, 4096);
+                    LinkageConfig.birthCacheSize = birthsCacheSize;
+                    LinkageConfig.marriageCacheSize = marriagesCacheSize;
+                    LinkageConfig.deathCacheSize = deathsCacheSize;
+                    LinkageConfig.numberOfROs = numROs;
+                    LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE = maxSiblingGap;
 
-                JobRunnerIO.setupResultsFile(linkageResultsFile);
+                    // validate the data is in the storr (local scratch space on clusters - but anyway, it's defined in application.properties)
+                    new ValidatePopulationInStorr(populationName, populationSize, populationNumber, corrupted, corruptionNumber).validate(recordCountsFile);
 
-                long startTime = System.currentTimeMillis();
+                    StringMetric chosenMetric = Constants.get(metric, 4096);
 
-                LinkageRecipe linkageRecipe = getLinkageRecipe(linkageType, resultsRepo, links_persistent_name, sourceRepo);
-                String linkageApproach = linkageRecipe.getLinkageType();
+                    JobRunnerIO.setupResultsFile(linkageResultsFile);
 
-                LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run( linkageRecipe, false, false, evaluate_quality, persist_links).getLinkageQuality();
+                    long startTime = System.currentTimeMillis();
 
-                String fieldsUsed1 = getLinkageFields(1, linkageRecipe, sourceRepo);
-                String fieldsUsed2 = getLinkageFields(2, linkageRecipe, sourceRepo);
+                    LinkageRecipe linkageRecipe = getLinkageRecipe(linkageType, resultsRepo, links_persistent_name, sourceRepo, bridge);
+                    String linkageApproach = linkageRecipe.getLinkageType();
 
-                long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
+                    System.out.println("Warning this code will not work - no make_persistent parameter");
+                    System.exit(-1);  // TODO fix me or delete!
+                    LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run(linkageRecipe, null, false, false, evaluate_quality, persist_links).getLinkageQuality();
 
-                JobRunnerIO.appendToResultsFile(threshold, metric, LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE, linkageQuality, timeTakenInSeconds,
-                        linkageResultsFile, populationName, populationSize, populationNumber, corruptionNumber,
-                        linkageApproach, numROs, fieldsUsed1, fieldsUsed2, preFilter,
-                        birthsCacheSize, marriagesCacheSize, deathsCacheSize);
+                    String fieldsUsed1 = getLinkageFields(1, linkageRecipe, sourceRepo);
+                    String fieldsUsed2 = getLinkageFields(2, linkageRecipe, sourceRepo);
 
-            } else {
-                fileChannel.close();
-                System.out.println("No jobs in job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                Thread.sleep(60000);
+                    long timeTakenInSeconds = (System.currentTimeMillis() - startTime) / 1000;
+
+                    JobRunnerIO.appendToResultsFile(threshold, metric, LinkageConfig.MAX_SIBLING_AGE_DIFFERENCE, linkageQuality, timeTakenInSeconds,
+                            linkageResultsFile, populationName, populationSize, populationNumber, corruptionNumber,
+                            linkageApproach, numROs, fieldsUsed1, fieldsUsed2, preFilter,
+                            birthsCacheSize, marriagesCacheSize, deathsCacheSize);
+
+                } else {
+                    fileChannel.close();
+                    System.out.println("No jobs in job file @ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    Thread.sleep(60000);
+                }
             }
+        } catch (Exception e) {
+            System.out.println("Runtime exception:");
+            e.printStackTrace();
+        } finally {
+            System.out.println("Run finished");
+            System.exit(0); // Make sure it all shuts down properly.
         }
     }
 
-    private static LinkageRecipe getLinkageRecipe(final String linkageType, final String resultsRepo, final String links_persistent_name, final String sourceRepo) {
+    private static LinkageRecipe getLinkageRecipe(final String linkageType, final String resultsRepo, final String links_persistent_name, final String sourceRepo, NeoDbCypherBridge bridge) {
 
         switch (linkageType) {
             case BirthSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BirthSiblingLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BirthDeathIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthDeathIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthDeathIdentityLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BirthDeathSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BirthDeathSiblingLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthDeathSiblingLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BirthFatherIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthFatherIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthFatherIdentityLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BirthMotherIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthMotherIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthMotherIdentityLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BirthParentsMarriageIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthParentsMarriageIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthParentsMarriageIdentityLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BirthBrideIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthBrideIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthBrideIdentityLinkageRecipe(sourceRepo, "EVERYTHING", links_persistent_name, bridge);
             case BrideBrideSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BrideBrideSiblingLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BrideBrideSiblingLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BrideGroomSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new BrideGroomSiblingLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BrideGroomSiblingLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case DeathBrideIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new DeathBrideIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new DeathBrideIdentityLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case DeathSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new DeathSiblingLinkageRecipe(sourceRepo, links_persistent_name);
+                return new DeathSiblingLinkageRecipe(sourceRepo,"EVERYTHING", links_persistent_name, bridge);
             case DeathGroomIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new DeathGroomIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new DeathGroomIdentityLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case BirthGroomIdentityLinkageRecipe.LINKAGE_TYPE:
-                return new BirthGroomIdentityLinkageRecipe(sourceRepo, links_persistent_name);
+                return new BirthGroomIdentityLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             case GroomGroomSiblingLinkageRecipe.LINKAGE_TYPE:
-                return new GroomGroomSiblingLinkageRecipe(sourceRepo, links_persistent_name);
+                return new GroomGroomSiblingLinkageRecipe(sourceRepo, "EVERYTHING",links_persistent_name, bridge);
             default:
                 throw new RuntimeException("LinkageType not found");
         }

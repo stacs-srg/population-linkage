@@ -4,17 +4,24 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
  * It creates a Map of families indexed (at the momement) from birth ids to families
  */
-public class DeathSiblingBundleBuilder {
+public class DeathSiblingBundleBuilder implements MakePersistent {
 
     public static void main(String[] args) throws Exception {
 
@@ -23,14 +30,14 @@ public class DeathSiblingBundleBuilder {
 
         try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, number_of_records, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
+            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, number_of_records, DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
 
             while( linkage_fields >= half_fields ) {
                 BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-                LinkageResult lr = runner.run(linkageRecipe, false, false, false, true);
+                LinkageResult lr = runner.run(linkageRecipe, new DeathSiblingBundleBuilder(), false, false, false, true);
 
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
@@ -43,6 +50,30 @@ public class DeathSiblingBundleBuilder {
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // make sure process dies.
+        }
+    }
+
+
+    @Override
+    public void makePersistent(LinkageRecipe recipe, Link link) {
+        try {
+            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend().getString( Death.STANDARDISED_ID );
+
+            if (!std_id1.equals(std_id2)) {
+                if( ! Query.DDSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+
+                    Query.createDDSiblingReference(
+                            recipe.getBridge(),
+                            std_id1,
+                            std_id2,
+                            recipe.getLinks_persistent_name(),
+                            recipe.getNoLinkageFieldsRequired(),
+                            link.getDistance());
+                }
+            }
+        } catch (BucketException | RepositoryException e) {
+            throw new RuntimeException(e);
         }
     }
 }

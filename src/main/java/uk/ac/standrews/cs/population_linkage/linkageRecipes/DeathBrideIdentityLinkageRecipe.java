@@ -5,12 +5,15 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +25,10 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
     public static final double DISTANCE_THRESHOLD = 0.49;
 
     public static final String LINKAGE_TYPE = "death-bride-identity";
+
+    private int NUMBER_OF_DEATHS = EVERYTHING;
+    public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
+    private ArrayList<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FORENAME,
@@ -46,8 +53,23 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Death.DECEASED_IDENTITY, Marriage.BRIDE_IDENTITY))
     );
 
-    public DeathBrideIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public DeathBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_DEATHS = EVERYTHING;
+        } else {
+            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
+        }
+        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+    }
+
+    @Override
+    protected Iterable<LXP> getDeathRecords() {
+        if( cached_records == null ) {
+            Iterable<LXP> filtered = filterBySex(super.getDeathRecords(), Death.SEX, "f");
+            cached_records = RecordFiltering.filter( getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields() );
+        }
+        return cached_records;
     }
 
     @Override
@@ -110,10 +132,5 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public double getThreshold() {
         return DISTANCE_THRESHOLD;
-    }
-
-    @Override
-    public Iterable<LXP> getDeathRecords() {
-        return filterBySex(super.getDeathRecords(), Death.SEX, "f");
     }
 }

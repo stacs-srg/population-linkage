@@ -5,13 +5,15 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +30,12 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
+
+    private ArrayList<LXP> cached_records;
+
+    private int NUMBER_OF_BIRTHS;
+    public static final int ALL_LINKAGE_FIELDS = 5;
+    public int no_linkage_fields_required;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.MOTHER_FORENAME,
@@ -50,8 +58,21 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
             list(   pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
                     pair(Birth.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY) ) );
 
-    public BirthBrideSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public BirthBrideSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_BIRTHS = EVERYTHING;
+        } else {
+            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+        }
+        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+    }
+
+    protected Iterable<LXP> getBirthRecords() {
+        if( cached_records == null ) {
+            cached_records = RecordFiltering.filter(no_linkage_fields_required, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+        }
+        return cached_records;
     }
 
     @Override

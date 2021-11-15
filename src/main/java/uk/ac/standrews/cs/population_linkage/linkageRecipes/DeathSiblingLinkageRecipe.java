@@ -5,15 +5,18 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic.siblingBirthDatesAreViable;
 
 /**
@@ -26,6 +29,10 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "death-death-sibling";
 
     public static final int ID_FIELD_INDEX = Death.STANDARDISED_ID;
+
+    private int NUMBER_OF_DEATHS = EVERYTHING;
+    public static final int ALL_LINKAGE_FIELDS = 4;
+    private ArrayList<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.MOTHER_FORENAME,
@@ -47,8 +54,22 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
             list(pair(Death.MOTHER_BIRTH_RECORD_IDENTITY, Death.MOTHER_BIRTH_RECORD_IDENTITY), pair(Death.FATHER_BIRTH_RECORD_IDENTITY, Death.FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public DeathSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public DeathSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_DEATHS = EVERYTHING;
+        } else {
+            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
+        }
+        setNumberLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+    }
+
+    @Override
+    protected Iterable<LXP> getDeathRecords() {
+        if( cached_records == null ) {
+            cached_records = filter( getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
+        }
+        return cached_records;
     }
 
     @Override

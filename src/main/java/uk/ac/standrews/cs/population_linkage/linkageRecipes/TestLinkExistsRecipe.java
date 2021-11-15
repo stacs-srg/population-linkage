@@ -2,13 +2,12 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes;
+package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.model.Query;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -40,7 +39,7 @@ public class TestLinkExistsRecipe extends DeathGroomIdentityLinkageRecipe {
 
 
     public TestLinkExistsRecipe(String source_repository_name, NeoDbCypherBridge bridge, String links_persistent_name ) {
-        super( source_repository_name,links_persistent_name );
+        super( source_repository_name,"EVERYTHING",links_persistent_name, bridge );
         this.bridge = bridge;
     }
 

@@ -6,6 +6,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
@@ -42,8 +43,8 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
             Marriage.GROOM_SURNAME
     );
 
-    public DeathParentsMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public DeathParentsMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
     }
 
     @Override

@@ -5,12 +5,15 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +29,11 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
+    private int NUMBER_OF_BIRTHS = EVERYTHING;
+    public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
+    private ArrayList<LXP> cached_records = null;
+
+    // TODO Why not father occupation given that's used in birthGroomSibling? - temporal? try multiple linkages?
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
             Birth.SURNAME,
@@ -50,8 +58,22 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.STANDARDISED_ID, Marriage.GROOM_BIRTH_RECORD_IDENTITY))
     );
 
-    public BirthGroomIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public BirthGroomIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_BIRTHS = EVERYTHING;
+        } else {
+            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+        }
+        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+    }
+
+    protected Iterable<LXP> getBirthRecords() {
+        if( cached_records == null ) {
+            Iterable<LXP> filtered = filterBySex(super.getBirthRecords(), Birth.SEX, "m");
+            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, filtered, getLinkageFields());
+        }
+        return cached_records;
     }
 
     @Override
@@ -130,10 +152,5 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public double getThreshold() {
         return DISTANCE_THRESHOLD;
-    }
-
-    @Override
-    protected Iterable<LXP> getBirthRecords() {
-        return filterBySex( super.getBirthRecords(),Birth.SEX,"m");
     }
 }

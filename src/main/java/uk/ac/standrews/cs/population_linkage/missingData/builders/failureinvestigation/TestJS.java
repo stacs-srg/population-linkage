@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage.missingData.builders.failureinvest
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthDeathSubsetIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.SigmaTolerant;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
@@ -29,14 +29,14 @@ public class TestJS {
         LXP b1 = null;
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
-            BirthDeathSubsetIdentityLinkageRecipe linkageRecipe = new BirthDeathSubsetIdentityLinkageRecipe(sourceRepo, number_of_records, bridge, TestJS.class.getCanonicalName());
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, TestJS.class.getCanonicalName(), bridge);
 
             // StringMetric metric = linkageRecipe.getMetric();
             SigmaTolerant metric = new SigmaTolerant(linkageRecipe.getMetric(), linkageRecipe.getLinkageFields(), Birth.STANDARDISED_ID);
 
             Iterable<LXP> recs = linkageRecipe.getStoredRecords();
             for (LXP rec : recs) {
-                if (rec.getString(Birth.STANDARDISED_ID).equals("40770668")) {
+                if (rec.getString(Birth.STANDARDISED_ID).equals("921486")) {
                     b1 = rec;
                 }
             }
@@ -52,11 +52,14 @@ public class TestJS {
                 System.out.println(d);
             }
 
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             System.out.println("Runtime exception:");
             System.out.println("String 1 = " + s1);
             System.out.println("String 2 = " + s2);
             e.printStackTrace();
+        } catch ( Exception e ) {
+            System.out.println("Regular exception");
+            System.exit(-1);
         } finally {
             System.out.println("Run finished successfully");
             System.exit(0); // Make sure it all shuts down properly.

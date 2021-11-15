@@ -6,11 +6,11 @@ package uk.ac.standrews.cs.population_linkage.resolver.cluster;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 
 public class SiblingBirthClusterAllTrianglesResolver extends SiblingBirthClusterOpenTriangleResolver {
 
-    public SiblingBirthClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingSubsetLinkageRecipe recipe) {
+    public SiblingBirthClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingLinkageRecipe recipe) {
         super( bridge, source_repo_name, recipe );
     }
 
@@ -22,7 +22,7 @@ public class SiblingBirthClusterAllTrianglesResolver extends SiblingBirthCluster
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BirthSiblingSubsetLinkageRecipe linkageRecipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, "10000", bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "10000", DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
             SiblingBirthClusterAllTrianglesResolver resolver = new SiblingBirthClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();

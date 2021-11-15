@@ -6,11 +6,11 @@ package uk.ac.standrews.cs.population_linkage.resolver.cluster;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.GroomGroomSubsetSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
 
 public class SiblingGroomClusterAllTrianglesResolver extends SiblingGroomClusterOpenTriangleResolver {
 
-    public SiblingGroomClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, GroomGroomSubsetSiblingLinkageRecipe recipe) {
+    public SiblingGroomClusterAllTrianglesResolver(NeoDbCypherBridge bridge, String source_repo_name, GroomGroomSiblingLinkageRecipe recipe) {
         super( bridge, source_repo_name, recipe );
     }
 
@@ -22,7 +22,7 @@ public class SiblingGroomClusterAllTrianglesResolver extends SiblingGroomCluster
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, "10000", bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, "10000", BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
 
 
             printHeaders();

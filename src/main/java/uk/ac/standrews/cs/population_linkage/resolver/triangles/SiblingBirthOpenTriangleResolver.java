@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
@@ -33,7 +33,7 @@ public class SiblingBirthOpenTriangleResolver {
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket births;
-    private final BirthSiblingSubsetLinkageRecipe recipe;
+    private final BirthSiblingLinkageRecipe recipe;
 
     private final JensenShannon base_metric;
     private final Metric<LXP> metric;
@@ -52,7 +52,7 @@ public class SiblingBirthOpenTriangleResolver {
     private int count = 0;
 
 
-    public SiblingBirthOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingSubsetLinkageRecipe recipe) {
+    public SiblingBirthOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
         this.record_repository = new RecordRepository(source_repo_name);
@@ -251,7 +251,7 @@ public class SiblingBirthOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
 
-            BirthSiblingSubsetLinkageRecipe linkageRecipe = new BirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
             SiblingBirthOpenTriangleResolver resolver = new SiblingBirthOpenTriangleResolver( bridge,sourceRepo,linkageRecipe );
             resolver.resolve();
 

@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.DynamicLXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -52,9 +53,14 @@ public abstract class LinkageRecipe {
     public static final int EVERYTHING = Integer.MAX_VALUE;
     public static final JensenShannon DEFAULT_METRIC = new JensenShannon(2048);
 
+    private ArrayList<LXP> cached_records = null;
+
+    protected final NeoDbCypherBridge bridge;
+
     protected final String source_repository_name;
     protected final String links_persistent_name;
     private final RecordRepository record_repository;
+
     protected Path store_path;
 
     private Iterable<LXP> birth_records;
@@ -65,15 +71,28 @@ public abstract class LinkageRecipe {
     private Integer death_records_size = null;
     private Integer marriage_records_size = null;
 
-    public LinkageRecipe(String source_repository_name, String links_persistent_name) {
+    private int no_linkage_fields_required;
+
+    public LinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
 
         this.source_repository_name = source_repository_name;
         this.links_persistent_name = links_persistent_name;
+        this.bridge = bridge;
 
         this.record_repository = new RecordRepository(source_repository_name);
     }
 
+    public NeoDbCypherBridge getBridge() {
+        return bridge;
+    }
 
+    public int getNoLinkageFieldsRequired() {
+        return no_linkage_fields_required;
+    }
+
+    public void setNoLinkageFieldsRequired( int count) {
+        no_linkage_fields_required = count;
+    }
 
     public static LinkStatus trueMatch(final LXP record1, final LXP record2, final List<List<Pair>> true_match_alternatives) {
 
@@ -342,6 +361,11 @@ public abstract class LinkageRecipe {
         }
         return map;
     }
+
+    public void setNumberLinkageFieldsRequired(int number) {
+        no_linkage_fields_required = number;
+    }
+
 
     public String toKey(LXP query_record, LXP stored_record) {
 

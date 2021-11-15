@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
@@ -33,7 +33,7 @@ public class SiblingDeathOpenTriangleResolver {
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket deaths;
-    private final DeathSiblingSubsetLinkageRecipe recipe;
+    private final DeathSiblingLinkageRecipe recipe;
 
     private final JensenShannon base_metric;
     private final Metric<LXP> metric;
@@ -52,7 +52,7 @@ public class SiblingDeathOpenTriangleResolver {
     private int count = 0;
 
 
-    public SiblingDeathOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingSubsetLinkageRecipe recipe) {
+    public SiblingDeathOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
         this.record_repository = new RecordRepository(source_repo_name);
@@ -251,7 +251,7 @@ public class SiblingDeathOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
 
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, DeathSiblingBundleBuilder.class.getCanonicalName());
+            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
             SiblingDeathOpenTriangleResolver resolver = new SiblingDeathOpenTriangleResolver( bridge,sourceRepo,linkageRecipe );
             resolver.resolve();
 

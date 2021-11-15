@@ -5,19 +5,25 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
+
 /**
  * Links a person appearing as the child on a birth record with the same person appearing as the bride on a marriage record.
+ * Now also performs subsetting 11/11/21
  */
 public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
+    public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
 
     // TODO Some Wrigley rules not obvious where to place in viability checks.
     // e.g. date of birth should not be after death of mother - identity linkage of mother on birth record to
@@ -33,6 +39,10 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
+
+    protected int NUMBER_OF_BIRTHS;
+
+    // TODOxxx Why not father/mother occupation? - high temporal distance, occupation likely to have changed
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
@@ -57,9 +67,16 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Marriage.BRIDE_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Marriage.BRIDE_BIRTH_RECORD_IDENTITY))
     );
+    protected ArrayList<LXP> cached_records = null;
 
-    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_BIRTHS = EVERYTHING;
+        } else {
+            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+        }
+        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
     }
 
     @Override
@@ -103,7 +120,11 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getBirthRecords() {
-        return filterBySex(super.getBirthRecords(), Birth.SEX, "f");
+        if( cached_records == null ) {
+            Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
+            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
+        }
+        return cached_records;
     }
 
     @Override

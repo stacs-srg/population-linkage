@@ -16,7 +16,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.DeathSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.Distance;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
@@ -40,7 +40,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket deaths;
-    private final DeathSiblingSubsetLinkageRecipe recipe;
+    private final DeathSiblingLinkageRecipe recipe;
 
     private final JensenShannon base_metric;
     private final Metric<LXP> metric;
@@ -62,7 +62,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
 
     DecimalFormat df = new DecimalFormat("0.00");
 
-    public SiblingDeathClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingSubsetLinkageRecipe recipe) {
+    public SiblingDeathClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
         this.record_repository = new RecordRepository(source_repo_name);
@@ -396,7 +396,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
         String resultsRepo = args[1]; // e.g. synth_results
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
-            DeathSiblingSubsetLinkageRecipe linkageRecipe = new DeathSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
 
 
             printHeaders();

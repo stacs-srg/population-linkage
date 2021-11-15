@@ -27,7 +27,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
 
     @Override
     public LinkageRecipe getLinkageRecipe(String links_persistent_name, String source_repository_name, String results_repository_name, RecordRepository record_repository) {
-        return linkageRecipe;
+        return linkage_recipe;
     }
 
     public Linker getLinker(LinkageRecipe linkageRecipe, List<LXP> reference_points ) {
@@ -42,16 +42,16 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
 
     @Override
     protected List<LXP> getReferencePoints() {
-        ArrayList<LXP> candidates = filter(linkageRecipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkageRecipe.getStoredRecords(), linkageRecipe.getLinkageFields()); // all populated records
+        ArrayList<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields()); // all populated records
         List<LXP> result = BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
         return result;
     }
 
-    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
+    public LinkageResult link(boolean persist_links, MakePersistent make_persistent, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
 
-        ((SimilaritySearchLinker)linker).addRecords(linkageRecipe.getStoredRecords(), linkageRecipe.getQueryRecords(),getReferencePoints());
+        ((SimilaritySearchLinker)linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(),getReferencePoints());
 
         MemoryLogger.update();
         System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
@@ -78,7 +78,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
                 // Don't really need this - delete the method - al.
 
                 if (persist_links) {
-                    linkageRecipe.makeLinkPersistent(linkage_says_true_link);
+                    make_persistent.makePersistent(linkage_recipe, linkage_says_true_link);
                 }
                 if (generateMapOfLinks) {
                     String originalID;
@@ -112,7 +112,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
 
         if (evaluate_quality) {
             System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
-            numberOfGroundTruthTrueLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
+            numberOfGroundTruthTrueLinks = linkage_recipe.getNumberOfGroundTruthTrueLinks();
             System.out.println("Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks);
             LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
             lq.print(System.out);

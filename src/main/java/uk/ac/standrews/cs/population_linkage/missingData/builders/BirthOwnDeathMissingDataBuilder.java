@@ -5,20 +5,23 @@
 package uk.ac.standrews.cs.population_linkage.missingData.builders;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthDeathSubsetIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerIntolerant;
 import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerMean;
 import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerTolerant;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 /**
  *  This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
  * It takes an extra parameter over standard Builders choosing which aggregate metric to use.
  */
-public class BirthOwnDeathMissingDataBuilder {
+public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
-    private static void runExperiment(String mode, BirthDeathSubsetIdentityLinkageRecipe linkageRecipe, int linkage_fields) throws Exception {
+    private static void runExperiment(String mode, BirthDeathIdentityLinkageRecipe linkageRecipe, int linkage_fields) throws Exception {
         linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
         // TODO add post filtering too.
@@ -28,19 +31,19 @@ public class BirthOwnDeathMissingDataBuilder {
 
             // tolerant, intolerant, standard, mean
             case "tolerant": {
-                new BBLinkageRunnerTolerant().run(linkageRecipe, false, false, true, false);
+                new BBLinkageRunnerTolerant().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
                 break;
             }
             case "intolerant": {
-                new BBLinkageRunnerIntolerant().run(linkageRecipe,false, false, true, false);
+                new BBLinkageRunnerIntolerant().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
                 break;
             }
             case "mean": {
-                new BBLinkageRunnerMean().run(linkageRecipe,false, false, true, false);
+                new BBLinkageRunnerMean().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
                 break;
             }
             case "standard": {
-                new BitBlasterLinkageRunner().run(linkageRecipe, false, false, true, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
                 break;
             }
             default: {
@@ -57,9 +60,7 @@ public class BirthOwnDeathMissingDataBuilder {
         String mode = args[2]; // Choices are tolerant, intolerant, standard, mean
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathSubsetIdentityLinkageRecipe linkageRecipe = new BirthDeathSubsetIdentityLinkageRecipe(sourceRepo, number_of_records, bridge, BirthOwnDeathMissingDataBuilder.class.getCanonicalName());
-
-            // LinkageConfig.numberOfROs = 20;
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
 
             // runExperiment( mode, linkageRecipe, 0); // First run with no requirement on the number of fields
 
@@ -78,5 +79,10 @@ public class BirthOwnDeathMissingDataBuilder {
             System.out.println("Run finished");
             System.exit(0); // Make sure it all shuts down properly.
         }
+    }
+
+    @Override
+    public void makePersistent(LinkageRecipe linkage_recipe, Link link) {
+        throw new RuntimeException( "makePersistent unimplemented and unneeded in this code" );
     }
 }

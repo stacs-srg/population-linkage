@@ -25,7 +25,7 @@ public class BitBlasterLinkageTest extends SimilaritySearchLinkageTest {
             }
 
             @Override
-            public SearchStructure<LXP> newSearchStructure(Iterable<LXP> records, List<LXP> reference_objects) {
+            public SearchStructure<LXP> newSearchStructure(Iterable<LXP> records, List<LXP> reference_objects)  {
                 return new BitBlasterSearchStructure<LXP>(metric, reference_objects, records);
             }
 

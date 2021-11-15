@@ -16,7 +16,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideBrideSubsetSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.Distance;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
@@ -40,7 +40,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket marriages;
-    private final BrideBrideSubsetSiblingLinkageRecipe recipe;
+    private final BrideBrideSiblingLinkageRecipe recipe;
 
     private final JensenShannon base_metric;
     private final Metric<LXP> metric;
@@ -61,7 +61,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
 
     DecimalFormat df = new DecimalFormat("0.00");
 
-    public SiblingBrideClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BrideBrideSubsetSiblingLinkageRecipe recipe) {
+    public SiblingBrideClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BrideBrideSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
         this.record_repository = new RecordRepository(source_repo_name);
@@ -394,7 +394,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
 
-            BrideBrideSubsetSiblingLinkageRecipe linkageRecipe = new BrideBrideSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            BrideBrideSiblingLinkageRecipe linkageRecipe = new BrideBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
             SiblingBrideClusterOpenTriangleResolver resolver = new SiblingBrideClusterOpenTriangleResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();

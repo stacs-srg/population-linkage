@@ -8,6 +8,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -35,7 +36,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
     private static final int NUMBER_OF_BIRTHS = 10000;
 
     @Override
-    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
+    public LinkageResult link(boolean persist_links, MakePersistent make_persistent, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
 
         // NOTE - cannot use numberOfGroundTruthTrueLinks - not been initialised properly.
 
@@ -44,7 +45,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
         // This is alternative to the code in LinkageRunner which requires the whole set to be manifested.
         // This only manifests the first REQUIRED fields.
 
-        Iterable<LXP> stored_records = linkageRecipe.getStoredRecords(); // in this recipe source and search are the same but not in general
+        Iterable<LXP> stored_records = linkage_recipe.getStoredRecords(); // in this recipe source and search are the same but not in general
 
         ((SimilaritySearchLinker)linker).addRecords(stored_records, stored_records, getReferencePoints());
 

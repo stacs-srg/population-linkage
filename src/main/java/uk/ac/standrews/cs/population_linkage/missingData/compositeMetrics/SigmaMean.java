@@ -23,9 +23,9 @@ public class SigmaMean extends Metric<LXP> {
     final List<Integer> field_list;
     final int id_field_index;
 
-    public SigmaMean(final StringMetric base_distance, final List<Integer> field_list, final int id_field_index) {
+    public SigmaMean(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
 
-        this.base_distance = base_distance;
+        this.base_distance = base_metric;
         this.field_list = field_list;
         this.id_field_index = id_field_index;
     }

@@ -5,18 +5,21 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 
 /**
  * Links a person appearing as the child on a birth record with the same person appearing as the deceased on a death record.
@@ -27,9 +30,16 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "birth-death-identity";
 
+    private int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
+
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
+    private ArrayList<LXP> cached_records = null;
+
+    public int ALL_LINKAGE_FIELDS = 6;
+
+    // TODO Why not father/mother occupation? - even longer duration
     // Don't use father/mother occupation due to likely long duration between birth and death events.
 
     public static final List<Integer> LINKAGE_FIELDS = list(
@@ -57,8 +67,22 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.DEATH_RECORD_IDENTITY, Death.STANDARDISED_ID))
     );
 
-    public BirthDeathIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public BirthDeathIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_DEATHS = EVERYTHING;
+        } else {
+            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
+        }
+        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+    }
+
+    @Override
+    protected Iterable<LXP> getDeathRecords() {
+        if( cached_records == null ) {
+            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords(), getQueryMappingFields());
+        }
+        return cached_records;
     }
 
     @Override

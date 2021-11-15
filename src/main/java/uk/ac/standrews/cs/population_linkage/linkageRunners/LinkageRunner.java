@@ -20,9 +20,6 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
@@ -32,19 +29,21 @@ public abstract class LinkageRunner {
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
     protected StringMetric baseMetric;
     protected Linker linker;
-    protected LinkageRecipe linkageRecipe;
+    protected LinkageRecipe linkage_recipe;
 
-    public LinkageResult run(LinkageRecipe linkageRecipe,
+    public LinkageResult run(LinkageRecipe linkage_recipe,
+                             MakePersistent make_persistent,
                              boolean generateMapOfLinks, boolean reverseMap,
-                             boolean evaluateQuality, boolean persistLinks) throws BucketException, RepositoryException {
+                             boolean evaluateQuality, boolean persistLinks)  throws BucketException, RepositoryException { // TODO AL $$$ throws BucketException, RepositoryException { // throws Exception
 
+        this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
-        this.baseMetric = linkageRecipe.getMetric();
-        this.linkageRecipe = linkageRecipe;
+        this.baseMetric = linkage_recipe.getMetric();
+        this.linkage_recipe = linkage_recipe;
 
-        linker = getLinker(this.linkageRecipe,getReferencePoints());
+        linker = getLinker(linkage_recipe,getReferencePoints());
 
-        linkageRecipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
+        linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
 
         int numberOGroundTruthLinks = 0;
 //        if(evaluateQuality) {
@@ -55,7 +54,7 @@ public abstract class LinkageRunner {
 
         MemoryLogger.update();
 
-        LinkageResult result = link(persistLinks, evaluateQuality, numberOGroundTruthLinks, generateMapOfLinks, reverseMap);
+        LinkageResult result = link(persistLinks, make_persistent, evaluateQuality, numberOGroundTruthLinks, generateMapOfLinks, reverseMap);
 
         linker.terminate();
 
@@ -64,194 +63,106 @@ public abstract class LinkageRunner {
 
     protected abstract List<LXP> getReferencePoints();
 
-    public TreeMap<Double, LinkageQuality> evaluateThresholds(String source_repository_name, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, double minThreshold, double step, double maxThreshold) throws BucketException, RepositoryException {
-
-        TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
-
-        for(double threshold = minThreshold; threshold < maxThreshold; threshold += step) {
-            LinkageQuality lq = run(linkageRecipe, false, false, true, false).getLinkageQuality();
-            thresholdToLinkageQuality.put(threshold, lq);
-        }
-        return thresholdToLinkageQuality;
-    }
-
-    public TreeMap<Double, LinkageQuality> searchForBestThreshold(final String source_repository_name, double starting_threshold_estimate, StringMetric baseMetric, int maxAttempts, int nRandomRestarts) throws BucketException, RepositoryException {
-
-        TreeMap<Double, LinkageQuality> thresholdToLinkageQualityAll = new TreeMap<>();
-        double current_threshold = starting_threshold_estimate;
-
-        LinkageQuality t_0 = run(linkageRecipe, false, false, true, false).getLinkageQuality();
-        LinkageQuality t_1 = run(linkageRecipe, false, false, true, false).getLinkageQuality();
-
-        for(int n = 0 ; n < nRandomRestarts; n++) {
-            double bestF = 0;
-            int count = 0;
-
-            TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
-            thresholdToLinkageQuality.put(0.0, t_0);
-            thresholdToLinkageQuality.put(1.0, t_1);
-
-            while (bestF < 0.99 && count < maxAttempts) {
-
-                LinkageQuality lq = run(linkageRecipe, false, false, true, false).getLinkageQuality();
-                thresholdToLinkageQuality.put(current_threshold, lq);
-
-                if (lq.getF_measure() > bestF) {
-                    bestF = lq.getF_measure();
-                }
-
-                if (lq.getF_measure() == 0 && lq.getRecall() == 0) {
-                    current_threshold = increaseThreshold(current_threshold, thresholdToLinkageQuality);
-                } else if (lq.getF_measure() == 0 && lq.getRecall() == 1) {
-                    current_threshold = decreaseThreshold(current_threshold, thresholdToLinkageQuality);
-                } else {
-                    current_threshold = selectThreshold(current_threshold, thresholdToLinkageQuality);
-                }
-
-                count++;
-            }
-
-            current_threshold = new Random().nextInt(100) / 100.0;
-            System.err.println("Threshold: " + current_threshold);
-            thresholdToLinkageQualityAll.putAll(thresholdToLinkageQuality);
-        }
-
-        return thresholdToLinkageQualityAll;
-    }
-
-    private double selectThreshold(double current_threshold, TreeMap<Double, LinkageQuality> thresholdToLinkageQuality) {
-        Map.Entry<Double, LinkageQuality> nextLowerLQ  = thresholdToLinkageQuality.lowerEntry(current_threshold);
-        Map.Entry<Double, LinkageQuality> nextHigherLQ = thresholdToLinkageQuality.higherEntry(current_threshold);
-
-        if(nextHigherLQ == null) {
-            return increaseThreshold(current_threshold, thresholdToLinkageQuality);
-        }
-
-        if(nextLowerLQ == null) {
-            return decreaseThreshold(current_threshold, thresholdToLinkageQuality);
-        }
-
-        if(nextHigherLQ.getValue().getF_measure() > nextLowerLQ.getValue().getF_measure()) {
-            return increaseThreshold(current_threshold, thresholdToLinkageQuality);
-        } else {
-            return decreaseThreshold(current_threshold, thresholdToLinkageQuality);
-        }
-
-    }
-
-    private double decreaseThreshold(double current_threshold, TreeMap<Double, LinkageQuality> thresholdToLinkageQuality) {
-        Double nextLowerThreshold = thresholdToLinkageQuality.lowerKey(current_threshold);
-
-        if(nextLowerThreshold == null) {
-            return current_threshold / 2.0;
-        } else {
-            return (nextLowerThreshold - current_threshold) / 2.0;
-        }
-    }
-
-    private double increaseThreshold(double current_threshold, TreeMap<Double, LinkageQuality> thresholdToLinkageQuality) {
-        Double nextHigherThreshold = thresholdToLinkageQuality.higherKey(current_threshold);
-
-        if(nextHigherThreshold == null) {
-            return (1 - current_threshold) / 2.0;
-        } else {
-            return (nextHigherThreshold - current_threshold) / 2.0;
-        }
-    }
-
-    public abstract LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException;
+//    public TreeMap<Double, LinkageQuality> evaluateThresholds(String source_repository_name, StringMetric baseMetric, boolean preFilter, int preFilterRequiredFields, double minThreshold, double step, double maxThreshold) throws BucketException, RepositoryException {
 //
-//    public LinkageResult link(boolean persist_links, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
+//        TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
 //
-//        System.out.println("Adding records into linker @ " + LocalDateTime.now().toString());
+//        for(double threshold = minThreshold; threshold < maxThreshold; threshold += step) {
+//            LinkageQuality lq = run(linkage_recipe, false, false, true, false).getLinkageQuality();
+//            thresholdToLinkageQuality.put(threshold, lq);
+//        }
+//        return thresholdToLinkageQuality;
+//    }
 //
-//        linker.addRecords(linkageRecipe.getStoredRecords(), linkageRecipe.getQueryRecords());
+//    public TreeMap<Double, LinkageQuality> searchForBestThreshold(final String source_repository_name, double starting_threshold_estimate, StringMetric baseMetric, int maxAttempts, int nRandomRestarts) throws BucketException, RepositoryException {
 //
-//        MemoryLogger.update();
-//        System.out.println("Constructing link iterable @ " + LocalDateTime.now().toString());
+//        TreeMap<Double, LinkageQuality> thresholdToLinkageQualityAll = new TreeMap<>();
+//        double current_threshold = starting_threshold_estimate;
 //
-//        Iterable<Link> links = linker.getLinks();
-//        LocalDateTime time_stamp = LocalDateTime.now();
+//        LinkageQuality t_0 = run(linkage_recipe, false, false, true, false).getLinkageQuality();
+//        LinkageQuality t_1 = run(linkage_recipe, false, false, true, false).getLinkageQuality();
 //
-//        MemoryLogger.update();
-//        int tp = 0; // these are counters with which we use if evaluating
-//        int fp = 0;
+//        for(int n = 0 ; n < nRandomRestarts; n++) {
+//            double bestF = 0;
+//            int count = 0;
 //
-//        Map<String, Collection<Link>> linksByRecordID = new HashMap<>(); // this is for the map of links if requested
+//            TreeMap<Double, LinkageQuality> thresholdToLinkageQuality = new TreeMap<>();
+//            thresholdToLinkageQuality.put(0.0, t_0);
+//            thresholdToLinkageQuality.put(1.0, t_1);
 //
-//        System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now().toString());
+//            while (bestF < 0.99 && count < maxAttempts) {
 //
-//        // Map<String, Link> groundTruthLinks = linkageRecipe.getGroundTruthLinks();
-//        // Don't really need this - delete the method - al.
-//        System.out.println( "Al has temporarily removed getGroundTruthLinks() and references to groundTruthLinks from LinkageRunner.link");
+//                LinkageQuality lq = run(linkage_recipe, false, false, true, false).getLinkageQuality();
+//                thresholdToLinkageQuality.put(current_threshold, lq);
 //
-//        try {
-//            for (Link linkage_says_true_link : links) {
-//
-//                // groundTruthLinks.remove(linkageRecipe.toKey(linkage_says_true_link.getRecord1().getReferend(), linkage_says_true_link.getRecord2().getReferend()));
-//                // Don't really need this - delete the method - al.
-//
-//                if (persist_links) {
-//                    linkageRecipe.makeLinkPersistent(linkage_says_true_link);
+//                if (lq.getF_measure() > bestF) {
+//                    bestF = lq.getF_measure();
 //                }
-//                if (generateMapOfLinks) {
-//                    String originalID;
-//                    if(reverseMap) { // defined if the map should be based on the ID of the stored or the search records
-//                        originalID = Utilities.originalId(linkage_says_true_link.getRecord2().getReferend());
-//                    } else {
-//                        originalID = Utilities.originalId(linkage_says_true_link.getRecord1().getReferend());
-//                    }
-//                    linksByRecordID.computeIfAbsent(originalID, k -> new LinkedList<>());
-//                    linksByRecordID.get(originalID).add(linkage_says_true_link);
+//
+//                if (lq.getF_measure() == 0 && lq.getRecall() == 0) {
+//                    current_threshold = increaseThreshold(current_threshold, thresholdToLinkageQuality);
+//                } else if (lq.getF_measure() == 0 && lq.getRecall() == 1) {
+//                    current_threshold = decreaseThreshold(current_threshold, thresholdToLinkageQuality);
+//                } else {
+//                    current_threshold = selectThreshold(current_threshold, thresholdToLinkageQuality);
 //                }
-//                if (evaluate_quality) {
-//                    if (doesGTSayIsTrue(linkage_says_true_link)) {
-//                        tp++;
-//                    } else {
-////                        final boolean printFPs = false;
-////                        if(printFPs) printLink(linkage_says_true_link, "FP");
-//                        fp++;
-//                    }
-//                }
+//
+//                count++;
 //            }
-//        } catch(NoSuchElementException ignore) {} catch (RepositoryException e) {
-//            e.printStackTrace();
+//
+//            current_threshold = new Random().nextInt(100) / 100.0;
+//            System.err.println("Threshold: " + current_threshold);
+//            thresholdToLinkageQualityAll.putAll(thresholdToLinkageQuality);
 //        }
 //
-//        System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now().toString());
+//        return thresholdToLinkageQualityAll;
+//    }
 //
-//        MemoryLogger.update();
-//        nextTimeStamp(time_stamp, "perform and evaluate linkageRecipe");
+//    private double selectThreshold(double current_threshold, TreeMap<Double, LinkageQuality> thresholdToLinkageQuality) {
+//        Map.Entry<Double, LinkageQuality> nextLowerLQ  = thresholdToLinkageQuality.lowerEntry(current_threshold);
+//        Map.Entry<Double, LinkageQuality> nextHigherLQ = thresholdToLinkageQuality.higherEntry(current_threshold);
 //
-//        if(evaluate_quality) {
-//            System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
-//            numberOfGroundTruthTrueLinks = linkageRecipe.getNumberOfGroundTruthTrueLinks();
-//            System.out.println( "Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks );
-//            LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
-//            lq.print( System.out );
-//            return new LinkageResult(lq);
+//        if(nextHigherLQ == null) {
+//            return increaseThreshold(current_threshold, thresholdToLinkageQuality);
+//        }
+//
+//        if(nextLowerLQ == null) {
+//            return decreaseThreshold(current_threshold, thresholdToLinkageQuality);
+//        }
+//
+//        if(nextHigherLQ.getValue().getF_measure() > nextLowerLQ.getValue().getF_measure()) {
+//            return increaseThreshold(current_threshold, thresholdToLinkageQuality);
 //        } else {
-//            return new LinkageResult(null); // TODO What should this return in this case?
-//        }
-
-
-//        final boolean printFNs = false; // this does not appear to work - values yields an empty set!!!
-//        if(printFNs) {
-//            for (Link missingLink : groundTruthLinks.values()) {
-//                printLink(missingLink, "FN");
-//            }
+//            return decreaseThreshold(current_threshold, thresholdToLinkageQuality);
 //        }
 //
-//        if(generateMapOfLinks) {
-//            return new LinkageResult(lq, linksByRecordID);
+//    }
+//
+//    private double decreaseThreshold(double current_threshold, TreeMap<Double, LinkageQuality> thresholdToLinkageQuality) {
+//        Double nextLowerThreshold = thresholdToLinkageQuality.lowerKey(current_threshold);
+//
+//        if(nextLowerThreshold == null) {
+//            return current_threshold / 2.0;
 //        } else {
-//            return new LinkageResult(lq);
+//            return (nextLowerThreshold - current_threshold) / 2.0;
+//        }
+//    }
+//
+//    private double increaseThreshold(double current_threshold, TreeMap<Double, LinkageQuality> thresholdToLinkageQuality) {
+//        Double nextHigherThreshold = thresholdToLinkageQuality.higherKey(current_threshold);
+//
+//        if(nextHigherThreshold == null) {
+//            return (1 - current_threshold) / 2.0;
+//        } else {
+//            return (nextHigherThreshold - current_threshold) / 2.0;
 //        }
 //    }
 
+    public abstract LinkageResult link(boolean persist_links, MakePersistent make_persistent, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException; // TODO AL $$$ throws BucketException, RepositoryException;
+
     protected LinkageQuality getLinkageQuality(boolean evaluate_quality, int numberOfGroundTruthTrueLinks, int tp, int fp) {
         if(evaluate_quality) {
-            if(linkageRecipe.isSymmetric()) {
+            if(linkage_recipe.isSymmetric()) {
                 // if the linkageRecipe is a dataset to itself (i.e birth-birth) we should not be rewarded or penalised
                 // for making the link in both direction - thus divide by two
                 tp = tp /2;
@@ -264,10 +175,9 @@ public abstract class LinkageRunner {
         }
     }
 
-
     protected boolean doesGTSayIsTrue(Link link) {
         try {
-            return linkageRecipe.isTrueMatch(
+            return linkage_recipe.isTrueMatch(
                     link.getRecord1().getReferend(),
                     link.getRecord2().getReferend())
                     .equals(TRUE_MATCH);
@@ -319,12 +229,12 @@ public abstract class LinkageRunner {
 
             System.out.printf("-%s------------------------------------------------------------------------------------------------------------\n", classification);
 
-            for(int i = 0 ; i < linkageRecipe.getLinkageFields().size(); i++) {
-                String r1FieldName = Utilities.getLabels(person1).get(linkageRecipe.getLinkageFields().get(i));
-                String r2FieldName = Utilities.getLabels(person2).get(linkageRecipe.getQueryMappingFields().get(i));
+            for(int i = 0; i < linkage_recipe.getLinkageFields().size(); i++) {
+                String r1FieldName = Utilities.getLabels(person1).get(linkage_recipe.getLinkageFields().get(i));
+                String r2FieldName = Utilities.getLabels(person2).get(linkage_recipe.getQueryMappingFields().get(i));
 
-                String r1FieldContent = person1.getString(linkageRecipe.getLinkageFields().get(i));
-                String r2FieldContent = person2.getString(linkageRecipe.getQueryMappingFields().get(i));
+                String r1FieldContent = person1.getString(linkage_recipe.getLinkageFields().get(i));
+                String r2FieldContent = person2.getString(linkage_recipe.getQueryMappingFields().get(i));
 
                 String isEquals = "≠";
                 if(r1FieldContent.equals(r2FieldContent)) isEquals = "=";

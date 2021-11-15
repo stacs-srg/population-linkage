@@ -5,12 +5,15 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +27,12 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "bride-bride-sibling";
 
     public static final int ID_FIELD_INDEX = Marriage.STANDARDISED_ID;
+
+    private int NUMBER_OF_MARRIAGES = EVERYTHING; // 10000; // for testing
+
+    public static final int ALL_LINKAGE_FIELDS = 4;
+
+    private ArrayList<LXP> cached_records = null;
 
     public static List<Integer> LINKAGE_FIELDS = list(
             Marriage.BRIDE_MOTHER_FORENAME,
@@ -45,8 +54,22 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
                     pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public BrideBrideSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public BrideBrideSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_MARRIAGES = EVERYTHING;
+        } else {
+            NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
+        }
+        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+    }
+
+    @Override
+    protected Iterable<LXP> getMarriageRecords() {
+        if( cached_records == null ) {
+            cached_records = RecordFiltering.filter(ALL_LINKAGE_FIELDS, NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+        }
+        return cached_records;
     }
 
     @Override

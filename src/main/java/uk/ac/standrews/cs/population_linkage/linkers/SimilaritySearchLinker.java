@@ -37,7 +37,7 @@ public class SimilaritySearchLinker extends Linker {
         super.addRecords(storedSet, searchSet);
         this.search_set = searchSet;
 
-        search_structure = search_structure_factory.newSearchStructure(storedSet,reference_objects);
+        search_structure = search_structure_factory.newSearchStructure (storedSet,reference_objects);
     }
 
     public void terminate() {

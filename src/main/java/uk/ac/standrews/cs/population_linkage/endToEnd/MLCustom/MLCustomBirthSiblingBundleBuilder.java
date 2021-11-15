@@ -5,13 +5,16 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.MLCustom;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
  */
-public class MLCustomBirthSiblingBundleBuilder {
+public class MLCustomBirthSiblingBundleBuilder implements MakePersistent {
 
     public static void main(String[] args) throws Exception {
 
@@ -20,7 +23,7 @@ public class MLCustomBirthSiblingBundleBuilder {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            MLCustomBirthSiblingSubsetLinkageRecipe linkageRecipe = new MLCustomBirthSiblingSubsetLinkageRecipe(sourceRepo, resultsRepo, bridge, MLCustomBirthSiblingBundleBuilder.class.getCanonicalName());
+            MLCustomBirthSiblingLinkageRecipe linkageRecipe = new MLCustomBirthSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, MLCustomBirthSiblingBundleBuilder.class.getCanonicalName());
 
             CustomBitBlasterLinkageRunner runner = new CustomBitBlasterLinkageRunner();
 
@@ -29,7 +32,7 @@ public class MLCustomBirthSiblingBundleBuilder {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, false, false, true, false);
+                LinkageResult lr = runner.run(linkageRecipe, new MLCustomBirthSiblingBundleBuilder(), false, false, true, false);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
 
@@ -44,4 +47,8 @@ public class MLCustomBirthSiblingBundleBuilder {
         }
     }
 
+    @Override
+    public void makePersistent(LinkageRecipe linkage_recipe, Link link) {
+        throw new RuntimeException( "makePersistent unimplemented" );
+    }
 }

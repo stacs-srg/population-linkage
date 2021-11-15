@@ -16,7 +16,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.GroomGroomSubsetSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.Distance;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
@@ -40,7 +40,7 @@ public class SiblingGroomClusterOpenTriangleResolver {
     private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket marriages;
-    private final GroomGroomSubsetSiblingLinkageRecipe recipe;
+    private final GroomGroomSiblingLinkageRecipe recipe;
 
     private final JensenShannon base_metric;
     private final Metric<LXP> metric;
@@ -61,7 +61,7 @@ public class SiblingGroomClusterOpenTriangleResolver {
 
     DecimalFormat df = new DecimalFormat("0.00");
 
-    public SiblingGroomClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, GroomGroomSubsetSiblingLinkageRecipe recipe) {
+    public SiblingGroomClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, GroomGroomSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
         this.record_repository = new RecordRepository(source_repo_name);
@@ -394,7 +394,7 @@ public class SiblingGroomClusterOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
 
-            GroomGroomSubsetSiblingLinkageRecipe linkageRecipe = new GroomGroomSubsetSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, BirthSiblingBundleBuilder.class.getCanonicalName());
+            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
             SiblingGroomClusterOpenTriangleResolver resolver = new SiblingGroomClusterOpenTriangleResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();

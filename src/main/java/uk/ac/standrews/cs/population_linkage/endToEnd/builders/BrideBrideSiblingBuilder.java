@@ -4,16 +4,23 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BrideBrideSubsetSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 /**
  * This class attempts to perform marriage-marriage sibling linkage.
  */
-public class BrideBrideSiblingBuilder {
+public class BrideBrideSiblingBuilder implements MakePersistent {
 
     public static void main(String[] args) throws Exception {
 
@@ -22,7 +29,7 @@ public class BrideBrideSiblingBuilder {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BrideBrideSubsetSiblingLinkageRecipe linkageRecipe = new BrideBrideSubsetSiblingLinkageRecipe(sourceRepo, number_of_records, bridge, BrideBrideSiblingBuilder.class.getCanonicalName());
+            BrideBrideSiblingLinkageRecipe linkageRecipe = new BrideBrideSiblingLinkageRecipe(sourceRepo, number_of_records, BrideBrideSiblingBuilder.class.getCanonicalName(), bridge);
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
@@ -31,7 +38,7 @@ public class BrideBrideSiblingBuilder {
 
             while( linkage_fields >= half_fields ) {
 
-                LinkageResult lr = runner.run(linkageRecipe, false, false, false, true);
+                LinkageResult lr = runner.run(linkageRecipe, new BrideBrideSiblingBuilder(), false, false, false, true);
 
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
@@ -43,6 +50,27 @@ public class BrideBrideSiblingBuilder {
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // make sure process dies.
+        }
+    }
+
+
+    @Override
+    public void makePersistent(LinkageRecipe recipe, Link link) {
+        try {
+            final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+
+            if( ! Query.MMBrideBrideSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+                Query.createMMBrideBrideSiblingReference(
+                        recipe.getBridge(),
+                        std_id1,
+                        std_id2,
+                        recipe.getLinks_persistent_name(),
+                        recipe.getNoLinkageFieldsRequired(),
+                        link.getDistance());
+            }
+        } catch (BucketException | RepositoryException e) {
+            throw new RuntimeException(e);
         }
     }
 }

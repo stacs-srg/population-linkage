@@ -5,6 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -26,6 +27,10 @@ public class BrideBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
+
+    private int NUMBER_OF_DEATHS = EVERYTHING;
+
+    public static final int ALL_LINKAGE_FIELDS = 8; // 8 is all of them
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Marriage.BRIDE_FORENAME,
@@ -54,8 +59,14 @@ public class BrideBrideIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Marriage.BRIDE_IDENTITY, Marriage.BRIDE_IDENTITY))
     );
 
-    public BrideBrideIdentityLinkageRecipe(String source_repository_name, String links_persistent_name) {
-        super(source_repository_name, links_persistent_name);
+    public BrideBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+        super(source_repository_name, links_persistent_name, bridge);
+        if( number_of_records.equals(EVERYTHING_STRING) ) {
+            NUMBER_OF_DEATHS = EVERYTHING;
+        } else {
+            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
+        }
+        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
     }
 
     @Override

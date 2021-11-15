@@ -4,16 +4,24 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.subsetRecipes.BirthBrideSiblingSubsetLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 
 /**
  * This class attempts to perform birth-marriage sibling linkage.
  */
-public class BirthBrideSiblingBundleBuilder {
+public class BirthBrideSiblingBundleBuilder implements MakePersistent {
 
     public static void main(String[] args) throws Exception {
 
@@ -22,7 +30,7 @@ public class BirthBrideSiblingBundleBuilder {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BirthBrideSiblingSubsetLinkageRecipe linkageRecipe = new BirthBrideSiblingSubsetLinkageRecipe(sourceRepo, number_of_records, bridge, BirthBrideSiblingBundleBuilder.class.getCanonicalName());
+            BirthBrideSiblingLinkageRecipe linkageRecipe = new BirthBrideSiblingLinkageRecipe(sourceRepo, number_of_records, BirthBrideSiblingBundleBuilder.class.getCanonicalName(), bridge);
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
@@ -31,7 +39,7 @@ public class BirthBrideSiblingBundleBuilder {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, false, false, false, true);
+                LinkageResult lr = runner.run(linkageRecipe, new BirthBrideSiblingBundleBuilder(), false, false, false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
 
@@ -46,4 +54,26 @@ public class BirthBrideSiblingBundleBuilder {
         }
     }
 
+    public void makePersistent(LinkageRecipe recipe, Link link) {
+        try {
+
+            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend().getString(Birth.STANDARDISED_ID );
+
+            if( !std_id1.equals(std_id2 ) ) {
+
+                if (!Query.BMBrideSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+                    Query.createBMBrideSiblingReference(
+                            recipe.getBridge(),
+                            std_id1,
+                            std_id2,
+                            recipe.getLinks_persistent_name(),
+                            recipe.getNoLinkageFieldsRequired(),
+                            link.getDistance());
+                }
+            }
+        } catch (BucketException | RepositoryException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
