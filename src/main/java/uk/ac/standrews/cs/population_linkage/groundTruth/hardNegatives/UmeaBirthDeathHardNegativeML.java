@@ -48,8 +48,6 @@ public class UmeaBirthDeathHardNegativeML {
 
     private static final int NNN = 3; // number of nearest neighbours (inc target)
 
-    private final IStore store;
-    private final IRepository repo;
     private final IBucket<Birth> births;
     private final IBucket<Death> deaths;
     private final NeoDbCypherBridge bridge;
@@ -59,11 +57,12 @@ public class UmeaBirthDeathHardNegativeML {
     private final List<Integer> comparison_fields2;
     private final PrintUtils pu;
 
-
     public UmeaBirthDeathHardNegativeML(NeoDbCypherBridge bridge, String true_match_filename, String random_negatives_filename, String hard_negatives_filename, String metdata_filename) throws RepositoryException, BucketException, IOException {
+
+        IStore store = Store.getInstance();
+        IRepository repo = store.getRepository("Umea");
+
         this.bridge = bridge;
-        this.store = new Store().getInstance();
-        this.repo = store.getRepository("Umea");
         this.births = repo.getBucket("birth_records", Birth.class );
         this.deaths = repo.getBucket("death_records", Death.class );
         nns = new NNs(births,deaths);

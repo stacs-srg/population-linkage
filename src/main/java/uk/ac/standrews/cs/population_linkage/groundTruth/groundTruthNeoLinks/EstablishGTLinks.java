@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.data.umea.ImportUmeaRecordsToStore;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -397,7 +398,7 @@ public class EstablishGTLinks {
 
     public static void main(String[] args) {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            EstablishGTLinks linkageMatch = new EstablishGTLinks("Umea",bridge); // it should read the configuration file, not hard code
+            EstablishGTLinks linkageMatch = new EstablishGTLinks(ImportUmeaRecordsToStore.REPO_NAME, bridge); // it should read the configuration file, not hard code
 
             linkageMatch.runLinkageCreation();
             System.out.println("finished!");

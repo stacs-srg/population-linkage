@@ -15,20 +15,13 @@ import java.nio.file.Path;
 
 public class ImportUmeaRecordsToStore {
 
-    private final Path store_path;
-    private final String repo_name;
-
-    public ImportUmeaRecordsToStore(Path store_path, String repo_name) {
-
-        this.store_path = store_path;
-        this.repo_name = repo_name;
-    }
+    public final static String REPO_NAME = "umea";
 
     public void run() throws Exception {
 
-        RecordRepository record_repository = new RecordRepository(repo_name);
+        RecordRepository record_repository = new RecordRepository(REPO_NAME);
 
-        System.out.println("Importing Umea records into repository: " + repo_name);
+        System.out.println("Importing Umea records into repository: " + REPO_NAME);
         System.out.println();
 
         DataSet birth_records = new UmeaBirthsDataSet();
@@ -49,9 +42,6 @@ public class ImportUmeaRecordsToStore {
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = ApplicationProperties.getRepositoryName();
-
-        new ImportUmeaRecordsToStore(store_path, repo_name).run();
+        new ImportUmeaRecordsToStore().run();
     }
 }

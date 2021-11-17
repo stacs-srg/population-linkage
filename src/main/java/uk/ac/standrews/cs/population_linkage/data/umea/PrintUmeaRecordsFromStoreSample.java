@@ -16,22 +16,13 @@ import java.nio.file.Path;
 
 public class PrintUmeaRecordsFromStoreSample {
 
-    private final Path store_path;
-    private final String repo_name;
-
     static final int NUMBER_TO_PRINT = 5;
-
-    public PrintUmeaRecordsFromStoreSample(Path store_path, String repo_name) {
-
-        this.store_path = store_path;
-        this.repo_name = repo_name;
-    }
 
     public void run() throws Exception {
 
-        RecordRepository record_repository = new RecordRepository(repo_name);
+        RecordRepository record_repository = new RecordRepository(ImportUmeaRecordsToStore.REPO_NAME);
 
-        System.out.println("Reading records from repository: " + repo_name);
+        System.out.println("Reading records from repository: " + ImportUmeaRecordsToStore.REPO_NAME);
         System.out.println();
 
         DataSet births_data_set = Birth.convertToDataSet(record_repository.getBirths());
@@ -50,9 +41,6 @@ public class PrintUmeaRecordsFromStoreSample {
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = ApplicationProperties.getRepositoryName();
-
-        new PrintUmeaRecordsFromStoreSample(store_path, repo_name).run();
+        new PrintUmeaRecordsFromStoreSample().run();
     }
 }
