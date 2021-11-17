@@ -31,19 +31,19 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
             // tolerant, intolerant, standard, mean
             case "tolerant": {
-                new BBLinkageRunnerTolerant().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
+                new BBLinkageRunnerTolerant().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "intolerant": {
-                new BBLinkageRunnerIntolerant().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
+                new BBLinkageRunnerIntolerant().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "mean": {
-                new BBLinkageRunnerMean().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
+                new BBLinkageRunnerMean().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "standard": {
-                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), false, false, true, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             default: {

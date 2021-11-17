@@ -7,7 +7,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
@@ -36,7 +36,7 @@ public class DeathGroomOwnMarriageBuilder implements MakePersistent {
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-                new BitBlasterLinkageRunner().run(linkageRecipe, new DeathGroomOwnMarriageBuilder(), false, false, false, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new DeathGroomOwnMarriageBuilder(), false, false);
                 linkage_fields--;
             }
         } catch (Exception e) {

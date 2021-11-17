@@ -32,7 +32,7 @@ public class MLCustomBirthSiblingBundleBuilder implements MakePersistent {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new MLCustomBirthSiblingBundleBuilder(), false, false, true, false);
+                LinkageResult lr = runner.run(linkageRecipe, new MLCustomBirthSiblingBundleBuilder(), true, false);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
 

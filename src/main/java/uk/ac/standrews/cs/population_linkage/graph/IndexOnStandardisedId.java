@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.graph.util;
+package uk.ac.standrews.cs.population_linkage.graph;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import java.util.Arrays;
 import java.util.List;
 
-public class Index {
+public class IndexOnStandardisedId {
 
     private static final String CREATE_CONSTRAINT_QUERY = "CREATE CONSTRAINT ON (n:STANDARDISED_ID) ASSERT n.propertyName IS UNIQUE";
     private static final String BIRTHS_INDEX_QUERY = "CALL db.createUniquePropertyConstraint(\"BirthsIndex\", [\"Birth\"], [\"STANDARDISED_ID\"], \"native-btree-1.0\")";

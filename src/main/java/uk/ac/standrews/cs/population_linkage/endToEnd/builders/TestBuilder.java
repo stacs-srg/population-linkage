@@ -23,7 +23,7 @@ public class TestBuilder {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
             LinkageRecipe linkageRecipe = new TestLinkExistsRecipe(sourceRepo, bridge, TestBuilder.class.getCanonicalName() );
 
-            new BitBlasterLinkageRunner().run(linkageRecipe, null, false, false, true, true);
+            new BitBlasterLinkageRunner().run(linkageRecipe, null, true, true);
         } finally {
             System.out.println( "Run finished" );
             System.exit(0); // Make sure it all shuts down properly.

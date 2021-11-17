@@ -10,7 +10,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.endToEnd.runners.BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner;
-import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
@@ -55,7 +55,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder implements MakePersistent {
             LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName(), bridge);
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, new BirthSiblingBundleThenBirthDeathBuilder(), false, false, false, false);
+            LinkageResult lr = runner1.run(bb_recipe, new BirthSiblingBundleThenBirthDeathBuilder(), false, false);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 

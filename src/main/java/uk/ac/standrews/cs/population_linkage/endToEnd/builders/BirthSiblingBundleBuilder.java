@@ -7,7 +7,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.graph.model.Query;
+import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
@@ -38,7 +38,7 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, false, true, false);
+                LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), true, false);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
 

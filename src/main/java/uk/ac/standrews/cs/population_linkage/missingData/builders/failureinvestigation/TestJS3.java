@@ -13,6 +13,7 @@ import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.SigmaT
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.storr.impl.exceptions.RepositoryException;
 
 /**
  * This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
@@ -51,7 +52,7 @@ public class TestJS3 {
         LXP compare = null;
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, TestJS3.class.getCanonicalName(), bridge );
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, TestJS3.class.getCanonicalName(), bridge);
 
             // StringMetric metric = linkageRecipe.getMetric();
             SigmaTolerant metric = new SigmaTolerant(linkageRecipe.getMetric(), linkageRecipe.getLinkageFields(), Birth.STANDARDISED_ID);
@@ -69,7 +70,12 @@ public class TestJS3 {
                     // System.out.println(d);
                 }
             }
-
+        } catch ( BucketException e ) {
+            System.out.println( "Bucket exception" );
+            System.exit(0);
+        } catch ( RepositoryException e ) {
+            System.out.println( "Repo exception" );
+            System.exit(0);
         } catch (Exception e) {
             System.out.println("Runtime exception:");
             System.out.println("STANDARDISED_ID 1 = " + b1.getString(Death.STANDARDISED_ID));
@@ -78,6 +84,7 @@ public class TestJS3 {
             System.out.println("b2 = " + b2 );
             System.out.println("Compare = " + compare );
             e.printStackTrace();
+            System.exit(0);
         } finally {
             System.out.println("Run finished successfully");
             System.exit(0); // Make sure it all shuts down properly.

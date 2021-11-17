@@ -119,7 +119,7 @@ public class LinkageJobQueueHandler {
 
                     System.out.println("Warning this code will not work - no make_persistent parameter");
                     System.exit(-1);  // TODO fix me or delete!
-                    LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run(linkageRecipe, null, false, false, evaluate_quality, persist_links).getLinkageQuality();
+                    LinkageQuality linkageQuality = new BitBlasterLinkageRunner().run(linkageRecipe, null, evaluate_quality, persist_links).getLinkageQuality();
 
                     String fieldsUsed1 = getLinkageFields(1, linkageRecipe, sourceRepo);
                     String fieldsUsed2 = getLinkageFields(2, linkageRecipe, sourceRepo);

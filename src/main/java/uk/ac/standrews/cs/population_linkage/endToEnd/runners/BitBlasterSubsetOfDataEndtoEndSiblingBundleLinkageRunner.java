@@ -36,7 +36,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
     private static final int NUMBER_OF_BIRTHS = 10000;
 
     @Override
-    public LinkageResult link(boolean persist_links, MakePersistent make_persistent, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean generateMapOfLinks, boolean reverseMap) throws BucketException, RepositoryException {
+    public LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception { // } throws BucketException, RepositoryException {
 
         // NOTE - cannot use numberOfGroundTruthTrueLinks - not been initialised properly.
 
