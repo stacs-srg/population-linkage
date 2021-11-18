@@ -33,7 +33,7 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public static final int ALL_LINKAGE_FIELDS = 8;
-    private int NUMBER_OF_BIRTHS = EVERYTHING;
+    private int NUMBER_OF_BIRTHS;
 
     private ArrayList<LXP> cached_records = null;
 
@@ -61,8 +61,7 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY)),
-            list(pair(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY))
+            list(pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY), pair(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY))
     );
 
     public BirthParentsMarriageIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {

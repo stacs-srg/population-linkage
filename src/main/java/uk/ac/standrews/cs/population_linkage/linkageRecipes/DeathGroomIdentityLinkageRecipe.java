@@ -26,7 +26,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "death-groom-identity";
 
-    private int NUMBER_OF_DEATHS = EVERYTHING;
+    private int NUMBER_OF_DEATHS;
     public  static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
     private ArrayList<LXP> cached_records = null;
 

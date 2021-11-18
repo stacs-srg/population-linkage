@@ -38,7 +38,6 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     private static int NUMBER_OF_BIRTHS;
     private ArrayList<LXP> cached_records = null;
 
-    // TODO Why not father/mother occupation?
     // Don't use father/mother occupation due to likely long duration between birth and death events.
 
     public static final List<Integer> LINKAGE_FIELDS = list(

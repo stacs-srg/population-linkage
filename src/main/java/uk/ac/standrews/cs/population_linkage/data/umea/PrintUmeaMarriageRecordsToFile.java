@@ -30,6 +30,6 @@ public class PrintUmeaMarriageRecordsToFile {
 
     public static void main(String[] args) throws Exception {
 
-        new PrintUmeaMarriageRecordsToFile(Paths.get("/Users/al/Desktop/marriages.csv")).run();
+        new PrintUmeaMarriageRecordsToFile(Paths.get("/Users/graham/Desktop/marriages.csv")).run();
     }
 }

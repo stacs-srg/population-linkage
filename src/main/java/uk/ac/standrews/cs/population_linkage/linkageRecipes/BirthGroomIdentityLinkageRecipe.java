@@ -33,7 +33,6 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
     private ArrayList<LXP> cached_records = null;
 
-    // TODO Why not father occupation given that's used in birthGroomSibling? - temporal? try multiple linkages?
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
             Birth.SURNAME,

@@ -42,8 +42,6 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     protected int NUMBER_OF_BIRTHS;
 
-    // TODOxxx Why not father/mother occupation? - high temporal distance, occupation likely to have changed
-
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
             Birth.SURNAME,
