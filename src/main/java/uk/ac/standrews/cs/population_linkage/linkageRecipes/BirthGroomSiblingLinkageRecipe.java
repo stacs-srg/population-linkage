@@ -144,7 +144,7 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 

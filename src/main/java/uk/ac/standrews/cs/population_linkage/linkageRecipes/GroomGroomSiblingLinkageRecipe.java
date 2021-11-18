@@ -149,7 +149,7 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksSymmetric();
     }
 

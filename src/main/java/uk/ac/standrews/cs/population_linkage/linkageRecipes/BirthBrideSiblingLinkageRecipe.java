@@ -138,7 +138,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 

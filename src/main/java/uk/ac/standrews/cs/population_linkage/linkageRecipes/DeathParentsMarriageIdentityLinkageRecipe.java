@@ -158,7 +158,7 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
                 "-" + marriage_record.getString(Marriage.BRIDE_IDENTITY);
     }
 
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
 
         int count = 0;
 

@@ -5,7 +5,6 @@
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
@@ -49,21 +48,18 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
         return result;
     }
 
-    public LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {
+    public LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
 
         ((SimilaritySearchLinker)linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(),getReferencePoints());
 
-        MemoryLogger.update();
         System.out.println("Constructing link iterable @ " + LocalDateTime.now());
 
         Iterable<Link> links = linker.getLinks();
-        LocalDateTime time_stamp = LocalDateTime.now();
 
-        MemoryLogger.update();
-        int tp = 0;
-        int fp = 0;
+        long tp = 0;
+        long fp = 0;
 
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now());
 
@@ -81,12 +77,10 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
             }
         }
 
-        System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now().toString());
-
-        MemoryLogger.update();
+        System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now());
 
         if (evaluate_quality) {
-            System.out.println("Evaluating ground truth @ " + LocalDateTime.now().toString());
+            System.out.println("Evaluating ground truth @ " + LocalDateTime.now());
             numberOfGroundTruthTrueLinks = linkage_recipe.getNumberOfGroundTruthTrueLinks();
             System.out.println("Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks);
             LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);

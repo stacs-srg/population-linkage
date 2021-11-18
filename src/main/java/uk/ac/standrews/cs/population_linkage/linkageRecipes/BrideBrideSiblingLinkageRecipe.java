@@ -157,7 +157,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
         return getGroundTruthLinksSymmetric();
     }
 
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksSymmetric();
     }
 

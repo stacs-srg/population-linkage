@@ -130,7 +130,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
         return getGroundTruthLinksAsymmetric();
     }
 
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 

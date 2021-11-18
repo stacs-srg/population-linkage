@@ -139,7 +139,7 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 

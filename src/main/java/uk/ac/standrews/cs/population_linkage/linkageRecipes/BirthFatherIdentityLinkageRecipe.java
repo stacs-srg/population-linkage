@@ -121,7 +121,7 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public int getNumberOfGroundTruthTrueLinks() {
+    public long getNumberOfGroundTruthTrueLinks() {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 

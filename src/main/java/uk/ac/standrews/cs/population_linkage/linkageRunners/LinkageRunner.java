@@ -58,9 +58,9 @@ public abstract class LinkageRunner {
 
     protected abstract List<LXP> getReferencePoints();
 
-    public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, int numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception; // throws Exception; // TODO AL $$$ throws BucketException, RepositoryException;
+    public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception; // throws Exception; // TODO AL $$$ throws BucketException, RepositoryException;
 
-    protected LinkageQuality getLinkageQuality(boolean evaluate_quality, int numberOfGroundTruthTrueLinks, int tp, int fp) {
+    protected LinkageQuality getLinkageQuality(boolean evaluate_quality, long numberOfGroundTruthTrueLinks, long tp, long fp) {
         if(evaluate_quality) {
             if(linkage_recipe.isSymmetric()) {
                 // if the linkageRecipe is a dataset to itself (i.e birth-birth) we should not be rewarded or penalised
@@ -68,7 +68,7 @@ public abstract class LinkageRunner {
                 tp = tp /2;
                 fp = fp /2;
             }
-            int fn = numberOfGroundTruthTrueLinks - tp;
+            long fn = numberOfGroundTruthTrueLinks - tp;
             return new LinkageQuality(tp, fp, fn);
         } else {
             return new LinkageQuality("Evaluation not requested");

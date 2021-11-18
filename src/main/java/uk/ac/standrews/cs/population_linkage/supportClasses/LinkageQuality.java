@@ -14,13 +14,13 @@ public class LinkageQuality {
     private double recall;
     private double f_measure;
 
-    private int tp;
-    private int fp;
-    private int fn;
+    private long tp;
+    private long fp;
+    private long fn;
 
     private String message = null;
 
-    public LinkageQuality(int tp, int fp, int fn) {
+    public LinkageQuality(long tp, long fp, long fn) {
         this.tp = tp;
         this.fp = fp;
         this.fn = fn;

@@ -45,7 +45,7 @@ public class GroundTruthLinkCounter {
         this.gtCountsFile = gtCountsFile;
     }
 
-    public int count(LinkageRecipe linkageRecipe) { //, String linkageApproach) {
+    public long count(LinkageRecipe linkageRecipe) { //, String linkageApproach) {
         System.out.println("Count ground truth links in population: " + sourceRepoName);
 
         String linkageApproach = linkageRecipe.getClass().getName();
@@ -59,7 +59,7 @@ public class GroundTruthLinkCounter {
             }
 
             // check if count in file
-            int numberOfGTLinks = getCountFromLog(gtCountsFile, populationName, populationSize, populationNumber, corruptionNumber, linkageApproach);
+            long numberOfGTLinks = getCountFromLog(gtCountsFile, populationName, populationSize, populationNumber, corruptionNumber, linkageApproach);
 
             if(numberOfGTLinks == -1) { // if count not already done then do count
                 System.out.println("Ground truth links count not in file will count from repo: " + sourceRepoName);

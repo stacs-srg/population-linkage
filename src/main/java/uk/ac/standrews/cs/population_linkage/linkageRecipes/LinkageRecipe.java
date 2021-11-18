@@ -279,7 +279,7 @@ public abstract class LinkageRecipe {
 
     public abstract Map<String, Link> getGroundTruthLinks();
 
-    public abstract int getNumberOfGroundTruthTrueLinks();
+    public abstract long getNumberOfGroundTruthTrueLinks();
 
     /**
      * Returns the count of ground truth links among source records 1 and 2
