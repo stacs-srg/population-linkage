@@ -211,10 +211,6 @@ public abstract class LinkageRecipe {
         return getByType(getQueryType());
     }
 
-    public void makeLinkPersistent(Link link) {
-        throw new RuntimeException("makeLinkPersistent unimplemented");
-    }
-
     public abstract LinkStatus isTrueMatch(LXP record1, LXP record2);
 
     public abstract String getLinkageType();

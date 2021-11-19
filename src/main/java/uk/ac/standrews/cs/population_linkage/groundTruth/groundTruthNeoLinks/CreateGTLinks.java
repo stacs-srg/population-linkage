@@ -108,7 +108,9 @@ public class CreateGTLinks {
 
         // ok to here
 
-        timeQuery( "Half sibling marriages", BRIDE_GROOM_HALF_SIBLING, GROOM_BRIDE_HALF_SIBLING, GROOM_GROOM_HALF_SIBLING, BRIDE_BRIDE_HALF_SIBLING );
+        timeQuery( "Half sibling marriages", BRIDE_GROOM_HALF_SIBLING );
+
+       // timeQuery( "Half sibling marriages", BRIDE_GROOM_HALF_SIBLING, GROOM_BRIDE_HALF_SIBLING, GROOM_GROOM_HALF_SIBLING, BRIDE_BRIDE_HALF_SIBLING );
 
        // GROOM_BRIDE_SIBLING, GROOM_GROOM_SIBLING, BRIDE_BRIDE_SIBLING ); // HEAP ERROR
 
