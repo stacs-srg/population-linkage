@@ -10,6 +10,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerIntolerant;
+import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerMax;
 import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerMean;
 import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerTolerant;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -21,8 +22,10 @@ import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
  */
 public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
-    private static void runExperiment(String mode, BirthDeathIdentityLinkageRecipe linkageRecipe, int linkage_fields) throws Exception {
-        linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+    private static void runExperiment(String source_repo, String number_of_records, String mode, int linkage_fields, NeoDbCypherBridge bridge) throws Exception {
+        BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+
+        linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
 
         // TODO add post filtering too.
 
@@ -31,19 +34,23 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
             // tolerant, intolerant, standard, mean
             case "tolerant": {
-                new BBLinkageRunnerTolerant().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BBLinkageRunnerTolerant().run(linkage_recipe, new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "intolerant": {
-                new BBLinkageRunnerIntolerant().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BBLinkageRunnerIntolerant().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                break;
+            }
+            case "max": {
+                new BBLinkageRunnerMax().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "mean": {
-                new BBLinkageRunnerMean().run(linkageRecipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BBLinkageRunnerMean().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "standard": {
-                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkage_recipe, new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             default: {
@@ -55,20 +62,20 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
     public static void main(String[] args) throws BucketException {
 
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String source_repo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String number_of_records = args[1]; // e.g. synth_results
         String mode = args[2]; // Choices are tolerant, intolerant, standard, mean
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+            BirthDeathIdentityLinkageRecipe recipe_unused_in_expt = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
 
-            // runExperiment( mode, linkageRecipe, 0); // First run with no requirement on the number of fields
+            runExperiment( source_repo, number_of_records, mode, 0, bridge); // First run with no requirement on the number of fields
 
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int linkage_fields = recipe_unused_in_expt.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2) + 1;
 
             while (linkage_fields >= half_fields) {
-                runExperiment( mode, linkageRecipe, linkage_fields);
+                runExperiment( source_repo, number_of_records, mode, linkage_fields, bridge);
                 linkage_fields--;
             }
 

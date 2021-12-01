@@ -4,6 +4,8 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
+import org.neo4j.driver.Result;
+import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
@@ -13,6 +15,7 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -161,6 +164,22 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
-        return getNumberOfGroundTruthLinksAsymmetric();
+        int count = 0;
+        for( LXP query_record : getQueryRecords() ) {
+            count += countBirthBrideIdentityGTLinks( bridge, query_record );
+        }
+        return count;
+    }
+
+    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+
+    public static int countBirthBrideIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
+        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID );
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("standard_id_from", standard_id_from);
+        Result result = bridge.getNewSession().run(BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY,parameters);
+        List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
+        return relationships.size();
     }
 }

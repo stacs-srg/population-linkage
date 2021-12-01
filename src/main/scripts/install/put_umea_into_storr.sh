@@ -14,9 +14,6 @@ mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.stand
 echo "2. Indexing records with STANDARDISED_ID in Neo4J"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.graph.IndexOnStandardisedId" -e
 
-echo "3. Indexing records with indices for GT linkage in Neo4J"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks.Index" -e
-
-echo "4. Establishing GT linkage in Neo4J"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks.EstablishGTLinks" -e
+echo "3. Establishing GT linkage in Neo4J"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks.CreateGTLinks" -e
 

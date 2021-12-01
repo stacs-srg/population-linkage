@@ -17,13 +17,13 @@ import java.util.List;
  * Might look at this later?
  * Created by al on 30/9/2021
  */
-public class SigmaMean extends Metric<LXP> {
+public class Max extends Metric<LXP> {
 
     final StringMetric base_distance;
     final List<Integer> field_list;
     final int id_field_index;
 
-    public SigmaMean(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
+    public Max(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
 
         this.base_distance = base_metric;
         this.field_list = field_list;
@@ -33,7 +33,7 @@ public class SigmaMean extends Metric<LXP> {
     @Override
     public double calculateDistance(final LXP a, final LXP b) {
         
-        double total_distance = 0.0d;
+        double max = Double.MIN_VALUE;
 
         for (int field_index : field_list) {
             try {
@@ -41,10 +41,10 @@ public class SigmaMean extends Metric<LXP> {
                 String field_value2 = b.getString(field_index);
 
                 if( isMissing(field_value1) || isMissing(field_value2) ) {
-                    return 0.5;
+                    return 1;
                 }
 
-                total_distance += base_distance.distance(field_value1, field_value2);
+                max = Math.max( max,base_distance.distance(field_value1, field_value2) );
 
             } catch (Exception e) {
                 printExceptionDebug(a, b, field_index);
@@ -52,7 +52,7 @@ public class SigmaMean extends Metric<LXP> {
             }
         }
 
-        return normaliseArbitraryPositiveDistance(total_distance);
+        return max;
     }
 
     private boolean isMissing(String value) {

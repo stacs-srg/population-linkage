@@ -21,22 +21,25 @@ import java.util.List;
 class CreateGTLinks {
     private final NeoDbCypherBridge bridge;
 
+    private static final String CREATE_BIRTH_RECORD_IDENTITY_INDEX = "CREATE INDEX BIRTH_RECORD_IDENTITY_INDEX IF NOT EXISTS FOR (b:Birth) on (d.BIRTH_RECORD_IDENTITY)";
     private static final String CREATE_CHILD_IDENTITY_INDEX = "CREATE INDEX CHILD_IDENTITY_INDEX IF NOT EXISTS FOR (b:Birth) on (b.CHILD_IDENTITY)";
     private static final String CREATE_BIRTH_MOTHER_IDENTITY_INDEX = "CREATE INDEX BIRTH_MOTHER_IDENTITY_INDEX IF NOT EXISTS FOR (b:Birth) on (b.MOTHER_IDENTITY)";
     private static final String CREATE_BIRTH_FATHER_IDENTITY_INDEX = "CREATE INDEX BIRTH_FATHER_IDENTITY_INDEX IF NOT EXISTS FOR (b:Birth) on (b.FATHER_IDENTITY)";
+
     private static final String CREATE_MARRIAGE_GROOM_IDENTITY_INDEX = "CREATE INDEX GROOM_IDENTITY_INDEX IF NOT EXISTS FOR (m:Marriage) on (m.GROOM_IDENTITY)";
     private static final String CREATE_MARRIAGE_BRIDE_IDENTITY_INDEX = "CREATE INDEX BRIDE_IDENTITY_INDEX IF NOT EXISTS FOR (m:Marriage) on (m.BRIDE_IDENTITY)";
     private static final String CREATE_BRIDE_MOTHER_IDENTITY_INDEX = "CREATE INDEX BRIDE_MOTHER_IDENTITY_INDEX IF NOT EXISTS FOR (m:Marriage) on (m.BRIDE_MOTHER_IDENTITY)";
     private static final String CREATE_GROOM_MOTHER_IDENTITY_INDEX = "CREATE INDEX GROOM_MOTHER_IDENTITY_INDEX IF NOT EXISTS FOR (m:Marriage) on (m.GROOM_MOTHER_IDENTITY)";
-    private static final String CREATE_DECEASED_IDENTITY_INDEX = "CREATE INDEX DECEASED_IDENTITY_INDEX IF NOT EXISTS FOR (d:Death) on (d.DECEASED_IDENTITY)";
-    private static final String CREATE_DEATH_FATHER_IDENTITY_INDEX = "CREATE INDEX DEATH_FATHER_IDENTITY_INDEX IF NOT EXISTS FOR (d:Death) on (d.FATHER_IDENTITY)";
-    private static final String CREATE_DEATH_MOTHER_IDENTITY_INDEX = "CREATE INDEX DEATH_MOTHER_IDENTITY_INDEX IF NOT EXISTS FOR (d:Death) on (d.MOTHER_IDENTITY)";
-    private static final String CREATE_BIRTH_RECORD_IDENTITY_INDEX = "CREATE INDEX BIRTH_RECORD_IDENTITY_INDEX IF NOT EXISTS FOR (d:Death) on (d.BIRTH_RECORD_IDENTITY)";
     private static final String CREATE_BRIDE_FATHER_IDENTITY_INDEX = "CREATE INDEX BRIDE_FATHER_IDENTITY_INDEX IF NOT EXISTS FOR (d:Marriage) on (d.BRIDE_FATHER_IDENTITY)";
     private static final String CREATE_GROOM_FATHER_IDENTITY_INDEX = "CREATE INDEX GROOM_FATHER_IDENTITY_INDEX IF NOT EXISTS FOR (d:Marriage) on (d.GROOM_FATHER_IDENTITY)";
 
-    // Should we add the alternative ground truth sources? i.e. "WHERE b.CHILD_IDENTITY = d.DECEASED_IDENTITY OR b.STANDARDISED_ID = d.BIRTH_RECORD_IDENTITY OR b.DEATH_RECORD_IDENTITY = d.STANDARDISED_ID". NO NEED AL
-    // Do we need if bidirectional - PROB NOT
+    private static final String CREATE_DECEASED_IDENTITY_INDEX = "CREATE INDEX DECEASED_IDENTITY_INDEX IF NOT EXISTS FOR (d:Death) on (d.DECEASED_IDENTITY)";
+    private static final String CREATE_DEATH_FATHER_IDENTITY_INDEX = "CREATE INDEX DEATH_FATHER_IDENTITY_INDEX IF NOT EXISTS FOR (d:Death) on (d.FATHER_IDENTITY)";
+    private static final String CREATE_DEATH_MOTHER_IDENTITY_INDEX = "CREATE INDEX DEATH_MOTHER_IDENTITY_INDEX IF NOT EXISTS FOR (d:Death) on (d.MOTHER_IDENTITY)";
+    
+    // Should we add the alternative ground truth sources?
+    // i.e. "WHERE b.CHILD_IDENTITY = d.DECEASED_IDENTITY OR b.STANDARDISED_ID = d.BIRTH_RECORD_IDENTITY OR b.DEATH_RECORD_IDENTITY = d.STANDARDISED_ID"
+    // NO NEED AL
 
     private static List<String> indices = Arrays.asList(
             CREATE_BIRTH_FATHER_IDENTITY_INDEX,
@@ -49,7 +52,6 @@ class CreateGTLinks {
             CREATE_DECEASED_IDENTITY_INDEX,
             CREATE_MARRIAGE_BRIDE_IDENTITY_INDEX,
             CREATE_MARRIAGE_GROOM_IDENTITY_INDEX,
-
             CREATE_BIRTH_RECORD_IDENTITY_INDEX,
             CREATE_GROOM_FATHER_IDENTITY_INDEX,
             CREATE_BRIDE_FATHER_IDENTITY_INDEX);
@@ -76,13 +78,13 @@ class CreateGTLinks {
                                                          "d.DECEASED_IDENTITY <> \"\" AND " +
                                                          "m.GROOM_IDENTITY <> \"\" AND " +
                                                          "d.DECEASED_IDENTITY = m.GROOM_IDENTITY " +
-                                                         "MERGE (d)-[r:GROUND_TRUTH_BIRTH_GROOM_IDENTITY]->(m)";
+                                                         "MERGE (d)-[r:GROUND_TRUTH_DEATH_GROOM_IDENTITY]->(m)";
 
     private static final String DEATH_BRIDE_IDENTITY = "MATCH (d:Death),(m:Marriage) WHERE " +
                                                          "d.DECEASED_IDENTITY <> \"\" AND " +
                                                          "m.BRIDE_IDENTITY <> \"\" AND " +
                                                          "d.DECEASED_IDENTITY = m.BRIDE_IDENTITY " +
-                                                         "MERGE (d)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]->(m)";
+                                                         "MERGE (d)-[r:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]->(m)";
 
     private static final String BIRTH_BIRTH_SIBLING = "MATCH (a:Birth),(b:Birth) WHERE " +
                                                         "a.MOTHER_IDENTITY <> \"\" AND " +
@@ -165,6 +167,94 @@ class CreateGTLinks {
                                                         "a <> b " +
                                                         "MERGE (a)-[r:GROUND_TRUTH_GROOM_GROOM_SIBLING]->(b)";
 
+    private static final String BIRTH_BRIDE_SIBLING = "MATCH (b:Birth),(m:Marriage) WHERE " +
+                                                        "b.MOTHER_IDENTITY <> \"\" AND " +
+                                                        "b.FATHER_IDENTITY <> \"\" AND " +
+                                                        "m.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
+                                                        "m.BRIDE_FATHER_IDENTITY <> \"\" AND " +
+                                                        "b.MOTHER_IDENTITY = m.BRIDE_MOTHER_IDENTITY AND " +
+                                                        "b.FATHER_IDENTITY = m.BRIDE_FATHER_IDENTITY " +
+                                                        "MERGE (a)-[r:GROUND_TRUTH_BIRTH_BRIDE_SIBLING]->(b)";
+
+    private static final String BIRTH_GROOM_SIBLING = "MATCH (b:Birth),(m:Marriage) WHERE " +
+                                                        "b.MOTHER_IDENTITY <> \"\" AND " +
+                                                        "b.FATHER_IDENTITY <> \"\" AND " +
+                                                        "m.GROOM_MOTHER_IDENTITY <> \"\" AND " +
+                                                        "m.GROOM_FATHER_IDENTITY <> \"\" AND " +
+                                                        "b.MOTHER_IDENTITY = m.GROOM_MOTHER_IDENTITY AND " +
+                                                        "b.FATHER_IDENTITY = m.GROOM_FATHER_IDENTITY " +
+                                                        "MERGE (a)-[r:GROUND_TRUTH_BIRTH_GROOM_SIBLING]->(b)";
+
+    private static final String BIRTH_PARENTS_MARRIAGE_IDENTITY = "MATCH (b:Birth),(m:Marriage) WHERE " +
+                                                                  "b.MOTHER_IDENTITY <> \"\" AND " +
+                                                                  "b.FATHER_IDENTITY <> \"\" AND " +
+                                                                  "m.BRIDE_IDENTITY <> \"\" AND " +
+                                                                  "m.GROOM_IDENTITY <> \"\" AND " +
+                                                                  "b.MOTHER_IDENTITY = m.BRIDE_IDENTITY AND " +
+                                                                  "b.FATHER_IDENTITY = m.GROOM_IDENTITY" +
+                                                                  "MERGE (a)-[r:GROUND_TRUTH_BIRTH_PARENTS_MARRIAGE]->(b)";
+
+    private static final String DEATH_PARENTS_MARRIAGE_IDENTITY = "MATCH (d:Death),(m:Marriage) WHERE " +
+                                                                   "d.MOTHER_IDENTITY <> \"\" AND " +
+                                                                   "d.FATHER_IDENTITY <> \"\" AND " +
+                                                                   "m.BRIDE_IDENTITY <> \"\" AND " +
+                                                                   "m.GROOM_IDENTITY <> \"\" AND " +
+                                                                   "d.MOTHER_IDENTITY = m.BRIDE_IDENTITY AND " +
+                                                                   "d.FATHER_IDENTITY = m.GROOM_IDENTITY" +
+                                                                   "MERGE (a)-[r:GROUND_TRUTH_DEATH_PARENTS_MARRIAGE]->(b)";
+
+    private static final String GROOM_GROOM_IDENTITY = "MATCH (a:Marriage),(b:Marriage) WHERE " +
+                                                       "a.GROOM_IDENTITY <> \"\" AND " +
+                                                       "b.GROOM_IDENTITY <> \"\" AND " +
+                                                       "a <> b AND " +
+                                                       "a.GROOM_IDENTITY = b.GROOM_IDENTITY " +
+                                                       "MERGE (a)-[r:GROUND_TRUTH_GROOM_GROOM_IDENTITY]->(b)";
+
+    private static final String BRIDE_BRIDE_IDENTITY = "MATCH (a:Marriage),(b:Marriage) WHERE " +
+                                                       "a.BRIDE_IDENTITY <> \"\" AND " +
+                                                       "b.BRIDE_IDENTITY <> \"\" AND " +
+                                                       "a <> b AND " +
+                                                       "a.BRIDE_IDENTITY = b.BRIDE_IDENTITY " +
+                                                       "MERGE (a)-[r:GROUND_TRUTH_BRIDE_BRIDE_IDENTITY]->(b)";
+
+    private static final String GROOM_PARENTS_MARRIAGE = "MATCH (a:Marriage),(b:Marriage) WHERE " +
+                                                         "a.GROOM_FATHER_IDENTITY <> \"\" AND " +
+                                                         "a.GROOM_MOTHER_IDENTITY <> \"\" AND " +
+                                                         "b.GROOM_IDENTITY <> \"\" AND " +
+                                                         "b.BRIDE_IDENTITY <> \"\" AND " +
+                                                         "a <> b AND " +
+                                                         "a.GROOM_MOTHER_IDENTITY = b.BRIDE_IDENTITY AND " +
+                                                         "a.GROOM_FATHER_IDENTITY = b.GROOM_IDENTITY " +
+                                                         "MERGE (a)-[r:GROUND_TRUTH_GROOM_PARENTS_MARRIAGE]->(b)";
+
+    private static final String BRIDE_PARENTS_MARRIAGE = "MATCH (a:Marriage),(b:Marriage) WHERE " +
+                                                         "a.BRIDE_FATHER_IDENTITY <> \"\" AND " +
+                                                         "a.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
+                                                         "b.GROOM_IDENTITY <> \"\" AND " +
+                                                         "b.BRIDE_IDENTITY <> \"\" AND " +
+                                                         "a <> b AND " +
+                                                         "a.BRIDE_MOTHER_IDENTITY = b.BRIDE_IDENTITY AND " +
+                                                         "a.BRIDE_FATHER_IDENTITY = b.GROOM_IDENTITY " +
+                                                         "MERGE (a)-[r:GROUND_TRUTH_BRIDE_PARENTS_MARRIAGE]->(b)";
+
+    private static final String DEATH_BRIDE_SIBLING = "MATCH (d:Death),(m:Marriage) WHERE " +
+                                                      "d.MOTHER_IDENTITY <> \"\" AND " +
+                                                      "d.FATHER_IDENTITY <> \"\" AND " +
+                                                      "m.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
+                                                      "m.BRIDE_FATHER_IDENTITY <> \"\" AND " +
+                                                      "d.MOTHER_IDENTITY = m.BRIDE_MOTHER_IDENTITY AND " +
+                                                      "d.FATHER_IDENTITY = m.BRIDE_FATHER_IDENTITY " +
+                                                      "MERGE (d)-[r:GROUND_TRUTH_DEATH_BRIDE_SIBLING]->(m)";
+
+    private static final String DEATH_GROOM_SIBLING = "MATCH (d:Death),(m:Marriage) WHERE " +
+                                                      "d.MOTHER_IDENTITY <> \"\" AND " +
+                                                      "d.FATHER_IDENTITY <> \"\" AND " +
+                                                      "m.GROOM_MOTHER_IDENTITY <> \"\" AND " +
+                                                      "m.GROOM_FATHER_IDENTITY <> \"\" AND " +
+                                                      "d.MOTHER_IDENTITY = m.GROOM_MOTHER_IDENTITY AND " +
+                                                      "d.FATHER_IDENTITY = m.GROOM_FATHER_IDENTITY " +
+                                                      "MERGE (d)-[r:GROUND_TRUTH_DEATH_GROOM_SIBLING]->(m)";
+            
     private static final String BRIDE_BRIDE_SIBLING = "MATCH (a:Marriage),(b:Marriage) WHERE " +
                                                         "a.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
                                                         "a.BRIDE_FATHER_IDENTITY <> \"\" AND " +
@@ -263,6 +353,12 @@ class CreateGTLinks {
 
         timeQuery( "Half-sibling links",BIRTH_BIRTH_HALF_SIBLING, DEATH_DEATH_HALF_SIBLING, BIRTH_DEATH_HALF_SIBLING  );
         timeQuery( "Half sibling marriages", BRIDE_GROOM_HALF_SIBLING, GROOM_GROOM_HALF_SIBLING, BRIDE_BRIDE_HALF_SIBLING );
+
+        timeQuery( "Birth/marriage Sibling", BIRTH_BRIDE_SIBLING, BIRTH_GROOM_SIBLING );
+        timeQuery( "Birth/Death Parents Marriage Identity", BIRTH_PARENTS_MARRIAGE_IDENTITY, DEATH_PARENTS_MARRIAGE_IDENTITY );
+        timeQuery( "Marriage Marriage Identity", GROOM_GROOM_IDENTITY, BRIDE_BRIDE_IDENTITY );
+        timeQuery( "Marriage Parents' Marriage", GROOM_PARENTS_MARRIAGE, BRIDE_PARENTS_MARRIAGE );
+        timeQuery( "Birth/Death Sibling Marriage", DEATH_BRIDE_SIBLING, DEATH_GROOM_SIBLING );
     }
 
     /**
