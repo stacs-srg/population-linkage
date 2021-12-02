@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * SigmaMean function for combining metrics - compares a single set of fields
+ * SigmaPseudoMean function for combining metrics - compares a single set of fields
  * For missing fields returns 0.5 this is not really the mean!
  * Might look at this later?
  * Created by al on 30/9/2021

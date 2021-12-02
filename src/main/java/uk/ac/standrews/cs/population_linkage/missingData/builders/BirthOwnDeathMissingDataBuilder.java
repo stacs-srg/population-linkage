@@ -9,10 +9,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLi
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
-import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerIntolerant;
-import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerMax;
-import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerMean;
-import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.BBLinkageRunnerTolerant;
+import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
@@ -43,6 +40,10 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
             }
             case "max": {
                 new BBLinkageRunnerMax().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                break;
+            }
+            case "pseudo-mean": {
+                new BBLinkageRunnerPseudoMean().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "mean": {

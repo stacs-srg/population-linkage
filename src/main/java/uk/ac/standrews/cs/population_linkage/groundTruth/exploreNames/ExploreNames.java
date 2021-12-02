@@ -5,11 +5,16 @@ import org.neo4j.driver.types.Node;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.Pair;
+import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class ExploreNames {
 
+    private StringMetric metric = new JensenShannon(2048);
+    private DecimalFormat df = new DecimalFormat("0.00" );
 
     public ExploreNames() {
 
@@ -39,19 +44,20 @@ public class ExploreNames {
             Node marriage = p.Y();
             String baby_firstname = birth.get("FORENAME").toString(); // this is in Node space from Cypher not LXP!
             String baby_surname = birth.get("SURNAME").toString();
+            String baby_id = birth.get("CHILD_IDENTITY").toString();
             String bride_firstname = marriage.get("BRIDE_FORENAME").toString();
             String bride_surname = marriage.get("BRIDE_SURNAME").toString();
+            String bride_id = marriage.get("BRIDE_IDENTITY").toString();
             if( baby_firstname.equals( bride_firstname ) && baby_surname.equals( bride_surname ) ) {
-                // showPair(same,"both same", baby_firstname,baby_surname,bride_firstname,bride_surname);
                 same++;
             } else if( ! baby_firstname.equals( bride_firstname )  && ! baby_surname.equals( bride_surname ) ) {
-                showPair(both_different,"both different",baby_firstname,baby_surname,bride_firstname,bride_surname);
+                showPair(both_different,"both different",baby_firstname,baby_surname,baby_id,bride_firstname,bride_surname,bride_id);
                 both_different++;
             } else if( ! baby_firstname.equals( bride_firstname ) ) {
-                showPair(different_first_names,"different firstname",baby_firstname,baby_surname,bride_firstname,bride_surname);
+                showPair(different_first_names,"different firstname",baby_firstname,baby_surname,baby_id,bride_firstname,bride_surname,bride_id);
                 different_first_names++;
             } else if( ! baby_surname.equals( bride_surname ) ) {
-                showPair(different_surnames,"different surname", baby_firstname,baby_surname,bride_firstname,bride_surname);
+                showPair(different_surnames,"different surname", baby_firstname,baby_surname,baby_id,bride_firstname,bride_surname,bride_id);
                 different_surnames++;
             }
         }
@@ -62,11 +68,21 @@ public class ExploreNames {
         System.out.println( "Number of names both different baby-bride: " + both_different );
     }
 
-    private void showPair(int counter, String label, String baby_firstname, String baby_surname, String bride_firstname, String bride_surname) {
+    private void showPair(int counter, String label, String baby_firstname, String baby_surname, String baby_id, String bride_firstname, String bride_surname, String bride_id) {
+        if( !baby_id.equals(bride_id) ) {
+            System.out.println( "GT MATCH ERROR");
+            System.exit(-1);
+        }
         if( counter < 10 ) {
-            System.out.println( label + ":" );
-            System.out.println( baby_firstname + "/" + baby_surname);
-            System.out.println( bride_firstname + "/" + bride_surname);
+            System.out.println( "*** " + label + ":" );
+            System.out.println( "baby:  " + baby_firstname + "/" + baby_surname);
+            System.out.println( "bride: " + bride_firstname + "/" + bride_surname);
+            double fnd = metric.distance(baby_firstname, bride_firstname);
+            double snd = metric.distance(baby_surname,bride_surname);
+            System.out.print( "distance = " + df.format(fnd) );
+            System.out.print( " Surname distance = " + df.format(snd) );
+            System.out.println( " Combined distance = " + df.format((fnd+snd)/2));
+
         }
     }
 
