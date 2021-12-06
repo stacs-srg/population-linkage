@@ -28,7 +28,6 @@ public class BitBlasterLinkageTest extends SimilaritySearchLinkageTest {
             public SearchStructure<LXP> newSearchStructure(Iterable<LXP> records, List<LXP> reference_objects)  {
                 return new BitBlasterSearchStructure<LXP>(metric, reference_objects, records);
             }
-
         };
 
         return new TestLinker(factory, 2.0, metric, 0);

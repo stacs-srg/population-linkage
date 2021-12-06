@@ -6,7 +6,7 @@
 
 export MAVEN_OPTS="-Xmx16G"
 
-echo "install_umea_data must be run before this script to load packages"
+echo "This script assumes script install_umea_data has already been run to install into the local maven repository"
 
 echo "1. Loading event records into Storr"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.data.umea.ImportUmeaRecordsToStore" -e
@@ -16,4 +16,3 @@ mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.stand
 
 echo "3. Establishing GT linkage in Neo4J"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks.CreateGTLinks" -e
-

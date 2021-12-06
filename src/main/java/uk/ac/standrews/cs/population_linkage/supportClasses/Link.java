@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 
 import uk.ac.standrews.cs.neoStorr.impl.JPO;
-import uk.ac.standrews.cs.neoStorr.impl.JPOMetadata;
+import uk.ac.standrews.cs.neoStorr.impl.JPOMetaData;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
@@ -110,13 +110,13 @@ public class Link extends JPO {
     /*
      * This field is used to store the metadata for the class.
      */
-    private static final JPOMetadata static_metadata;
+    private static final JPOMetaData static_metadata;
 
     /*
      * This selector returns the class metadata.
      */
     @Override
-    public JPOMetadata getJPOMetaData() {
+    public JPOMetaData getJPOMetaData() {
         return static_metadata;
     }
 
@@ -126,7 +126,7 @@ public class Link extends JPO {
      */
     static {
         try {
-            static_metadata = new JPOMetadata(Link.class,"JPOLink");
+            static_metadata = new JPOMetaData(Link.class,"JPOLink");
         } catch (Exception var1) {
             throw new RuntimeException(var1);
         }

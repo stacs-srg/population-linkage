@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.LXPMetadata;
+import uk.ac.standrews.cs.neoStorr.impl.LXPMetaData;
 import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
 import uk.ac.standrews.cs.neoStorr.impl.StaticLXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
@@ -274,13 +274,8 @@ public abstract class LinkageTest {
         }
 
         @Override
-        public LXPMetadata getMetaData() {
+        public LXPMetaData getMetaData() {
             return null;
-        }
-
-        @Override
-        public int getFieldCount() {
-            return number_of_fields;
         }
 
         @Override
