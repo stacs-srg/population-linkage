@@ -31,7 +31,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    private ArrayList<LXP> cached_records;
+    private List<LXP> cached_records;
 
     private int NUMBER_OF_BIRTHS;
     public static final int ALL_LINKAGE_FIELDS = 5;

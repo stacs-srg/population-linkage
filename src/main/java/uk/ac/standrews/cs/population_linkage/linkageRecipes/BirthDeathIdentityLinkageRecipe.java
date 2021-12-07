@@ -38,11 +38,10 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
-    private ArrayList<LXP> cached_records = null;
+    private List<LXP> cached_records = null;
 
     public int ALL_LINKAGE_FIELDS = 6;
 
-    // TODO Why not father/mother occupation? - even longer duration
     // Don't use father/mother occupation due to likely long duration between birth and death events.
 
     public static final List<Integer> LINKAGE_FIELDS = list(

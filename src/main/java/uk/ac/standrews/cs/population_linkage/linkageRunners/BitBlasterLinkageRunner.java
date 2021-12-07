@@ -43,7 +43,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner{
 
     @Override
     protected List<LXP> getReferencePoints() {
-        ArrayList<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields());
+        List<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields());
         List<LXP> result = BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
         return result;
     }

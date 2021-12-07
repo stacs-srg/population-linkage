@@ -114,18 +114,14 @@
                 <version>${maven-surefire-plugin.version}</version>
 
                 <configuration>
+                    <excludes>
+                        <!-- Suppress test until it's made self-contained. -->
+                        <exclude>*uk.ac.standrews.cs.population_linkage*/*InfrastructureTest.java</exclude>
 
-                    <skipTests>true</skipTests>
+                        <!-- Suppress on maven build due to long run time. -->
+                        <exclude>*uk.ac.standrews.cs.population_linkage*/*BitBlasterTest.java</exclude>
 
-
-<!--                    <excludes>-->
-<!--                        &lt;!&ndash; Suppress test until it's made self-contained. &ndash;&gt;-->
-<!--                        <exclude>*uk.ac.standrews.cs.population_linkage*/*InfrastructureTest.java</exclude>-->
-
-<!--                        &lt;!&ndash; Suppress on maven build due to long run time. &ndash;&gt;-->
-<!--                        <exclude>*uk.ac.standrews.cs.population_linkage*/*BitBlasterTest.java</exclude>-->
-
-<!--                    </excludes>-->
+                    </excludes>
                 </configuration>
             </plugin>
 

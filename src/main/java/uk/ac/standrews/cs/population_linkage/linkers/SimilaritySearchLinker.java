@@ -33,11 +33,20 @@ public class SimilaritySearchLinker extends Linker {
         this.linkage_recipe = linkage_recipe;
     }
 
-    public void addRecords(Iterable<LXP> storedSet, Iterable<LXP> searchSet, List<LXP> reference_objects) {
+    public void addRecords(Iterable<LXP> storedSet, Iterable<LXP> searchSet) {
+
         super.addRecords(storedSet, searchSet);
         this.search_set = searchSet;
 
-        search_structure = search_structure_factory.newSearchStructure (storedSet,reference_objects);
+        search_structure = search_structure_factory.newSearchStructure(storedSet);
+    }
+
+    public void addRecords(Iterable<LXP> storedSet, Iterable<LXP> searchSet, List<LXP> reference_objects) {
+
+        super.addRecords(storedSet, searchSet);
+        this.search_set = searchSet;
+
+        search_structure = search_structure_factory.newSearchStructure(storedSet, reference_objects);
     }
 
     public void terminate() {
@@ -47,7 +56,7 @@ public class SimilaritySearchLinker extends Linker {
     @Override
     public Iterable<RecordPair> getMatchingRecordPairs(final Iterable<LXP> records1, final Iterable<LXP> records2) {
 
-        return new Iterable<RecordPair>() {
+        return new Iterable<>() {
 
             class RecordPairIterator extends AbstractRecordPairIterator {
 

@@ -25,10 +25,10 @@ public abstract class Linker {
     protected double threshold;
     private Iterable<LXP> records1;
     private Iterable<LXP> records2;
-    private String link_type;
-    private String provenance;
-    private String role_type_1;
-    private String role_type_2;
+    private final String link_type;
+    private final String provenance;
+    private final String role_type_1;
+    private final String role_type_2;
 
     public Linker(Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
                   String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> is_viable_link) {
@@ -57,14 +57,14 @@ public abstract class Linker {
 
         final Iterator<RecordPair> matching_pairs = getMatchingRecordPairs(records1, records2).iterator();
 
-        return new Iterable<Link>() {
+        return new Iterable<>() {
 
             private Link next = null;
 
             @Override
             public Iterator<Link> iterator() {
 
-                return new Iterator<Link>() {
+                return new Iterator<>() {
 
                     @Override
                     public boolean hasNext() {

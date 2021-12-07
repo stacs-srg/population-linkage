@@ -8,7 +8,9 @@ import java.util.List;
 
 public interface SearchStructureFactory<T> {
 
-    public String getSearchStructureType();
+    String getSearchStructureType();
 
     SearchStructure<T> newSearchStructure(Iterable<T> storedSet, List<T> reference_objects);
+
+    SearchStructure<T> newSearchStructure(Iterable<T> storedSet);
 }

@@ -30,7 +30,7 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public static final int ALL_LINKAGE_FIELDS = 5;
-    private ArrayList<LXP> cached_records = null;
+    private List<LXP> cached_records = null;
     private int NUMBER_OF_MARRIAGES = EVERYTHING;
 
     // TODO should occupation be used, given long elapsed time?

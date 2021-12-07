@@ -35,7 +35,7 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     private int NUMBER_OF_MARRIAGES;
     public static final int ALL_LINKAGE_FIELDS = 4;
-    private ArrayList<LXP> cached_records;
+    private List<LXP> cached_records;
 
     // TODO Why not father occupation?
     public static final List<Integer> LINKAGE_FIELDS = list(

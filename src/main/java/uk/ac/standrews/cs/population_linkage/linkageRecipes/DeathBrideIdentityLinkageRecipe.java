@@ -31,7 +31,7 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     private int NUMBER_OF_DEATHS = EVERYTHING;
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
-    private ArrayList<LXP> cached_records = null;
+    private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FORENAME,

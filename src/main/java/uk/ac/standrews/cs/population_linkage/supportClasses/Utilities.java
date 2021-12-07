@@ -40,7 +40,7 @@ public class Utilities {
 
     public static Iterable<LXP> getDeathRecords(RecordRepository record_repository) {
 
-        return () -> new Iterator<LXP>() {
+        return () -> new Iterator<>() {
 
             Iterator<Death> death_records = record_repository.getDeaths().iterator();
 
@@ -58,7 +58,7 @@ public class Utilities {
 
     public static Iterable<LXP> getMarriageRecords(RecordRepository record_repository) {
 
-        return () -> new Iterator<LXP>() {
+        return () -> new Iterator<>() {
 
             Iterator<Marriage> marriage_records = record_repository.getMarriages().iterator();
 

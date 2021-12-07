@@ -34,7 +34,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     private int NUMBER_OF_BIRTHS = EVERYTHING;
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
-    private ArrayList<LXP> cached_records = null;
+    private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,

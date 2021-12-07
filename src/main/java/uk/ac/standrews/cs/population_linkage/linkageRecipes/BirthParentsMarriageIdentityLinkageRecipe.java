@@ -35,7 +35,7 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ALL_LINKAGE_FIELDS = 8;
     private int NUMBER_OF_BIRTHS;
 
-    private ArrayList<LXP> cached_records = null;
+    private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.MOTHER_FORENAME,

@@ -449,7 +449,7 @@ public abstract class LinkageRecipe {
         Collection<LXP> filteredRecords = new HashSet<>();
 
         records.forEach(record -> {
-            if (record.getString(sexField).toLowerCase().equals(keepSex.toLowerCase()))
+            if (record.getString(sexField).equalsIgnoreCase(keepSex))
                 filteredRecords.add(record);
         });
         return filteredRecords;

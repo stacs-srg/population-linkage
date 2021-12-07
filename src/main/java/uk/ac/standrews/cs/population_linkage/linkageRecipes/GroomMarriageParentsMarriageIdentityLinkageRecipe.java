@@ -31,7 +31,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     public static final int ALL_LINKAGE_FIELDS = 5;
     private int NUMBER_OF_MARRIAGES = EVERYTHING;
-    private ArrayList<LXP> cached_records;
+    private List<LXP> cached_records;
     public int linkage_fields = ALL_LINKAGE_FIELDS;
 
     public static final List<Integer> LINKAGE_FIELDS = list(

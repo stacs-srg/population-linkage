@@ -68,7 +68,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Marriage.BRIDE_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Marriage.BRIDE_BIRTH_RECORD_IDENTITY))
     );
-    protected ArrayList<LXP> cached_records = null;
+    protected List<LXP> cached_records = null;
 
     public BirthBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);

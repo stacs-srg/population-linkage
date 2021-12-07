@@ -11,9 +11,9 @@ import java.util.List;
 
 public class RecordFiltering {
 
-    public static ArrayList<LXP> filter(long number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+    public static List<LXP> filter(long number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
 
-        ArrayList<LXP> filtered_source_records = new ArrayList<>();
+        List<LXP> filtered_source_records = new ArrayList<>();
 
         for (LXP record : records_to_filter) {
             if (passesFilter(record, linkageFields, number_of_required_fields)) {
@@ -28,7 +28,9 @@ public class RecordFiltering {
     }
 
     public static boolean passesFilter(LXP record, List<Integer> filterOn, long reqPopulatedFields) {
+
         long numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
+
         int numberOfEmptyFields = 0;
 
         for (int attribute : filterOn) {
@@ -40,5 +42,4 @@ public class RecordFiltering {
 
         return numberOfEmptyFields <= numberOfEmptyFieldsPermitted;
     }
-
 }

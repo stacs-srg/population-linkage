@@ -31,7 +31,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     private int NUMBER_OF_DEATHS = EVERYTHING;
     public static final int ALL_LINKAGE_FIELDS = 5;
-    private ArrayList<LXP> cached_records = null;
+    private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.MOTHER_FORENAME,

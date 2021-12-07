@@ -25,6 +25,10 @@ public class MTreeLinkageTest extends SimilaritySearchLinkageTest {
             }
 
             @Override
+            public SearchStructure<LXP> newSearchStructure(Iterable<LXP> records) {
+                return new MTreeSearchStructure<>(metric, records);
+            }
+            @Override
             public SearchStructure<LXP> newSearchStructure(Iterable<LXP> records, List<LXP> reference_objects) {
                 return new MTreeSearchStructure<>(metric, records);
             }

@@ -31,7 +31,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     private int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
     public static final int ALL_LINKAGE_FIELDS = 5;
-    private ArrayList<LXP> cached_records = null;
+    private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
 
