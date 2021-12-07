@@ -10,15 +10,15 @@ import uk.ac.standrews.cs.utilities.ProgressIndicator;
 
 import java.util.Iterator;
 
-abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
+public abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
 
     final Iterable<LXP> records1;
     final Iterable<LXP> records2;
-    final boolean datasets_same;
-    final ProgressIndicator progress_indicator;
-    RecordPair next_pair;
+    public final boolean datasets_same;
+    public final ProgressIndicator progress_indicator;
+    public RecordPair next_pair;
 
-    AbstractRecordPairIterator(final Iterable<LXP> records1, final Iterable<LXP> records2, ProgressIndicator progress_indicator) {
+    public AbstractRecordPairIterator(final Iterable<LXP> records1, final Iterable<LXP> records2, ProgressIndicator progress_indicator) {
 
         this.records1 = records1;
         this.records2 = records2;
@@ -26,7 +26,7 @@ abstract class AbstractRecordPairIterator implements Iterator<RecordPair> {
         this.progress_indicator = progress_indicator;
     }
 
-    abstract boolean match(RecordPair pair);
+    public abstract boolean match(RecordPair pair);
 
     void advanceIndices() {
     }

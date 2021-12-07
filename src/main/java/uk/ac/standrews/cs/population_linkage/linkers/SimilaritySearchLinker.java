@@ -81,7 +81,7 @@ public class SimilaritySearchLinker extends Linker {
                 }
 
                 @Override
-                boolean match(final RecordPair pair) {
+                public boolean match(final RecordPair pair) {
                     return true;
                 }
 

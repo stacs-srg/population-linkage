@@ -34,8 +34,7 @@ public class LinkageQuality {
         this.message = message;
     }
 
-    public void print(PrintStream out) {
-
+    public void print2(PrintStream out) {
         if(message == null) {
             out.println("TP: " + tp);
             out.println("FN: " + fn);
@@ -49,9 +48,15 @@ public class LinkageQuality {
         }
     }
 
+    // Switch names of print and print2 for textual output
+    public void print(PrintStream out) {
+        out.println( toCSV() );
+    }
+
+
     public String toCSV() {
         if(message == null)
-            return tp +"," + fp + "," + fn + "," + String.format("%.4f", precision) + ","
+            return tp +"," + fn + "," + fp + "," + String.format("%.4f", precision) + ","
                 + String.format("%.4f", recall) + "," + String.format("%.4f", f_measure);
         else {
             return message + ",,,,";

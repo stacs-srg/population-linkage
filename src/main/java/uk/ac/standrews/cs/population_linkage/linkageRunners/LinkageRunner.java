@@ -33,7 +33,7 @@ public abstract class LinkageRunner {
 
     public LinkageResult run(LinkageRecipe linkage_recipe,
                              MakePersistent make_persistent,
-                             boolean evaluateQuality, boolean persistLinks) throws Exception { // TODO AL $$$ throws BucketException, RepositoryException { // throws Exception
+                             boolean evaluateQuality, boolean persistLinks) throws Exception {
 
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
@@ -48,7 +48,6 @@ public abstract class LinkageRunner {
 
         MemoryLogger.update();
 
-        // TODO AL $$$ - only exception in the code comes from this call to link.
         LinkageResult result = link(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks);
 
         linker.terminate();
@@ -58,7 +57,7 @@ public abstract class LinkageRunner {
 
     protected abstract List<LXP> getReferencePoints();
 
-    public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception; // throws Exception; // TODO AL $$$ throws BucketException, RepositoryException;
+    public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception;
 
     protected LinkageQuality getLinkageQuality(boolean evaluate_quality, long numberOfGroundTruthTrueLinks, long tp, long fp) {
         if(evaluate_quality) {
@@ -155,7 +154,7 @@ public abstract class LinkageRunner {
         return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields(), 0);
     }
 
-    abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric, List<LXP> reference_objects);
+    public abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric, List<LXP> reference_objects);
 
     protected int getNumberOfProgressUpdates() {
         return DEFAULT_NUMBER_OF_PROGRESS_UPDATES;

@@ -10,7 +10,7 @@ mydata$f_measure <- as.numeric(mydata$f_measure)
 # This plots each of the the metrics on a different plot
 plotconvergencefacets <- function( plotdata ) {
   #plotdata <- plotdata[ which( plotdata$threshold == 0.2 ), ]
-  #plotdata <- plotdata[ which( plotdata$metric == "SigmaIntolerant-Levenshtein" ), ]
+  #plotdata <- plotdata[ which( plotdata$metric == "SigmaMissingOne-Levenshtein" ), ]
   
   pp <- ggplot(data=plotdata,aes(x=records.processed)) +
     #theme(legend.position="bottom") +

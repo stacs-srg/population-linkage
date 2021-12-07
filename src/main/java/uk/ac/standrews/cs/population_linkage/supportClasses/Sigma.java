@@ -12,7 +12,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * SigmaIntolerant function for combining metrics - compares a single set of fields
+ * SigmaMissingOne function for combining metrics - compares a single set of fields
  * Created by al on 13/12/18
  */
 public class Sigma extends Metric<LXP> {

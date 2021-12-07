@@ -62,7 +62,7 @@ public abstract class BruteForceLinker extends Linker {
                     getNextMatchingPair();
                 }
 
-                boolean match(RecordPair pair) {
+                public boolean match(RecordPair pair) {
 
                     return pair.distance <= threshold;
                 }

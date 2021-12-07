@@ -2,22 +2,21 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRecipes;
+package uk.ac.standrews.cs.population_linkage.endToEndIterative;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 
@@ -25,7 +24,7 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  * Links a person appearing as the child on a birth record with the same person appearing as the bride on a marriage record.
  * Now also performs subsetting 11/11/21
  */
-public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
+public class BirthBrideIdentityLinkageRecipeSpecial extends LinkageRecipe {
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
 
     // TODO Some Wrigley rules not obvious where to place in viability checks.
@@ -36,14 +35,19 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     // TODO Experiment with including father/mother occupation in all relevant linkages.
 
-    private static final double DISTANCE_THRESHOLD = 0.49;
+    public static final double DISTANCE_THRESHOLD = 0.49;
 
     public static final String LINKAGE_TYPE = "birth-bride-identity";
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
+    private final List<LXP> search_matched;
+    private final List<LXP> stored_matched;
+
     protected int NUMBER_OF_BIRTHS;
+
+    protected double threshold = DISTANCE_THRESHOLD;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.FORENAME,
@@ -70,7 +74,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     );
     protected ArrayList<LXP> cached_records = null;
 
-    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public BirthBrideIdentityLinkageRecipeSpecial(String source_repository_name, String number_of_records, List<LXP> search_matched, List<LXP> stored_matched, String links_persistent_name, double threshold, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if( number_of_records.equals(EVERYTHING_STRING) ) {
             NUMBER_OF_BIRTHS = EVERYTHING;
@@ -78,6 +82,9 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
         setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+        setThreshold(threshold);
+        this.search_matched = search_matched;
+        this.stored_matched = stored_matched;
     }
 
     @Override
@@ -122,16 +129,32 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     protected Iterable<LXP> getBirthRecords() {
         if( cached_records == null ) {
-            Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
+            Iterable<LXP> f = filterOut( stored_matched,super.getBirthRecords() );
+            f = filterBySex(f, Birth.SEX, "f");
             cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
         }
         return cached_records;
     }
 
     @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
+    protected Iterable<LXP> getMarriageRecords() {
+        return filterOut( search_matched, super.getMarriageRecords() );
     }
+
+    private Iterable<LXP> filterOut(List<LXP> matched, Iterable<LXP> records) {
+        Collection<LXP> filteredRecords = new HashSet<>();
+
+        records.forEach(record -> {
+            if ( ! matched.contains(record) ) filteredRecords.add(record); });
+        return filteredRecords;
+    }
+
+    @Override
+    public double getThreshold() {
+        return this.threshold;
+    }
+
+    public void setThreshold( double threshold ) { this.threshold = threshold; }
 
     @Override
     public List<Integer> getQueryMappingFields() {

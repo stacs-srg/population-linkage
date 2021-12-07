@@ -12,18 +12,18 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * SigmaPseudoMean function for combining metrics - compares a single set of fields
+ * SigmaMissingHalf function for combining metrics - compares a single set of fields
  * For missing fields returns 0.5 this is not really the mean!
  * Might look at this later?
  * Created by al on 30/9/2021
  */
-public class SigmaMean extends Metric<LXP> {
+public class SigmaMissingMean extends Metric<LXP> {
 
     final StringMetric base_distance;
     final List<Integer> field_list;
     final int id_field_index;
 
-    public SigmaMean(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
+    public SigmaMissingMean(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
 
         this.base_distance = base_metric;
         this.field_list = field_list;

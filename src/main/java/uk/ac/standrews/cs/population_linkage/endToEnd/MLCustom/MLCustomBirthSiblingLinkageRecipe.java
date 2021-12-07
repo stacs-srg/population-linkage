@@ -18,7 +18,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
  * In all linkage recipies the naming convention is:
  *     the stored type is the first part of the name
  *     the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipe the stored type (stored in the search structure) is a birth and Marriages are used to query.
+ * So for example in BirthBrideIdentityLinkageRecipeSpecial the stored type (stored in the search structure) is a birth and Marriages are used to query.
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  *
  */

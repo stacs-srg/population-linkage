@@ -83,7 +83,7 @@ public class ExploreNames {
             System.out.println( "bride: " + bride_firstname + "/" + bride_surname);
             double fnd = metric.distance(baby_firstname, bride_firstname);
             double snd = metric.distance(baby_surname,bride_surname);
-            System.out.print( "distance = " + df.format(fnd) );
+            System.out.print( "Firstname distance = " + df.format(fnd) );
             System.out.print( " Surname distance = " + df.format(snd) );
             System.out.println( " Combined distance = " + df.format((fnd+snd)/2));
 

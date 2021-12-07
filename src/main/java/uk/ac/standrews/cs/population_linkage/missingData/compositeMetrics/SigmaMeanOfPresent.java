@@ -12,27 +12,29 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * SigmaIntolerant function for combining metrics - compares a single set of fields
- * Intolerant of missing fields - returns 1 if missing
+ * SigmaMissingHalf function for combining metrics - compares a single set of fields
+ * For missing fields returns 0.5 this is not really the mean!
+ * Might look at this later?
  * Created by al on 30/9/2021
  */
-public class SigmaIntolerant extends Metric<LXP> {
+public class SigmaMeanOfPresent extends Metric<LXP> {
 
     final StringMetric base_distance;
     final List<Integer> field_list;
     final int id_field_index;
 
-    public  SigmaIntolerant(final StringMetric base_distance, final List<Integer> field_list, final int id_field_index) {
+    public SigmaMeanOfPresent(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
 
-        this.base_distance = base_distance;
+        this.base_distance = base_metric;
         this.field_list = field_list;
         this.id_field_index = id_field_index;
     }
 
     @Override
     public double calculateDistance(final LXP a, final LXP b) {
-
+        
         double total_distance = 0.0d;
+        int present_count = 0;
 
         for (int field_index : field_list) {
             try {
@@ -40,10 +42,11 @@ public class SigmaIntolerant extends Metric<LXP> {
                 String field_value2 = b.getString(field_index);
 
                 if( isMissing(field_value1) || isMissing(field_value2) ) {
-                    return 1;
+                    // do nothing
+                } else {
+                    present_count++;
+                    total_distance += base_distance.distance(field_value1, field_value2);
                 }
-
-                total_distance += base_distance.distance(field_value1, field_value2);
 
             } catch (Exception e) {
                 printExceptionDebug(a, b, field_index);
@@ -51,7 +54,11 @@ public class SigmaIntolerant extends Metric<LXP> {
             }
         }
 
-        return normaliseArbitraryPositiveDistance(total_distance);
+        if( present_count > 0 ) {
+            return normaliseArbitraryPositiveDistance(total_distance / present_count);
+        } else {
+            return 1;
+        }
     }
 
     private boolean isMissing(String value) {

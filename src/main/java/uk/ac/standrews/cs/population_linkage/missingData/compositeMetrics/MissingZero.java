@@ -12,17 +12,17 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * SigmaTolerant function for combining metrics - compares a single set of fields
+ * MissingZero function for combining metrics - compares a single set of fields
  * Tolerant of missing data - returns 0 if missing fields
  * Created by al on 30/9/2021
  */
-public class SigmaTolerant extends Metric<LXP> {
+public class MissingZero extends Metric<LXP> {
 
     final StringMetric base_distance;
     final List<Integer> field_list;
     final int id_field_index;
 
-    public SigmaTolerant(final StringMetric base_distance, final List<Integer> field_list, final int id_field_index) {
+    public MissingZero(final StringMetric base_distance, final List<Integer> field_list, final int id_field_index) {
 
         this.base_distance = base_distance;
         this.field_list = field_list;
@@ -42,16 +42,14 @@ public class SigmaTolerant extends Metric<LXP> {
                 String field_value2 = b.getString(field_index);
 
                 if( isMissing(field_value1) || isMissing(field_value2) ) {
-                    return 0;
+                    total_distance += 0;
+                } else {
+                    total_distance += base_distance.distance(field_value1, field_value2);
                 }
-
-                total_distance += base_distance.distance(field_value1, field_value2);
 
             } catch (Exception e) {
                 printExceptionDebug(a, b, field_index);
-                System.out.println( "Exception in SigmaTolerant");
-                e.printStackTrace();
-                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(field_index) + "\n" + "in records \n" + a + "\n and \n" + b, e);
+                throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(field_index) + " in records \n" + a + "\n and \n" + b, e);
             }
         }
 
