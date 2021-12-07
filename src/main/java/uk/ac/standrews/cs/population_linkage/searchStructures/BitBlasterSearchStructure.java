@@ -35,7 +35,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
             // Try several times with different seeds
             for (int tries = 0; tries < maxTries; tries++) {
                 try {
-                    init(distance_metric, chooseRandomReferencePoints(copy_of_data, number_of_reference_objects), copy_of_data);
+                    init(distance_metric, copy_of_data, chooseRandomReferencePoints(copy_of_data, number_of_reference_objects));
                     return;
 
                 } catch (Exception e) {
@@ -52,10 +52,10 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         throw new RuntimeException( "Failed to initialise BitBlaster" );
     }
 
-    public BitBlasterSearchStructure(Metric<T> distance_metric, List<T> reference_points, Iterable<T> data) {
+    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data, List<T> reference_objects) {
 
         try {
-            init(distance_metric, reference_points, copyData(data));
+            init(distance_metric, copyData(data), reference_objects);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -72,16 +72,16 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         return copy_of_data;
     }
 
-    public static <X> List<X> chooseRandomReferencePoints(final List<X> data, int number_of_reference_points) {
+    public static <X> List<X> chooseRandomReferencePoints(final List<X> data, final int number_of_reference_objects) {
 
         Random random = new Random(SEED);
         List<X> reference_points = new ArrayList<>();
 
-        if (number_of_reference_points >= data.size()) {
+        if (number_of_reference_objects >= data.size()) {
             return data;
         }
 
-        while (reference_points.size() < number_of_reference_points) {
+        while (reference_points.size() < number_of_reference_objects) {
             X item = data.get(random.nextInt(data.size()));
             if (!reference_points.contains(item)) {
                 reference_points.add(item);
@@ -95,11 +95,11 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         bit_blaster.terminate();
     }
 
-    private void init(final Metric<T> distance_metric, final List<T> reference_points, final List<T> data) throws Exception {
+    private void init(final Metric<T> distance_metric, final List<T> data, final List<T> reference_objects) throws Exception {
 
         boolean fourPoint = distance_metric.getMetricName().equals(JensenShannon.metricName);
 
-        bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_points, data, 2,
+        bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_objects, data, 2,
                 Runtime.getRuntime().availableProcessors(), fourPoint, true);
     }
 

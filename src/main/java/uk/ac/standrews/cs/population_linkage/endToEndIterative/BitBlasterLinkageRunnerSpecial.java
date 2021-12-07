@@ -32,22 +32,20 @@ public class BitBlasterLinkageRunnerSpecial extends LinkageRunner {
         return linkage_recipe;
     }
 
-    public Linker getLinker(LinkageRecipe linkageRecipe, List<LXP> reference_points ) {
+    public Linker getLinker(LinkageRecipe linkageRecipe) {
         Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
-        return new SimilaritySearchLinker(getSearchFactory(compositeMetric,reference_points), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
                 linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
     }
 
-    public SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric, List<LXP> reference_points) {
-        return new BitBlasterSearchStructureFactory<LXP>(composite_metric, reference_points);
+    public SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric) {
+        return new BitBlasterSearchStructureFactory<>(composite_metric);
     }
 
-    @Override
     protected List<LXP> getReferencePoints() {
 
         List<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields());
-        List<LXP> result = BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
-        return result;
+        return BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
     }
 
     public LinkageResultSpecial link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {

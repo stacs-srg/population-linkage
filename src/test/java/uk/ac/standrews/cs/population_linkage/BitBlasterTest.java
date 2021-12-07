@@ -21,7 +21,7 @@ public class BitBlasterTest extends SimilaritySearchTest {
     @Override
     SearchStructure<Point> getSearchStructure(Metric<Point> metric, List<Point> data_points, final List<Point> reference_points) {
 
-        return new BitBlasterSearchStructure<>(metric, reference_points, data_points);
+        return new BitBlasterSearchStructure<>(metric, data_points, reference_points);
     }
 
     @Override

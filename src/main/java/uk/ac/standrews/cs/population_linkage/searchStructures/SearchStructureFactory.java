@@ -10,7 +10,7 @@ public interface SearchStructureFactory<T> {
 
     String getSearchStructureType();
 
-    SearchStructure<T> newSearchStructure(Iterable<T> storedSet, List<T> reference_objects);
+    SearchStructure<T> newSearchStructure(Iterable<T> stored_set, List<T> reference_objects);
 
-    SearchStructure<T> newSearchStructure(Iterable<T> storedSet);
+    SearchStructure<T> newSearchStructure(Iterable<T> stored_set);
 }

@@ -11,12 +11,10 @@ import java.util.List;
 public class BitBlasterSearchStructureFactory<T> implements SearchStructureFactory<T> {
 
     private final Metric<T> composite_metric;
-    private List<T> reference_points;
 
-    public BitBlasterSearchStructureFactory(Metric<T> composite_metric, List<T> reference_points) {
+    public BitBlasterSearchStructureFactory(Metric<T> composite_metric) {
 
         this.composite_metric = composite_metric;
-        this.reference_points = reference_points;
     }
 
     @Override
@@ -24,8 +22,8 @@ public class BitBlasterSearchStructureFactory<T> implements SearchStructureFacto
         return new BitBlasterSearchStructure<>(composite_metric, records);
     }
 
-    public SearchStructure<T> newSearchStructure(final Iterable<T> records, List<T> reference_points) {
-        return new BitBlasterSearchStructure<>(composite_metric, reference_points, records);
+    public SearchStructure<T> newSearchStructure(final Iterable<T> records, final List<T> reference_objects) {
+        return new BitBlasterSearchStructure<>(composite_metric, records, reference_objects);
     }
 
     @Override

@@ -40,7 +40,7 @@ public abstract class LinkageRunner {
         this.baseMetric = linkage_recipe.getMetric();
         this.linkage_recipe = linkage_recipe;
 
-        linker = getLinker(linkage_recipe,getReferencePoints());
+        linker = getLinker(linkage_recipe);
 
         linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
 
@@ -54,8 +54,6 @@ public abstract class LinkageRunner {
 
         return result;
     }
-
-    protected abstract List<LXP> getReferencePoints();
 
     public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception;
 
@@ -146,7 +144,7 @@ public abstract class LinkageRunner {
         } catch (Exception ignored) { }
     }
 
-    public abstract Linker getLinker( LinkageRecipe linkageRecipe, List<LXP> reference_points ); // TODO ref points shouldn't be in here might not have any! But doesn't work otherwise!
+    public abstract Linker getLinker( LinkageRecipe linkageRecipe);
 
     public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
@@ -154,7 +152,7 @@ public abstract class LinkageRunner {
         return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields(), 0);
     }
 
-    public abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric, List<LXP> reference_objects);
+    public abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric);
 
     protected int getNumberOfProgressUpdates() {
         return DEFAULT_NUMBER_OF_PROGRESS_UPDATES;

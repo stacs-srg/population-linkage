@@ -24,35 +24,33 @@ import java.util.List;
 
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 
-public class BitBlasterLinkageRunner extends LinkageRunner{
+public class BitBlasterLinkageRunner extends LinkageRunner {
 
     @Override
     public LinkageRecipe getLinkageRecipe(String links_persistent_name, String source_repository_name, String results_repository_name, RecordRepository record_repository) {
         return linkage_recipe;
     }
 
-    public Linker getLinker(LinkageRecipe linkageRecipe, List<LXP> reference_points ) {
+    public Linker getLinker(LinkageRecipe linkageRecipe) {
         Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
-        return new SimilaritySearchLinker(getSearchFactory(compositeMetric,reference_points), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
+        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
                 linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
     }
 
-    public SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric, List<LXP> reference_points) {
-        return new BitBlasterSearchStructureFactory<LXP>(composite_metric, reference_points);
+    public SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric) {
+        return new BitBlasterSearchStructureFactory<>(composite_metric);
     }
 
-    @Override
     protected List<LXP> getReferencePoints() {
         List<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields());
-        List<LXP> result = BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
-        return result;
+        return BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
     }
 
     public LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
 
-        ((SimilaritySearchLinker)linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(),getReferencePoints());
+        ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
 
         System.out.println("Constructing link iterable @ " + LocalDateTime.now());
 
