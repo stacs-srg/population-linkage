@@ -5,18 +5,17 @@
 package uk.ac.standrews.cs.population_linkage.missingData.builders.failureinvestigation;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.MissingZero;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 /**
  * This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
  * It takes an extra parameter over standard Builders choosing which aggregate metric to use.
  */
 public class TestJS {
-
 
     public static void main(String[] args) throws BucketException {
 

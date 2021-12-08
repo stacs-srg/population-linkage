@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.missingData.builders;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
@@ -11,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRun
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 /**
  *  This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
@@ -71,7 +71,6 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
             default: {
                 throw new RuntimeException("Error mode: " + mode + " unrecognised ");
             }
-
         }
     }
 

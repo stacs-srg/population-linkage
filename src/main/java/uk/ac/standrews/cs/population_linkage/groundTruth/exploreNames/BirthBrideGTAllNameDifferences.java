@@ -6,8 +6,8 @@ package uk.ac.standrews.cs.population_linkage.groundTruth.exploreNames;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.types.Node;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.FileManipulation;
 import uk.ac.standrews.cs.utilities.Pair;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
@@ -138,7 +138,6 @@ public class BirthBrideGTAllNameDifferences {
     private String quoteStrip(String name) {
         return name.substring(1,name.length()-1);
     }
-
 
     public static void main(String[] args) throws BucketException {
 

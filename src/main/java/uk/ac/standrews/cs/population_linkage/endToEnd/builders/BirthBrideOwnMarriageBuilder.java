@@ -4,6 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
@@ -14,7 +15,6 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 
 /**
  *  This class attempts to find birth-bride links: links a baby on a birth to the same person as a groom on a marriage.

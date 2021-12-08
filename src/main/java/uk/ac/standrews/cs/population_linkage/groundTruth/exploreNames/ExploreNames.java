@@ -6,8 +6,8 @@ package uk.ac.standrews.cs.population_linkage.groundTruth.exploreNames;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.types.Node;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.Pair;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -89,7 +89,6 @@ public class ExploreNames {
 
         }
     }
-
 
     public static void main(String[] args) throws BucketException {
 

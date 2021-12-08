@@ -4,7 +4,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.missingData.builders.failureinvestigation;
 
-import uk.ac.standrews.cs.storr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
 
 /**
@@ -12,7 +12,6 @@ import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
  * It takes an extra parameter over standard Builders choosing which aggregate metric to use.
  */
 public class TestJS4 {
-
 
     public static void main(String[] args) throws BucketException {
 
