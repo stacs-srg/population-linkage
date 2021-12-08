@@ -13,8 +13,10 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityL
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.*;
 
@@ -127,7 +129,7 @@ public class BirthBrideIdentityLinkageRecipeSpecial extends LinkageRecipe {
     }
 
     @Override
-    protected Iterable<LXP> getBirthRecords() {
+    public Iterable<LXP> getBirthRecords() {
         if( cached_records == null ) {
             Iterable<LXP> f = filterOut( stored_matched,super.getBirthRecords() );
             f = filterBySex(f, Birth.SEX, "f");
@@ -144,14 +146,22 @@ public class BirthBrideIdentityLinkageRecipeSpecial extends LinkageRecipe {
     private Iterable<LXP> filterOut(List<LXP> matched, Iterable<LXP> records) {
         Collection<LXP> filteredRecords = new HashSet<>();
 
-        records.forEach(record -> {
-            if ( ! matched.contains(record) ) filteredRecords.add(record); });
+        for( LXP record : records ) {
+            if (! matched.contains(record)) {
+                filteredRecords.add(record);
+            }
+        }
         return filteredRecords;
     }
 
     @Override
     public double getThreshold() {
         return this.threshold;
+    }
+
+    @Override
+    public Metric<LXP> getCompositeMetric() {
+        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 
     public void setThreshold( double threshold ) { this.threshold = threshold; }
@@ -194,10 +204,10 @@ public class BirthBrideIdentityLinkageRecipeSpecial extends LinkageRecipe {
         return count;
     }
 
-    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) WHERE m.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countBirthBrideIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
-        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID );
+    public static int countBirthBrideIdentityGTLinks(NeoDbCypherBridge bridge, LXP marriage_record ) {
+        String standard_id_from = marriage_record.getString( Marriage.STANDARDISED_ID );
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);

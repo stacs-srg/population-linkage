@@ -10,9 +10,10 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -146,5 +147,10 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     @Override
     public double getThreshold() {
         return DISTANCE_THRESHOLD;
+    }
+
+    @Override
+    public Metric<LXP> getCompositeMetric() {
+        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 }

@@ -10,7 +10,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLi
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
-import uk.ac.standrews.cs.population_linkage.missingData.linkageRunners.*;
+import uk.ac.standrews.cs.population_linkage.missingData.recipes.*;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 
 /**
@@ -27,39 +27,39 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
         switch (mode) {
 
             case "missing-zero": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingZero(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BBLinkageRunnerMissingZero().run(linkage_recipe, new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkage_recipe, new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "missing-one": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingOne(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BBLinkageRunnerMissingOne().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "max": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMax(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BBLinkageRunnerMax().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "missing-half": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingHalf(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BBLinkageRunnerMissingHalf().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "mean": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingMean(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BBLinkageRunnerMissingMean().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "mean-of-present": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMeanOfPresent(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BBLinkageRunnerMeanOfPresent().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "standard": {

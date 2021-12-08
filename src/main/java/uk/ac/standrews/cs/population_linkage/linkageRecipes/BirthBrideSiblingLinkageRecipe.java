@@ -10,10 +10,11 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +69,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
         setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
     }
 
-    protected Iterable<LXP> getBirthRecords() {
+    public Iterable<LXP> getBirthRecords() {
         if( cached_records == null ) {
             cached_records = RecordFiltering.filter(no_linkage_fields_required, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
         }
@@ -145,5 +146,10 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public double getThreshold() {
         return DISTANCE_THRESHOLD;
+    }
+
+    @Override
+    public Metric<LXP> getCompositeMetric() {
+        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 }

@@ -22,7 +22,7 @@ import java.util.List;
  *  Multiple marriages of a single party (the bride).
  *  This is  STRONG.
  */
-public class BirthBrideIdentityBuilder implements MakePersistent {
+public class BirthBrideIdentityBuilderIterative implements MakePersistent {
 
     public static void main(String[] args) throws BucketException {
 
@@ -36,13 +36,15 @@ public class BirthBrideIdentityBuilder implements MakePersistent {
 
             for( double thresh = 0.001; thresh < BirthBrideIdentityLinkageRecipeSpecial.DISTANCE_THRESHOLD; thresh += 0.05 ) {
 
-                BirthBrideIdentityLinkageRecipeSpecial linkageRecipe = new BirthBrideIdentityLinkageRecipeSpecial(sourceRepo, number_of_records, search_matched, stored_matched, BirthBrideIdentityBuilder.class.getCanonicalName(), thresh, bridge);
+                BirthBrideIdentityLinkageRecipeSpecial linkageRecipe = new BirthBrideIdentityLinkageRecipeSpecial(sourceRepo, number_of_records, search_matched, stored_matched, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), thresh, bridge);
 
                 linkageRecipe.setNumberLinkageFieldsRequired(linkageRecipe.ALL_LINKAGE_FIELDS);
 
-                LinkageResultSpecial lrs = (LinkageResultSpecial) new BitBlasterLinkageRunnerSpecial().run(linkageRecipe, new BirthBrideIdentityBuilder(), true, true);
+                BitBlasterLinkageRunnerSpecial bb = new BitBlasterLinkageRunnerSpecial();
+                LinkageResultSpecial lrs = (LinkageResultSpecial) bb.run(linkageRecipe, new BirthBrideIdentityBuilderIterative(), true, true);
                 search_matched.addAll( lrs.getLinkedSearchRecords() );
                 stored_matched.addAll( lrs.getLinkedStoredRecords() );
+
             }
         } catch (Exception e) {
             System.out.println( "Runtime exception:" );

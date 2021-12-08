@@ -6,6 +6,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.MLCustom;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
@@ -25,7 +26,7 @@ public class MLCustomBirthSiblingBundleBuilder implements MakePersistent {
 
             MLCustomBirthSiblingLinkageRecipe linkageRecipe = new MLCustomBirthSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, MLCustomBirthSiblingBundleBuilder.class.getCanonicalName());
 
-            CustomBitBlasterLinkageRunner runner = new CustomBitBlasterLinkageRunner();
+            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;

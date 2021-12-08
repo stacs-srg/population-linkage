@@ -19,7 +19,6 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
@@ -32,7 +31,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     }
 
     public Linker getLinker(LinkageRecipe linkageRecipe) {
-        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
+        Metric<LXP> compositeMetric = linkageRecipe.getCompositeMetric();
         return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
                 linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
     }

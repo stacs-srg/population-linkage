@@ -15,11 +15,9 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
@@ -27,7 +25,6 @@ import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.
 public abstract class LinkageRunner {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
-    protected StringMetric baseMetric;
     protected Linker linker;
     protected LinkageRecipe linkage_recipe;
 
@@ -37,7 +34,6 @@ public abstract class LinkageRunner {
 
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
-        this.baseMetric = linkage_recipe.getMetric();
         this.linkage_recipe = linkage_recipe;
 
         linker = getLinker(linkage_recipe);
@@ -148,19 +144,9 @@ public abstract class LinkageRunner {
 
     public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
-    protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new Sigma(getBaseMetric(), linkageRecipe.getLinkageFields(), 0);
-    }
-
     public abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric);
 
     protected int getNumberOfProgressUpdates() {
         return DEFAULT_NUMBER_OF_PROGRESS_UPDATES;
     }
-
-    protected StringMetric getBaseMetric() {
-        return baseMetric;
-    }
-
-
 }

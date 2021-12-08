@@ -12,6 +12,7 @@ import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 /**
  * EvidencePair Recipe
@@ -42,6 +43,11 @@ public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe
         this.bridge = bridge;
     }
 
+    @Override
+    public Metric<LXP> getCompositeMetric() {
+        return new CustomMetric(0);
+    }
+
     public void setNumberLinkageFieldsRequired( int number ) {
         linkage_fields = number;
     }
@@ -53,7 +59,7 @@ public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe
      * @return
      */
     @Override
-    protected Iterable<LXP> getBirthRecords() {
+    public Iterable<LXP> getBirthRecords() {
         if( cached_records == null ) {
             // cached_records = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
             cached_records = super.getBirthRecords();

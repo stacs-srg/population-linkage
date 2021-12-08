@@ -11,7 +11,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.HashMap;
 import java.util.List;
@@ -145,6 +147,11 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public double getThreshold() {
         return DISTANCE_THESHOLD;
+    }
+
+    @Override
+    public Metric<LXP> getCompositeMetric() {
+        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 
     @Override

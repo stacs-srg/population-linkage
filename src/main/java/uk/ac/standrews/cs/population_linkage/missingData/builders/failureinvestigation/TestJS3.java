@@ -54,7 +54,7 @@ public class TestJS3 {
             BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, TestJS3.class.getCanonicalName(), bridge);
 
             // StringMetric metric = linkageRecipe.getMetric();
-            MissingZero metric = new MissingZero(linkageRecipe.getMetric(), linkageRecipe.getLinkageFields(), Birth.STANDARDISED_ID);
+            MissingZero metric = new MissingZero(linkageRecipe.getBaseMetric(), linkageRecipe.getLinkageFields(), Birth.STANDARDISED_ID);
 
             Iterable<LXP> recs = linkageRecipe.getStoredRecords();
             for (LXP birth : recs) {

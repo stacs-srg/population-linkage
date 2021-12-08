@@ -18,6 +18,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 
 import java.lang.reflect.InvocationTargetException;
@@ -72,12 +73,14 @@ public abstract class LinkageRecipe {
     private Integer marriage_records_size = null;
 
     private int no_linkage_fields_required;
+    private StringMetric base_metric;
 
     public LinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
 
         this.source_repository_name = source_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.bridge = bridge;
+        this.base_metric = DEFAULT_METRIC;
 
         this.record_repository = new RecordRepository(source_repository_name);
     }
@@ -378,7 +381,7 @@ public abstract class LinkageRecipe {
         }
     }
 
-    protected Iterable<LXP> getBirthRecords() {
+    public Iterable<LXP> getBirthRecords() {
         if (birth_records == null) {
             birth_records = Utilities.getBirthRecords(record_repository);
         }
@@ -471,9 +474,13 @@ public abstract class LinkageRecipe {
         record_repository.setMarriagesCacheSize(marriageCacheSize);
     }
 
-    public StringMetric getMetric() {
-        return DEFAULT_METRIC;
+    public StringMetric getBaseMetric() {
+        return base_metric;
     }
+
+    public void setBaseMetric( StringMetric m ) { this.base_metric = m; }
+
+    public abstract Metric<LXP> getCompositeMetric();
 
     public static class Pair {
         public final int first;

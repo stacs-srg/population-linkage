@@ -12,10 +12,11 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,9 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
     private int NUMBER_OF_DEATHS;
     public  static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
     private List<LXP> cached_records = null;
+
+    public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.FORENAME,
@@ -157,5 +161,10 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public double getThreshold() {
         return DISTANCE_THRESHOLD;
+    }
+
+    @Override
+    public Metric<LXP> getCompositeMetric() {
+        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 }

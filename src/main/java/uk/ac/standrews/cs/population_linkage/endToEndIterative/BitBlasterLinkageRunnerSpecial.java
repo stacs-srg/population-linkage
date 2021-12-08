@@ -33,7 +33,7 @@ public class BitBlasterLinkageRunnerSpecial extends LinkageRunner {
     }
 
     public Linker getLinker(LinkageRecipe linkageRecipe) {
-        Metric<LXP> compositeMetric = getCompositeMetric(linkageRecipe);
+        Metric<LXP> compositeMetric = linkageRecipe.getCompositeMetric();
         return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
                 linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
     }
@@ -44,7 +44,7 @@ public class BitBlasterLinkageRunnerSpecial extends LinkageRunner {
 
     protected List<LXP> getReferencePoints() {
 
-        List<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields());
+        List<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getBirthRecords(), linkage_recipe.getLinkageFields());
         return BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
     }
 
@@ -52,6 +52,7 @@ public class BitBlasterLinkageRunnerSpecial extends LinkageRunner {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
 
+        List<LXP> x = getReferencePoints();
         ((SimilaritySearchLinker)linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(),getReferencePoints());
 
         System.out.println("Constructing link iterable @ " + LocalDateTime.now());

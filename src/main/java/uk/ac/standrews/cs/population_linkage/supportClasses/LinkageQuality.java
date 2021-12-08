@@ -34,7 +34,8 @@ public class LinkageQuality {
         this.message = message;
     }
 
-    public void print2(PrintStream out) {
+    // Switch names of print and print2 for csv output
+    public void print(PrintStream out) {
         if(message == null) {
             out.println("TP: " + tp);
             out.println("FN: " + fn);
@@ -49,7 +50,7 @@ public class LinkageQuality {
     }
 
     // Switch names of print and print2 for textual output
-    public void print(PrintStream out) {
+    public void print2(PrintStream out) {
         out.println( toCSV() );
     }
 

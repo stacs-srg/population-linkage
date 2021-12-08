@@ -11,10 +11,12 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
+import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -25,7 +27,7 @@ import java.util.*;
  */
 public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 0; // TODO ??
+    private static final double DISTANCE_THRESHOLD = 0; // TODO - LOOK AT THIS! ****
 
     public static final String LINKAGE_TYPE = "parents-marriage-death-identity";
 
@@ -42,6 +44,9 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
             Marriage.GROOM_FORENAME,
             Marriage.GROOM_SURNAME
     );
+
+    public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
+    public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public DeathParentsMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
@@ -262,6 +267,11 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public double getThreshold() {
         return DISTANCE_THRESHOLD;
+    }
+
+    @Override
+    public Metric<LXP> getCompositeMetric() {
+        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 
     public static LinkStatus trueMatch(LXP death, LXP marriage) {
