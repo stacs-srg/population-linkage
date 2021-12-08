@@ -1,3 +1,0 @@
-population,size,pop#,corruption#,threshold,metric,max-sibling-gap,cache-size,#ROs
-synthetic-scotland,13k,1,0,0.67,JENSEN_SHANNON,25,25000,110
-synthetic-scotland,13k,1,0,0.67,JACCARD,25,25000,75

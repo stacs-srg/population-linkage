@@ -1,3 +1,0 @@
-population,size,pop_number,corruption_number,linkage-type,metric,threshold,preFilter,max-sibling-gap,evaluate_quality,ROs,births-cache-size,marriages-cache-size,deaths-cache-size,persist_links,results-repo,links_persistent_name,gt_persistent_name
-synthetic-scotland,13k,1,0,birth-birth-sibling,JENSEN_SHANNON,0.67,true,40,true,50,15000,0,0,false,,,
-synthetic-scotland,13k,1,0,birth-birth-sibling,JENSEN_SHANNON,0.67,true,40,true,50,15000,0,0,false,,,

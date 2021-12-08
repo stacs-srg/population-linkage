@@ -1,7 +1,0 @@
-population,size,pop#,corruption#,bucket,count,date-counted
-synthetic-scotland,13k,1,1,death_records,7107,2019-08-21T04:39:49.143
-synthetic-scotland,13k,1,1,marriage_records,3168,2019-08-21T04:39:50.421
-synthetic-scotland,13k,1,1,birth_records,11228,2019-08-21T09:41:14.821
-synthetic-scotland,13k,1,0,birth_records,11228,2019-08-21T10:48:04.150
-synthetic-scotland,13k,1,0,death_records,7107,2019-08-21T10:48:19.965
-synthetic-scotland,13k,1,0,marriage_records,3168,2019-08-21T10:48:30.533

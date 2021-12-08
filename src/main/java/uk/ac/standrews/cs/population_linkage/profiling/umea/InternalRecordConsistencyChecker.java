@@ -4,12 +4,11 @@
  */
 package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
-import uk.ac.standrews.cs.data.umea.UmeaDeathsDataSet;
-import uk.ac.standrews.cs.data.umea.UmeaMarriagesDataSet;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_records.Normalisation;
+import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
@@ -24,6 +23,7 @@ public class InternalRecordConsistencyChecker {
     private static final List<String> MARRIAGE_FIELDS_CHECKED = Arrays.asList("bride birth date", "groom birth date", "marriage year");
     private static final List<String> DEATH_FIELDS_CHECKED = Arrays.asList("birth date", "death date", "death age");
 
+    private final RecordRepository record_repository;
     private final Results marriage_results;
     private final Results death_results;
 
@@ -42,22 +42,23 @@ public class InternalRecordConsistencyChecker {
     public InternalRecordConsistencyChecker(boolean verbose) {
 
         this.verbose = verbose;
+        record_repository = new RecordRepository("umea");
         marriage_results = new Results(MARRIAGE_FIELDS_CHECKED);
         death_results = new Results(DEATH_FIELDS_CHECKED);
     }
 
-    private void checkMarriageRecordsConsistency() throws IOException {
+    private void checkMarriageRecordsConsistency() {
 
-        for (LXP marriage_record : Marriage.convertToRecords(new UmeaMarriagesDataSet())) {
+        for (LXP marriage_record : record_repository.getMarriages()) {
             checkMarriageRecordInternalConsistency(marriage_record);
         }
 
         summariseMarriagesResults();
     }
 
-    private void checkDeathRecordsConsistency() throws IOException {
+    private void checkDeathRecordsConsistency() {
 
-        for (LXP death_record : Death.convertToRecords(new UmeaDeathsDataSet())) {
+        for (LXP death_record : record_repository.getDeaths()) {
             checkDeathRecordInternalConsistency(death_record);
         }
 
@@ -83,7 +84,7 @@ public class InternalRecordConsistencyChecker {
     }
 
     /**
-     * Checks the ages of bride and groom are plausible plausible, either as recorded or as calculated from birth
+     * Checks the ages of bride and groom are plausible, either as recorded or as calculated from birth
      * date and marriage date.
      *
      * @param marriage_record the record

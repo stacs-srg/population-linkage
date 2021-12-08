@@ -4,10 +4,10 @@
  */
 package uk.ac.standrews.cs.population_linkage.characterisation;
 
-import uk.ac.standrews.cs.data.umea.UmeaBirthsDataSet;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
@@ -50,9 +50,10 @@ public class MetricSpaceChecks {
     private void checkTriangleInequality() throws IOException {
 
         Random random = new Random(SEED);
+        RecordRepository record_repository = new RecordRepository("umea");
 
         final List<LXP> birth_records = new ArrayList<>();
-        for (Birth birth : Birth.convertToRecords(new UmeaBirthsDataSet())) {
+        for (Birth birth : record_repository.getBirths()) {
             birth_records.add(birth);
         }
 
