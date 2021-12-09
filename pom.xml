@@ -73,9 +73,6 @@
 
                 <configuration>
                     <excludes>
-                        <!-- Suppress test until it's made self-contained. -->
-                        <exclude>*uk.ac.standrews.cs.population_linkage*/*InfrastructureTest.java</exclude>
-
                         <!-- Suppress on maven build due to long run time. -->
                         <exclude>*uk.ac.standrews.cs.population_linkage*/*BitBlasterTest.java</exclude>
 
