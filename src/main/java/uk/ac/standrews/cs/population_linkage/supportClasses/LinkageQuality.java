@@ -21,13 +21,9 @@ public class LinkageQuality {
     private String message = null;
 
     public LinkageQuality(long tp, long fp, long fn) {
-        this.tp = tp;
-        this.fp = fp;
-        this.fn = fn;
 
-        precision = ClassificationMetrics.precision(tp, fp);
-        recall = ClassificationMetrics.recall(tp, fn);
-        f_measure = ClassificationMetrics.F1(tp, fp, fn);
+        setAll(tp,fp,fn);
+        updatePRF();
     }
 
     public LinkageQuality(String message) {
@@ -75,4 +71,41 @@ public class LinkageQuality {
     public double getF_measure() {
         return f_measure;
     }
+
+    public long getTp() {
+        return tp;
+    }
+
+    public void setTp(long tp) {
+        this.tp = tp;
+    }
+
+    public long getFp() {
+        return fp;
+    }
+
+    public void setFp(long fp) {
+        this.fp = fp;
+    }
+
+    public long getFn() {
+        return fn;
+    }
+
+    public void setFn(long fn) {
+        this.fn = fn;
+    }
+
+    public void setAll(long tp, long fp, long fn) {
+        this.tp = tp;
+        this.fp = fp;
+        this.fn = fn;
+    }
+
+    public void updatePRF() {
+        precision = ClassificationMetrics.precision(tp, fp);
+        recall = ClassificationMetrics.recall(tp, fn);
+        f_measure = ClassificationMetrics.F1(tp, fp, fn);
+    }
+
 }

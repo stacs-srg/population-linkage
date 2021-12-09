@@ -92,12 +92,12 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
                 runExperiment(source_repo, number_of_records, mode, all_fields, bridge);
 
-                // runExperiment(source_repo, number_of_records, mode, 0, bridge); // First run with no requirement on the number of fields
+                 runExperiment(source_repo, number_of_records, mode, 0, bridge); // First run with no requirement on the number of fields
 
-                //for( int linkage_fields = all_fields; linkage_fields >= half_fields; linkage_fields-- ) {
-                //    runExperiment(source_repo, number_of_records, mode, linkage_fields, bridge);
-                //    linkage_fields--;
-                //}
+                for( int linkage_fields = all_fields; linkage_fields >= half_fields; linkage_fields-- ) {
+                    runExperiment(source_repo, number_of_records, mode, linkage_fields, bridge);
+                    linkage_fields--;
+                }
 
             }
         } catch (Exception e) {

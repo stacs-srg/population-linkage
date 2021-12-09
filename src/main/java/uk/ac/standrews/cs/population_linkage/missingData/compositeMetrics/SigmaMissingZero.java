@@ -12,17 +12,17 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * MissingZero function for combining metrics - compares a single set of fields
+ * SigmaMissingZero function for combining metrics - compares a single set of fields
  * Tolerant of missing data - returns 0 if missing fields
  * Created by al on 30/9/2021
  */
-public class MissingZero extends Metric<LXP> {
+public class SigmaMissingZero extends Metric<LXP> {
 
     final StringMetric base_distance;
     final List<Integer> field_list;
     final int id_field_index;
 
-    public MissingZero(final StringMetric base_distance, final List<Integer> field_list, final int id_field_index) {
+    public SigmaMissingZero(final StringMetric base_distance, final List<Integer> field_list, final int id_field_index) {
 
         this.base_distance = base_distance;
         this.field_list = field_list;

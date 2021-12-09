@@ -7,7 +7,7 @@ package uk.ac.standrews.cs.population_linkage.missingData.recipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.Max;
+import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.SigmaMissingZero;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
@@ -24,6 +24,6 @@ public class BDLinkageRecipeMissingZero extends BirthDeathIdentityLinkageRecipe 
 
     @Override
     public Metric<LXP> getCompositeMetric() {
-        return new Max(getBaseMetric(), getLinkageFields(), Birth.STANDARDISED_ID);
+        return new SigmaMissingZero(getBaseMetric(), getLinkageFields(), Birth.STANDARDISED_ID);
     }
 }

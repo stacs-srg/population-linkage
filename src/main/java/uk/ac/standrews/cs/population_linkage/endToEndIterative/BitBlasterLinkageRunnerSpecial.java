@@ -52,7 +52,6 @@ public class BitBlasterLinkageRunnerSpecial extends LinkageRunner {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
 
-        List<LXP> x = getReferencePoints();
         ((SimilaritySearchLinker)linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(),getReferencePoints());
 
         System.out.println("Constructing link iterable @ " + LocalDateTime.now());

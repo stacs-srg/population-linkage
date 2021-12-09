@@ -92,6 +92,8 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
     }
 
     public void terminate() {
+
+        System.out.println( "Terminating bitblaster" );
         bit_blaster.terminate();
     }
 
