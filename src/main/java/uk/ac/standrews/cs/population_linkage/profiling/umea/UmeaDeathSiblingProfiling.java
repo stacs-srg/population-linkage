@@ -9,7 +9,7 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;

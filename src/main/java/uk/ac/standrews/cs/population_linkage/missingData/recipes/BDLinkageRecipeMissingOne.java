@@ -7,7 +7,7 @@ package uk.ac.standrews.cs.population_linkage.missingData.recipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics.SigmaMissingOne;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.SigmaMissingOne;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 

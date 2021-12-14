@@ -9,7 +9,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;

@@ -9,11 +9,11 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.SigmaMissingOne;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -26,7 +26,7 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  * Links a person appearing as the child on a birth record with the same person appearing as the bride on a marriage record.
  * Now also performs subsetting 11/11/21
  */
-public class BirthBrideIdentityLinkageRecipeSpecial extends LinkageRecipe {
+public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
 
     // TODO Some Wrigley rules not obvious where to place in viability checks.
@@ -76,7 +76,7 @@ public class BirthBrideIdentityLinkageRecipeSpecial extends LinkageRecipe {
     );
     protected List<LXP> cached_records = null;
 
-    public BirthBrideIdentityLinkageRecipeSpecial(String source_repository_name, String number_of_records, List<LXP> search_matched, List<LXP> stored_matched, String links_persistent_name, double threshold, NeoDbCypherBridge bridge) {
+    public BirthBrideIdentityLinkageRecipeMatchLists(String source_repository_name, String number_of_records, List<LXP> search_matched, List<LXP> stored_matched, String links_persistent_name, double threshold, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if( number_of_records.equals(EVERYTHING_STRING) ) {
             NUMBER_OF_BIRTHS = EVERYTHING;
@@ -161,7 +161,7 @@ public class BirthBrideIdentityLinkageRecipeSpecial extends LinkageRecipe {
 
     @Override
     public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+        return new SigmaMissingOne( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 
     public void setThreshold( double threshold ) { this.threshold = threshold; }

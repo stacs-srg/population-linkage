@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.supportClasses;
+package uk.ac.standrews.cs.population_linkage.compositeMetrics;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * SigmaMissingOne function for combining metrics  - compares different field lists over data
+ * Sigma function for combining metrics  - compares different field lists over data
  * Created by al on 13/12/18
  */
 public class Sigma2 extends Metric<LXP> {

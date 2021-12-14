@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.supportClasses;
+package uk.ac.standrews.cs.population_linkage.compositeMetrics;
 
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
@@ -12,33 +12,39 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
 import java.util.List;
 
 /**
- * SigmaMissingOne function for combining metrics - compares a single set of fields
- * Created by al on 13/12/18
+ * SigmaMissingHalf function for combining metrics - compares a single set of fields
+ * For missing fields returns 0.5 this is not really the mean!
+ * Might look at this later?
+ * Created by al on 30/9/2021
  */
-public class Sigma extends Metric<LXP> {
+public class Max extends Metric<LXP> {
 
     final StringMetric base_distance;
     final List<Integer> field_list;
     final int id_field_index;
 
-    public Sigma(final StringMetric base_distance, final List<Integer> field_list, final int id_field_index) {
+    public Max(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
 
-        this.base_distance = base_distance;
+        this.base_distance = base_metric;
         this.field_list = field_list;
         this.id_field_index = id_field_index;
     }
 
     @Override
     public double calculateDistance(final LXP a, final LXP b) {
-
-        double total_distance = 0.0d;
+        
+        double max = Double.MIN_VALUE;
 
         for (int field_index : field_list) {
             try {
                 String field_value1 = a.getString(field_index);
                 String field_value2 = b.getString(field_index);
 
-                total_distance += base_distance.distance(field_value1, field_value2);
+                if( isMissing(field_value1) || isMissing(field_value2) ) {
+                    return 1;
+                }
+
+                max = Math.max( max,base_distance.distance(field_value1, field_value2) );
 
             } catch (Exception e) {
                 printExceptionDebug(a, b, field_index);
@@ -46,7 +52,11 @@ public class Sigma extends Metric<LXP> {
             }
         }
 
-        return normaliseArbitraryPositiveDistance(total_distance);
+        return max;
+    }
+
+    private boolean isMissing(String value) {
+        return value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----");
     }
 
     @Override

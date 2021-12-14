@@ -15,7 +15,7 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundl
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideBrideSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.JensenShannon;

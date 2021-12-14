@@ -11,7 +11,7 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;

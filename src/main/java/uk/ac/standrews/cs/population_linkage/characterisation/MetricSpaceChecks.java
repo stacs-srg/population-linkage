@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage.characterisation;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;

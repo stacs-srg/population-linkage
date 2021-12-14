@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics;
+package uk.ac.standrews.cs.population_linkage.compositeMetrics;
 
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
@@ -13,17 +13,16 @@ import java.util.List;
 
 /**
  * SigmaMissingHalf function for combining metrics - compares a single set of fields
- * For missing fields returns 0.5 this is not really the mean!
- * Might look at this later?
+ * For missing fields returns the mean of other distances
  * Created by al on 30/9/2021
  */
-public class SigmaMissingHalf extends Metric<LXP> {
+public class SigmaMissingMean extends Metric<LXP> {
 
     final StringMetric base_distance;
     final List<Integer> field_list;
     final int id_field_index;
 
-    public SigmaMissingHalf(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
+    public SigmaMissingMean(final StringMetric base_metric, final List<Integer> field_list, final int id_field_index) {
 
         this.base_distance = base_metric;
         this.field_list = field_list;
@@ -34,6 +33,8 @@ public class SigmaMissingHalf extends Metric<LXP> {
     public double calculateDistance(final LXP a, final LXP b) {
         
         double total_distance = 0.0d;
+        int missing_count = 0;
+        int present_count = 0;
 
         for (int field_index : field_list) {
             try {
@@ -41,8 +42,9 @@ public class SigmaMissingHalf extends Metric<LXP> {
                 String field_value2 = b.getString(field_index);
 
                 if( isMissing(field_value1) || isMissing(field_value2) ) {
-                    total_distance += 0.5;
+                    missing_count++;
                 } else {
+                    present_count++;
                     total_distance += base_distance.distance(field_value1, field_value2);
                 }
 
@@ -50,6 +52,11 @@ public class SigmaMissingHalf extends Metric<LXP> {
                 printExceptionDebug(a, b, field_index);
                 throw new RuntimeException("exception comparing field " + a.getMetaData().getFieldName(field_index) + " in records \n" + a + "\n and \n" + b, e);
             }
+        }
+
+        if( missing_count > 0 && present_count != 0 ) {
+            double average = total_distance / present_count;
+            total_distance += average * missing_count;
         }
 
         return normaliseArbitraryPositiveDistance(total_distance);

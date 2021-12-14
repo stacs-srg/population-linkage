@@ -19,6 +19,7 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
@@ -48,24 +49,81 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     public LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {
 
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
-
         ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
-
         System.out.println("Constructing link iterable @ " + LocalDateTime.now());
 
         Iterable<Link> links = linker.getLinks();
 
+        return processLinks(make_persistent, evaluate_quality, persist_links, links);
+    }
+
+    @Override
+    public LinkageResult linkLists(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links, boolean isIdentityLinkage) throws Exception {
+        System.out.println("Adding records into linker @ " + LocalDateTime.now());
+        ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
+        System.out.println("Constructing link iterable @ " + LocalDateTime.now());
+
+        List<Link> linked_pairs = new ArrayList<>();
+
+        for (List<Link> list_of_links : linker.getListsOfLinks() ) {
+            if( list_of_links.size() > 0 ) {
+                if( ! isIdentityLinkage ) {   // for non identity add all of then for now - TODO EXPLORE THIS.
+                    linked_pairs.addAll( list_of_links );
+                } else  if( list_of_links.size() == 1 ) { // No choice of links here so add it to the links.
+                    linked_pairs.add( list_of_links.get(0) );
+                } else {
+                    // Only add the closest for now! TODO EXPLORE THIS.
+                    addAllEqualToClosest( linked_pairs,list_of_links );
+                    showAltDistances( list_of_links );
+                }
+            }
+
+        }
+
+        return processLinks(make_persistent, evaluate_quality, persist_links, linked_pairs);
+    }
+
+    /**
+     * Adds all same distance as closest to the result set - some will be wrong but cannot differentiate.
+     * @param results - the result set being returned by the query
+     * @param list_of_links - the candidates for potential addition to the results
+     */
+    private void addAllEqualToClosest(List<Link> results, List<Link> list_of_links) {
+        double closest_dist = list_of_links.get(0).getDistance();
+        for( Link link : list_of_links ) {
+            if( link.getDistance() == closest_dist ) {
+                results.add( link );
+            } else {
+                return;
+            }
+        }
+    }
+
+    private void showAltDistances(List<Link> list_of_links) {
+        StringBuilder sb = new StringBuilder();
+        sb.append( "Dists: " );
+        for( Link l : list_of_links) {
+            sb.append( doesGTSayIsTrue(l) ? "TP:" : "FP:" );
+            sb.append( l.getDistance() + "," );
+        }
+        System.out.println( sb );
+    }
+
+
+    private LinkageResult processLinks(MakePersistent make_persistent, boolean evaluate_quality, boolean persist_links, Iterable<Link> links) {
         long tp = 0;
         long fp = 0;
 
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now());
 
-        for (Link linkage_says_true_link : links) {
-
-            if (persist_links) {
+        if (persist_links) {
+            for (Link linkage_says_true_link : links) {
                 make_persistent.makePersistent(linkage_recipe, linkage_says_true_link);
             }
-            if (evaluate_quality) {
+        }
+
+        if (evaluate_quality) {
+            for (Link linkage_says_true_link : links) {
                 if (doesGTSayIsTrue(linkage_says_true_link)) {
                     tp++;
                 } else {
@@ -77,14 +135,20 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         System.out.println("Exiting persist and evaluate loop @ " + LocalDateTime.now());
 
         if (evaluate_quality) {
-            System.out.println("Evaluating ground truth @ " + LocalDateTime.now());
-            numberOfGroundTruthTrueLinks = linkage_recipe.getNumberOfGroundTruthTrueLinks();
-            System.out.println("Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks);
-            LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
-            lq.print(System.out);
-            return new LinkageResult(lq);
+            LinkageQuality lq = getLinkageQuality(evaluate_quality, tp, fp);
+            return new LinkageResult(lq,links);
         } else {
-            return new LinkageResult(null); // TODO What should this return in this case?
+            return new LinkageResult(null, null); // TODO What should this return in this case?
         }
+    }
+
+    private LinkageQuality getLinkageQuality(boolean evaluate_quality, long tp, long fp) {
+        long numberOfGroundTruthTrueLinks;
+        System.out.println("Evaluating ground truth @ " + LocalDateTime.now());
+        numberOfGroundTruthTrueLinks = linkage_recipe.getNumberOfGroundTruthTrueLinks();
+        System.out.println("Number of GroundTruth true Links = " + numberOfGroundTruthTrueLinks);
+        LinkageQuality lq = getLinkageQuality(evaluate_quality, numberOfGroundTruthTrueLinks, tp, fp);
+        lq.print(System.out);
+        return lq;
     }
 }

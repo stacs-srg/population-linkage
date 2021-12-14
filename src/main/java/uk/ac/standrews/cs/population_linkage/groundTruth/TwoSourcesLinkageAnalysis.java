@@ -5,8 +5,8 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma2;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma2;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;

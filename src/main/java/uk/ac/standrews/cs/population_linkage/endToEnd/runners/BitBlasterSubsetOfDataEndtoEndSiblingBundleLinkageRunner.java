@@ -92,7 +92,7 @@ public class BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner extends Bi
         long fn = numberOfGroundTruthTrueLinks - tp;
         LinkageQuality lq = new LinkageQuality(tp, fp, fn);
 
-        return new LinkageResult(lq);
+        return new LinkageResult(lq, links);
     }
 
     private List<Link> dedupSymmetricAndSelfPairs(Iterable<Link> links) throws BucketException, RepositoryException {

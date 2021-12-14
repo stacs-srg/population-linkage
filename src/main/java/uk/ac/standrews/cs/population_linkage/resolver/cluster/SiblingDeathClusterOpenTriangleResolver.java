@@ -20,7 +20,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageR
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.Distance;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;

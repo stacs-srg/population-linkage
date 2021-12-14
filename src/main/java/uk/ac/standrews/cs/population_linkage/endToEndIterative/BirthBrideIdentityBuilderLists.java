@@ -25,7 +25,7 @@ import java.util.List;
  * Multiple marriages of a single party (the bride).
  * This is  STRONG.
  */
-public class BirthBrideIdentityBuilderIterative implements MakePersistent {
+public class BirthBrideIdentityBuilderLists implements MakePersistent {
 
     public static void main(String[] args) throws BucketException {
 
@@ -33,7 +33,6 @@ public class BirthBrideIdentityBuilderIterative implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
-
             List<LXP> search_matched = new ArrayList<>();
             List<LXP> stored_matched = new ArrayList<>();
 
@@ -52,13 +51,13 @@ public class BirthBrideIdentityBuilderIterative implements MakePersistent {
                     linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
                     BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
-                    LinkageResult lrs = bb.run(linkageRecipe, new BirthBrideIdentityBuilderIterative(), true, true);
+                    LinkageResult lrs = bb.run2(linkageRecipe, new BirthBrideIdentityBuilderIterative(), true, true, true);
                     accumulateQuality(overall_quality, lrs.getLinkageQuality());
                     search_matched.addAll(lrs.getLinkedSearchRecords());
                     stored_matched.addAll(lrs.getLinkedStoredRecords());
                 }
             }
-        } catch (Exception e) {
+        }  catch (Exception e) {
             System.out.println("Runtime exception:");
                 e.printStackTrace();
             } finally{
@@ -91,7 +90,7 @@ public class BirthBrideIdentityBuilderIterative implements MakePersistent {
                             recipe.getNoLinkageFieldsRequired(),
                             link.getDistance());
                 }
-            } catch (uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException | RepositoryException e) {
+            } catch (BucketException | RepositoryException e) {
                 throw new RuntimeException(e);
             }
         }

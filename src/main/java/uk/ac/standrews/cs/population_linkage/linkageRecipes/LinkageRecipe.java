@@ -30,7 +30,7 @@ import java.util.stream.StreamSupport;
  * In all linkage recipes the naming convention is:
  * the stored type is the first part of the name
  * the query type is the second part of the name
- * So for example in BirthBrideIdentityLinkageRecipeSpecial the stored type (stored in the search structure) is a birth and Marriages are used to query.
+ * So for example in BirthBrideIdentityLinkageRecipeMatchLists the stored type (stored in the search structure) is a birth and Marriages are used to query.
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  */
 public abstract class LinkageRecipe {

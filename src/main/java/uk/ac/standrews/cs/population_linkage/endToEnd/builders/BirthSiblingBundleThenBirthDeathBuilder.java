@@ -18,7 +18,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;

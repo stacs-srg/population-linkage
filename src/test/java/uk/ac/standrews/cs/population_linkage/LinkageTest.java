@@ -9,7 +9,7 @@ import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXPMetaData;
 import uk.ac.standrews.cs.neoStorr.impl.LXPReference;

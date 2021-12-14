@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.missingData.compositeMetrics;
+package uk.ac.standrews.cs.population_linkage.compositeMetrics;
 
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
@@ -13,8 +13,7 @@ import java.util.List;
 
 /**
  * SigmaMissingHalf function for combining metrics - compares a single set of fields
- * For missing fields returns 0.5 this is not really the mean!
- * Might look at this later?
+ * For missing fields returns 0.5
  * Created by al on 30/9/2021
  */
 public class SigmaMeanOfPresent extends Metric<LXP> {

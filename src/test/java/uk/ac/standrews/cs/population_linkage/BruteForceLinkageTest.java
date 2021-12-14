@@ -9,7 +9,10 @@ import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+
+import java.util.List;
 
 public class BruteForceLinkageTest extends LinkageTest {
 
@@ -39,5 +42,9 @@ public class BruteForceLinkageTest extends LinkageTest {
             setThreshold(threshold);
         }
 
+        @Override
+        public Iterable<List<RecordPair>> getMatchingLists() {
+            return null; // TODO &&&&
+        }
     }
 }

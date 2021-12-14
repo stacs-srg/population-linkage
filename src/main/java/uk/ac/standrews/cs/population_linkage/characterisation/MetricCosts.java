@@ -8,7 +8,7 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;

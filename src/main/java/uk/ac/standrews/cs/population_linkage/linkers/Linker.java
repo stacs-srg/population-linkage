@@ -14,17 +14,19 @@ import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public abstract class Linker {
 
     protected final Metric<LXP> distance_metric;
     protected final ProgressIndicator linkage_progress_indicator;
-    private final Function<RecordPair, Boolean> is_viable_link;
+    protected final Function<RecordPair, Boolean> is_viable_link;
     protected double threshold;
-    private Iterable<LXP> records1;
-    private Iterable<LXP> records2;
+    protected Iterable<LXP> records1;
+    protected Iterable<LXP> records2;
     private final String link_type;
     private final String provenance;
     private final String role_type_1;
@@ -52,6 +54,8 @@ public abstract class Linker {
 
     public void terminate() {
     }
+
+    public abstract Iterable<List<RecordPair>> getMatchingLists();
 
     public Iterable<Link> getLinks() {
 
@@ -117,6 +121,41 @@ public abstract class Linker {
             }
         };
     }
+
+    public Iterable<List<Link>> getListsOfLinks() {
+
+        Iterator<List<RecordPair>> iter = getMatchingLists().iterator();
+
+        return new Iterable<>() {
+
+            public Iterator<List<Link>> iterator() {
+                return new Iterator<>() {
+
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public List<Link> next() {
+                        return toLinkList(iter.next());
+                    }
+
+                    private List<Link> toLinkList(List<RecordPair> pairs) {
+                        return pairs.stream().map(pair -> {
+                            try {
+                                return new Link(pair.stored_record, getRoleType1(), pair.query_record, getRoleType2(), 1.0f,
+                                        getLinkType(), pair.distance, getProvenance() + ", distance: " + pair.distance);
+                            } catch (PersistentObjectException e) {
+                                throw new RuntimeException(e);
+                            }
+                        } ).collect(Collectors.toList());
+                    }
+                };
+            }
+        };
+    }
+
 
     public void setThreshold(double threshold) {
 

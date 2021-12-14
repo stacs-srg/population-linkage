@@ -16,13 +16,15 @@ import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SimilaritySearchLinker extends Linker {
 
     private SearchStructureFactory<LXP> search_structure_factory;
-    private SearchStructure<LXP> search_structure;
-    private Iterable<LXP> search_set;
-    private LinkageRecipe linkage_recipe;
+    protected SearchStructure<LXP> search_structure;
+    protected Iterable<LXP> search_set;
+    protected LinkageRecipe linkage_recipe;
 
     public SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
                                   String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> is_viable_link, LinkageRecipe linkage_recipe) {
@@ -51,6 +53,40 @@ public class SimilaritySearchLinker extends Linker {
 
     public void terminate() {
         search_structure.terminate();
+    }
+
+    @Override
+    public Iterable<List<RecordPair>> getMatchingLists() {
+
+        Iterator<LXP> search_set_iterator = search_set.iterator(); // these are the records we are using as key to search (i.e. we're searching for the nearest thing to these in the stored records)
+        return new Iterable<>() {
+
+            @Override
+            public Iterator<List<RecordPair>> iterator() {
+                return new Iterator<List<RecordPair>>() {
+                    @Override
+                    public boolean hasNext() {
+                        return search_set_iterator.hasNext();
+                    }
+
+                    @Override
+                    public List<RecordPair> next() {
+
+                        LXP next_record_from_search_set = search_set_iterator.next();
+                        // the next_record_from_search_set converted into the same type as the stored records
+                        final LXP converted_record = linkage_recipe != null ? linkage_recipe.convertToOtherRecordType(next_record_from_search_set) : next_record_from_search_set;
+
+                        return toRecordPairList( next_record_from_search_set, search_structure.findWithinThreshold(converted_record, threshold ) ).collect(Collectors.toList());
+                    }
+                };
+            }
+        };
+    }
+
+    private Stream<RecordPair> toRecordPairList(LXP search_record, List<DataDistance<LXP>> withinThreshold) {
+        return withinThreshold.stream().map( dd -> new RecordPair(dd.value, search_record, dd.distance) );
+//        DataDistance<LXP> data_distance = result_records.get(result_index++);
+//        next_pair = new RecordPair(data_distance.value, next_record_from_search_set, data_distance.distance);
     }
 
     @Override
