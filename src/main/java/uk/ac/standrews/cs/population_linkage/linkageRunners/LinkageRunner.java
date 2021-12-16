@@ -34,7 +34,6 @@ public abstract class LinkageRunner {
 
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
-        this.linkage_recipe = linkage_recipe;
 
         linker = getLinker(linkage_recipe);
         linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
@@ -51,7 +50,6 @@ public abstract class LinkageRunner {
 
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
-        this.linkage_recipe = linkage_recipe;
 
         linker = getLinker(linkage_recipe);
         linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
@@ -61,6 +59,24 @@ public abstract class LinkageRunner {
         linker.terminate();
         return result;
     }
+
+    public LinkageResult run3(LinkageRecipe linkage_recipe,
+                              MakePersistent make_persistent,
+                              boolean evaluateQuality, boolean persistLinks, boolean isIdentityLinkage ) throws Exception {
+
+        this.linkage_recipe = linkage_recipe;
+        MemoryLogger.update();
+
+        linker = getLinker(linkage_recipe);
+        linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
+        int numberOGroundTruthLinks = 0;
+        MemoryLogger.update();
+        LinkageResult result = linkLists2(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
+        linker.terminate();
+        return result;
+    }
+
+    protected abstract LinkageResult linkLists2(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage) throws Exception;
 
     public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception;
 

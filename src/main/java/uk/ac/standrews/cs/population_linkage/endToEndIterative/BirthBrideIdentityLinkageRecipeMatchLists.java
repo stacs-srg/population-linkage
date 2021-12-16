@@ -9,7 +9,7 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.SigmaMissingOne;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -76,14 +76,14 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
     );
     protected List<LXP> cached_records = null;
 
-    public BirthBrideIdentityLinkageRecipeMatchLists(String source_repository_name, String number_of_records, List<LXP> search_matched, List<LXP> stored_matched, String links_persistent_name, double threshold, NeoDbCypherBridge bridge) {
+    public BirthBrideIdentityLinkageRecipeMatchLists(String source_repository_name, String number_of_records, int number_linkage_fields, List<LXP> search_matched, List<LXP> stored_matched, String links_persistent_name, double threshold, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if( number_of_records.equals(EVERYTHING_STRING) ) {
             NUMBER_OF_BIRTHS = EVERYTHING;
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+        setNoLinkageFieldsRequired( number_linkage_fields );
         setThreshold(threshold);
         this.search_matched = search_matched;
         this.stored_matched = stored_matched;
@@ -135,15 +135,18 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
             f = filterBySex(f, Birth.SEX, "f");
             cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
         }
+        System.out.println( "Processing " + cached_records.size() + " birth records");
         return cached_records;
     }
 
     @Override
-    protected Iterable<LXP> getMarriageRecords() {
-        return filterOut( search_matched, super.getMarriageRecords() );
+    protected Collection<LXP> getMarriageRecords() {
+        Collection<LXP> records = filterOut(search_matched, super.getMarriageRecords());
+        System.out.println( "Processing " + records.size() + " marriage records" );
+        return records;
     }
 
-    private Iterable<LXP> filterOut(List<LXP> matched, Iterable<LXP> records) {
+    private Collection<LXP> filterOut(List<LXP> matched, Iterable<LXP> records) {
         Collection<LXP> filteredRecords = new HashSet<>();
 
         for( LXP record : records ) {
@@ -161,7 +164,7 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
 
     @Override
     public Metric<LXP> getCompositeMetric() {
-        return new SigmaMissingOne( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
     }
 
     public void setThreshold( double threshold ) { this.threshold = threshold; }

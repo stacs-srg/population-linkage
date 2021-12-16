@@ -4,58 +4,38 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEndIterative;
 
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class attempts to find bride-bride links: links a bride on wedding to another bride on a wedding
  * Multiple marriages of a single party (the bride).
  * This is  STRONG.
  */
-public class BirthBrideIdentityBuilderIterative implements MakePersistent {
+public class BirthBrideIdentityBuilderLists2 implements MakePersistent {
 
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
+        String number_of_records = "300"; // args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
 
-            List<LXP> search_matched = new ArrayList<>();
-            List<LXP> stored_matched = new ArrayList<>();
 
-            LinkageQuality overall_quality = new LinkageQuality(0, 0, 0);
+            BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), bridge);
+            linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
+            BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
+            LinkageResult lrs = bb.run3(linkageRecipe, new BirthBrideIdentityBuilderLists2(), true, false, true);
 
-            final int all_fields = BirthBrideIdentityLinkageRecipeMatchLists.ALL_LINKAGE_FIELDS;
-            final int half_fields = all_fields - (all_fields / 2) + 1;
-
-            for (int linkage_fields = all_fields; linkage_fields >= half_fields; linkage_fields--) {
-
-                for (double thresh = 0.05; thresh < BirthBrideIdentityLinkageRecipeMatchLists.DISTANCE_THRESHOLD; thresh += 0.05) {
-
-                    System.out.println( "Running with " + linkage_fields + " required and threshold " + thresh );
-                    BirthBrideIdentityLinkageRecipeMatchLists linkageRecipe = new BirthBrideIdentityLinkageRecipeMatchLists(sourceRepo, number_of_records, linkage_fields, search_matched, stored_matched, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), thresh, bridge);
-
-                    BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
-                    LinkageResult lrs = bb.run(linkageRecipe, new BirthBrideIdentityBuilderIterative(), true, true);
-                    accumulateQuality(overall_quality, lrs.getLinkageQuality());
-                    search_matched.addAll(lrs.getLinkedSearchRecords());
-                    stored_matched.addAll(lrs.getLinkedStoredRecords());
-                }
-            }
         } catch (Exception e) {
             System.out.println("Runtime exception:");
                 e.printStackTrace();
@@ -63,15 +43,6 @@ public class BirthBrideIdentityBuilderIterative implements MakePersistent {
                 System.out.println("Run finished");
                 System.exit(0); // Make sure it all shuts down properly.
             }
-        }
-
-        private static void accumulateQuality (LinkageQuality overall_quality, LinkageQuality linkageQuality){
-            overall_quality.setFn(overall_quality.getFn() + linkageQuality.getFn());
-            overall_quality.setTp(overall_quality.getTp() + linkageQuality.getTp());
-            overall_quality.setFp(overall_quality.getFp() + linkageQuality.getFp());
-            overall_quality.updatePRF();
-            System.out.println("*** Accumulated Quality ***");
-            overall_quality.print(System.out);
         }
 
         public void makePersistent (LinkageRecipe recipe, Link link){
@@ -89,7 +60,7 @@ public class BirthBrideIdentityBuilderIterative implements MakePersistent {
                             recipe.getNoLinkageFieldsRequired(),
                             link.getDistance());
                 }
-            } catch (uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException | RepositoryException e) {
+            } catch (BucketException | RepositoryException e) {
                 throw new RuntimeException(e);
             }
         }
