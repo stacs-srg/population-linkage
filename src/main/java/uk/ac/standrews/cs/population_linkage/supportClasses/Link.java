@@ -72,10 +72,6 @@ public class Link extends JPO {
         return role2;
     }
 
-    public String getLink_type() {
-        return link_type;
-    }
-
     public double getConfidence() { return confidence; }
 
     public String getLinkType() { return link_type; }

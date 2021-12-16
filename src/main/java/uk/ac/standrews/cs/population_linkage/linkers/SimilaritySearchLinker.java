@@ -59,26 +59,21 @@ public class SimilaritySearchLinker extends Linker {
     public Iterable<List<RecordPair>> getMatchingLists() {
 
         Iterator<LXP> search_set_iterator = search_set.iterator(); // these are the records we are using as key to search (i.e. we're searching for the nearest thing to these in the stored records)
-        return new Iterable<>() {
+
+        return () -> new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return search_set_iterator.hasNext();
+            }
 
             @Override
-            public Iterator<List<RecordPair>> iterator() {
-                return new Iterator<List<RecordPair>>() {
-                    @Override
-                    public boolean hasNext() {
-                        return search_set_iterator.hasNext();
-                    }
+            public List<RecordPair> next() {
 
-                    @Override
-                    public List<RecordPair> next() {
+                final LXP next_record_from_search_set = search_set_iterator.next();
+                // the next_record_from_search_set converted into the same type as the stored records
+                final LXP converted_record = linkage_recipe != null ? linkage_recipe.convertToOtherRecordType(next_record_from_search_set) : next_record_from_search_set;
 
-                        LXP next_record_from_search_set = search_set_iterator.next();
-                        // the next_record_from_search_set converted into the same type as the stored records
-                        final LXP converted_record = linkage_recipe != null ? linkage_recipe.convertToOtherRecordType(next_record_from_search_set) : next_record_from_search_set;
-
-                        return toRecordPairList( next_record_from_search_set, search_structure.findWithinThreshold(converted_record, threshold ) ).collect(Collectors.toList());
-                    }
-                };
+                return toRecordPairList(next_record_from_search_set, search_structure.findWithinThreshold(converted_record, threshold)).collect(Collectors.toList());
             }
         };
     }

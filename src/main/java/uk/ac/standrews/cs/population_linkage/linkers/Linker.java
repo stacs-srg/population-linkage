@@ -6,7 +6,6 @@ package uk.ac.standrews.cs.population_linkage.linkers;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
-import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.utilities.PercentageProgressIndicator;
@@ -91,7 +90,7 @@ public abstract class Linker {
                             getNextLink();
                         }
 
-                        Link next_link = next;
+                        final Link next_link = next;
                         next = null;
 
                         return next_link;
@@ -124,38 +123,32 @@ public abstract class Linker {
 
     public Iterable<List<Link>> getListsOfLinks() {
 
-        Iterator<List<RecordPair>> iter = getMatchingLists().iterator();
+        final Iterator<List<RecordPair>> iter = getMatchingLists().iterator();
 
-        return new Iterable<>() {
+        return () -> new Iterator<>() {
 
-            public Iterator<List<Link>> iterator() {
-                return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
 
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
+            @Override
+            public List<Link> next() {
+                return toLinkList(iter.next());
+            }
+
+            private List<Link> toLinkList(List<RecordPair> pairs) {
+                return pairs.stream().map(pair -> {
+                    try {
+                        return new Link(pair.stored_record, getRoleType1(), pair.query_record, getRoleType2(), 1.0f,
+                                getLinkType(), pair.distance, getProvenance() + ", distance: " + pair.distance);
+                    } catch (PersistentObjectException e) {
+                        throw new RuntimeException(e);
                     }
-
-                    @Override
-                    public List<Link> next() {
-                        return toLinkList(iter.next());
-                    }
-
-                    private List<Link> toLinkList(List<RecordPair> pairs) {
-                        return pairs.stream().map(pair -> {
-                            try {
-                                return new Link(pair.stored_record, getRoleType1(), pair.query_record, getRoleType2(), 1.0f,
-                                        getLinkType(), pair.distance, getProvenance() + ", distance: " + pair.distance);
-                            } catch (PersistentObjectException e) {
-                                throw new RuntimeException(e);
-                            }
-                        } ).collect(Collectors.toList());
-                    }
-                };
+                } ).collect(Collectors.toList());
             }
         };
     }
-
 
     public void setThreshold(double threshold) {
 
@@ -182,14 +175,6 @@ public abstract class Linker {
 
     public String getRoleType2() {
         return role_type_2;
-    }
-
-    public IStoreReference getIdentifier1(LXP record) throws PersistentObjectException {
-        return record.getThisRef();
-    }
-
-    public IStoreReference getIdentifier2(LXP record) throws PersistentObjectException {
-        return record.getThisRef();
     }
 
     protected int count(final Iterable<LXP> records) {

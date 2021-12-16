@@ -6,6 +6,8 @@ package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
 import org.junit.Test;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -73,7 +75,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkAllRecordPairsWithSingleDataSet() throws PersistentObjectException {
+    public void checkAllRecordPairsWithSingleDataSet() throws Exception {
 
         linker.setThreshold(Double.MAX_VALUE);
 
@@ -102,7 +104,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkAllRecordPairsWithTwoDataSets() throws PersistentObjectException {
+    public void checkAllRecordPairsWithTwoDataSets() throws Exception {
 
         linker.setThreshold(Double.MAX_VALUE);
         linker.addRecords(birth_records, death_records);
@@ -123,7 +125,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceZeroWithSingleDataSet() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistanceZeroWithSingleDataSet() throws Exception {
 
         // "janet smith" distance 0 from "janet smith"
 
@@ -136,7 +138,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistanceZeroWithTwoDataSets() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistanceZeroWithTwoDataSets() throws Exception {
 
         // "jane smyth" distance 0 from "jane smyth"
 
@@ -148,7 +150,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistance035WithSingleDataSet() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance035WithSingleDataSet() throws Exception {
 
         // "janet smith" distance 0 from "janet smith"
 
@@ -161,7 +163,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistance035WithTwoDataSets() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance035WithTwoDataSets() throws Exception {
 
         // "john smith" distance 0.333 from "john stith"
         // "jane smyth" distance 0 from "jane smyth"
@@ -175,7 +177,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistance05WithSingleDataSet() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance05WithSingleDataSet() throws Exception {
 
         // "janet smith" distance 0 from "janet smith"
         // "john smith" distance 0.444 from "janet smith"
@@ -198,7 +200,7 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistance05WithTwoDataSets() throws PersistentObjectException {
+    public void checkRecordPairsWithinDistance05WithTwoDataSets() throws Exception {
 
         // "john smith" distance 0.333 from "john stith"
         // "janet smith" distance 0.4 from "janet smythe"
@@ -219,13 +221,15 @@ public abstract class LinkageTest {
         assertTrue(containsPair(linker.getLinks(), birth4, death3));
     }
 
-    boolean containsPair(Iterable<Link> record_pairs, LXP record1, LXP record2) throws PersistentObjectException {
+    boolean containsPair(final Iterable<Link> record_pairs, final LXP record1, final LXP record2) throws BucketException, RepositoryException {
 
-        for (Link p : record_pairs) {
-            final IStoreReference identifier1 = linker.getIdentifier1(record1);
-            final IStoreReference identifier2 = linker.getIdentifier2(record2);
-            if (equal(p, identifier1, identifier2))
-                    return true;
+        for (final Link link : record_pairs) {
+
+            final LXP link_record1 = link.getRecord1().getReferend();
+            final LXP link_record2 = link.getRecord2().getReferend();
+
+            if (link_record1.equals(record1) && link_record2.equals(record2) || link_record1.equals(record2) && link_record2.equals(record1))
+                return true;
         }
         return false;
     }
@@ -260,7 +264,7 @@ public abstract class LinkageTest {
 
         String rep = "";
         int number_of_fields;
-        IStoreReference store_reference = new LXPReference( "dummy-repo", "dummy-bucket", lxp_id++);
+        IStoreReference store_reference = null;
 
         DummyLXP(String... values) {
 
@@ -285,6 +289,15 @@ public abstract class LinkageTest {
 
         @Override
         public IStoreReference getThisRef() {
+
+            if (store_reference == null) {
+                final LXP this_lxp = this;
+                store_reference = new LXPReference( "dummy-repo", "dummy-bucket", lxp_id++) {
+                    public LXP getReferend() {
+                        return this_lxp;
+                    }
+                };
+            }
             return store_reference;
         }
 
