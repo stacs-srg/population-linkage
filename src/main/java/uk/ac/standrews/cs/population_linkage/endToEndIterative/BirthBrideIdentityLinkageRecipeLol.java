@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.linkageRecipes;
+package uk.ac.standrews.cs.population_linkage.endToEndIterative;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.types.Relationship;
@@ -10,6 +10,8 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -26,7 +28,7 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  * Links a person appearing as the child on a birth record with the same person appearing as the bride on a marriage record.
  * Now also performs subsetting 11/11/21
  */
-public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
+public class BirthBrideIdentityLinkageRecipeLol extends LinkageRecipe {
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
 
     // TODO Some Wrigley rules not obvious where to place in viability checks.
@@ -71,7 +73,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     );
     protected List<LXP> cached_records = null;
 
-    public BirthBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public BirthBrideIdentityLinkageRecipeLol(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if( number_of_records.equals(EVERYTHING_STRING) ) {
             NUMBER_OF_BIRTHS = EVERYTHING;
@@ -120,14 +122,36 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
+//    @Override
+//    public Iterable<LXP> getBirthRecords() {
+//        if( cached_records == null ) {
+//            Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
+//            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
+//        }
+//        System.out.println( "Processing " + cached_records.size() + " birth records");
+//        return cached_records;
+//    }
+
     @Override
     public Iterable<LXP> getBirthRecords() {
+        System.out.println("*** Real getBirthRecords() commented in BirthBrideIdentityLinkageRecipeLol ***");
         if( cached_records == null ) {
             Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
-            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
+            cached_records = filter(6, NUMBER_OF_BIRTHS, f, getLinkageFields());
         }
         System.out.println( "Processing " + cached_records.size() + " birth records");
         return cached_records;
+    }
+
+    private Collection<LXP> filterOut(List<LXP> matched, Iterable<LXP> records) {
+        Collection<LXP> filteredRecords = new HashSet<>();
+
+        for( LXP record : records ) {
+            if (! matched.contains(record)) {
+                filteredRecords.add(record);
+            }
+        }
+        return filteredRecords;
     }
 
     @Override
