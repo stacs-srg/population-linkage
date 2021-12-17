@@ -118,7 +118,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
             }
             count++;
         }
-        System.out.println( "Number of lists = " + count);
+        System.out.println( "Number of lists   = " + count);
     }
 
     /**
