@@ -8,7 +8,6 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.PersistentObject;
 import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
@@ -32,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static uk.ac.standrews.cs.population_linkage.graph.NeoUtil.getByNeoId;
+
 public class UmeaBirthDeathHardNegativeML {
 
     private static final String true_match_filename = "Umea_BD_true_match";
@@ -42,7 +43,6 @@ public class UmeaBirthDeathHardNegativeML {
     private static final String BIRTH_DEATH_IDENTITY_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE a.CHILD_IDENTITY = b.DECEASED_IDENTITY RETURN a,b,r";
     private static final String NON_LINKS_DEATHS_QUERY = "MATCH (x:Death) WHERE NOT (:Birth)-[]-(x) RETURN x LIMIT $number";
     private static final String NON_LINKS_BIRTHS_QUERY = "MATCH (x:Birth) WHERE NOT (:Death)-[]-(x) RETURN x LIMIT $number";
-    private static final String FIND_BY_NEO_ID = "MATCH (a) WHERE Id( a ) = $node_id RETURN a";
 
     protected static final String DELIMIT = ",";
 
@@ -80,8 +80,8 @@ public class UmeaBirthDeathHardNegativeML {
         writeHeadersAndMetaData();
 
         for( Relationship r : getGTLinks(BIRTH_DEATH_IDENTITY_QUERY) ) {
-            Birth b = getByNeoId(r.startNodeId(), births);
-            Death d = getByNeoId(r.endNodeId(), deaths);
+            Birth b = getByNeoId(r.startNodeId(), births,bridge);
+            Death d = getByNeoId(r.endNodeId(), deaths,bridge);
 
             // Output the distances of b,d as true positive.
             // Now search for each of the NN identity links for b and d to get hard negatives
@@ -215,19 +215,7 @@ public class UmeaBirthDeathHardNegativeML {
         return result.list(r -> r.get("r").asRelationship());
     }
 
-    private <T extends PersistentObject> T getByNeoId(Long neo_id, IBucket<T>  bucket) throws BucketException {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("node_id", neo_id);
-        Result result = bridge.getNewSession().run(FIND_BY_NEO_ID,parameters);
-        List<Node> nodes = result.list(r -> r.get("a").asNode());
-        if( nodes.size() == 1 ) {
-            long storr_id = nodes.get(0).get("STORR_ID").asLong();
-            return bucket.getObjectById(storr_id);
-        } else {
-            System.out.println( "Error finding entry for birth with neo_id " + neo_id + " found " + nodes.size() + " nodes" );
-            throw new BucketException( "Wrong number of nodes found" );
-        }
-    }
+
 
     public static void main(String[] args) throws RepositoryException, BucketException {
 

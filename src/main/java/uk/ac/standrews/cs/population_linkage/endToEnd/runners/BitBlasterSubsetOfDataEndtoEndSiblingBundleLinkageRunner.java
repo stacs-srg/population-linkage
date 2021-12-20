@@ -5,7 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.runners;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DisplayMethods;
+import uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;

@@ -56,4 +56,6 @@ public class LinkageResult {
         }
         return result;
     }
+
+    public Iterable<Link> getLinks() { return linked_pairs; }
 }

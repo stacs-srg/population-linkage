@@ -8,6 +8,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
@@ -25,15 +26,16 @@ public class BirthBrideIdentityBuilderLists2 implements MakePersistent {
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String number_of_records = "500"; // args[1]; // e.g. EVERYTHING or 10000 etc.
+        String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
 
+ //           BirthBrideIdentityLinkageRecipeLol linkageRecipe = new BirthBrideIdentityLinkageRecipeLol(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), bridge);
 
-            BirthBrideIdentityLinkageRecipeLol linkageRecipe = new BirthBrideIdentityLinkageRecipeLol(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), bridge);
+            BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
             BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
-            LinkageResult lrs = bb.run3(linkageRecipe, new BirthBrideIdentityBuilderLists2(), true, false, true);
+            LinkageResult lrs = bb.run3(linkageRecipe, new BirthBrideIdentityBuilderLists2(), true, false, true, bridge);
 
         } catch (Exception e) {
             System.out.println("Runtime exception:");

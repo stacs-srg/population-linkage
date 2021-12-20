@@ -4,9 +4,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRunners;
 
+import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
+import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
+import uk.ac.standrews.cs.neoStorr.interfaces.IRepository;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
@@ -18,6 +24,8 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDateTime;
@@ -28,8 +36,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static uk.ac.standrews.cs.population_linkage.graph.NeoUtil.getByNeoId;
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.passesFilter;
+import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods.showBirth;
+import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods.showDeath;
 
 public class BitBlasterLinkageRunner extends LinkageRunner {
 
@@ -80,7 +91,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 } else  if( list_of_links.size() == 1 ) { // No choice of links here so add it to the links.
                     Link match = list_of_links.get(0);
                     linked_pairs.add( match );
-                    print( match );
+//                    print( match );
                 } else {
                     // Only add the closest for now! TODO EXPLORE THIS.
                     addAllEqualToClosest(list_of_links, linked_pairs);
@@ -94,7 +105,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     }
 
     @Override
-    protected LinkageResult linkLists2(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage) throws Exception {
+    protected LinkageResult linkLists2(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception {
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
         ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
         System.out.println("Constructing lists of lists @ " + LocalDateTime.now());
@@ -102,7 +113,47 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 //        Iterable<List<Link>> lol = linker.getListsOfLinks();
 //        showlol( lol );
         List<Link> linked_pairs = processListsOfLists( linker.getListsOfLinks(),isIdentityLinkage );
-        return processLinks(make_persistent, true, false, linked_pairs); // params hacked TODO
+        LinkageResult result = processLinks(make_persistent, true, false, linked_pairs); // params hacked TODO
+        investigate( result.getLinks(),bridge );
+        return result;
+    }
+
+
+    // Investigate non-links and why we missed them.
+    private void investigate(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException {
+        List<Relationship> gt_links = ((BirthDeathIdentityLinkageRecipe) linkage_recipe).getAllBirthDeathIdentityGTLinks(bridge);
+        for( Relationship gt_link : gt_links ) {
+            long birth_neo_id = gt_link.startNodeId();
+            long death_neo_id = gt_link.endNodeId();
+
+            if( notFound(links,birth_neo_id,death_neo_id) ) {
+                IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
+
+                IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
+                IBucket<Death> deaths = umea_repo.getBucket("death-records", Death.class);
+
+                Birth b = getByNeoId(birth_neo_id, births, bridge);
+                Death d = getByNeoId(death_neo_id, deaths, bridge);
+
+                long birth_storr_id = b.getId();
+                long death_storr_id = d.getId();
+
+                double distance = linkage_recipe.getCompositeMetric().distance(b, d);
+                System.out.println( "No match for pair: " + birth_storr_id + " " + death_storr_id + " distance =" + distance );
+                showBirth(births.getObjectById(birth_storr_id));
+                showDeath(deaths.getObjectById(death_storr_id));
+                System.out.println("---");
+            }
+        }
+    }
+
+    private boolean notFound(Iterable<Link> links, long birth_neo_id, long death_neo_id) {
+        for( Link link : links ) {
+            if( link.getRecord1().getObjectId() == birth_neo_id || link.getRecord2().getObjectId() == death_neo_id ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void showlol(Iterable<List<Link>> lol) {
@@ -131,7 +182,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         for( Link link : list_of_links ) {
             if( link.getDistance() == closest_dist ) {
                 results.add( link );
-                print( link );
+//                print( link );
             } else {
                 return;
             }
@@ -145,7 +196,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         List<Link> linked_pairs = new ArrayList<>();
         List<LXP> stored_matched = new ArrayList<>();
 
-        // Link.getRecord1 is the stored record - Birth in test
+        // Link.getRecord1 is the stored record - Birth in test case - BirthBrideIdentity
         // Link.getRecord2 is the query record - Marriage in test
 
         Map<Long,List<Link>> map_of_links = new HashMap<>();
@@ -163,14 +214,14 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         final int half_fields = all_fields - (all_fields / 2) + 1;
 
         for (int required_fields = all_fields; required_fields >= half_fields; required_fields--) {
-            System.out.println( "Fields = " + required_fields );
+//            System.out.println( "Fields = " + required_fields );
             for (double threshold = 0.0; threshold <= max_t; threshold += (max_t / 10)) {
-                System.out.println( "Thresh = " + threshold );
+//                System.out.println( "Thresh = " + threshold );
                 for (Long key : map_of_links.keySet()) {
                     List<Link> list_of_links = map_of_links.get(key);
-                    System.out.println( "Find closest in list of size " + list_of_links.size() );
+//                    System.out.println( "Find closest in list of size " + list_of_links.size() );
                     int index = getClosestAcceptable(list_of_links, threshold, required_fields, map_of_links, stored_matched);
-                    System.out.println( " index = " + index );
+//                   System.out.println( " index = " + index );
                     if (index != -1) {
                         addAllEqualToClosest(list_of_links, index, linked_pairs, threshold, required_fields, map_of_links, stored_matched);
                     }
@@ -261,7 +312,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
     private void addResult(Link match, List<Link> linked_pairs, Map<Long, List<Link>> map, List<LXP> stored_matched) throws BucketException, RepositoryException {
         linked_pairs.add( match );
-        System.out.println( ( doesGTSayIsTrue(match) ? "TP:" : "FP:" ) + match.getDistance() );
+//        System.out.println( ( doesGTSayIsTrue(match) ? "TP:" : "FP:" ) + match.getDistance() );
         stored_matched.add( match.getRecord1().getReferend() );
         map.remove( match.getRecord1().getReferend().getId() );
     }

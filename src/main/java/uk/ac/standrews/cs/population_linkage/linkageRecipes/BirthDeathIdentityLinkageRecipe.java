@@ -189,15 +189,23 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     private static final String BIRTH_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BIRTH_DEATH_ALL_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) RETURN r";
 
-    public static int countBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
+    public static List<Relationship> getBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
         String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID );
-
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         Result result = bridge.getNewSession().run(BIRTH_DEATH_GT_IDENTITY_LINKS_QUERY,parameters);
-        List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
-        return relationships.size();
+        return result.list(r -> r.get("r").asRelationship());
+    }
+
+    public static List<Relationship> getAllBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge) {
+        Result result = bridge.getNewSession().run(BIRTH_DEATH_ALL_GT_IDENTITY_LINKS_QUERY);
+        return result.list(r -> r.get("r").asRelationship());
+    }
+
+    public static int countBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
+        return getBirthDeathIdentityGTLinks(bridge,birth_record).size();
     }
 
     @Override

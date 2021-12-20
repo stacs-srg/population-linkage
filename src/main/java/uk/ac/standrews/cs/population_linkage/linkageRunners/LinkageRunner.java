@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRunners;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
+import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
@@ -62,7 +63,7 @@ public abstract class LinkageRunner {
 
     public LinkageResult run3(LinkageRecipe linkage_recipe,
                               MakePersistent make_persistent,
-                              boolean evaluateQuality, boolean persistLinks, boolean isIdentityLinkage ) throws Exception {
+                              boolean evaluateQuality, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception {
 
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
@@ -71,12 +72,12 @@ public abstract class LinkageRunner {
         linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
-        LinkageResult result = linkLists2(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
+        LinkageResult result = linkLists2(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
         linker.terminate();
         return result;
     }
 
-    protected abstract LinkageResult linkLists2(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage) throws Exception;
+    protected abstract LinkageResult linkLists2(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception;
 
     public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception;
 

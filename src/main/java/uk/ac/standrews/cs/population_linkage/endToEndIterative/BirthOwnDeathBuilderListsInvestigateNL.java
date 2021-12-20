@@ -2,7 +2,7 @@
  * Copyright 2020 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
+package uk.ac.standrews.cs.population_linkage.endToEndIterative;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
@@ -13,6 +13,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -20,7 +21,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
  *  This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
  *  This is NOT STRONG: uses the 3 names: the groom/baby and the names of the mother and father.
  */
-public class BirthOwnDeathBuilder implements MakePersistent {
+public class BirthOwnDeathBuilderListsInvestigateNL implements MakePersistent {
 
     public static void main(String[] args) throws BucketException {
 
@@ -28,22 +29,9 @@ public class BirthOwnDeathBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-
-            // First run with no field requirements
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getCanonicalName(), bridge);
-            linkageRecipe.setNumberLinkageFieldsRequired(0);
-            new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), true, false);
-
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
-
-            while( linkage_fields >= half_fields ) {
-                linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getCanonicalName(), bridge);
-                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), true, false);
-
-                linkage_fields--;
-            }
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNL.class.getCanonicalName(), bridge);
+            linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
+            LinkageResult res = new BitBlasterLinkageRunner().run3(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNL(), false, true, true, bridge);
         } catch (Exception e) {
             System.out.println( "Runtime exception:" );
             e.printStackTrace();
@@ -70,7 +58,7 @@ public class BirthOwnDeathBuilder implements MakePersistent {
                         link.getDistance());
             }
 
-        } catch (uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException | RepositoryException e) {
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
     }

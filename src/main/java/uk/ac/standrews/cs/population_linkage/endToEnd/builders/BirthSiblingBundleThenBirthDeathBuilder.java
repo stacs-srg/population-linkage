@@ -16,6 +16,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageR
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
+import uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
