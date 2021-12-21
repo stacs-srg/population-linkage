@@ -39,8 +39,7 @@ import java.util.stream.StreamSupport;
 import static uk.ac.standrews.cs.population_linkage.graph.NeoUtil.getByNeoId;
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.passesFilter;
-import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods.showBirth;
-import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods.showDeath;
+import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods.*;
 
 public class BitBlasterLinkageRunner extends LinkageRunner {
 
@@ -95,7 +94,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 } else {
                     // Only add the closest for now! TODO EXPLORE THIS.
                     addAllEqualToClosest(list_of_links, linked_pairs);
-                    showAltDistances( list_of_links );
+                    // showAltDistances( list_of_links );
                 }
             }
 
@@ -122,15 +121,16 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     // Investigate non-links and why we missed them.
     private void investigate(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException {
         List<Relationship> gt_links = ((BirthDeathIdentityLinkageRecipe) linkage_recipe).getAllBirthDeathIdentityGTLinks(bridge);
+        IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
+        IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
+        IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
+
         for( Relationship gt_link : gt_links ) {
             long birth_neo_id = gt_link.startNodeId();
             long death_neo_id = gt_link.endNodeId();
 
+            System.out.println( "Links not found by linker:" );
             if( notFound(links,birth_neo_id,death_neo_id) ) {
-                IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
-
-                IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
-                IBucket<Death> deaths = umea_repo.getBucket("death-records", Death.class);
 
                 Birth b = getByNeoId(birth_neo_id, births, bridge);
                 Death d = getByNeoId(death_neo_id, deaths, bridge);
@@ -140,8 +140,12 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
                 double distance = linkage_recipe.getCompositeMetric().distance(b, d);
                 System.out.println( "No match for pair: " + birth_storr_id + " " + death_storr_id + " distance =" + distance );
-                showBirth(births.getObjectById(birth_storr_id));
-                showDeath(deaths.getObjectById(death_storr_id));
+                Birth birth = births.getObjectById(birth_storr_id);
+                Death death = deaths.getObjectById(death_storr_id);
+                LXP death_birth = linkage_recipe.convertToOtherRecordType(death);
+                showBirth(birth);
+                showDeath(death);
+                showMatchFields(birth,death_birth,linkage_recipe.getLinkageFields());
                 System.out.println("---");
             }
         }

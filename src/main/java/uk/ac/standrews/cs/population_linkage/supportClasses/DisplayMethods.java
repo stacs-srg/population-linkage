@@ -10,6 +10,7 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.util.List;
 import java.util.Set;
 
 public class DisplayMethods {
@@ -81,7 +82,7 @@ public class DisplayMethods {
         StringBuilder sb = new StringBuilder();
 
         sb.append( birth.getId() + "/" );           // Standard identifiers - Storr Id/Standardised Id
-        sb.append( birth.getString(Birth.STANDARDISED_ID) + ":" );
+        sb.append( birth.getString(Birth.STANDARDISED_ID) + ": " );
 
         sb.append( birth.getString(Birth.CHILD_IDENTITY) + "," );
         sb.append( birth.getString(Birth.FORENAME) + "," );
@@ -89,7 +90,7 @@ public class DisplayMethods {
         sb.append( birth.getString(Birth.BIRTH_DAY) + "/" );
         sb.append( birth.getString(Birth.BIRTH_MONTH) + "/" );
         sb.append( birth.getString(Birth.BIRTH_YEAR) + "," );
-        sb.append( birth.getString(Birth.SEX) + "," );
+        sb.append( birth.getString(Birth.SEX) );
 
 
         if( detail == Detail.HIGH || detail == Detail.MEDIUM ) {
@@ -134,13 +135,13 @@ public class DisplayMethods {
         StringBuilder sb = new StringBuilder();
 
         sb.append( death.getId() + "/" );           // Standard identifiers - Storr Id/Standardised Id
-        sb.append( death.getString(Death.STANDARDISED_ID) + ":" );
+        sb.append( death.getString(Death.STANDARDISED_ID) + ": " );
 
         sb.append( death.getString(Death.DECEASED_IDENTITY) + "," );
         sb.append( death.getString(Death.FORENAME) + "," );
         sb.append( death.getString(Death.SURNAME) + "," );
         sb.append( death.getString(Death.DATE_OF_BIRTH)+ ",");
-        sb.append( death.getString(Death.SEX) + "," );
+        sb.append( death.getString(Death.SEX) );
 
 
         if( detail == Detail.HIGH || detail == Detail.MEDIUM ) {
@@ -174,7 +175,7 @@ public class DisplayMethods {
         StringBuilder sb = new StringBuilder();
 
         sb.append(marriage.getId() + "/");           // Standard identifiers - Storr Id/Standardised Id
-        sb.append(marriage.getString(Marriage.STANDARDISED_ID) + ":");
+        sb.append(marriage.getString(Marriage.STANDARDISED_ID) + ": ");
 
         sb.append(marriage.getString(Marriage.GROOM_FORENAME) + ",");
         sb.append(marriage.getString(Marriage.GROOM_SURNAME) + ",");
@@ -226,6 +227,14 @@ public class DisplayMethods {
         }
 
         System.out.println( sb.toString() );
+    }
+
+    public static void showMatchFields(LXP rec1, LXP rec2, List<Integer> fields) {
+        StringBuilder sb = new StringBuilder();
+        for( int index : fields ) {
+            sb.append( rec1.getString(index) + "==" + rec2.getString(index) + "\n" );
+        }
+        System.out.println(sb.toString());
     }
     
     public enum Detail {
