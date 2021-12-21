@@ -117,6 +117,58 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         return result;
     }
 
+    @Override
+    protected LinkageResult linkListsPlot(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception {
+        System.out.println("Adding records into linker @ " + LocalDateTime.now());
+        ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
+        System.out.println("Constructing lists of lists @ " + LocalDateTime.now());
+        System.out.println( "Threshold = " + linkage_recipe.getThreshold() );
+        List<Link> linked_pairs = processListsOfLists( linker.getListsOfLinks(),isIdentityLinkage );
+        LinkageResult result = processLinks(make_persistent, true, false, linked_pairs); // params hacked TODO
+        printLinks(result.getLinks());
+        printNonLinks( result.getLinks(),bridge );
+        return result;
+    }
+
+    // Print links and distances
+    private void printLinks( Iterable<Link> links ) throws RepositoryException {
+        IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
+        IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
+        IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
+
+        for( Link link : links ) {
+            long birth_storr_id = link.getRecord1().getObjectId();
+            long death_storr_id = link.getRecord2().getObjectId();
+            double distance = link.getDistance();
+            System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tLINK");
+        }
+    }
+
+    // Print non-links and distances
+    private void printNonLinks(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException {
+        List<Relationship> gt_links = ((BirthDeathIdentityLinkageRecipe) linkage_recipe).getAllBirthDeathIdentityGTLinks(bridge);
+        IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
+        IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
+        IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
+
+        for( Relationship gt_link : gt_links ) {
+            long birth_neo_id = gt_link.startNodeId();
+            long death_neo_id = gt_link.endNodeId();
+
+            System.out.println( "Links not found by linker:" );
+            if( notFound(links,birth_neo_id,death_neo_id) ) {
+
+                Birth b = getByNeoId(birth_neo_id, births, bridge);
+                Death d = getByNeoId(death_neo_id, deaths, bridge);
+
+                long birth_storr_id = b.getId();
+                long death_storr_id = d.getId();
+
+                double distance = linkage_recipe.getCompositeMetric().distance(b, d);
+                System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tNONLINK");
+            }
+        }
+    }
 
     // Investigate non-links and why we missed them.
     private void investigate(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException {
@@ -153,7 +205,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
     private boolean notFound(Iterable<Link> links, long birth_neo_id, long death_neo_id) {
         for( Link link : links ) {
-            if( link.getRecord1().getObjectId() == birth_neo_id || link.getRecord2().getObjectId() == death_neo_id ) {
+            if( link.getRecord1().getObjectId() == birth_neo_id && link.getRecord2().getObjectId() == death_neo_id ) {
                 return false;
             }
         }

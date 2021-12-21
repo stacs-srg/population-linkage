@@ -13,6 +13,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -20,7 +21,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
  *  This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
  *  This is NOT STRONG: uses the 3 names: the groom/baby and the names of the mother and father.
  */
-public class BirthOwnDeathBuilderLists implements MakePersistent {
+public class BirthOwnDeathBuilderListsInvestigateNLPlot implements MakePersistent {
 
     public static void main(String[] args) throws BucketException {
 
@@ -28,10 +29,9 @@ public class BirthOwnDeathBuilderLists implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderLists.class.getCanonicalName(), bridge);
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNLPlot.class.getCanonicalName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
-            new BitBlasterLinkageRunner().run2(linkageRecipe, new BirthOwnDeathBuilderLists(), true, true, true);
-
+            LinkageResult res = new BitBlasterLinkageRunner().run4(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNLPlot(), false, true, true, bridge);
         } catch (Exception e) {
             System.out.println( "Runtime exception:" );
             e.printStackTrace();
