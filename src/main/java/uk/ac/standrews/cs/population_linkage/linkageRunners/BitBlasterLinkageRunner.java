@@ -8,6 +8,7 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.interfaces.IRepository;
@@ -140,12 +141,16 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
             long birth_storr_id = link.getRecord1().getObjectId();
             long death_storr_id = link.getRecord2().getObjectId();
             double distance = link.getDistance();
-            System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tLINK");
+            if( doesGTSayIsTrue(link) ) {
+                System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tTP");
+            } else {
+                System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tFP");
+            }
         }
     }
 
     // Print non-links and distances
-    private void printNonLinks(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException {
+    private void printNonLinks(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException, PersistentObjectException {
         List<Relationship> gt_links = ((BirthDeathIdentityLinkageRecipe) linkage_recipe).getAllBirthDeathIdentityGTLinks(bridge);
         IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
         IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
@@ -155,7 +160,6 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
             long birth_neo_id = gt_link.startNodeId();
             long death_neo_id = gt_link.endNodeId();
 
-            System.out.println( "Links not found by linker:" );
             if( notFound(links,birth_neo_id,death_neo_id) ) {
 
                 Birth b = getByNeoId(birth_neo_id, births, bridge);
@@ -165,7 +169,13 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 long death_storr_id = d.getId();
 
                 double distance = linkage_recipe.getCompositeMetric().distance(b, d);
-                System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tNONLINK");
+                Link link = new Link(b,"",d,"",1.0f,"",distance,"");
+
+                if( doesGTSayIsTrue(link) ) {
+                    System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tFN");
+                } else {
+                    System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tTN");
+                }
             }
         }
     }
