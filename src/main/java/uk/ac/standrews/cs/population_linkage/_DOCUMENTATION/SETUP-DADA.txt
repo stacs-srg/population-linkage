@@ -29,9 +29,9 @@ Build projects:
 Set up Neo4j
 ------------
 
-Set up port forwarding on local Mac
+Set up port forwarding (run on local Mac)
 
-    cd /home/secure/git/data-umea; ./src/main/scripts/neo4j/mac/SETUP_FORWARDING.sh
+    cd [local copy of data-umea]; ./src/main/scripts/neo4j/mac/SETUP_FORWARDING.sh dada
 
 Start Neo4J:
 
