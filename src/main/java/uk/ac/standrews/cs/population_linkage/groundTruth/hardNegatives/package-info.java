@@ -1,8 +1,7 @@
 /*
- * Copyright 2020 Systems Research Group, University of St Andrews:
+ * Copyright 2022 Systems Research Group, University of St Andrews:
  * <https://github.com/stacs-srg>
  */
-
 /**
  * <p>
  * This module is to create hard negatives for training of ML package.

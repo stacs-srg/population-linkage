@@ -1,0 +1,49 @@
+====
+    Copyright 2022 Systems Research Group, University of St Andrews:
+    <https://github.com/stacs-srg>
+====
+
+Assumptions
+-----------
+
+Update Java projects
+--------------------
+
+cd /home/secure/git
+
+If 'data-umea' and 'population-linkage' not present:
+
+    git clone ssh://secure@manifesto.cs.st-andrews.ac.uk/home/secure/git/repositories/data-umea
+    git clone https://github.com/stacs-srg/population-linkage.git
+
+If 'data-umea' and 'population-linkage' already present:
+
+    cd /home/secure/git/data-umea; git pull
+    cd /home/secure/git/population-linkage; git pull
+
+Build projects:
+
+    cd /home/secure/git/data-umea; mvn clean install
+    cd /home/secure/git/population-linkage; mvn clean compile
+
+Set up Neo4j
+------------
+
+Set up port forwarding on local Mac
+
+    cd /home/secure/git/data-umea; ./src/main/scripts/neo4j/mac/SETUP_FORWARDING.sh
+
+Start Neo4J:
+
+    cd /home/secure/git/data-umea; ./src/main/scripts/neo4j/docker/RESET_DB.sh
+
+Load Umea data and indices
+--------------------------
+
+    cd /home/secure/git/data-umea; ./src/main/scripts/install/setup_umea_in_storr.sh
+    cd /home/secure/git/population-linkage; ./src/main/scripts/install/setup_umea_in_storr.sh
+
+Sanity check
+------------
+
+    cd /home/secure/git/data-umea; mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.data.umea.store.PrintUmeaRecordsFromStoreSample" -e
