@@ -133,7 +133,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
     // Print links and distances
     private void printLinks( Iterable<Link> links ) throws RepositoryException {
-        IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
+        IRepository umea_repo = Store.getInstance().getRepository("umea");
         IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
         IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
 
@@ -152,7 +152,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     // Print non-links and distances
     private void printNonLinks(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException, PersistentObjectException {
         List<Relationship> gt_links = ((BirthDeathIdentityLinkageRecipe) linkage_recipe).getAllBirthDeathIdentityGTLinks(bridge);
-        IRepository umea_repo = Store.getInstance().getRepository("umea"); // TODO HACK
+        IRepository umea_repo = Store.getInstance().getRepository("umea");
         IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
         IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
 
@@ -169,13 +169,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 long death_storr_id = d.getId();
 
                 double distance = linkage_recipe.getCompositeMetric().distance(b, d);
-                Link link = new Link(b,"",d,"",1.0f,"",distance,"");
-
-                if( doesGTSayIsTrue(link) ) {
-                    System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tFN");
-                } else {
-                    System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tTN");
-                }
+                System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tFN");
             }
         }
     }

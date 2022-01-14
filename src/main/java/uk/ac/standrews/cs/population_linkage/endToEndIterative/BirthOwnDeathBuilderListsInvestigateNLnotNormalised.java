@@ -8,7 +8,6 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
@@ -21,7 +20,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
  *  This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
  *  This is NOT STRONG: uses the 3 names: the groom/baby and the names of the mother and father.
  */
-public class BirthOwnDeathBuilderListsInvestigateNL implements MakePersistent {
+public class BirthOwnDeathBuilderListsInvestigateNLnotNormalised implements MakePersistent {
 
     public static void main(String[] args) throws BucketException {
 
@@ -29,9 +28,9 @@ public class BirthOwnDeathBuilderListsInvestigateNL implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNL.class.getCanonicalName(), bridge);
+            BirthDeathIdentityLinkageRecipeNotNorm linkageRecipe = new BirthDeathIdentityLinkageRecipeNotNorm(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNLnotNormalised.class.getCanonicalName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
-            LinkageResult res = new BitBlasterLinkageRunner().run3(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNL(), false, false, true, bridge);
+            LinkageResult res = new BitBlasterLinkageRunner().run3(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNLnotNormalised(), false, false, true, bridge);
         } catch (Exception e) {
             System.out.println( "Runtime exception:" );
             e.printStackTrace();
