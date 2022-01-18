@@ -8,7 +8,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipeNotNorm;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
@@ -29,9 +29,9 @@ public class BirthOwnDeathBuilderListsInvestigateNLPlot implements MakePersisten
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNLPlot.class.getCanonicalName(), bridge);
+            LinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipeNotNorm(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNLPlot.class.getCanonicalName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
-            LinkageResult res = new BitBlasterLinkageRunner().run4(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNLPlot(), false, true, true, bridge);
+            LinkageResult res = new BitBlasterLinkageRunner().printLinksNonLinksRun(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNLPlot(), false, false, true, bridge);
         } catch (Exception e) {
             System.out.println( "Runtime exception:" );
             e.printStackTrace();

@@ -121,6 +121,9 @@ public abstract class Linker {
         };
     }
 
+    /**
+     * @return all the links per query rather than returning indvidual links as getLinks does.
+     */
     public Iterable<List<Link>> getListsOfLinks() {
 
         final Iterator<List<RecordPair>> iter = getMatchingLists().iterator();

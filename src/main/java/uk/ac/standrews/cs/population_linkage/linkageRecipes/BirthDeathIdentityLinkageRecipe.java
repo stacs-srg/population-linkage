@@ -30,7 +30,7 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  */
 public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double THRESHOLD = 0.38;  // from earlier experiments
+    protected static double THRESHOLD = 0.38;  // from earlier experiments
 
     public static final String LINKAGE_TYPE = "birth-death-identity";
 

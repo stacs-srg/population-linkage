@@ -49,7 +49,7 @@ public class BirthBrideIdentityBuilderLists implements MakePersistent {
                     BirthBrideIdentityLinkageRecipeMatchLists linkageRecipe = new BirthBrideIdentityLinkageRecipeMatchLists(sourceRepo, number_of_records, linkage_fields, search_matched, stored_matched, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), thresh, bridge);
 
                     BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
-                    LinkageResult lrs = bb.run2(linkageRecipe, new BirthBrideIdentityBuilderLists(), true, false, true);
+                    LinkageResult lrs = bb.listsRun(linkageRecipe, new BirthBrideIdentityBuilderLists(), true, false, true);
                     accumulateQuality(overall_quality, lrs.getLinkageQuality());
                     search_matched.addAll(lrs.getLinkedSearchRecords());
                     stored_matched.addAll(lrs.getLinkedStoredRecords());

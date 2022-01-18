@@ -31,7 +31,7 @@ public class BirthOwnDeathBuilderListsInvestigateNL implements MakePersistent {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
             BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNL.class.getCanonicalName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
-            LinkageResult res = new BitBlasterLinkageRunner().run3(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNL(), false, false, true, bridge);
+            LinkageResult res = new BitBlasterLinkageRunner().investigateRun(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNL(), false, false, true, bridge);
         } catch (Exception e) {
             System.out.println( "Runtime exception:" );
             e.printStackTrace();

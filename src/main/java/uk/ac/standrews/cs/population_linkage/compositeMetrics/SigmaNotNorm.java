@@ -38,7 +38,8 @@ public class SigmaNotNorm extends Metric<LXP> {
                 String field_value1 = a.getString(field_index);
                 String field_value2 = b.getString(field_index);
 
-                total_distance += base_distance.distance(field_value1, field_value2);
+                double distance = base_distance.distance(field_value1, field_value2);
+                total_distance +=  distance;
 
             } catch (Exception e) {
                 printExceptionDebug(a, b, field_index);
@@ -46,7 +47,7 @@ public class SigmaNotNorm extends Metric<LXP> {
             }
         }
 
-        return total_distance / field_list.size() ;
+        return total_distance / field_list.size();
     }
 
     @Override

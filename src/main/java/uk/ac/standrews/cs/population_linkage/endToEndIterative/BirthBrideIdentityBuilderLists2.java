@@ -35,7 +35,7 @@ public class BirthBrideIdentityBuilderLists2 implements MakePersistent {
             BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
             BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
-            LinkageResult lrs = bb.run3(linkageRecipe, new BirthBrideIdentityBuilderLists2(), true, false, true, bridge);
+            LinkageResult lrs = bb.investigateRun(linkageRecipe, new BirthBrideIdentityBuilderLists2(), true, false, true, bridge);
 
         } catch (Exception e) {
             System.out.println("Runtime exception:");
