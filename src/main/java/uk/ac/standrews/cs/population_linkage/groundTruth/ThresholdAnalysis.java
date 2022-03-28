@@ -28,7 +28,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public abstract class ThresholdAnalysis {
 
-    // Global flag can be used to over-ride 1:1 constaint in identity linkage.
+    // Global flag can be used to over-ride 1:1 constraint in identity linkage.
     public static final boolean MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE = true;
 
     protected static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
@@ -42,7 +42,6 @@ public abstract class ThresholdAnalysis {
     protected final boolean allow_multiple_links;
     final int number_of_records_to_be_checked;
     final int number_of_runs;
-    final Path store_path;
     final String repo_name;
     final PrintWriter linkage_results_metadata_writer;
     final PrintWriter distance_results_metadata_writer;
@@ -60,7 +59,7 @@ public abstract class ThresholdAnalysis {
     boolean verbose = false;
     private int records_processed = 0;
 
-    ThresholdAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
+    ThresholdAnalysis(final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
 
         System.out.println("Running ground truth analysis for " + getLinkageType() + " on data: " + repo_name);
         System.out.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
@@ -74,7 +73,6 @@ public abstract class ThresholdAnalysis {
         combined_metrics = getCombinedMetrics();
         linkage_results = initialiseState();
 
-        this.store_path = store_path;
         this.repo_name = repo_name;
 
         linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".csv", false)));

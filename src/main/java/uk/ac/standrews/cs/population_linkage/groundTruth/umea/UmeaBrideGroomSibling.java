@@ -25,8 +25,8 @@ import java.util.List;
  */
 public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis {
 
-    UmeaBrideGroomSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true);
+    UmeaBrideGroomSibling(String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true);
     }
 
     @Override
@@ -85,11 +85,10 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = ApplicationProperties.getStorePath();
         String repo_name = "Umea";
 
         int NUMBER_OF_RUNS = 1;
 
-        new UmeaBrideGroomSibling(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaBrideGroomSibling(repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }

@@ -25,8 +25,8 @@ import java.util.List;
  */
 public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
-    UmeaBirthSibling(Path store_path, String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true);
+    UmeaBirthSibling(String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
+        super(repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true);
     }
 
     @Override
@@ -82,6 +82,6 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
         // number_of_records_to_be_checked = CHECK_ALL_RECORDS for exhaustive otherwise DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED or some other specific number.
 
-        new UmeaBirthSibling(store_path, repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaBirthSibling(repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
     }
 }
