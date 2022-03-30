@@ -5,23 +5,17 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- **
- **/
 public class UmeaBirthSiblingExamineRecordsAlExperiment  {
 
-    protected static final String repo_name = "Umea";
-    protected static final Path store_path = ApplicationProperties.getStorePath();
     protected Iterable<LXP> records;
     protected Map<String,Integer> father_surname_map = new HashMap<>();
     protected Map<String,Integer> mother_surname_map = new HashMap<>();
@@ -33,8 +27,8 @@ public class UmeaBirthSiblingExamineRecordsAlExperiment  {
     protected int parents_known_counter = 0;
 
     UmeaBirthSiblingExamineRecordsAlExperiment() throws IOException {
-        System.out.println("Reading records from repository: " + repo_name);
-        final RecordRepository record_repository = new RecordRepository(repo_name);
+        System.out.println("Reading records from repository: " + Umea.REPOSITORY_NAME);
+        final RecordRepository record_repository = new RecordRepository(Umea.REPOSITORY_NAME);
 
         records = getSourceRecords(record_repository);
     }

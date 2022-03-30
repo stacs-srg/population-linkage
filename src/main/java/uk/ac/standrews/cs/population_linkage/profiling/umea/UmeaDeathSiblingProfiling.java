@@ -4,20 +4,19 @@
  */
 package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import uk.ac.standrews.cs.utilities.metrics.Dice;
 import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,10 +33,7 @@ public class UmeaDeathSiblingProfiling {
 
     public static void profileData() {
 
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "Umea";
-
-        final Iterable<LXP> records = Utilities.getDeathRecords(new RecordRepository(repo_name));
+        final Iterable<LXP> records = Utilities.getDeathRecords(new RecordRepository(Umea.REPOSITORY_NAME));
 
         List<LXP> record_list = new ArrayList<>(105000);
         for (LXP record : records) {

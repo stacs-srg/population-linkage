@@ -5,6 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_records.Normalisation;
@@ -42,7 +43,7 @@ public class InternalRecordConsistencyChecker {
     public InternalRecordConsistencyChecker(boolean verbose) {
 
         this.verbose = verbose;
-        record_repository = new RecordRepository("umea");
+        record_repository = new RecordRepository(Umea.REPOSITORY_NAME);
         marriage_results = new Results(MARRIAGE_FIELDS_CHECKED);
         death_results = new Results(DEATH_FIELDS_CHECKED);
     }

@@ -5,7 +5,6 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.groundTruth.AsymmetricSingleSourceLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthFatherIdentityLinkageRecipe;
@@ -14,7 +13,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -30,7 +28,7 @@ public class UmeaBirthFatherIdentity extends AsymmetricSingleSourceLinkageAnalys
     }
 
     @Override
-    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
         return Utilities.getBirthRecords(record_repository);
     }
 

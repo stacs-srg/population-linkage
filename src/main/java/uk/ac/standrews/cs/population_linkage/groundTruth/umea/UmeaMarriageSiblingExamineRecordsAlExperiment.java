@@ -5,17 +5,12 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
-/**
- **
- **/
 public class UmeaMarriageSiblingExamineRecordsAlExperiment extends UmeaBirthSiblingExamineRecordsAlExperiment {
 
     UmeaMarriageSiblingExamineRecordsAlExperiment() throws IOException {
@@ -23,35 +18,34 @@ public class UmeaMarriageSiblingExamineRecordsAlExperiment extends UmeaBirthSibl
     }
 
     @Override
-    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
-        System.out.println( "umea Marriages" );
+    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
         return Utilities.getMarriageRecords(record_repository);
     }
 
     @Override
     protected void run() {
-        for( LXP record : records ) {
+        for (LXP record : records) {
 
             String groom_father_surname = record.getString(Marriage.GROOM_FATHER_SURNAME);
-            String groom_father_forname = record.getString(Marriage.GROOM_FATHER_FORENAME);
+            String groom_father_forename = record.getString(Marriage.GROOM_FATHER_FORENAME);
             String groom_mother_surname = record.getString(Marriage.GROOM_MOTHER_MAIDEN_SURNAME);
-            String groom_mother_forname = record.getString(Marriage.GROOM_FATHER_FORENAME);
+            String groom_mother_forename = record.getString(Marriage.GROOM_FATHER_FORENAME);
 
             String bride_father_surname = record.getString(Marriage.BRIDE_FATHER_SURNAME);
-            String bride_father_forname = record.getString(Marriage.BRIDE_FATHER_FORENAME);
+            String bride_father_forename = record.getString(Marriage.BRIDE_FATHER_FORENAME);
             String bride_mother_surname = record.getString(Marriage.BRIDE_MOTHER_MAIDEN_SURNAME);
-            String bride_mother_forname = record.getString(Marriage.BRIDE_FATHER_FORENAME);
+            String bride_mother_forename = record.getString(Marriage.BRIDE_FATHER_FORENAME);
 
-            addToCounts( groom_father_surname,groom_father_forname,groom_mother_surname,groom_mother_forname );
-            addToCounts( bride_father_surname,bride_father_forname,bride_mother_surname,bride_mother_forname );
+            addToCounts(groom_father_surname, groom_father_forename, groom_mother_surname, groom_mother_forename);
+            addToCounts(bride_father_surname, bride_father_forename, bride_mother_surname, bride_mother_forename);
 
-            if( bothGroomsParentsKnown(record)) {
+            if (bothGroomsParentsKnown(record)) {
                 parents_known_counter++;
-                addToMap(combined_both_known_parental_map, groom_father_forname + groom_father_surname + groom_mother_forname + groom_mother_surname );
+                addToMap(combined_both_known_parental_map, groom_father_forename + groom_father_surname + groom_mother_forename + groom_mother_surname);
             }
-            if( bothBridesParentsKnown(record)) {
+            if (bothBridesParentsKnown(record)) {
                 parents_known_counter++;
-                addToMap(combined_both_known_parental_map, bride_father_forname + bride_father_surname + bride_mother_forname + bride_mother_surname );
+                addToMap(combined_both_known_parental_map, bride_father_forename + bride_father_surname + bride_mother_forename + bride_mother_surname);
             }
             record_counter++;
         }
@@ -61,8 +55,8 @@ public class UmeaMarriageSiblingExamineRecordsAlExperiment extends UmeaBirthSibl
     @Override
     protected void printAnalysis() {
         super.printAnalysis();
-        System.out.println( "Number of unique combined (Mother and Father) names = " + combined_parental_map.keySet().size() );
-        System.out.println( "Number of unique combined (Mother and Father) names (where both known) = " + combined_both_known_parental_map.keySet().size() );
+        System.out.println("Number of unique combined (Mother and Father) names = " + combined_parental_map.keySet().size());
+        System.out.println("Number of unique combined (Mother and Father) names (where both known) = " + combined_both_known_parental_map.keySet().size());
     }
 
     public static boolean bothBridesParentsKnown(LXP record) {
@@ -82,16 +76,12 @@ public class UmeaMarriageSiblingExamineRecordsAlExperiment extends UmeaBirthSibl
     }
 
     @Override
-    protected void addToCounts(String father_surname, String father_forname, String mother_surname, String mother_forname) {
-        super.addToCounts(father_surname, father_forname, mother_surname, mother_forname);
-        addToMap(combined_parental_map, father_forname + father_surname + mother_forname + mother_surname );
+    protected void addToCounts(String father_surname, String father_forename, String mother_surname, String mother_forename) {
+        super.addToCounts(father_surname, father_forename, mother_surname, mother_forename);
+        addToMap(combined_parental_map, father_forename + father_surname + mother_forename + mother_surname);
     }
 
-
     public static void main(String[] args) throws Exception {
-
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "Umea";
 
         new UmeaMarriageSiblingExamineRecordsAlExperiment().runAll();
     }

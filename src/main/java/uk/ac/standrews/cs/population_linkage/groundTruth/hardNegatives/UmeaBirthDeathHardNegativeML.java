@@ -16,6 +16,7 @@ import uk.ac.standrews.cs.neoStorr.interfaces.IRepository;
 import uk.ac.standrews.cs.neoStorr.interfaces.IStore;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.PrintUtils;
@@ -60,7 +61,7 @@ public class UmeaBirthDeathHardNegativeML {
     public UmeaBirthDeathHardNegativeML(NeoDbCypherBridge bridge, String true_match_filename, String random_negatives_filename, String hard_negatives_filename, String metdata_filename) throws RepositoryException, BucketException, IOException {
 
         IStore store = Store.getInstance();
-        IRepository repo = store.getRepository("Umea");
+        IRepository repo = store.getRepository(Umea.REPOSITORY_NAME);
 
         this.bridge = bridge;
         this.births = repo.getBucket("birth_records", Birth.class );

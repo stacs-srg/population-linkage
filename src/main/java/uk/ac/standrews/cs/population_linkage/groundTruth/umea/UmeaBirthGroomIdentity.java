@@ -5,8 +5,8 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.groundTruth.TwoSourcesLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
@@ -14,7 +14,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -74,7 +73,7 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
 
     @Override
     public String getDatasetName() {
-        return "Umea";
+        return Umea.REPOSITORY_NAME;
     }
 
     @Override
@@ -94,10 +93,6 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
 
     public static void main(String[] args) throws Exception {
 
-        String repo_name = "Umea";
-
-        int NUMBER_OF_RUNS = 1;
-
-        new UmeaBirthGroomIdentity(repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaBirthGroomIdentity(Umea.REPOSITORY_NAME, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, 1).run();
     }
 }

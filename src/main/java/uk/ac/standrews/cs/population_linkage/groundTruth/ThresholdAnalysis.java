@@ -15,7 +15,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -227,18 +226,31 @@ public abstract class ThresholdAnalysis {
         final CountDownLatch start_gate = new CountDownLatch(1);
         final CountDownLatch end_gate = new CountDownLatch(combined_metrics.size());
 
+//        for (final Metric<LXP> metric : combined_metrics) {
+//
+//            new Thread(() -> processBlockWithMetric(block_index, metric, start_gate, end_gate)).start();
+//        }
+
         for (final Metric<LXP> metric : combined_metrics) {
 
-            new Thread(() -> processBlockWithMetric(block_index, metric, start_gate, end_gate)).start();
+                final boolean evaluating_first_metric = metric == combined_metrics.get(0);
+
+                final int start_index = block_index * BLOCK_SIZE;
+                final int end_index = start_index + BLOCK_SIZE;
+
+                for (int i = start_index; i < end_index; i++) {
+                    processRecord(i, metric, evaluating_first_metric);
+                }
+
         }
 
-        try {
-            start_gate.countDown();
-            end_gate.await();
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+//        try {
+//            start_gate.countDown();
+//            end_gate.await();
+//
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//        }
 
         records_processed += BLOCK_SIZE;
     }
