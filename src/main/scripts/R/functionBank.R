@@ -6,258 +6,8 @@ source("utils.R")
 source("dataManipulation.R")
 
 ############################################################################
-# Functions in this section used in processing data for Umea papers.
 
-RAW_METRIC_NAMES <- c("BagDistance", "Cosine", "Damerau-Levenshtein", "Dice", "Jaccard", "Jaro", "JaroWinkler",
-                      "JensenShannon", "Levenshtein", "LongestCommonSubstring", "Metaphone-Levenshtein", "NYSIIS-Levenshtein", "NeedlemanWunsch", "SED", "SmithWaterman")
-
-DISPLAY_METRIC_NAMES <- c("Bag Distance", "Cosine", "Damerau-Levenshtein", "Dice", "Jaccard", "Jaro", "Jaro-Winkler",
-                          "Jensen-Shannon", "Levenshtein", "Longest Common Substring", "Metaphone-Levenshtein", "NYSIIS-Levenshtein", "Needleman-Wunsch", "SED", "Smith-Waterman")
-
-METRIC_NAME_MAP <- setNames(as.list(DISPLAY_METRIC_NAMES), RAW_METRIC_NAMES)
-DIAGRAM_FILE_TYPE <- ".eps"
-
-# Returns a convergence plot, with error bars for a given metric and threshold.
-plotFMeasureConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
-
-  data <- filter(data, metric, thresholds)
-  data <- recalculateStatistics(data)
-
-  plot <- makeConvergencePlot(data, "f_measure", x_upper_bound, 1.0, x_axis_label, y_axis_label, "Threshold", "bottom", colours)
-
-  return(plot)
-}
-
-# Returns a convergence plot for absolute error relative to final value, with error bars for a given metric and threshold.
-plotFMeasureErrorConvergence <- function(data, metric, thresholds, x_upper_bound, x_axis_label, y_axis_label, colours) {
-
-  data <- filter(data, metric, thresholds)
-  data <- recalculateStatistics(data)
-  data <- addAbsoluteErrorColumn(data)
-
-  plot <- makeConvergencePlot(data, "absolute_error", x_upper_bound, 0.12, x_axis_label, y_axis_label, NULL, "none", colours)
-
-  return(plot)
-}
-
-plotAllFMeasureErrorConvergence <- function(data, x_upper_bound, x_axis_label, y_axis_label, line_colour) {
-
-  data <- recalculateStatistics(data)
-  plot <- makeOverlaidConvergencePlot(data, x_upper_bound, x_axis_label, y_axis_label, line_colour)
-
-  return(plot)
-}
-
-plotFMeasureVsThreshold <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
-
-  number_of_records_processed <- max(data$records.processed)
-  data <- data[which(data$records.processed == number_of_records_processed),]
-
-  data <- recalculateStatistics(data)
-  plot <- makeFMeasureVsThresholdPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
-
-  return(plot)
-}
-
-plotROC <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
-
-  number_of_records_processed <- max(data$records.processed)
-  data <- data[which(data$records.processed == number_of_records_processed),]
-
-  data <- recalculateStatistics(data)
-  plot <- makeROCPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
-
-  return(plot)
-}
-
-plotPrecisionVsRecall <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
-
-  number_of_records_processed <- max(data$records.processed)
-  data <- data[which(data$records.processed == number_of_records_processed),]
-
-  data <- recalculateStatistics(data)
-  plot <- makePrecisionVsRecallPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
-
-  return(plot)
-}
-
-filter <- function(data, metric, thresholds) {
-
-  data <- data[which(data$metric == metric),]
-  data <- data[which(data$threshold %in% thresholds),]
-
-  return(data)
-}
-
-recalculateStatistics <- function(data) {
-
-  # Recalculate since F-measure in source data is only calculated to 2 decimal places.
-  data$precision <- precision(data$tp, data$fp)
-  data$recall <- recall(data$tp, data$fn)
-  data$false_positive_rate <- false_positive_rate(data$tn, data$fp)
-  data$true_positive_rate <- data$recall
-  data$f_measure <- fmeasure(data$precision, data$recall)
-
-  return(data)
-}
-
-addAbsoluteErrorColumn <- function(data) {
-
-  final_measure <- data[nrow(data), "f_measure"]
-  data[, "absolute_error"] <- abs(final_measure - data[, "f_measure"])
-
-  return(data)
-}
-
-makeConvergencePlot <- function(data, measure, x_upper_bound, y_upper_bound, x_axis_label, y_axis_label, legend_label, legend_position, colours) {
-
-  summary <- summarySE(data, measurevar = measure, groupvars = c("metric", "threshold", "records.processed"))
-
-  plot <- ggplot(summary) +
-    geom_line(aes_string(x = "records.processed", y = measure, colour = as.factor(summary$threshold))) +
-    geom_errorbar(aes(x = records.processed, ymin = get(measure) - ci, ymax = get(measure) + ci, colour = as.factor(threshold))) +
-    scale_x_continuous(labels = comma, limits = c(0, x_upper_bound)) +
-    scale_y_continuous(n.breaks = 10, limits = c(0, y_upper_bound)) +
-    labs(x = x_axis_label, y = y_axis_label, colour = legend_label) +
-    theme(legend.position = legend_position, panel.background = element_rect(fill = "white"),
-          panel.grid.major = element_line(size = 0.25, linetype = "solid", colour = "grey")) +
-    scale_colour_manual(values = colours)
-
-  return(plot)
-}
-
-makeOverlaidConvergencePlot <- function(data, x_upper_bound, x_axis_label, y_axis_label, line_colour) {
-
-  summary <- summarySE(data, measurevar = "f_measure", groupvars = c("metric", "threshold", "records.processed"))
-
-  plot <- ggplot()
-
-  for (thresh in unique(summary$threshold)) {
-    for (metric in unique(summary$metric)) {
-
-      subset <- filter(summary, metric, thresh)
-      subset[, "final"] <- subset[nrow(subset), "f_measure"]
-
-      plot <- plot + geom_line(data = subset, aes(x = records.processed, y = abs(final - get("f_measure"))), colour = line_colour)
-    }
-  }
-
-  plot <- plot +
-    scale_x_continuous(labels = comma, limits = c(0, x_upper_bound)) +
-    scale_y_continuous(breaks = seq(0, 1, 0.01)) +
-    labs(x = x_axis_label, y = y_axis_label) +
-    theme(legend.position = "none", panel.background = element_rect(fill = "white"),
-          panel.grid.major = element_line(size = 0.25, linetype = "solid", colour = "grey")) +
-    geom_segment(aes(x = 0, xend = x_upper_bound, y = 0.01, yend = 0.01), linetype = "dashed", colour = "red")
-
-  return(plot)
-}
-
-makeFMeasureVsThresholdPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
-
-  return(makePerMetricPlot(data, "threshold", "f_measure", x_axis_label, y_axis_label, custom_palette, faceted))
-}
-
-makeROCPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
-
-  return(makePerMetricPlot(data, "false_positive_rate", "true_positive_rate", x_axis_label, y_axis_label, custom_palette, faceted))
-}
-
-makePrecisionVsRecallPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
-
-  return(makePerMetricPlot(data, "recall", "precision", x_axis_label, y_axis_label, custom_palette, faceted))
-}
-
-makePerMetricPlot <- function(data, x_axis_name, y_axis_name, x_axis_label, y_axis_label, custom_palette, faceted) {
-
-  collated_data <- collateData(data)
-
-  plot <- ggplot(collated_data, aes_string(x = x_axis_name)) +
-    geom_line(aes_string(y = y_axis_name, colour = as.factor(collated_data$metric))) +
-    labs(x = x_axis_label, y = y_axis_label, colour = "") + # suppress legend label
-    scale_colour_manual(values = custom_palette)
-
-  if (faceted) {
-    plot <- plot +
-      facet_wrap(~metric) +
-      scale_x_continuous(limits = c(0, 1), minor_breaks = NULL) +
-      scale_y_continuous(limits = c(0, 1), minor_breaks = NULL) +
-      theme(legend.position = "bottom", panel.spacing = unit(0.75, "lines")) # space out the images a little
-
-  }
-  else {
-    plot <- plot +
-      scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
-      scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
-      theme(legend.position = "bottom", panel.background = element_rect(fill = "white"),
-            panel.grid.major = element_line(size = 0.25, linetype = "solid", colour = "grey"))
-  }
-
-  return(plot)
-}
-
-collateData <- function(data) {
-
-  collated_data <- data.frame()
-
-  for (metric in unique(data$metric)) {
-    for (threshold in unique(data$threshold)) {
-
-      filtered_data <- filter(data, metric, threshold)
-
-      collated_data[nrow(collated_data) + 1, "metric"] <- METRIC_NAME_MAP[[metric]]
-      collated_data[nrow(collated_data), "threshold"] <- threshold
-
-      # Assignments below make sense because filtered_data only contains a single row.
-      collated_data[nrow(collated_data), "false_positive_rate"] <- filtered_data$false_positive_rate
-      collated_data[nrow(collated_data), "true_positive_rate"] <- filtered_data$true_positive_rate
-      collated_data[nrow(collated_data), "precision"] <- filtered_data$precision
-      collated_data[nrow(collated_data), "recall"] <- filtered_data$recall
-      collated_data[nrow(collated_data), "f_measure"] <- filtered_data$f_measure
-    }
-  }
-
-  return(collated_data)
-}
-
-saveFMeasureVsThreshold <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
-
-  # conditionLoadIntoGlobal(input_file_path, "linkage_data")
-  loadIntoGlobal(input_file_path, "linkage_data")
-
-  plot <- plotFMeasureVsThreshold(linkage_data, x_axis_label, y_axis_label, palette, faceted)
-  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
-}
-
-saveROC <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
-
-  # conditionLoadIntoGlobal(input_file_path, "linkage_data")
-  loadIntoGlobal(input_file_path, "linkage_data")
-
-  plot <- plotROC(linkage_data, x_axis_label, y_axis_label, palette, faceted)
-  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
-}
-
-savePrecisionVsRecall <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
-
-  # conditionLoadIntoGlobal(input_file_path, "linkage_data")
-  loadIntoGlobal(input_file_path, "linkage_data")
-
-  plot <- plotPrecisionVsRecall(linkage_data, x_axis_label, y_axis_label, palette, faceted)
-  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
-}
-
-inputFilePath <- function(directory_path, file_name_root, file_name_detail) {
-  return(paste(directory_path, paste0(file_name_root, file_name_detail, ".csv"), sep = "/"))
-}
-
-outputFilePath <- function(directory_path, file_name_root, file_name_detail) {
-  return(paste(directory_path, paste0(file_name_root, file_name_detail, DIAGRAM_FILE_TYPE), sep = "/"))
-}
-
-############################################################################
-
-# This returns a new data frame containing the metric,threshold, closeness, records processed derived from the data parmeter for the supplied measure
+# This returns a new data frame containing the metric,threshold, closeness, records processed derived from the data parameter for the supplied measure
 analyse_space <- function(data, measure) {
 
   thresholds <- c(0.4, 0.6, 0.8)
@@ -296,7 +46,7 @@ select_records.processed.ci <- function(df, measure, thresh, metric) {
   final_measure <- ci_s[nrow(ci_s), measure]   # find the last value for the measure supplied as a param
   ci_s[, "abs_diff"] <- abs(final_measure - ci_s[, measure])  #add a column with the max abs differences from final_measure
 
-  ci_s <- summarySE(ci_s, measurevar = "abs_diff", groupvars = c("metric", "threshold", "records.processed")) # calculate mean,stdev,stderr
+  ci_s <- summarySE(ci_s, summarised_column_name = "abs_diff", grouping_variable_column_names = c("metric", "threshold", "records.processed")) # calculate mean,stdev,stderr
   ci_s <- ci_s[, c("records.processed", "ci", "abs_diff")]
 
   return(ci_s)
@@ -313,7 +63,7 @@ find_first_that_close_enough_to_model <- function(data, a_hat, k_hat, limit, how
       return(record_count)
     }
   }
-  print(paste("Cannot achive required_distance of", how_close_is_close_enough))
+  print(paste("Cannot achieve required_distance of", how_close_is_close_enough))
   return(NA)
 }
 
@@ -338,7 +88,7 @@ find_first_close_enough_to_observed <- function(data, required_threshold, min_y_
 # find the minimum x value after which the y value is never greater than required_threshold
 find_stable_close_enough_to_observed <- function(data, required_threshold) {
 
-  result = 0
+  result <- 0
 
   for (record_count in unique(data$records.processed)) {
     observed_ci <- data[which(data$records.processed == record_count),]$ci
@@ -355,7 +105,7 @@ find_stable_close_enough_to_observed <- function(data, required_threshold) {
     }
     top_of_error_bar <- mean + observed_ci
     if (top_of_error_bar > required_threshold) { # record the last position at which the condition doesnt hold (which is the next)
-      result = record_count + 1
+      result <- record_count + 1
     }
   }
   return(result)
@@ -482,4 +232,9 @@ plotAllZeroPlots <- function(plotdata, measure, filename, xlimit) {
           panel.grid.major = element_line(size = 0.25, linetype = 'solid', colour = "grey"))
 
   ggsave(paste0(filename, "-", xlimit, ".png", sep = ""), plot, dpi = 320)
+}
+
+# The Von Bertalanffy function
+eval_vbt <- function(x, a, k, c) {
+  return(a * exp(k * x) + c)
 }

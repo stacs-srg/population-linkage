@@ -5,9 +5,9 @@
 package uk.ac.standrews.cs.population_linkage.linkers;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.Iterator;
 import java.util.function.Function;
@@ -17,10 +17,10 @@ public abstract class BruteForceLinker extends Linker {
     /**
      * @param number_of_progress_updates the number of updates to be given, zero or negative to suppress updates
      */
-    public BruteForceLinker(Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
+    public BruteForceLinker(LXPMeasure composite_measure, double threshold, int number_of_progress_updates,
                             String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink) {
 
-        super(distance_metric, threshold, number_of_progress_updates, link_type, provenance, role_type_1, role_type_2, isViableLink);
+        super(composite_measure, threshold, number_of_progress_updates, link_type, provenance, role_type_1, role_type_2, isViableLink);
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class BruteForceLinker extends Linker {
 
                 void loadNextPair() {
 
-                    next_pair = (record1 == null || record2 == null) ? null : new RecordPair(record1, record2, distance_metric.distance(record1, record2));
+                    next_pair = (record1 == null || record2 == null) ? null : new RecordPair(record1, record2, composite_measure.distance(record1, record2));
                 }
 
                 void advanceIndices() {

@@ -9,14 +9,17 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -73,12 +76,12 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     public BirthBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_BIRTHS = EVERYTHING;
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
@@ -122,18 +125,18 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getBirthRecords() {
-        if( cached_records == null ) {
+        if (cached_records == null) {
             Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
             cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
         }
-        System.out.println( "Processing " + cached_records.size() + " birth records");
+        System.out.println("Processing " + cached_records.size() + " birth records");
         return cached_records;
     }
 
     @Override
     protected Collection<LXP> getMarriageRecords() {
         List<LXP> records = StreamSupport.stream(super.getMarriageRecords().spliterator(), false).collect(Collectors.toList());
-        System.out.println( "Processing " + records.size() + " marriage records" );
+        System.out.println("Processing " + records.size() + " marriage records");
         return records;
     }
 
@@ -143,8 +146,8 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 
     @Override
@@ -179,20 +182,20 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP query_record : getQueryRecords() ) {
-            count += countBirthBrideIdentityGTLinks( bridge, query_record );
+        for (LXP query_record : getQueryRecords()) {
+            count += countBirthBrideIdentityGTLinks(bridge, query_record);
         }
         return count;
     }
 
     private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) WHERE m.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countBirthBrideIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
-        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID );
+    public static int countBirthBrideIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
+        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
-        Result result = bridge.getNewSession().run(BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY,parameters);
+        Result result = bridge.getNewSession().run(BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY, parameters);
         List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
         return relationships.size();
     }

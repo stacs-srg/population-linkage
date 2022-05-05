@@ -9,11 +9,11 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -66,19 +66,19 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     public BirthSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_BIRTHS = EVERYTHING;
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     public Iterable<LXP> getBirthRecords() {
-        if( cached_records == null ) {
+        if (cached_records == null) {
 //            cached_records = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
-            System.out.println( "***** COMMENTED OUT FILTERING FOR OZ" );
+            System.out.println("***** COMMENTED OUT FILTERING FOR OZ");
             cached_records = super.getBirthRecords();
         }
         return cached_records;
@@ -92,6 +92,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     public static LinkStatus trueMatch(LXP record1, LXP record2) {
         return trueMatch(record1, record2, TRUE_MATCH_ALTERNATIVES);
     }
+
     @Override
     public String getLinkageType() {
         return LINKAGE_TYPE;
@@ -156,15 +157,15 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP query_record : getQueryRecords() ) {
-            count += countBirthSiblingGTLinks( bridge, query_record );
+        for (LXP query_record : getQueryRecords()) {
+            count += countBirthSiblingGTLinks(bridge, query_record);
         }
         return count;
     }
 
     private static final String BIRTH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_SIBLING]-(b:Birth) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countBirthSiblingGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
+    public static int countBirthSiblingGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
         String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);
 
         Map<String, Object> parameters = new HashMap<>();
@@ -180,7 +181,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

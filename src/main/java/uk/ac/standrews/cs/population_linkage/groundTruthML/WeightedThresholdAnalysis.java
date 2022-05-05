@@ -6,16 +6,15 @@ package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -25,10 +24,9 @@ import java.util.concurrent.CountDownLatch;
  */
 public abstract class WeightedThresholdAnalysis {
 
-    // Global flag can be used to over-ride 1:1 constaint in identity linkage.
+    // Global flag can be used to over-ride 1:1 constraint in identity linkage.
     public static final boolean MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE = true;
 
-    protected static final int DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED = 25000; // yields 0.01 error with Umea test over whole dataset for all metrics.
     protected static final int CHECK_ALL_RECORDS = -1;
     static final long SEED = 87626L;
     private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
@@ -38,7 +36,6 @@ public abstract class WeightedThresholdAnalysis {
     protected final boolean allow_multiple_links;
     final int number_of_records_to_be_checked;
     final int number_of_runs;
-    final Path store_path;
     final String repo_name;
     final PrintWriter linkage_results_metadata_writer;
     final PrintWriter distance_results_metadata_writer;
@@ -56,7 +53,7 @@ public abstract class WeightedThresholdAnalysis {
     boolean verbose = true;
     private int records_processed = 0;
 
-    WeightedThresholdAnalysis(final Path store_path, final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links, double threshold) throws IOException {
+    WeightedThresholdAnalysis(final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links, double threshold) throws IOException {
 
         System.out.println("Running ground truth analysis for " + getLinkageType() + " on data: " + repo_name);
         System.out.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
@@ -70,7 +67,6 @@ public abstract class WeightedThresholdAnalysis {
         pairs_ignored = new long[number_of_runs];
         sample = new Sample();
 
-        this.store_path = store_path;
         this.repo_name = repo_name;
 
         linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".csv", false)));
@@ -83,11 +79,6 @@ public abstract class WeightedThresholdAnalysis {
         run_number = 0;
 
         setupRecords();
-    }
-
-    private static int distanceToIndex(final double distance) {
-
-        return (int) (distance * (NUMBER_OF_DISTANCES_SAMPLED - 1) + EPSILON);
     }
 
     private static String getCallingClassName() {
@@ -132,13 +123,13 @@ public abstract class WeightedThresholdAnalysis {
 
     public abstract void setupRecords();
 
-    public abstract void processRecord(int i, Metric<LXP> metric);
+    public abstract void processRecord(int i, LXPMeasure measure);
 
     public abstract void printMetaData();
 
     public abstract LinkStatus isTrueMatch(final LXP record1, final LXP record2);
 
-    public abstract Metric<LXP> getMetric();
+    public abstract LXPMeasure getMeasure();
 
     public void run() throws Exception {
 
@@ -150,7 +141,6 @@ public abstract class WeightedThresholdAnalysis {
         for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
 
             processBlock(block_index);
- //           printSamples();
 
             if (verbose) {
                 System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
@@ -169,9 +159,9 @@ public abstract class WeightedThresholdAnalysis {
     private void processBlock(final int block_index) {
 
         final CountDownLatch start_gate = new CountDownLatch(1);
-        final CountDownLatch end_gate = new CountDownLatch(1);   // only 1 metric in this version was combinedmetrics.size()
+        final CountDownLatch end_gate = new CountDownLatch(1);   // only 1 measure in this version
 
-        new Thread(() -> processBlockWithMetric(block_index, getMetric(), start_gate, end_gate)).start();
+        new Thread(() -> processBlockWithMeasure(block_index, getMeasure(), start_gate, end_gate)).start();
 
         try {
             start_gate.countDown();
@@ -184,7 +174,7 @@ public abstract class WeightedThresholdAnalysis {
         records_processed += BLOCK_SIZE;
     }
 
-    private void processBlockWithMetric(final int block_index, final Metric<LXP> metric, final CountDownLatch start_gate, final CountDownLatch end_gate) {
+    private void processBlockWithMeasure(final int block_index, final LXPMeasure measure, final CountDownLatch start_gate, final CountDownLatch end_gate) {
 
         try {
             start_gate.await();
@@ -193,7 +183,7 @@ public abstract class WeightedThresholdAnalysis {
             final int end_index = start_index + BLOCK_SIZE;
 
             for (int i = start_index; i < end_index; i++) {
-                processRecord(i, metric);
+                processRecord(i, measure);
             }
 
         } catch (InterruptedException ignored) {
@@ -203,9 +193,9 @@ public abstract class WeightedThresholdAnalysis {
         }
     }
 
-    void processRecord(final int record_index, final int last_record_index, final List<LXP> records1, final List<LXP> records2, final Metric<LXP> metric, final boolean increment_counts) {
+    void processRecord(final int record_index, final int last_record_index, final List<LXP> records1, final List<LXP> records2, final LXPMeasure measure, final boolean increment_counts) {
 
-        final String metric_name = metric.getMetricName();
+        final String measure_name = measure.getMeasureName();
 
         final LXP record1 = records1.get(record_index);
 
@@ -220,7 +210,7 @@ public abstract class WeightedThresholdAnalysis {
 
                 LXP record2 = records2.get(j);
 
-                final double distance = metric.distance(record1, record2);
+                final double distance = measure.distance(record1, record2);
                 final LinkStatus link_status = isTrueMatch(record1, record2);
                 final RecordPair possible_link = new RecordPair(record1, record2, distance);
 
@@ -254,7 +244,7 @@ public abstract class WeightedThresholdAnalysis {
                         }
                     }
 
-                    updateTrueLinkCounts(metric_name, run_number, distance, is_true_link);
+                    updateTrueLinkCounts(distance, is_true_link);
                     updatePairsEvaluatedCounts(increment_counts, run_number);
                 }
 
@@ -280,7 +270,7 @@ public abstract class WeightedThresholdAnalysis {
         }
     }
 
-    private void updateTrueLinkCounts(final String metric_name, final int run_number, final double distance, final boolean is_true_link) {
+    private void updateTrueLinkCounts(final double distance, final boolean is_true_link) {
 
         if (is_true_link) {
             link_distance_counts++;
@@ -337,20 +327,20 @@ public abstract class WeightedThresholdAnalysis {
 
     private void printSamples() {
 
-        String metric_name = getMetric().getMetricName();
+        String measure_name = getMeasure().getMeasureName();
 
         for (int run_number = 0; run_number < number_of_runs; run_number++) {
-            printSample(run_number, metric_name, threshold, sample);
+            printSample(run_number, measure_name, threshold, sample);
         }
 
-        printDistances(run_number, metric_name);
+        printDistances(run_number, measure_name);
     }
 
 
-    private void printDistances(final int run_number, final String metric_name) {
+    private void printDistances(final int run_number, final String measure_name) {
 
-        printDistances(run_number, metric_name, false, this.non_link_distance_counts);
-        printDistances(run_number, metric_name, true, link_distance_counts);
+        printDistances(run_number, measure_name, false, this.non_link_distance_counts);
+        printDistances(run_number, measure_name, true, link_distance_counts);
     }
 
     private void printHeaders() {
@@ -365,7 +355,7 @@ public abstract class WeightedThresholdAnalysis {
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print("pairs ignored");
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print("metric");
+        linkage_results_writer.print("measure");
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print("threshold");
         linkage_results_writer.print(DELIMIT);
@@ -396,7 +386,7 @@ public abstract class WeightedThresholdAnalysis {
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print("pairs ignored");
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("metric");
+        distance_results_writer.print("measure");
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print("links_non-link");
         distance_results_writer.print(DELIMIT);
@@ -407,7 +397,7 @@ public abstract class WeightedThresholdAnalysis {
         distance_results_writer.flush();
     }
 
-    private void printSample(final int run_number, final String metric_name, final double threshold, final Sample sample) {
+    private void printSample(final int run_number, final String measure_name, final double threshold, final Sample sample) {
 
         linkage_results_writer.print(LocalDateTime.now());
         linkage_results_writer.print(DELIMIT);
@@ -419,7 +409,7 @@ public abstract class WeightedThresholdAnalysis {
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print(pairs_ignored[run_number]);
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print(metric_name);
+        linkage_results_writer.print(measure_name);
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print(String.format("%.2f", threshold));
         linkage_results_writer.print(DELIMIT);
@@ -441,7 +431,7 @@ public abstract class WeightedThresholdAnalysis {
         linkage_results_writer.flush();
     }
 
-    private void printDistances(final int run_number, final String metric_name, boolean links, int distances) {
+    private void printDistances(final int run_number, final String measure_name, boolean links, int distances) {
 
         distance_results_writer.print(LocalDateTime.now());
         distance_results_writer.print(DELIMIT);
@@ -453,7 +443,7 @@ public abstract class WeightedThresholdAnalysis {
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print(pairs_ignored[run_number]);
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print(metric_name);
+        distance_results_writer.print(measure_name);
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print(links ? "links" : "non-links");
         distance_results_writer.print(DELIMIT);

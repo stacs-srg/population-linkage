@@ -6,20 +6,19 @@ package uk.ac.standrews.cs.population_linkage;
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.population_linkage.linkers.Linker;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXPMetaData;
 import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
 import uk.ac.standrews.cs.neoStorr.impl.StaticLXP;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
-import uk.ac.standrews.cs.utilities.metrics.Levenshtein;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
+import uk.ac.standrews.cs.population_linkage.linkers.Linker;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +43,7 @@ public abstract class LinkageTest {
     final LXP death4 = new DummyLXP("anthony", "aardvark", "8");
     final LXP death5 = new DummyLXP("tony", "armadillo", "9");
 
-    final Metric<LXP> metric = new Sigma(new Levenshtein(), Arrays.asList(0, 1), 0);
+    final LXPMeasure measure = new SumOfFieldDistances(Constants.LEVENSHTEIN, Arrays.asList(0, 1));
 
     final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3, birth4);
     final List<LXP> death_records = Arrays.asList(death1, death2, death3, death4, death5);
@@ -66,12 +65,12 @@ public abstract class LinkageTest {
     @Test
     public void distancesCorrect() {
 
-        assertEquals(0.0, linker.getMetric().distance(birth1, birth1), DELTA);
-        assertEquals(0.4444444, linker.getMetric().distance(birth1, birth2), DELTA);
-        assertEquals(0.5555555, linker.getMetric().distance(birth1, birth3), DELTA);
-        assertEquals(0.0, linker.getMetric().distance(birth2, birth2), DELTA);
-        assertEquals(0.5, linker.getMetric().distance(birth2, birth3), DELTA);
-        assertEquals(0.0, linker.getMetric().distance(birth3, birth3), DELTA);
+        assertEquals(0.0, linker.getMeasure().distance(birth1, birth1), DELTA);
+        assertEquals(4.0, linker.getMeasure().distance(birth1, birth2), DELTA);
+        assertEquals(4.0, linker.getMeasure().distance(birth1, birth3), DELTA);
+        assertEquals(0.0, linker.getMeasure().distance(birth2, birth2), DELTA);
+        assertEquals(2.0, linker.getMeasure().distance(birth2, birth3), DELTA);
+        assertEquals(0.0, linker.getMeasure().distance(birth3, birth3), DELTA);
     }
 
     @Test
@@ -163,12 +162,12 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistance035WithTwoDataSets() throws Exception {
+    public void checkRecordPairsWithinDistance1WithTwoDataSets() throws Exception {
 
-        // "john smith" distance 0.333 from "john stith"
+        // "john smith" distance 1.0 from "john stith"
         // "jane smyth" distance 0 from "jane smyth"
 
-        linker.setThreshold(0.35);
+        linker.setThreshold(1.0);
         linker.addRecords(birth_records, death_records);
 
         assertEquals(2, count(linker.getLinks()));
@@ -177,22 +176,24 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistance05WithSingleDataSet() throws Exception {
+    public void checkRecordPairsWithinDistance4WithSingleDataSet() throws Exception {
 
         // "janet smith" distance 0 from "janet smith"
-        // "john smith" distance 0.444 from "janet smith"
-        // "janet smith" distance 0.5 from "jane smyth"
+        // "john smith" distance 4.0 from "janet smith"
+        // "janet smith" distance 2.0 from "jane smyth"
 
-        linker.setThreshold(0.5);
+        linker.setThreshold(4.0);
         linker.addRecords(birth_records, birth_records);
 
-        assertEquals(10, count(linker.getLinks()));
+        assertEquals(12, count(linker.getLinks()));
         assertTrue(containsPair(linker.getLinks(), birth2, birth3));
         assertTrue(containsPair(linker.getLinks(), birth3, birth2));
         assertTrue(containsPair(linker.getLinks(), birth3, birth4));
         assertTrue(containsPair(linker.getLinks(), birth4, birth3));
         assertTrue(containsPair(linker.getLinks(), birth1, birth2));
         assertTrue(containsPair(linker.getLinks(), birth2, birth1));
+        assertTrue(containsPair(linker.getLinks(), birth1, birth3));
+        assertTrue(containsPair(linker.getLinks(), birth3, birth1));
         assertTrue(containsPair(linker.getLinks(), birth1, birth4));
         assertTrue(containsPair(linker.getLinks(), birth4, birth1));
         assertTrue(containsPair(linker.getLinks(), birth2, birth4));
@@ -200,15 +201,15 @@ public abstract class LinkageTest {
     }
 
     @Test
-    public void checkRecordPairsWithinDistance05WithTwoDataSets() throws Exception {
+    public void checkRecordPairsWithinDistance2WithTwoDataSets() throws Exception {
 
-        // "john smith" distance 0.333 from "john stith"
-        // "janet smith" distance 0.4 from "janet smythe"
-        // "janet smith" distance 0.5 from "jane smyth"
-        // "jane smyth" distance 0.5 from "janet smythe"
+        // "john smith" distance 1.0 from "john stith"
+        // "janet smith" distance 2.0 from "janet smythe"
+        // "janet smith" distance 2.0 from "jane smyth"
+        // "jane smyth" distance 2.0 from "janet smythe"
         // "jane smyth" distance 0 from "jane smyth"
 
-        linker.setThreshold(0.5);
+        linker.setThreshold(2.0);
         linker.addRecords(birth_records, death_records);
 
         assertEquals(7, count(linker.getLinks()));
@@ -260,7 +261,7 @@ public abstract class LinkageTest {
         return result;
     }
 
-    class DummyLXP extends StaticLXP {
+    static class DummyLXP extends StaticLXP {
 
         String rep = "";
         int number_of_fields;
@@ -292,7 +293,7 @@ public abstract class LinkageTest {
 
             if (store_reference == null) {
                 final LXP this_lxp = this;
-                store_reference = new LXPReference( "dummy-repo", "dummy-bucket", lxp_id++) {
+                store_reference = new LXPReference("dummy-repo", "dummy-bucket", lxp_id++) {
                     public LXP getReferend() {
                         return this_lxp;
                     }

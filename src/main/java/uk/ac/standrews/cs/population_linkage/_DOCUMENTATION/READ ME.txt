@@ -23,7 +23,7 @@ Runners in package linkageRunners:
         String source_repository_name - the name of the repo containing the source data.
         results_repository_name - the repo for the results
         double match_threshold - the threshold for similarity matching
-        baseMetric - the string metric to be used for matching e.g. Jaccard
+        baseMeasure - the string measure to be used for matching e.g. Jaccard
         boolean prefilter - whether the results should be prefiltered to eliminate scantily populated records
         boolean persistLinks - whether to make the Link results persistent
         boolean evaluateQuality - whether to perform ground truth linkage quality evaluation
@@ -56,7 +56,7 @@ Search Structures in package Search Structures:
     Examples are Bitblaster, Brute force and MTree.
 
     They are initialised with (for example):
-        1. a distance metric (compound over records)
+        1. a distance measure (compound over records)
         2. A set of data encoded as an iterable - this is one of the data sets in the search
            and may be thought of as the data to be searched.
 

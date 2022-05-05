@@ -7,8 +7,8 @@ package uk.ac.standrews.cs.population_linkage;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.DataDistance;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.Measure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +20,21 @@ public abstract class SimilaritySearchTest {
     private static final double MAX_SIDE_OF_SQUARE = 10.0;
     private static final double MAX_THRESHOLD = 12.0;
 
-    private Metric<Point> metric;
+    private Measure<Point> measure;
 
     @Before
     public void setup() {
 
-        metric = new Metric<Point>() {
+        measure = new Measure<>() {
 
             @Override
-            public String getMetricName() {
+            public String getMeasureName() {
                 return "2D Euclidean";
+            }
+
+            @Override
+            public boolean maxDistanceIsOne() {
+                return false;
             }
 
             @Override
@@ -43,7 +48,7 @@ public abstract class SimilaritySearchTest {
         };
     }
 
-    abstract SearchStructure<Point> getSearchStructure(Metric<Point> metric, List<Point> data_points, List<Point> reference_points);
+    abstract SearchStructure<Point> getSearchStructure(Measure<Point> measure, List<Point> data_points, List<Point> reference_points);
 
     abstract List<Point> getReferencePoints(List<Point> data_points, int number_of_reference_points);
 
@@ -85,7 +90,7 @@ public abstract class SimilaritySearchTest {
 
     private void check(final List<Point> data_points, final List<Point> reference_points, final Point query, final double threshold) {
 
-        final SearchStructure<Point> search_structure = getSearchStructure(metric, data_points, reference_points);
+        final SearchStructure<Point> search_structure = getSearchStructure(measure, data_points, reference_points);
 
         final List<Point> ground_truth = bruteForceQuery(data_points, query, threshold);
         final List<Point> query_results = getPoints(search_structure.findWithinThreshold(query, threshold));
@@ -133,7 +138,7 @@ public abstract class SimilaritySearchTest {
 
         for (Point point : points) {
 
-            if (metric.distance(point, query) <= threshold) {
+            if (measure.distance(point, query) <= threshold) {
                 results.add(point);
             }
         }

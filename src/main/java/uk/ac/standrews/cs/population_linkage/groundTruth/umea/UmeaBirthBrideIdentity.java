@@ -4,17 +4,16 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.groundTruth.TwoSourcesLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -26,17 +25,21 @@ import java.util.List;
  */
 public class UmeaBirthBrideIdentity extends TwoSourcesLinkageAnalysis {
 
-    UmeaBirthBrideIdentity(String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, false);
+    // Cutoff record distance for field distance measures that aren't intrinsically normalised;
+    // all distances at or above the cutoff will be normalised to 1.0.
+    private static final double NORMALISATION_CUTOFF = 30;
+
+    UmeaBirthBrideIdentity(final String repo_name, final String[] args) throws IOException {
+        super(repo_name, args, getLinkageResultsFilename(), getDistanceResultsFilename(), false);
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(final RecordRepository record_repository) {
         return Utilities.getBirthRecords(record_repository);
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords2(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords2(final RecordRepository record_repository) {
         return Utilities.getMarriageRecords(record_repository);
     }
 
@@ -51,32 +54,27 @@ public class UmeaBirthBrideIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     @Override
-    public int getIdFieldIndex() {
-        return BirthBrideIdentityLinkageRecipe.ID_FIELD_INDEX1;
+    protected double getNormalisationCutoff() {
+        return NORMALISATION_CUTOFF;
     }
 
     @Override
-    public int getIdFieldIndex2() {
-        return BirthBrideIdentityLinkageRecipe.ID_FIELD_INDEX2;
-    }
-
-    @Override
-    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+    public LinkStatus isTrueMatch(final LXP record1, final LXP record2) {
         return trueMatch(record1, record2);
     }
 
-    public static LinkStatus trueMatch(LXP record1, LXP record2) {
+    public static LinkStatus trueMatch(final LXP record1, final LXP record2) {
         return BirthBrideIdentityLinkageRecipe.trueMatch(record1, record2);
     }
 
     @Override
-    public boolean isViableLink( RecordPair proposedLink) {
-        return BirthBrideIdentityLinkageRecipe.isViable(proposedLink);
+    public boolean isViableLink(final RecordPair proposed_link) {
+        return BirthBrideIdentityLinkageRecipe.isViable(proposed_link);
     }
 
     @Override
     public String getDatasetName() {
-        return "Umea";
+        return Umea.REPOSITORY_NAME;
     }
 
     @Override
@@ -84,21 +82,8 @@ public class UmeaBirthBrideIdentity extends TwoSourcesLinkageAnalysis {
         return "identity linkage between baby on birth record and bride on marriage record";
     }
 
-    @Override
-    public String getSourceType() {
-        return "births";
-    }
-
-    @Override
-    protected String getSourceType2() {
-        return "marriages";
-    }
-
     public static void main(String[] args) throws Exception {
 
-        String repo_name = "Umea";
-        int NUMBER_OF_RUNS = 1;
-
-        new UmeaBirthBrideIdentity(repo_name, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS).run();
+        new UmeaBirthBrideIdentity(Umea.REPOSITORY_NAME, args).run();
     }
 }

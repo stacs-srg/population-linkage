@@ -6,35 +6,32 @@ package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class performs linkage analysis on data pulled from a single data sources, for example births.
- *
+ * <p>
  * Classes extending this class are required to implement the following methods:
- *     getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
- *     getSourceType(), which provides a textual description of the first data source, for example, "births"
- *     LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of two datum's from the source
- *     getComparisonFields(), returns the set of fields to be used for distance comparison from data source 1 (note the name)
+ * getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
+ * getSourceType(), which provides a textual description of the first data source, for example, "births"
+ * LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of two datum's from the source
+ * getComparisonFields(), returns the set of fields to be used for distance comparison from data source 1 (note the name)
  */
 
 public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnalysisML {
 
-    protected final Path store_path;
     protected final String repo_name;
 
     protected static final int BLOCK_SIZE = 100;
@@ -48,11 +45,10 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
     DecimalFormat df = new DecimalFormat("#.###");
 
-    protected AllPairsSameSourceLinkageAnalysisML(final Path store_path, final String repo_name, final String distance_results_filename) throws IOException {
+    protected AllPairsSameSourceLinkageAnalysisML(final String repo_name, final String distance_results_filename) throws IOException {
 
         super();
 
-        this.store_path = store_path;
         this.repo_name = repo_name;
 
         distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".csv", false)));
@@ -61,8 +57,9 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         setupRecords();
     }
 
-    protected ArrayList<LXP> filter(int number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
-        ArrayList<LXP> filtered_source_records = new ArrayList<>();
+    protected List<LXP> filter(int number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+
+        final var filtered_source_records = new ArrayList<LXP>();
 
         for (LXP record : records_to_filter) {
             if (passesFilter(record, linkageFields, number_of_required_fields)) {
@@ -76,12 +73,13 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
     }
 
     public boolean passesFilter(LXP record, List<Integer> filterOn, int reqPopulatedFields) {
+
         int numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
         int numberOfEmptyFields = 0;
 
         for (int attribute : filterOn) {
             String value = record.getString(attribute).toLowerCase().trim();
-            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----") ) {  // TODO could make this field specific/ why is missing contains?
+            if (RecordFiltering.isMissing(value)) {  // TODO could make this field specific
                 numberOfEmptyFields++;
             }
         }
@@ -89,39 +87,11 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         return numberOfEmptyFields <= numberOfEmptyFieldsPermitted;
     }
 
-    protected abstract Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository);
+    protected abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
 
     protected abstract LinkStatus isTrueLink(final LXP record1, final LXP record2);
 
     protected abstract String getSourceType();
-
-    private List<Map<String, int[]>> initialiseDistances() {
-
-        final List<Map<String, int[]>> result = new ArrayList<>();
-
-        for (int i = 0; i < NUMBER_OF_RUNS; i++) {
-
-            final Map<String, int[]> map = new HashMap<>();
-
-            for (final StringMetric metric : metrics) {
-                map.put(metric.getMetricName(), new int[NUMBER_OF_THRESHOLDS_SAMPLED]);
-            }
-
-            result.add(map);
-        }
-        return result;
-    }
-
-    private Map<String, Integer> initialiseRunNumbers() {
-
-        final Map<String, Integer> map = new HashMap<>();
-
-        for (final StringMetric metric : metrics) {
-            map.put(metric.getMetricName(), 0);
-        }
-
-        return map;
-    }
 
     protected void setupRecords() {
 
@@ -129,7 +99,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         final RecordRepository record_repository = new RecordRepository(repo_name);
 
-        final Iterable<LXP> records = getSourceRecords(record_repository);
+        final var records = getSourceRecords(record_repository);
 
         System.out.println("Randomising record order");
 
@@ -161,7 +131,6 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         for (int i = start_index; i < end_index; i++) {
             processRecord(i);
         }
-
     }
 
     private void processRecord(final int record_index) {
@@ -182,11 +151,11 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
                     last_status = link_status;
 
-                    for (final StringMetric metric : metrics) {
+                    for (final StringMeasure measure : measures) {
 
                         for (int field_selector : getComparisonFields()) {
 
-                            final double distance = metric.distance(record1.getString(field_selector), record2.getString(field_selector));
+                            final double distance = measure.distance(record1.getString(field_selector), record2.getString(field_selector));
                             outputMeasurement(distance);
                         }
                     }
@@ -199,15 +168,8 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
     }
 
     protected boolean shouldPrintResult(LinkStatus link_status, LinkStatus last_status) {
-        if( link_status == LinkStatus.TRUE_MATCH ) { // always print true links
-            return true;
-        }
-        if( last_status == LinkStatus.NOT_TRUE_MATCH && link_status == LinkStatus.NOT_TRUE_MATCH ) { // never print two falses in a row
-            return false;
-        } else if( last_status == LinkStatus.TRUE_MATCH && link_status == LinkStatus.NOT_TRUE_MATCH ) { // last was true so print the false
-            return true;
-        }
-        return true; // print if status was unknown or last was unknown
+
+        return last_status != LinkStatus.NOT_TRUE_MATCH || link_status != LinkStatus.NOT_TRUE_MATCH;
     }
 
     protected void outputMeasurement(double value) {
@@ -224,15 +186,14 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         LXP a_source_record = source_records.get(0);
 
-        for (final StringMetric metric : metrics) {
+        for (final StringMeasure measure : measures) {
 
-            String name = metric.getMetricName();
+            String name = measure.getMeasureName();
             for (int field_selector : getComparisonFields()) {
 
-                String label = name + "." + a_source_record.getMetaData().getFieldName(field_selector);  //metric name concatenated with the field selector name;
+                String label = name + "." + a_source_record.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector name;
                 distance_results_writer.print(label);
                 distance_results_writer.print(DELIMIT);
-
             }
         }
 
@@ -246,7 +207,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
     protected void printMetaData() {
 
         distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
-        distance_results_metadata_writer.println("Checking quality of linkage for machine learning processing: cross products of metrics and field distances");
+        distance_results_metadata_writer.println("Checking quality of linkage for machine learning processing: cross products of measures and field distances");
         distance_results_metadata_writer.println("Dataset: Umea");
         distance_results_metadata_writer.println("LinkageRecipe type: sibling bundling");
         distance_results_metadata_writer.println("Records: " + getSourceType());
@@ -254,10 +215,10 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
         distance_results_metadata_writer.close();
     }
 
-    protected String statusToPrintFormat( LinkStatus ls ) {
-        if( ls == LinkStatus.TRUE_MATCH ) {
+    protected String statusToPrintFormat(LinkStatus ls) {
+        if (ls == LinkStatus.TRUE_MATCH) {
             return "1";
-        } else if( ls == LinkStatus.NOT_TRUE_MATCH ) {
+        } else if (ls == LinkStatus.NOT_TRUE_MATCH) {
             return "-1";
         } else {
             return "0";

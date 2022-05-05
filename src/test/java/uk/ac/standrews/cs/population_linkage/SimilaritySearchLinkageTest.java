@@ -4,12 +4,12 @@
  */
 package uk.ac.standrews.cs.population_linkage;
 
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 public abstract class SimilaritySearchLinkageTest extends LinkageTest {
 
@@ -27,9 +27,9 @@ public abstract class SimilaritySearchLinkageTest extends LinkageTest {
 
      class TestLinker extends SimilaritySearchLinker {
 
-        TestLinker(SearchStructureFactory<LXP> search_structure_factory, double threshold, Metric<LXP> metric, int number_of_progress_updates) {
+        TestLinker(SearchStructureFactory<LXP> search_structure_factory, double threshold, LXPMeasure measure, int number_of_progress_updates) {
 
-            super(search_structure_factory, metric, 0.67, number_of_progress_updates, "link type", "provenance", "role1", "role2", (r)-> true, null);
+            super(search_structure_factory, measure, 0.67, number_of_progress_updates, "link type", "provenance", "role1", "role2", (r)-> true, null);
             setThreshold(threshold);
         }
     }

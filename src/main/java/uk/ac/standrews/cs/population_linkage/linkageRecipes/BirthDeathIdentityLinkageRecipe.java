@@ -9,13 +9,13 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -34,7 +34,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final String LINKAGE_TYPE = "birth-death-identity";
 
-    private int NUMBER_OF_DEATHS = EVERYTHING; // 10000; // for testing
+    private final int number_of_deaths;
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
@@ -72,19 +72,19 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     public BirthDeathIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
-            NUMBER_OF_DEATHS = EVERYTHING;
+        if (number_of_records.equals(EVERYTHING_STRING)) {
+            number_of_deaths = EVERYTHING;
         } else {
-            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
+            number_of_deaths = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if( cached_records == null ) {
-            System.out.println( "Filtering death records require: " + getNoLinkageFieldsRequired() + " fields" );
-            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords(), getQueryMappingFields());
+        if (cached_records == null) {
+            System.out.println("Filtering death records require: " + getNoLinkageFieldsRequired() + " fields");
+            cached_records = filter(getNoLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getQueryMappingFields());
         }
         return cached_records;
     }
@@ -182,8 +182,8 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP query_record : getQueryRecords() ) {
-            count += countBirthDeathIdentityGTLinks( bridge, query_record );
+        for (LXP query_record : getQueryRecords()) {
+            count += countBirthDeathIdentityGTLinks(bridge, query_record);
         }
         return count;
     }
@@ -191,11 +191,11 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     private static final String BIRTH_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
     private static final String BIRTH_DEATH_ALL_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) RETURN r";
 
-    public static List<Relationship> getBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
-        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID );
+    public static List<Relationship> getBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
+        String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
-        Result result = bridge.getNewSession().run(BIRTH_DEATH_GT_IDENTITY_LINKS_QUERY,parameters);
+        Result result = bridge.getNewSession().run(BIRTH_DEATH_GT_IDENTITY_LINKS_QUERY, parameters);
         return result.list(r -> r.get("r").asRelationship());
     }
 
@@ -204,8 +204,8 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         return result.list(r -> r.get("r").asRelationship());
     }
 
-    public static int countBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record ) {
-        return getBirthDeathIdentityGTLinks(bridge,birth_record).size();
+    public static int countBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
+        return getBirthDeathIdentityGTLinks(bridge, birth_record).size();
     }
 
     @Override
@@ -214,7 +214,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

@@ -5,8 +5,8 @@
 package uk.ac.standrews.cs.population_linkage.searchStructures;
 
 import uk.ac.standrews.cs.utilities.m_tree.MTree;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.DataDistance;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.Measure;
 
 import java.util.List;
 
@@ -14,9 +14,9 @@ public class MTreeSearchStructure<T> implements SearchStructure<T> {
 
     private MTree<T> m_tree;
 
-    public MTreeSearchStructure(Metric<T> distance_metric, Iterable<T> records) {
+    public MTreeSearchStructure(Measure<T> measure, Iterable<T> records) {
 
-        m_tree = new MTree<>(distance_metric);
+        m_tree = new MTree<>(measure);
         for (T record : records) {
             m_tree.add(record);
         }

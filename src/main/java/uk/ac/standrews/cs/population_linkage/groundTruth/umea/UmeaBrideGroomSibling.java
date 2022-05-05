@@ -24,12 +24,16 @@ import java.util.List;
  */
 public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis {
 
-    UmeaBrideGroomSibling(String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true);
+    // Cutoff record distance for field distance measures that aren't intrinsically normalised;
+    // all distances at or above the cutoff will be normalised to 1.0.
+    private static final double NORMALISATION_CUTOFF = 30;
+
+    UmeaBrideGroomSibling(final String repo_name, final String[] args) throws IOException {
+        super(repo_name, args, getLinkageResultsFilename(), getDistanceResultsFilename(), true);
     }
 
     @Override
-    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
         return Utilities.getMarriageRecords(record_repository);
     }
 
@@ -44,13 +48,8 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
     }
 
     @Override
-    public int getIdFieldIndex() {
-        return BrideGroomSiblingLinkageRecipe.ID_FIELD_INDEX1;
-    }
-
-    @Override
-    public int getIdFieldIndex2() {
-        return BrideGroomSiblingLinkageRecipe.ID_FIELD_INDEX2;
+    protected double getNormalisationCutoff() {
+        return NORMALISATION_CUTOFF;
     }
 
     @Override
@@ -77,13 +76,8 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
         return "sibling bundling between brides and grooms on marriage records";
     }
 
-    @Override
-    public String getSourceType() {
-        return "marriages";
-    }
-
     public static void main(String[] args) throws Exception {
 
-        new UmeaBrideGroomSibling(Umea.REPOSITORY_NAME, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, 1).run();
+        new UmeaBrideGroomSibling(Umea.REPOSITORY_NAME, args).run();
     }
 }

@@ -4,14 +4,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.searchStructures;
 
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.DataDistance;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.Measure;
 import uk.al_richard.metricbitblaster.production.ParallelBitBlaster2;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
@@ -19,27 +20,25 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
     private static long SEED = 34258723425L;
     private ParallelBitBlaster2<T> bit_blaster;
 
-    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data) {
-        this(distance_metric, data, DEFAULT_NUMBER_OF_REFERENCE_POINTS);
+    public BitBlasterSearchStructure(Measure<T> measure, Iterable<T> data) {
+        this(measure, data, DEFAULT_NUMBER_OF_REFERENCE_POINTS);
     }
 
-    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data, int number_of_reference_objects) {
+    public BitBlasterSearchStructure(Measure<T> measure, Iterable<T> data, int number_of_reference_objects) {
 
         List<T> copy_of_data = copyData(data);
 
-        // Keep repeating with less reference objects if we cannot initialise bitblaster
-        while( number_of_reference_objects >= 20 ) {
+        // Keep repeating with fewer reference objects if we cannot initialise bitblaster
+        while (number_of_reference_objects >= 20) {
             int maxTries = 5;
-            Exception cause = null;
 
             // Try several times with different seeds
             for (int tries = 0; tries < maxTries; tries++) {
                 try {
-                    init(distance_metric, copy_of_data, chooseRandomReferencePoints(copy_of_data, number_of_reference_objects));
+                    init(measure, copy_of_data, chooseRandomReferencePoints(copy_of_data, number_of_reference_objects));
                     return;
 
                 } catch (Exception e) {
-                    cause = e;
                     SEED = SEED * 17 + 23; // These magic numbers were carefully chosen by Prof. al
                     System.out.println("Initilisation exception - trying again with different reference points - new seed: " + SEED);
                 }
@@ -49,13 +48,13 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
             System.out.println("Reducing number of reference points to: " + number_of_reference_objects);
         }
 
-        throw new RuntimeException( "Failed to initialise BitBlaster" );
+        throw new RuntimeException("Failed to initialise BitBlaster");
     }
 
-    public BitBlasterSearchStructure(Metric<T> distance_metric, Iterable<T> data, List<T> reference_objects) {
+    public BitBlasterSearchStructure(Measure<T> measure, Iterable<T> data, List<T> reference_objects) {
 
         try {
-            init(distance_metric, copyData(data), reference_objects);
+            init(measure, copyData(data), reference_objects);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -95,11 +94,11 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
         bit_blaster.terminate();
     }
 
-    private void init(final Metric<T> distance_metric, final List<T> data, final List<T> reference_objects) throws Exception {
+    private void init(final Measure<T> distance_measure, final List<T> data, final List<T> reference_objects) throws Exception {
 
-        boolean fourPoint = distance_metric.getMetricName().equals(JensenShannon.metricName);
+        boolean fourPoint = distance_measure.getMeasureName().equals(Constants.JENSEN_SHANNON.getMeasureName());
 
-        bit_blaster = new ParallelBitBlaster2<>(distance_metric::distance, reference_objects, data, 2,
+        bit_blaster = new ParallelBitBlaster2<>(distance_measure::distance, reference_objects, data, 2,
                 Runtime.getRuntime().availableProcessors(), fourPoint, true);
     }
 
@@ -107,10 +106,15 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
     public List<DataDistance<T>> findWithinThreshold(final T record, final double threshold) {
 
         try {
-            return bit_blaster.rangeSearch(record, threshold);
+            return convertDataDistanceList(bit_blaster.rangeSearch(record, threshold));
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static <T> List<DataDistance<T>> convertDataDistanceList(List<uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance<T>> list) {
+
+        return list.stream().map(x -> new DataDistance<>(x.value, x.distance)).collect(Collectors.toList());
     }
 }

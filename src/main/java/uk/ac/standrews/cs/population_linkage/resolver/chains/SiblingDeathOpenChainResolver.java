@@ -11,15 +11,16 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -35,8 +36,8 @@ public class SiblingDeathOpenChainResolver {
     private final IBucket deaths;
     private final DeathSiblingLinkageRecipe recipe;
 
-    private final JensenShannon base_metric;
-    private final Metric<LXP> metric;
+    private final StringMeasure base_measure;
+    private final LXPMeasure lxpMeasure;
 
     private static final String DD_GET_LONG_CHAIN_SIBLING_LINKS = "MATCH (x:Death)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Death)-[:SIBLING*2..2]-(zz:Death) WHERE NOT (x)-[:SIBLING]-(zz) RETURN x,y,z,zz";
 
@@ -53,23 +54,21 @@ public class SiblingDeathOpenChainResolver {
     private int new_link_distance_correct = 0;
     private int count = 0;
 
-
     public SiblingDeathOpenChainResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         this.recipe = recipe;
-        this.record_repository = new RecordRepository(source_repo_name);
-        this.deaths = record_repository.getBucket("death_records");
-        this.base_metric = new JensenShannon(2048);
-        this.metric = getCompositeMetric(recipe);
+        record_repository = new RecordRepository(source_repo_name);
+        deaths = record_repository.getBucket("death_records");
+        base_measure = Constants.JENSEN_SHANNON;
+        lxpMeasure = getCompositeMeasure(recipe);
     }
 
-    protected Metric<LXP> getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new Sigma(base_metric, linkageRecipe.getLinkageFields(), 0);
+    protected LXPMeasure getCompositeMeasure(final LinkageRecipe linkageRecipe) {
+        return new SumOfFieldDistances(base_measure, linkageRecipe.getLinkageFields());
     }
 
     private void resolve() {
         Stream<OpenTriangle> oddballs = findDeathSiblingLongChains();
-//            System.out.println( "Found " + oddballs.count() );
         oddballs.forEach(this::process);
         printResults();
     }
@@ -89,7 +88,7 @@ public class SiblingDeathOpenChainResolver {
     }
 
     private void process(OpenTriangle open_triangle) {
-        // System.out.println(open_triangle.toString());
+
         try {
 
             LXP x = (LXP) deaths.getObjectById(open_triangle.x);
@@ -163,7 +162,6 @@ public class SiblingDeathOpenChainResolver {
         }
     }
 
-
     private boolean isLowDistance(double d1, double d2) {
         return d1 + d2 < LOW_DISTANCE_MATCH_THRESHOLD;  // count be determined properly by a human (or AI) inspecting these.
     }
@@ -185,7 +183,6 @@ public class SiblingDeathOpenChainResolver {
         return intersection.size(); // we know it is at least one because x,y,z are connected.
     }
 
-
     private Set<Long> intersectionOf(Set<Long> X, Set<Long> Y) {
         Set<Long> result = new HashSet(X);
         result.retainAll(Y);
@@ -205,7 +202,7 @@ public class SiblingDeathOpenChainResolver {
     private double get_distance(long id1, long id2) throws BucketException {
         LXP b1 = (LXP) deaths.getObjectById(id1);
         LXP b2 = (LXP) deaths.getObjectById(id2);
-        return metric.distance( b1, b2 );
+        return lxpMeasure.distance( b1, b2 );
     }
 
     // Queries
@@ -232,9 +229,7 @@ public class SiblingDeathOpenChainResolver {
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
         Result result = bridge.getNewSession().run(DD_GET_LONG_CHAIN_SIBLING_LINKS,parameters);
-//        return result.stream().map( r -> { // debug
-//            System.out.println(r); return r;
-//        } ).count();
+
         return result.stream().count();
     }
 
@@ -244,7 +239,6 @@ public class SiblingDeathOpenChainResolver {
         Result result = bridge.getNewSession().run(query_string,parameters);
         return result.list(r -> r.get("b").get( "STORR_ID" ).asLong());
     }
-
 
     public static void main(String[] args) {
 
@@ -264,5 +258,4 @@ public class SiblingDeathOpenChainResolver {
             System.exit(0); // Make sure it all shuts down properly.
         }
     }
-
 }

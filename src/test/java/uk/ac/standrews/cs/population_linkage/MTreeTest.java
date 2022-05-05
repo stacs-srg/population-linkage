@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage;
 
 import uk.ac.standrews.cs.population_linkage.searchStructures.MTreeSearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.Measure;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,9 +14,9 @@ import java.util.List;
 public class MTreeTest extends SimilaritySearchTest {
 
     @Override
-    SearchStructure<Point> getSearchStructure(Metric<Point> metric, List<Point> data_points, List<Point> reference_points) {
+    SearchStructure<Point> getSearchStructure(Measure<Point> measure, List<Point> data_points, List<Point> reference_points) {
 
-        return new MTreeSearchStructure<>(metric, data_points);
+        return new MTreeSearchStructure<>(measure, data_points);
     }
 
     @Override

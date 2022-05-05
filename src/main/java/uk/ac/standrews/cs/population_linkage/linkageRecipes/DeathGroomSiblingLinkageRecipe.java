@@ -7,13 +7,13 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     public DeathGroomSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_DEATHS = EVERYTHING;
         } else {
             NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
@@ -62,8 +62,8 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if( cached_records == null ) {
-            cached_records = RecordFiltering.filter( getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords() , getLinkageFields() );
+        if (cached_records == null) {
+            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
         }
         return cached_records;
     }
@@ -72,7 +72,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
             list(
                     pair(Death.MOTHER_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY),
-                    pair(Death.FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY) ) );
+                    pair(Death.FATHER_IDENTITY, Marriage.GROOM_FATHER_IDENTITY)));
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {
@@ -109,10 +109,14 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
-    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return LINKAGE_FIELDS;
+    }
 
     /**
      * Checks whether the difference in age between the potential siblings is within the acceptable range.
@@ -126,7 +130,9 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -144,7 +150,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

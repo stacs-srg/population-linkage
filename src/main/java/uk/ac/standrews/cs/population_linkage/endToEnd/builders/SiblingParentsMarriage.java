@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.DataDistance;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.DataDistance;
 
 import java.util.List;
 
@@ -30,13 +30,10 @@ public class SiblingParentsMarriage implements Comparable<SiblingParentsMarriage
         return (sibling != null ? !sibling.equals(that.sibling) : that.sibling != null);
     }
 
-
-
     @Override
     public int hashCode() {
         return sibling.hashCode();
     }
-
 
     @Override
     public int compareTo(SiblingParentsMarriage other) {

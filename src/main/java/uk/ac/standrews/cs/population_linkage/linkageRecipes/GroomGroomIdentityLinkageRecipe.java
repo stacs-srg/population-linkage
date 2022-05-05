@@ -7,11 +7,11 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -62,7 +62,7 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public GroomGroomIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_DEATHS = EVERYTHING;
         } else {
             NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
@@ -115,8 +115,8 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 
     @Override
@@ -126,7 +126,7 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public boolean isViableLink(RecordPair proposedLink) {
-        return isViable( proposedLink );
+        return isViable(proposedLink);
     }
 
     /**

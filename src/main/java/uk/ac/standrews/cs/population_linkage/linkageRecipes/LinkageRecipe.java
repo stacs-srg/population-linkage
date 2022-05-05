@@ -9,6 +9,7 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
@@ -17,9 +18,7 @@ import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -52,7 +51,6 @@ public abstract class LinkageRecipe {
 
     protected static final String EVERYTHING_STRING = "EVERYTHING";
     public static final int EVERYTHING = Integer.MAX_VALUE;
-    public static final JensenShannon DEFAULT_METRIC = new JensenShannon(2048);
 
     private ArrayList<LXP> cached_records = null;
 
@@ -73,14 +71,13 @@ public abstract class LinkageRecipe {
     private Integer marriage_records_size = null;
 
     private int no_linkage_fields_required;
-    private StringMetric base_metric;
+    private StringMeasure base_measure;
 
     public LinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
 
         this.source_repository_name = source_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.bridge = bridge;
-        this.base_metric = DEFAULT_METRIC;
 
         this.record_repository = new RecordRepository(source_repository_name);
     }
@@ -93,7 +90,7 @@ public abstract class LinkageRecipe {
         return no_linkage_fields_required;
     }
 
-    public void setNoLinkageFieldsRequired( int count) {
+    public void setNoLinkageFieldsRequired(int count) {
         no_linkage_fields_required = count;
     }
 
@@ -474,13 +471,15 @@ public abstract class LinkageRecipe {
         record_repository.setMarriagesCacheSize(marriageCacheSize);
     }
 
-    public StringMetric getBaseMetric() {
-        return base_metric;
+    public StringMeasure getBaseMeasure() {
+        return base_measure;
     }
 
-    public void setBaseMetric( StringMetric m ) { this.base_metric = m; }
+    public void setBaseMeasure(StringMeasure m) {
+        this.base_measure = m;
+    }
 
-    public abstract Metric<LXP> getCompositeMetric();
+    public abstract LXPMeasure getCompositeMeasure();
 
     public static class Pair {
         public final int first;

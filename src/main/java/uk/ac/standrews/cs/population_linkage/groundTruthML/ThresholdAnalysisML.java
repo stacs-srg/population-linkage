@@ -5,7 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,21 +29,15 @@ abstract class ThresholdAnalysisML {
     static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
 
-    final List<Map<String, Sample[]>> linkage_results; // Maps from metric name to counts of TPFP etc.
+    final List<Map<String, Sample[]>> linkage_results; // Maps from measure name to counts of TPFP etc.
 
-    final long[] pairs_evaluated = new long[NUMBER_OF_RUNS];
-    final long[] pairs_ignored = new long[NUMBER_OF_RUNS];
-    final List<StringMetric> metrics;
+    final List<StringMeasure> measures;
 
-    /**
-     *
-     * @return lists of all sets of comparison fields that will be used for comparing records, can have more than one, hence List<List></list>
-     */
     public abstract List<Integer> getComparisonFields();
 
     ThresholdAnalysisML() {
 
-        metrics = Constants.BASE_METRICS;
+        measures = Constants.BASE_MEASURES;
         linkage_results = initialiseState();
     }
 
@@ -55,14 +49,14 @@ abstract class ThresholdAnalysisML {
 
             final Map<String, Sample[]> map = new HashMap<>();
 
-            for (final StringMetric metric : metrics) {
+            for (final StringMeasure measure : measures) {
 
                 final Sample[] samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
                 for (int j = 0; j < NUMBER_OF_THRESHOLDS_SAMPLED; j++) {
                     samples[j] = new Sample();
                 }
 
-                map.put(metric.getMetricName(), samples);
+                map.put(measure.getMeasureName(), samples);
             }
 
             result.add(map);

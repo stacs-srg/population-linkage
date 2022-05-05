@@ -5,14 +5,14 @@
 package uk.ac.standrews.cs.population_linkage.characterisation;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -25,11 +25,11 @@ public class MetricSpaceChecks {
     private static final long SEED = 34553543456223L;
     private static final double DELTA = 0.0000001;
 
-    private final List<Metric<LXP>> combined_metrics;
+    private final List<LXPMeasure> combined_metrics;
 
     private MetricSpaceChecks() {
 
-        combined_metrics = getCombinedMetrics();
+        combined_metrics = getCombinedMeasures();
     }
 
     public void run() throws Exception {
@@ -37,20 +37,20 @@ public class MetricSpaceChecks {
         checkTriangleInequality();
     }
 
-    private List<Metric<LXP>> getCombinedMetrics() {
+    private List<LXPMeasure> getCombinedMeasures() {
 
-        List<Metric<LXP>> result = new ArrayList<>();
+        List<LXPMeasure> result = new ArrayList<>();
 
-        for (StringMetric base_metric : TRUE_METRICS) {
-            result.add(new Sigma(base_metric, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, 0));
+        for (StringMeasure base_measure : TRUE_METRICS) {
+            result.add(new SumOfFieldDistances(base_measure, BirthSiblingLinkageRecipe.LINKAGE_FIELDS));
         }
         return result;
     }
 
-    private void checkTriangleInequality() throws IOException {
+    private void checkTriangleInequality() {
 
         Random random = new Random(SEED);
-        RecordRepository record_repository = new RecordRepository("umea");
+        RecordRepository record_repository = new RecordRepository(Umea.REPOSITORY_NAME);
 
         final List<LXP> birth_records = new ArrayList<>();
         for (Birth birth : record_repository.getBirths()) {
@@ -59,6 +59,7 @@ public class MetricSpaceChecks {
 
         long counter = 0;
 
+        //noinspection InfiniteLoopStatement
         while (true) {
 
             int size = birth_records.size();
@@ -67,9 +68,9 @@ public class MetricSpaceChecks {
             LXP b2 = birth_records.get(random.nextInt(size));
             LXP b3 = birth_records.get(random.nextInt(size));
 
-            for (Metric<LXP> metric : combined_metrics) {
+            for (LXPMeasure metric : combined_metrics) {
 
-                String metric_name = metric.getMetricName();
+                String metric_name = metric.getMeasureName();
 
                 double distance1 = metric.distance(b1, b2);
                 double distance2 = metric.distance(b1, b3);

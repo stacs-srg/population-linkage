@@ -4,19 +4,19 @@
  */
 package uk.ac.standrews.cs.population_linkage.groundTruthML;
 
-import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,18 +38,15 @@ import java.util.List;
  * distance.field1.field2=value
  *
  * @author al
- *
- * 29/6/2020
- *
  */
 public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysis {
 
-    private final Metric<LXP> metric;
+    private final LXPMeasure measure;
 
-    UmeaBirthSiblingWeighted(Path store_path, String repo_name, final List<Integer> fields, final List<Metric<String>> metrics, final List<Float> weights, final int number_of_records_to_be_checked, final int number_of_runs,
+    UmeaBirthSiblingWeighted(String repo_name, final List<Integer> fields, final List<StringMeasure> measures, final List<Float> weights, final int number_of_records_to_be_checked, final int number_of_runs,
                              double threshold) throws IOException {
-        super(store_path, repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true, threshold);
-        this.metric = new SigmaWeighted(fields, metrics, weights, getIdFieldIndex());
+        super(repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true, threshold);
+        measure = new SumOfFieldDistancesWeighted(fields, measures, weights);
     }
 
     @Override
@@ -83,7 +80,7 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
 
     @Override
     public String getDatasetName() {
-        return "Umea";
+        return Umea.REPOSITORY_NAME;
     }
 
     @Override
@@ -97,77 +94,72 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
     }
 
     @Override
-    public Metric<LXP> getMetric() { return metric; }
+    public LXPMeasure getMeasure() {
+        return measure;
+    }
 
     /**
      * Splits a param list into separate fields
      * params are of the form: Cosine.FATHER_FORENAME=0.3, Damerau-Levenshtein.MOTHER_FORENAME=0.7, 0.62
+     *
      * @param args
-     * @param fields - an empty list of the fields to be initialised.
-     * @param metrics  - an empty list of the metrics to be initialised.
-     * @param weights  - an empty list of the weights to be initialised.
+     * @param fields  - an empty list of the fields to be initialised.
+     * @param measures - an empty list of the measures to be initialised.
+     * @param weights - an empty list of the weights to be initialised.
      * @return the threshold for the program
      */
-    public static double processParams(String[] args, List<Integer> fields, List<Metric<String>> metrics, List<Float> weights ) {
+    public static double processParams(String[] args, List<Integer> fields, List<StringMeasure> measures, List<Float> weights) {
 
-        if( args.length < 2 ) {
-            throw new RuntimeException( "Error in args: expect list plus threshold like this: Cosine.FATHER_FORENAME=0.3 Damerau-Levenshtein.MOTHER_FORENAME=0.7 0.62");
+        if (args.length < 2) {
+            throw new RuntimeException("Error in args: expect list plus threshold like this: Cosine.FATHER_FORENAME=0.3 Damerau-Levenshtein.MOTHER_FORENAME=0.7 0.62");
         }
 
-        String thresh_string = args[ args.length - 1 ];
-        double threshold;
-        try {
-            threshold = Double.parseDouble( thresh_string );
-        } catch( NumberFormatException e ) {
-            throw new RuntimeException( "Cannot parse threshold as double: " + thresh_string );
-        }
-        System.out.println( "Threshold = " + threshold );
+        String thresh_string = args[args.length - 1];
+        double threshold = Double.parseDouble(thresh_string);
 
-        for( int i = 0; i < args.length - 1; i++ ) { // parse the triples looks like this: Cosine.FATHER_FORENAME=0.3
+        System.out.println("Threshold = " + threshold);
+
+        for (int i = 0; i < args.length - 1; i++) { // parse the triples looks like this: Cosine.FATHER_FORENAME=0.3
 
             String[] split_front_weight = args[i].split("=");
-            String[] metric_name_field = split_front_weight[0].split("\\.");
+            String[] measure_name_field = split_front_weight[0].split("\\.");
 
-            Metric<String> m = Constants.get( metric_name_field[0] );
-            int field_index = fieldNametoIndex( metric_name_field[1] );
+            StringMeasure m = Constants.get(measure_name_field[0]);
+            int field_index = fieldNameToIndex(measure_name_field[1]);
 
-            metrics.add( m );
-            fields.add( field_index );
-            weights.add(Float.parseFloat( split_front_weight[1] ) );
+            measures.add(m);
+            fields.add(field_index);
+            weights.add(Float.parseFloat(split_front_weight[1]));
         }
 
         float total_weights = 0;
-        for( float f: weights ) { total_weights += f; }
+        for (float f : weights) {
+            total_weights += f;
+        }
 
-        if( total_weights > 1.00001 || total_weights < 0.99999 ) {
-            throw new RuntimeException( "Weights must sum to 1, actually summed to: " + total_weights );
+        if (total_weights > 1.00001 || total_weights < 0.99999) {
+            throw new RuntimeException("Weights must sum to 1, actually summed to: " + total_weights);
         }
 
         return threshold;
     }
 
-    private static int fieldNametoIndex(String s) {
+    private static int fieldNameToIndex(String s) {
 
         return new Birth().getMetaData().getSlot(s);
     }
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "Umea";
-
         List<Integer> fields = new ArrayList<>();
-        List<Metric<String>> metrics = new ArrayList<>();
+        List<StringMeasure> measures = new ArrayList<>();
         List<Float> weights = new ArrayList<>();
 
-        double threshold = processParams( args, fields, metrics, weights );
-
-        final int NUMBER_OF_RUNS = 1;
+        double threshold = processParams(args, fields, measures, weights);
 
         // number_of_records_to_be_checked = CHECK_ALL_RECORDS for exhaustive
         // otherwise DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED or some other specific number.
 
-        new UmeaBirthSiblingWeighted(store_path, repo_name, fields, metrics, weights, 500, NUMBER_OF_RUNS, threshold).run();
-//        new UmeaBirthSiblingWeighted(store_path, repo_name, fields, metrics, weights, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, NUMBER_OF_RUNS, threshold).run();
+        new UmeaBirthSiblingWeighted(Umea.REPOSITORY_NAME, fields, measures, weights, 500, 1, threshold).run();
     }
 }

@@ -24,19 +24,19 @@ public class GroundTruthResultsFilter {
 
         List<String> thresholds = Arrays.asList("0.40", "0.60", "0.80");
 
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader( Files.newInputStream(Paths.get(INPUT_FILE_PATH))));
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(INPUT_FILE_PATH))));
              final PrintWriter writer = new PrintWriter(FileManipulation.getOutputStreamWriter(Paths.get(OUTPUT_FILE_PATH)))) {
 
             String line = reader.readLine();
             writer.println(line);
 
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
 
                 String[] values = line.split(",");
-                String metric = values[5];
+                String measure = values[5];
                 String threshold = values[6];
 
-                if (metric.startsWith("SigmaMissingOne-Levenshtein") && thresholds.contains(threshold)) {
+                if (measure.startsWith("SigmaMissingOne-Levenshtein") && thresholds.contains(threshold)) {
                     writer.println(line);
                 }
             }

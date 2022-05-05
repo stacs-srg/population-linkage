@@ -4,7 +4,6 @@
 # <https://github.com/stacs-srg>
 #
 
-
 if [[ -n "$1" ]];
 then
     export MAVEN_OPTS="-Xmx$1G"

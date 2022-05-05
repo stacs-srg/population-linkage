@@ -6,7 +6,8 @@ package uk.ac.standrews.cs.population_linkage.profiling.umea;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -14,15 +15,14 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
-import uk.ac.standrews.cs.utilities.metrics.Dice;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.measures.Dice;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UmeaDeathSiblingProfiling {
 
-    public static final Dice BASE_METRIC = Constants.DICE;
+    public static final Dice base_measure = Constants.DICE;
     private static final double DISTANCE_THRESHOLD = 0.48;
     private static final int OUTER_LOOP_SIZE = 25000;
 
@@ -55,56 +55,59 @@ public class UmeaDeathSiblingProfiling {
         final long size = record_list.size();
         System.out.println("size: " + size);
 
-        Metric<LXP> metric = new Sigma(BASE_METRIC, DeathSiblingLinkageRecipe.getComparisonFields(), DeathSiblingLinkageRecipe.ID_FIELD_INDEX);
+        LXPMeasure measure = new SumOfFieldDistances(base_measure, DeathSiblingLinkageRecipe.getComparisonFields());
 
         for (int i = 0; i < OUTER_LOOP_SIZE; i++) {
 
-             for (int j = i + 1; j < size; j++) {
+            for (int j = i + 1; j < size; j++) {
 
-                 total++;
+                total++;
 
-                 final LXP record1 = record_list.get(i);
-                 final LXP record2 = record_list.get(j);
+                final LXP record1 = record_list.get(i);
+                final LXP record2 = record_list.get(j);
 
-                 final double distance = metric.distance(record1, record2);
+                final double distance = measure.distance(record1, record2);
 
-                 final LinkStatus match_status = DeathSiblingLinkageRecipe.trueMatch(record1, record2);
-                 final boolean close_enough = distance <= DISTANCE_THRESHOLD;
-                 final boolean viable = DeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, distance));
+                final LinkStatus match_status = DeathSiblingLinkageRecipe.trueMatch(record1, record2);
+                final boolean close_enough = distance <= DISTANCE_THRESHOLD;
+                final boolean viable = DeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, distance));
 
-                 switch (match_status) {
+                switch (match_status) {
 
-                     case TRUE_MATCH: {
-                         if (close_enough) {
-                             tp_without_viability++;
-                         } else {
-                             fn_without_viability++;
-                         }
-                         if (close_enough && viable) {
-                             tp_with_viability++;
-                         } else {
-                             fn_with_viability++;
-                         }
-                     } break;
+                    case TRUE_MATCH: {
+                        if (close_enough) {
+                            tp_without_viability++;
+                        } else {
+                            fn_without_viability++;
+                        }
+                        if (close_enough && viable) {
+                            tp_with_viability++;
+                        } else {
+                            fn_with_viability++;
+                        }
+                    }
+                    break;
 
-                     case NOT_TRUE_MATCH: {
-                         if (close_enough) {
-                             fp_without_viability++;
-                         } else {
-                             tn_without_viability++;
-                         }
-                         if (close_enough && viable) {
-                             fp_with_viability++;
-                         } else {
-                             tn_with_viability++;
-                         }
-                     } break;
+                    case NOT_TRUE_MATCH: {
+                        if (close_enough) {
+                            fp_without_viability++;
+                        } else {
+                            tn_without_viability++;
+                        }
+                        if (close_enough && viable) {
+                            fp_with_viability++;
+                        } else {
+                            tn_with_viability++;
+                        }
+                    }
+                    break;
 
-                     default: unknown_count++;
-                 }
+                    default:
+                        unknown_count++;
+                }
             }
 
-            if (i%100 == 0) {
+            if (i % 100 == 0) {
 
                 System.out.println("with viability check");
                 printCounts(tp_with_viability, fp_with_viability, tn_with_viability, fn_with_viability, unknown_count, total);

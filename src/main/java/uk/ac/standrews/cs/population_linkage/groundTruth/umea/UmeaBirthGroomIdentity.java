@@ -24,17 +24,21 @@ import java.util.List;
  */
 public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
 
-    UmeaBirthGroomIdentity(String repo_name, int number_of_records_to_be_checked, int number_of_runs) throws IOException {
-        super(repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, false);
+    // Cutoff record distance for field distance measures that aren't intrinsically normalised;
+    // all distances at or above the cutoff will be normalised to 1.0.
+    private static final double NORMALISATION_CUTOFF = 30;
+
+    UmeaBirthGroomIdentity(final String repo_name, final String[] args) throws IOException {
+        super(repo_name, args, getLinkageResultsFilename(), getDistanceResultsFilename(), false);
     }
 
     @Override
-    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(final RecordRepository record_repository) {
         return Utilities.getBirthRecords(record_repository);
     }
 
     @Override
-    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords2(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords2(final RecordRepository record_repository) {
         return Utilities.getMarriageRecords(record_repository);
     }
 
@@ -49,26 +53,21 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     @Override
-    public int getIdFieldIndex() {
-        return BirthGroomIdentityLinkageRecipe.ID_FIELD_INDEX1;
+    protected double getNormalisationCutoff() {
+        return NORMALISATION_CUTOFF;
     }
 
     @Override
-    public int getIdFieldIndex2() {
-        return BirthGroomIdentityLinkageRecipe.ID_FIELD_INDEX2;
-    }
-
-    @Override
-    public LinkStatus isTrueMatch(LXP record1, LXP record2) {
+    public LinkStatus isTrueMatch(final LXP record1, final LXP record2) {
         return trueMatch(record1, record2);
     }
 
-    public static LinkStatus trueMatch(LXP record1, LXP record2) {
+    public static LinkStatus trueMatch(final LXP record1, final LXP record2) {
         return BirthGroomIdentityLinkageRecipe.trueMatch(record1, record2);
     }
 
-    public boolean isViableLink(RecordPair proposedLink) {
-        return BirthGroomIdentityLinkageRecipe.isViable(proposedLink);
+    public boolean isViableLink(RecordPair proposed_link) {
+        return BirthGroomIdentityLinkageRecipe.isViable(proposed_link);
     }
 
     @Override
@@ -81,18 +80,8 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
         return "identity linkage between baby on birth record and groom on marriage record";
     }
 
-    @Override
-    public String getSourceType() {
-        return "births";
-    }
-
-    @Override
-    protected String getSourceType2() {
-        return "marriages";
-    }
-
     public static void main(String[] args) throws Exception {
 
-        new UmeaBirthGroomIdentity(Umea.REPOSITORY_NAME, DEFAULT_NUMBER_OF_RECORDS_TO_BE_CHECKED, 1).run();
+        new UmeaBirthGroomIdentity(Umea.REPOSITORY_NAME, args).run();
     }
 }

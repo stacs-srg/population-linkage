@@ -9,13 +9,13 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +31,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final String LINKAGE_TYPE = "death-groom-identity";
 
     private int NUMBER_OF_DEATHS;
-    public  static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
+    public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
     private List<LXP> cached_records = null;
 
     public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
@@ -62,7 +62,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public DeathGroomIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_DEATHS = EVERYTHING;
         } else {
             NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
@@ -72,9 +72,9 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if( cached_records == null ) {
+        if (cached_records == null) {
             Iterable<LXP> filtered = filterBySex(super.getDeathRecords(), Death.SEX, "m");
-            cached_records = RecordFiltering.filter( getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields() );
+            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields());
         }
         return cached_records;
     }
@@ -140,15 +140,15 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP query_record : getQueryRecords() ) {
-            count += countDeathGroomSiblingGTLinks( bridge, query_record );
+        for (LXP query_record : getQueryRecords()) {
+            count += countDeathGroomSiblingGTLinks(bridge, query_record);
         }
         return count;
     }
 
     private static final String DEATH_GROOM_GT_IDENTITY = "MATCH (a:Death)-[r:GROUND_TRUTH_DEATH_GROOM_IDENTITY]-(b:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countDeathGroomSiblingGTLinks(NeoDbCypherBridge bridge, LXP death_record ) {
+    public static int countDeathGroomSiblingGTLinks(NeoDbCypherBridge bridge, LXP death_record) {
         String standard_id_from = death_record.getString(Death.STANDARDISED_ID);
 
         Map<String, Object> parameters = new HashMap<>();
@@ -164,7 +164,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

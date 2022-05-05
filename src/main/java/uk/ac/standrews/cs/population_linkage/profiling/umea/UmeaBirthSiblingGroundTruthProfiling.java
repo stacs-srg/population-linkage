@@ -62,22 +62,28 @@ public class UmeaBirthSiblingGroundTruthProfiling {
                 final LinkStatus linkStatus = BirthSiblingLinkageRecipe.trueMatch(record1, record2);
 
                 switch (linkStatus) {
-                    case TRUE_MATCH: match_count++; break;
-                    case NOT_TRUE_MATCH: non_match_count++; break;
-                    default: unknown_count++;
+                    case TRUE_MATCH:
+                        match_count++;
+                        break;
+                    case NOT_TRUE_MATCH:
+                        non_match_count++;
+                        break;
+                    default:
+                        unknown_count++;
                 }
 
                 int alternative_index = 0;
                 for (List<LinkageRecipe.Pair> alternative : BirthSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES) {
-                    if (!LinkageRecipe.allFieldsEmpty(record1, record2, alternative)) known_link_counts[alternative_index++]++;
+                    if (!LinkageRecipe.allFieldsEmpty(record1, record2, alternative))
+                        known_link_counts[alternative_index++]++;
                 }
             }
 
-            if (i%100 == 0) {
+            if (i % 100 == 0) {
                 boolean percentages_changed_significantly = false;
                 for (int k = 0; k < known_link_counts.length; k++) {
                     double percentage_known = 100.0 * known_link_counts[k] / total;
-                    System.out.printf("values present for linkage alternative %d: %.1f%%\n", k+1, percentage_known);
+                    System.out.printf("values present for linkage alternative %d: %.1f%%\n", k + 1, percentage_known);
 
                     double amount_of_change = Math.abs(percentage_known - known_link_percentages[k]);
                     if (amount_of_change > 0.05) percentages_changed_significantly = true;

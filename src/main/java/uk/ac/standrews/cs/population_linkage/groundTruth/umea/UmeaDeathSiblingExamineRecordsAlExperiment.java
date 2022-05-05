@@ -11,9 +11,6 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 
 import java.io.IOException;
 
-/**
- **
- **/
 public class UmeaDeathSiblingExamineRecordsAlExperiment extends UmeaBirthSiblingExamineRecordsAlExperiment {
 
     UmeaDeathSiblingExamineRecordsAlExperiment() throws IOException {
@@ -21,23 +18,23 @@ public class UmeaDeathSiblingExamineRecordsAlExperiment extends UmeaBirthSibling
     }
 
     @Override
-    public Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
         System.out.println("Umea Deaths");
         return Utilities.getDeathRecords(record_repository);
     }
 
     @Override
     protected void run() {
-        for( LXP record : records ) {
+        for (LXP record : records) {
             String father_surname = record.getString(Death.FATHER_SURNAME);
-            String father_forname = record.getString(Death.FATHER_FORENAME);
+            String father_forename = record.getString(Death.FATHER_FORENAME);
             String mother_surname = record.getString(Death.MOTHER_MAIDEN_SURNAME);
-            String mother_forname = record.getString(Death.FATHER_FORENAME);
+            String mother_forename = record.getString(Death.FATHER_FORENAME);
 
-            addToCounts( father_surname,father_forname,mother_surname,mother_forname );
-            if( bothParentsKnown(record) ) {
+            addToCounts(father_surname, father_forename, mother_surname, mother_forename);
+            if (bothParentsKnown(record)) {
                 parents_known_counter++;
-                addToMap(combined_both_known_parental_map, father_forname + father_surname + mother_forname + mother_surname );
+                addToMap(combined_both_known_parental_map, father_forename + father_surname + mother_forename + mother_surname);
             }
             record_counter++;
         }

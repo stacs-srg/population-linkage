@@ -22,7 +22,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.PrintUtils;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -64,32 +64,32 @@ public class UmeaBirthDeathHardNegativeML {
         IRepository repo = store.getRepository(Umea.REPOSITORY_NAME);
 
         this.bridge = bridge;
-        this.births = repo.getBucket("birth_records", Birth.class );
-        this.deaths = repo.getBucket("death_records", Death.class );
-        nns = new NNs(births,deaths);
+        this.births = repo.getBucket("birth_records", Birth.class);
+        this.deaths = repo.getBucket("death_records", Death.class);
+        nns = new NNs(births, deaths);
 
         this.comparison_fields = BirthDeathIdentityLinkageRecipe.LINKAGE_FIELDS;
         this.comparison_fields2 = BirthDeathIdentityLinkageRecipe.SEARCH_FIELDS;
 
-        pu = new PrintUtils( true_match_filename,  random_negatives_filename,
-                 hard_negatives_filename,  metdata_filename,
-                comparison_fields,  comparison_fields2);
+        pu = new PrintUtils(true_match_filename, random_negatives_filename,
+                hard_negatives_filename, metdata_filename,
+                comparison_fields, comparison_fields2);
     }
 
     public void processGTLinks() throws BucketException {
 
         writeHeadersAndMetaData();
 
-        for( Relationship r : getGTLinks(BIRTH_DEATH_IDENTITY_QUERY) ) {
-            Birth b = getByNeoId(r.startNodeId(), births,bridge);
-            Death d = getByNeoId(r.endNodeId(), deaths,bridge);
+        for (Relationship r : getGTLinks(BIRTH_DEATH_IDENTITY_QUERY)) {
+            Birth b = getByNeoId(r.startNodeId(), births, bridge);
+            Death d = getByNeoId(r.endNodeId(), deaths, bridge);
 
             // Output the distances of b,d as true positive.
             // Now search for each of the NN identity links for b and d to get hard negatives
-            List<Birth> non_link_nn_births = nns.getBirthNNs( b,NNN );
-            List<Death> non_link_nn_deaths = nns.getDeathNNs( d,NNN );
-            List<Death> random_non_link_deaths = getRandomNonLinkDeaths( b,NNN );
-            List<Birth> random_non_link_births = getRandomNonLinkBirths( d,NNN );
+            List<Birth> non_link_nn_births = nns.getBirthNNs(b, NNN);
+            List<Death> non_link_nn_deaths = nns.getDeathNNs(d, NNN);
+            List<Death> random_non_link_deaths = getRandomNonLinkDeaths(b, NNN);
+            List<Birth> random_non_link_births = getRandomNonLinkBirths(d, NNN);
 
 // ***** DEBUG *****
 //            System.out.println("birth");
@@ -107,11 +107,11 @@ public class UmeaBirthDeathHardNegativeML {
 //            System.out.println( "--END--");
 // ***** DEBUG *****
 
-            pu.printPairDiffType(b,d,pu.true_match_results_writer, LinkStatus.TRUE_MATCH ); // the real link
-            non_link_nn_deaths.forEach( n -> pu.printPairDiffType(b,n,pu.hard_negatives_results_writer,LinkStatus.NOT_TRUE_MATCH) );
-            non_link_nn_births.forEach( n -> pu.printPairDiffType(n,d,pu.hard_negatives_results_writer,LinkStatus.NOT_TRUE_MATCH) );
-            random_non_link_deaths.forEach( n -> pu.printPairDiffType(b,n,pu.random_negatives_results_writer,LinkStatus.NOT_TRUE_MATCH) );
-            random_non_link_births.forEach( n -> pu.printPairDiffType(n,d,pu.random_negatives_results_writer,LinkStatus.NOT_TRUE_MATCH) );
+            pu.printPairDiffType(b, d, pu.true_match_results_writer, LinkStatus.TRUE_MATCH); // the real link
+            non_link_nn_deaths.forEach(n -> pu.printPairDiffType(b, n, pu.hard_negatives_results_writer, LinkStatus.NOT_TRUE_MATCH));
+            non_link_nn_births.forEach(n -> pu.printPairDiffType(n, d, pu.hard_negatives_results_writer, LinkStatus.NOT_TRUE_MATCH));
+            random_non_link_deaths.forEach(n -> pu.printPairDiffType(b, n, pu.random_negatives_results_writer, LinkStatus.NOT_TRUE_MATCH));
+            random_non_link_births.forEach(n -> pu.printPairDiffType(n, d, pu.random_negatives_results_writer, LinkStatus.NOT_TRUE_MATCH));
         }
     }
 
@@ -126,13 +126,13 @@ public class UmeaBirthDeathHardNegativeML {
         LXP b_source_record = births.getInputStream().iterator().next();
         LXP d_source_record = deaths.getInputStream().iterator().next();
 
-        for (final StringMetric metric : Constants.BASE_METRICS) {
+        for (final StringMeasure measure : Constants.BASE_MEASURES) {
 
-            String name = metric.getMetricName();
-            for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++ ) {
+            final String name = measure.getMeasureName();
+            for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++) {
 
                 String label = name + "." + b_source_record.getMetaData().getFieldName(comparison_fields.get(field_selector)) + "-" +
-                                            d_source_record.getMetaData().getFieldName(comparison_fields2.get(field_selector));  //metric name concatenated with the name of the field selectors
+                        d_source_record.getMetaData().getFieldName(comparison_fields2.get(field_selector));  // measure name concatenated with the name of the field selectors
                 pw.print(label);
                 pw.print(DELIMIT);
 
@@ -151,7 +151,7 @@ public class UmeaBirthDeathHardNegativeML {
         PrintWriter pw = pu.metadata_writer;
 
         pw.println("Output file created: " + LocalDateTime.now());
-        pw.println("Checking distributions of record pair distances using various string similarity metrics and thresholds hard negatives");
+        pw.println("Checking distributions of record pair distances using various string similarity measures and thresholds hard negatives");
         pw.println("Dataset: Umea");
         pw.println("LinkageRecipe type: birth-death");
         pw.println("Created by: " + this.getClass().getName());
@@ -160,55 +160,53 @@ public class UmeaBirthDeathHardNegativeML {
     }
 
     /**
-     *
-     * @param b a birth record
+     * @param b      a birth record
      * @param number
      * @return some random Deaths that are not links to the birth passed in
      */
     private List<Death> getRandomNonLinkDeaths(Birth b, int number) throws BucketException {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("number", number);
-        Result query_res = bridge.getNewSession().run(NON_LINKS_DEATHS_QUERY,parameters);
+        Result query_res = bridge.getNewSession().run(NON_LINKS_DEATHS_QUERY, parameters);
         List<Node> nodes = query_res.list(r -> r.get("x").asNode());
         List<Death> result = new ArrayList<>();
-        for( Node node : nodes ) {
+        for (Node node : nodes) {
             long storr_id = node.get("STORR_ID").asLong();
-            result.add( deaths.getObjectById(storr_id) );
+            result.add(deaths.getObjectById(storr_id));
         }
         return result;
     }
 
     /**
-     *
-     * @param d a death record
+     * @param d      a death record
      * @param number
      * @return some random Births that are not links to the death passed in
      */
-    private List<Birth>getRandomNonLinkBirths(Death d, int number) throws BucketException {
+    private List<Birth> getRandomNonLinkBirths(Death d, int number) throws BucketException {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("number", number);
-        Result query_res = bridge.getNewSession().run(NON_LINKS_BIRTHS_QUERY,parameters);
+        Result query_res = bridge.getNewSession().run(NON_LINKS_BIRTHS_QUERY, parameters);
         List<Node> nodes = query_res.list(r -> r.get("x").asNode());
         List<Birth> result = new ArrayList<>();
-        for( Node node : nodes ) {
+        for (Node node : nodes) {
             long storr_id = node.get("STORR_ID").asLong();
-            result.add( births.getObjectById(storr_id) );
+            result.add(births.getObjectById(storr_id));
         }
         return result;
     }
 
     private void show(Birth b) {
-        System.out.println( b.get( Birth.FORENAME ) + "/" + b.get( Birth.SURNAME ) + "/" +
-                            b.get( Birth.MOTHER_FORENAME ) + "/" + b.get( Birth.MOTHER_MAIDEN_SURNAME ) + "/" +
-                            b.get( Birth.FATHER_FORENAME ) + "/" + b.get( Birth.FATHER_SURNAME )  + "/" +
-                            b.get( Birth.STANDARDISED_ID ) );
+        System.out.println(b.get(Birth.FORENAME) + "/" + b.get(Birth.SURNAME) + "/" +
+                b.get(Birth.MOTHER_FORENAME) + "/" + b.get(Birth.MOTHER_MAIDEN_SURNAME) + "/" +
+                b.get(Birth.FATHER_FORENAME) + "/" + b.get(Birth.FATHER_SURNAME) + "/" +
+                b.get(Birth.STANDARDISED_ID));
     }
 
     private void show(Death d) {
-        System.out.println( d.get( Death.FORENAME ) + "/" + d.get( Death.SURNAME ) + "/" +
-                d.get( Death.MOTHER_FORENAME ) + "/" + d.get( Death.MOTHER_MAIDEN_SURNAME ) + "/" +
-                d.get( Death.FATHER_FORENAME ) + "/" + d.get( Death.FATHER_SURNAME )  + "/" +
-                d.get( Death.STANDARDISED_ID ) );
+        System.out.println(d.get(Death.FORENAME) + "/" + d.get(Death.SURNAME) + "/" +
+                d.get(Death.MOTHER_FORENAME) + "/" + d.get(Death.MOTHER_MAIDEN_SURNAME) + "/" +
+                d.get(Death.FATHER_FORENAME) + "/" + d.get(Death.FATHER_SURNAME) + "/" +
+                d.get(Death.STANDARDISED_ID));
     }
 
     private List<Relationship> getGTLinks(String query_string) {
@@ -216,11 +214,9 @@ public class UmeaBirthDeathHardNegativeML {
         return result.list(r -> r.get("r").asRelationship());
     }
 
-
-
     public static void main(String[] args) throws RepositoryException, BucketException {
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             UmeaBirthDeathHardNegativeML hn = new UmeaBirthDeathHardNegativeML(bridge, true_match_filename, random_negatives_filename, hard_negatives_filename, metdata_filename);
             hn.processGTLinks();
             System.exit(1);

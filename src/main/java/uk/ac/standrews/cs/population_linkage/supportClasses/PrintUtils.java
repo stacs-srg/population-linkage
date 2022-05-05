@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -26,15 +26,15 @@ public class PrintUtils {
     public final PrintWriter hard_negatives_results_writer;
     public final PrintWriter metadata_writer;
 
-    private final List<StringMetric> metrics;
+    private final List<StringMeasure> measures;
     private final List<Integer> comparison_fields;
     private final List<Integer> comparison_fields2;
 
     public PrintUtils(String true_match_filename, String random_negatives_filename,
                       String hard_negatives_filename, String metdata_filename,
-                      List<Integer> comparison_fields, List<Integer> comparison_fields2 ) throws IOException {
+                      List<Integer> comparison_fields, List<Integer> comparison_fields2) throws IOException {
 
-        this.metrics = Constants.BASE_METRICS;
+        this.measures = Constants.BASE_MEASURES;
         this.comparison_fields = comparison_fields;
         this.comparison_fields2 = comparison_fields2;
 
@@ -44,13 +44,13 @@ public class PrintUtils {
         metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(metdata_filename + ".csv", false)));
     }
 
-    public void printPairSameType(LXP record1, LXP record2, PrintWriter pw, LinkStatus ls ) {
-        for (final StringMetric metric : metrics) {
+    public void printPairSameType(LXP record1, LXP record2, PrintWriter pw, LinkStatus ls) {
+        for (final StringMeasure measure : measures) {
 
             for (int field_selector : comparison_fields) {
 
-                final double distance = metric.distance(record1.getString(field_selector), record2.getString(field_selector));
-                outputMeasurement(distance,pw);
+                final double distance = measure.distance(record1.getString(field_selector), record2.getString(field_selector));
+                outputMeasurement(distance, pw);
             }
         }
         pw.print(statusToPrintFormat(ls));
@@ -58,15 +58,15 @@ public class PrintUtils {
         pw.flush();
     }
 
-    public void printPairDiffType(LXP record1, LXP record2, PrintWriter pw, LinkStatus ls ) {
-        for (final StringMetric metric : metrics) {
+    public void printPairDiffType(LXP record1, LXP record2, PrintWriter pw, LinkStatus ls) {
+        for (final StringMeasure measure : measures) {
 
-            for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++ ) {
+            for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++) {
 
-                final double distance = metric.distance(record1.getString(comparison_fields.get(field_selector)),
-                                                        record2.getString(comparison_fields2.get(field_selector)));
+                final double distance = measure.distance(record1.getString(comparison_fields.get(field_selector)),
+                        record2.getString(comparison_fields2.get(field_selector)));
 
-                outputMeasurement(distance,pw);
+                outputMeasurement(distance, pw);
             }
         }
         pw.print(statusToPrintFormat(ls));
@@ -74,10 +74,10 @@ public class PrintUtils {
         pw.flush();
     }
 
-    protected String statusToPrintFormat( LinkStatus ls ) {
-        if( ls == LinkStatus.TRUE_MATCH ) {
+    protected String statusToPrintFormat(LinkStatus ls) {
+        if (ls == LinkStatus.TRUE_MATCH) {
             return "1";
-        } else if( ls == LinkStatus.NOT_TRUE_MATCH ) {
+        } else if (ls == LinkStatus.NOT_TRUE_MATCH) {
             return "-1";
         } else {
             return "0";
@@ -94,22 +94,18 @@ public class PrintUtils {
         pw.print(DELIMIT);
     }
 
-    public void printHeadersDiffTypes(PrintWriter pw, LXP example_record1,  LXP example_record2) {
+    public void printHeadersDiffTypes(PrintWriter pw, LXP example_record1, LXP example_record2) {
 
-//        LXP a_source_record = source_records.get(0);
-//        LXP b_source_record = source_records.get(0);
+        for (final StringMeasure measure : measures) {
 
-        for (final StringMetric metric : metrics) {
+            String name = measure.getMeasureName();
 
-            String name = metric.getMetricName();
-
-            for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++ ) {
+            for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++) {
 
                 String label = name + "." + example_record1.getMetaData().getFieldName(field_selector) + "-" +
-                        example_record2.getMetaData().getFieldName(field_selector);  //metric name concatenated with the field selector names;
+                        example_record2.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector names;
                 pw.print(label);
                 pw.print(DELIMIT);
-
             }
         }
 
@@ -122,15 +118,14 @@ public class PrintUtils {
 
     public void printHeadersSameType(PrintWriter pw, LXP example_record) {
 
-        for (final StringMetric metric : metrics) {
+        for (final StringMeasure measure : measures) {
 
-            String name = metric.getMetricName();
+            String name = measure.getMeasureName();
             for (int field_selector : comparison_fields) {
 
-                String label = name + "." + example_record.getMetaData().getFieldName(field_selector);  //metric name concatenated with the field selector name;
+                String label = name + "." + example_record.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector name;
                 pw.print(label);
                 pw.print(DELIMIT);
-
             }
         }
 
@@ -141,10 +136,10 @@ public class PrintUtils {
         pw.flush();
     }
 
-    protected void printMetaData( PrintWriter pw ) {
+    protected void printMetaData(PrintWriter pw) {
 
         pw.println("Output file created: " + LocalDateTime.now());
-        pw.println("Checking quality of linkage for machine learning processing: cross products of metrics and field distances");
+        pw.println("Checking quality of linkage for machine learning processing: cross products of measures and field distances");
         pw.println("Dataset: Umea");
         pw.flush();
         pw.close();

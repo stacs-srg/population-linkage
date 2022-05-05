@@ -8,6 +8,7 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.helpers.MemoryLogger;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
@@ -15,7 +16,6 @@ import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFac
 import uk.ac.standrews.cs.population_linkage.supportClasses.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -192,7 +192,7 @@ public abstract class LinkageRunner {
 
     public abstract LinkageRecipe getLinkageRecipe(final String links_persistent_name, final String source_repository_name, final String results_repository_name, final RecordRepository record_repository);
 
-    public abstract SearchStructureFactory<LXP> getSearchFactory(final Metric<LXP> composite_metric);
+    public abstract SearchStructureFactory<LXP> getSearchFactory(final LXPMeasure composite_measure);
 
     protected int getNumberOfProgressUpdates() {
         return DEFAULT_NUMBER_OF_PROGRESS_UPDATES;

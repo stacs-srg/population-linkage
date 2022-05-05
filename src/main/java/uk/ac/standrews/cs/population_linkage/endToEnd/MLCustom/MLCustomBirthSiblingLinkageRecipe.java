@@ -8,24 +8,22 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 /**
  * EvidencePair Recipe
- * In all linkage recipies the naming convention is:
+ * In all linkage recipes the naming convention is:
  *     the stored type is the first part of the name
  *     the query type is the second part of the name
  * So for example in BirthBrideIdentityLinkageRecipeMatchLists the stored type (stored in the search structure) is a birth and Marriages are used to query.
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
- *
  */
 public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe {
 
-    private int NUMBER_OF_BIRTHS;
     public static final int ALL_LINKAGE_FIELDS = 8;
     private final NeoDbCypherBridge bridge;
 
@@ -35,17 +33,12 @@ public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe
 
     public MLCustomBirthSiblingLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
         super( source_repository_name,number_of_records,links_persistent_name,bridge );
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
-            NUMBER_OF_BIRTHS = EVERYTHING;
-        } else {
-            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
-        }
         this.bridge = bridge;
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new CustomMetric(0);
+    public LXPMeasure getCompositeMeasure() {
+        return new CustomMeasure();
     }
 
     public void setNumberLinkageFieldsRequired( int number ) {

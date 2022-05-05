@@ -5,22 +5,20 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
 
 /**
- * This class performs linkage analysis on data pulled from a single data sources, for example births.
+ * This class performs linkage analysis on data pulled from a single data source, for example births.
  */
 public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
 
-    protected SingleSourceLinkageAnalysis(final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
+    protected SingleSourceLinkageAnalysis(final String repo_name, final String[] args, final String linkage_results_filename, final String distance_results_filename, final boolean allow_multiple_links) throws IOException {
 
-        super(repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs, allow_multiple_links);
+        super(repo_name, args, linkage_results_filename, distance_results_filename, allow_multiple_links);
     }
 
     @Override
@@ -38,26 +36,8 @@ public abstract class SingleSourceLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    public void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
+    public void processRecord(final int record_index, final LXPMeasure measure, final boolean increment_counts) {
 
-        processRecord(record_index, number_of_records, source_records, source_records, metric, increment_counts);
-    }
-
-    @Override
-    public void printMetaData() {
-
-        linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
-        linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
-        linkage_results_metadata_writer.println("Dataset: " + getDatasetName());
-        linkage_results_metadata_writer.println("EvidencePair type: " + getLinkageType());
-        linkage_results_metadata_writer.println("Records: " + getSourceType());
-        linkage_results_metadata_writer.flush();
-
-        distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
-        distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
-        distance_results_metadata_writer.println("Dataset: " + getDatasetName());
-        distance_results_metadata_writer.println("EvidencePair type: " + getLinkageType());
-        distance_results_metadata_writer.println("Records: " + getSourceType());
-        distance_results_metadata_writer.flush();
+        processRecord(record_index, number_of_records, source_records, source_records, measure, increment_counts);
     }
 }

@@ -9,11 +9,9 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
-import java.io.IOException;
-
 public class UmeaMarriageSiblingExamineRecordsAlExperiment extends UmeaBirthSiblingExamineRecordsAlExperiment {
 
-    UmeaMarriageSiblingExamineRecordsAlExperiment() throws IOException {
+    UmeaMarriageSiblingExamineRecordsAlExperiment() {
         super();
     }
 

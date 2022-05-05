@@ -7,13 +7,13 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.List;
 import java.util.Map;
@@ -56,21 +56,21 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(   pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
-                    pair(Birth.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY) ) );
+            list(pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_MOTHER_IDENTITY),
+                    pair(Birth.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)));
 
     public BirthBrideSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_BIRTHS = EVERYTHING;
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired( ALL_LINKAGE_FIELDS );
+        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     public Iterable<LXP> getBirthRecords() {
-        if( cached_records == null ) {
+        if (cached_records == null) {
             cached_records = RecordFiltering.filter(no_linkage_fields_required, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
         }
         return cached_records;
@@ -111,13 +111,19 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
-    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return LINKAGE_FIELDS;
+    }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
 
     /**
      * Checks whether the difference in age between the potential siblings is within the acceptable range.
@@ -149,7 +155,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

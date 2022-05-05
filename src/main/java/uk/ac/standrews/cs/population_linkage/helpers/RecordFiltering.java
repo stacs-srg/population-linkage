@@ -35,11 +35,15 @@ public class RecordFiltering {
 
         for (int attribute : filterOn) {
             String value = record.getString(attribute).toLowerCase().trim();
-            if (value.equals("") || value.contains("missing") || value.equals("--") || value.equals("----")) {
+            if (isMissing(value)) {
                 numberOfEmptyFields++;
             }
         }
 
         return numberOfEmptyFields <= numberOfEmptyFieldsPermitted;
+    }
+
+    public static boolean isMissing(String value) {
+        return value == null || value.equals("") || value.contains("missing") || value.contains("--");
     }
 }

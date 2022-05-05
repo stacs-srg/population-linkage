@@ -9,13 +9,13 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +62,7 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     public DeathBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_DEATHS = EVERYTHING;
         } else {
             NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
@@ -72,16 +72,16 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if( cached_records == null ) {
+        if (cached_records == null) {
             Iterable<LXP> filtered = filterBySex(super.getDeathRecords(), Death.SEX, "f");
-            cached_records = RecordFiltering.filter( getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields() );
+            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields());
         }
         return cached_records;
     }
 
     @Override
-    public LinkStatus isTrueMatch(LXP death, LXP marriage)  {
-        return trueMatch(death,marriage);
+    public LinkStatus isTrueMatch(LXP death, LXP marriage) {
+        return trueMatch(death, marriage);
     }
 
     public static LinkStatus trueMatch(LXP death, LXP marriage) {
@@ -109,13 +109,19 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public String getQueryRole() { return Marriage.ROLE_BRIDE; }
+    public String getQueryRole() {
+        return Marriage.ROLE_BRIDE;
+    }
 
     @Override
-    public List<Integer> getLinkageFields() { return LINKAGE_FIELDS; }
+    public List<Integer> getLinkageFields() {
+        return LINKAGE_FIELDS;
+    }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
 
     public static boolean isViable(final RecordPair proposedLink) {
         return CommonLinkViabilityLogic.deathMarriageIdentityLinkIsViable(proposedLink, true);
@@ -134,15 +140,15 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP query_record : getQueryRecords() ) {
-            count += countDeathBrideSiblingGTLinks( bridge, query_record );
+        for (LXP query_record : getQueryRecords()) {
+            count += countDeathBrideSiblingGTLinks(bridge, query_record);
         }
         return count;
     }
 
     private static final String DEATH_BRIDE_GT_IDENTITY = "MATCH (a:Death)-[r:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]-(b:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countDeathBrideSiblingGTLinks(NeoDbCypherBridge bridge, LXP death_record ) {
+    public static int countDeathBrideSiblingGTLinks(NeoDbCypherBridge bridge, LXP death_record) {
         String standard_id_from = death_record.getString(Death.STANDARDISED_ID);
 
         Map<String, Object> parameters = new HashMap<>();
@@ -158,7 +164,7 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

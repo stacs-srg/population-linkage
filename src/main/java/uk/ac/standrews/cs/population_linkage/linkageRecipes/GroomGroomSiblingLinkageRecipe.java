@@ -9,12 +9,12 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     public GroomGroomSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_MARRIAGES = EVERYTHING;
         } else {
             NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
@@ -68,7 +68,7 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getMarriageRecords() {
-        if( cached_records == null ) {
+        if (cached_records == null) {
             cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
         }
         return cached_records;
@@ -155,15 +155,15 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP query_record : getQueryRecords() ) {
-            count += countGroomGroomSiblingGTLinks( bridge, query_record );
+        for (LXP query_record : getQueryRecords()) {
+            count += countGroomGroomSiblingGTLinks(bridge, query_record);
         }
         return count;
     }
 
     private static final String GROOM_GROOM_GT_SIBLING_LINKS_QUERY = "MATCH (a:Marriage)-[r:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(b:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countGroomGroomSiblingGTLinks(NeoDbCypherBridge bridge, LXP marriage_record ) {
+    public static int countGroomGroomSiblingGTLinks(NeoDbCypherBridge bridge, LXP marriage_record) {
         String standard_id_from = marriage_record.getString(Marriage.STANDARDISED_ID);
 
         Map<String, Object> parameters = new HashMap<>();
@@ -179,7 +179,7 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

@@ -6,7 +6,7 @@ package uk.ac.standrews.cs.population_linkage;
 
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.Measure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +19,9 @@ public class BitBlasterTest extends SimilaritySearchTest {
     private static final int NUMBER_OF_REFERENCE_POINTS_INCREMENT = 5;
 
     @Override
-    SearchStructure<Point> getSearchStructure(Metric<Point> metric, List<Point> data_points, final List<Point> reference_points) {
+    SearchStructure<Point> getSearchStructure(Measure<Point> measure, List<Point> data_points, final List<Point> reference_points) {
 
-        return new BitBlasterSearchStructure<>(metric, data_points, reference_points);
+        return new BitBlasterSearchStructure<>(measure, data_points, reference_points);
     }
 
     @Override

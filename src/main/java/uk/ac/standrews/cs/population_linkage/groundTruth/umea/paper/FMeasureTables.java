@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class FMeasureTables {
 
-    public static final Map<String, String> METRIC_ABBREVIATIONS = new HashMap<>();
+    public static final Map<String, String> MEASURE_ABBREVIATIONS = new HashMap<>();
     public static final Path INPUT_FILES_DIRECTORY_PATH = Paths.get("/Users/graham/Desktop/data");
 
     public static final List<String> FILE_NAME_ROOTS = Arrays.asList(
@@ -22,21 +22,21 @@ public class FMeasureTables {
             "UmeaBirthSibling", "UmeaBrideBrideSibling", "UmeaBrideGroomSibling", "UmeaGroomGroomSibling", "UmeaDeathSibling");
 
     static {
-        METRIC_ABBREVIATIONS.put("BagDistance", "Bag");
-        METRIC_ABBREVIATIONS.put("Cosine", "Cos");
-        METRIC_ABBREVIATIONS.put("Damerau-Levenshtein", "DL");
-        METRIC_ABBREVIATIONS.put("Dice", "Dice");
-        METRIC_ABBREVIATIONS.put("Jaccard", "Jac");
-        METRIC_ABBREVIATIONS.put("Jaro", "Jar");
-        METRIC_ABBREVIATIONS.put("JaroWinkler", "JW");
-        METRIC_ABBREVIATIONS.put("JensenShannon", "JS");
-        METRIC_ABBREVIATIONS.put("Levenshtein", "Lev");
-        METRIC_ABBREVIATIONS.put("LongestCommonSubstring", "LCS");
-        METRIC_ABBREVIATIONS.put("Metaphone-Levenshtein", "ML");
-        METRIC_ABBREVIATIONS.put("NeedlemanWunsch", "NW");
-        METRIC_ABBREVIATIONS.put("NYSIIS-Levenshtein", "NL");
-        METRIC_ABBREVIATIONS.put("SED", "SED");
-        METRIC_ABBREVIATIONS.put("SmithWaterman", "SW");
+        MEASURE_ABBREVIATIONS.put("BagDistance", "Bag");
+        MEASURE_ABBREVIATIONS.put("Cosine", "Cos");
+        MEASURE_ABBREVIATIONS.put("Damerau-Levenshtein", "DL");
+        MEASURE_ABBREVIATIONS.put("Dice", "Dice");
+        MEASURE_ABBREVIATIONS.put("Jaccard", "Jac");
+        MEASURE_ABBREVIATIONS.put("Jaro", "Jar");
+        MEASURE_ABBREVIATIONS.put("JaroWinkler", "JW");
+        MEASURE_ABBREVIATIONS.put("JensenShannon", "JS");
+        MEASURE_ABBREVIATIONS.put("Levenshtein", "Lev");
+        MEASURE_ABBREVIATIONS.put("LongestCommonSubstring", "LCS");
+        MEASURE_ABBREVIATIONS.put("Metaphone-Levenshtein", "ML");
+        MEASURE_ABBREVIATIONS.put("NeedlemanWunsch", "NW");
+        MEASURE_ABBREVIATIONS.put("NYSIIS-Levenshtein", "NL");
+        MEASURE_ABBREVIATIONS.put("SED", "SED");
+        MEASURE_ABBREVIATIONS.put("SmithWaterman", "SW");
     }
 
     public static void main(String[] args) throws IOException {
@@ -62,14 +62,14 @@ public class FMeasureTables {
 
     private static Map<String, Double> getMaxFMeasures(final String linkage) throws IOException {
 
-        Map<String, Double> results_per_linkage = new HashMap<>();
+        final Map<String, Double> results_per_linkage = new HashMap<>();
 
-        DataSet data = loadData(linkage);
+        final DataSet data = loadData(linkage);
 
-        for (String metric : getMetrics(data)) {
+        for (final String measure : getMeasures(data)) {
 
-            double best_f = getBestF(data, metric);
-            results_per_linkage.put(metric, best_f);
+            double best_f = getBestF(data, measure);
+            results_per_linkage.put(measure, best_f);
         }
         return results_per_linkage;
     }
@@ -88,14 +88,14 @@ public class FMeasureTables {
 
     private static Map<String, Double> getMaxWindowedFMeasures(final String linkage) throws IOException {
 
-        Map<String, Double> results_per_linkage = new HashMap<>();
+        final Map<String, Double> results_per_linkage = new HashMap<>();
 
-        DataSet data = loadData(linkage);
+        final DataSet data = loadData(linkage);
 
-        for (String metric : getMetrics(data)) {
+        for (final String measure : getMeasures(data)) {
 
-            double best_windowed_f = getBestWindowedF(data, metric);
-            results_per_linkage.put(metric, best_windowed_f);
+            final double best_windowed_f = getBestWindowedF(data, measure);
+            results_per_linkage.put(measure, best_windowed_f);
         }
         return results_per_linkage;
     }
@@ -118,23 +118,23 @@ public class FMeasureTables {
         System.out.println("\\hline \\noalign{\\smallskip}");
     }
 
-    private static void printHeaderRow(final Map<String, Map<String, Double>> values_by_linkage_and_metric) {
+    private static void printHeaderRow(final Map<String, Map<String, Double>> values_by_linkage_and_measure) {
 
-        final List<String> metrics_sorted_by_decreasing_values = sortMetricsByDecreasingMeanValues(values_by_linkage_and_metric);
+        final List<String> measures_sorted_by_decreasing_values = sortMeasuresByDecreasingMeanValues(values_by_linkage_and_measure);
 
         System.out.print(bold("EvidencePair") + " & ");
-        for (String metric : metrics_sorted_by_decreasing_values) {
-            System.out.print(METRIC_ABBREVIATIONS.get(metric) + " & ");
+        for (String measure : measures_sorted_by_decreasing_values) {
+            System.out.print(MEASURE_ABBREVIATIONS.get(measure) + " & ");
         }
         System.out.println(bold("Mean") + " & " + bold("Max") + " & " + bold("SD") + " \\\\");
     }
 
-    private static void printRows(final Map<String, Map<String, Double>> values_by_linkage_and_metric) {
+    private static void printRows(final Map<String, Map<String, Double>> values_by_linkage_and_measure) {
 
-        final List<String> metrics_sorted_by_decreasing_values = sortMetricsByDecreasingMeanValues(values_by_linkage_and_metric);
+        final List<String> measures_sorted_by_decreasing_values = sortMeasuresByDecreasingMeanValues(values_by_linkage_and_measure);
 
         int linkage_number = 1;
-        for (Map.Entry<String, Map<String, Double>> entry : values_by_linkage_and_metric.entrySet()) {
+        for (Map.Entry<String, Map<String, Double>> entry : values_by_linkage_and_measure.entrySet()) {
 
             System.out.print(linkage_number++ + " & ");
             final Map<String, Double> values_for_linkage = entry.getValue();
@@ -143,9 +143,9 @@ public class FMeasureTables {
             final double mean = mean(values_for_linkage);
             final double std_dev = standardDeviation(values_for_linkage);
 
-            for (String metric : metrics_sorted_by_decreasing_values) {
+            for (String measure : measures_sorted_by_decreasing_values) {
 
-                final double value = values_for_linkage.get(metric);
+                final double value = values_for_linkage.get(measure);
                 final boolean embolden = roundTo2DecimalPlaces(value) == roundTo2DecimalPlaces(max);
                 System.out.printf(bold("%.2f", embolden) + " & ", value);
             }
@@ -155,22 +155,22 @@ public class FMeasureTables {
         }
     }
 
-    private static void printMeanRow(final Map<String, Map<String, Double>> values_by_linkage_and_metric) {
+    private static void printMeanRow(final Map<String, Map<String, Double>> values_by_linkage_and_measure) {
 
-        final List<String> metrics_sorted_by_decreasing_values = sortMetricsByDecreasingMeanValues(values_by_linkage_and_metric);
+        final List<String> measures_sorted_by_decreasing_values = sortMeasuresByDecreasingMeanValues(values_by_linkage_and_measure);
 
         System.out.print(bold("Mean") + " & ");
-        for (String metric : metrics_sorted_by_decreasing_values) {
-            System.out.printf("%.2f & ", getMeanForMetric(values_by_linkage_and_metric, metric));
+        for (String measure : measures_sorted_by_decreasing_values) {
+            System.out.printf("%.2f & ", getMeanForMeasure(values_by_linkage_and_measure, measure));
         }
         System.out.println();
     }
 
-    private static List<String> sortMetricsByDecreasingMeanValues(final Map<String, Map<String, Double>> values_by_linkage_and_metric) {
+    private static List<String> sortMeasuresByDecreasingMeanValues(final Map<String, Map<String, Double>> values_by_linkage_and_measure) {
 
-        final Map<String, Double> mean_values = getMeanValuesPerMetric(values_by_linkage_and_metric);
+        final Map<String, Double> mean_values = getMeanValuesPerMeasure(values_by_linkage_and_measure);
 
-        // Order by decreasing values, and then alphabetically by metric name.
+        // Order by decreasing values, and then alphabetically by measure name.
         final Comparator<Map.Entry<String, Double>> comparator = (o1, o2) -> {
 
             double rounded_value1 = roundTo2DecimalPlaces(o1.getValue());
@@ -189,12 +189,12 @@ public class FMeasureTables {
         return Math.round(d * 100.0) / 100.0;
     }
 
-    private static Map<String, Double> getMeanValuesPerMetric(final Map<String, Map<String, Double>> max_f_measures) {
+    private static Map<String, Double> getMeanValuesPerMeasure(final Map<String, Map<String, Double>> max_f_measures) {
 
         final Map<String, Double> mean_f_measures = new HashMap<>();
 
-        for (String metric : getMetrics(max_f_measures)) {
-            mean_f_measures.put(metric, getMeanForMetric(max_f_measures, metric));
+        for (String measure : getMeasures(max_f_measures)) {
+            mean_f_measures.put(measure, getMeanForMeasure(max_f_measures, measure));
         }
 
         return mean_f_measures;
@@ -235,29 +235,29 @@ public class FMeasureTables {
         return Math.sqrt(sum_of_squares / f_measures.size());
     }
 
-    private static double getMeanForMetric(final Map<String, Map<String, Double>> max_f_measures, final String metric) {
+    private static double getMeanForMeasure(final Map<String, Map<String, Double>> max_f_measures, final String measure) {
 
         double sum = 0.0;
 
         for (Map<String, Double> linkage_result : max_f_measures.values()) {
-            sum += linkage_result.get(metric);
+            sum += linkage_result.get(measure);
         }
 
         return sum / max_f_measures.keySet().size();
     }
 
-    private static List<String> getMetrics(final DataSet data) {
+    private static List<String> getMeasures(final DataSet data) {
 
         final List<String> result = new ArrayList<>();
 
         for (List<String> row : data.getRecords()) {
-            final String metric = data.getValue(row, "metric");
-            if (!result.contains(metric)) result.add(metric);
+            final String measure = data.getValue(row, "measure");
+            if (!result.contains(measure)) result.add(measure);
         }
         return result;
     }
 
-    private static List<String> getMetrics(final Map<String, Map<String, Double>> max_f_measures) {
+    private static List<String> getMeasures(final Map<String, Map<String, Double>> max_f_measures) {
 
         for (Map<String, Double> row : max_f_measures.values()) {
             return new ArrayList<>(row.keySet());
@@ -265,10 +265,10 @@ public class FMeasureTables {
         return new ArrayList<>();
     }
 
-    private static double getBestF(final DataSet data_set, String metric) {
+    private static double getBestF(final DataSet data_set, String measure) {
 
         final int max_records_processed = getMaxRecordsProcessed(data_set);
-        final DataSet filtered_data = data_set.select((list, ds) -> Integer.parseInt(ds.getValue(list, "records processed")) == max_records_processed && ds.getValue(list, "metric").equals(metric));
+        final DataSet filtered_data = data_set.select((list, ds) -> Integer.parseInt(ds.getValue(list, "records processed")) == max_records_processed && ds.getValue(list, "measure").equals(measure));
 
         double max_f = 0.0;
 
@@ -282,10 +282,10 @@ public class FMeasureTables {
 
     private static final int WINDOW_SIZE = 10;
 
-    private static double getBestWindowedF(final DataSet data_set, String metric) {
+    private static double getBestWindowedF(final DataSet data_set, String measure) {
 
         final int max_records_processed = getMaxRecordsProcessed(data_set);
-        final DataSet filtered_data = data_set.select((list, ds) -> Integer.parseInt(ds.getValue(list, "records processed")) == max_records_processed && ds.getValue(list, "metric").equals(metric));
+        final DataSet filtered_data = data_set.select((list, ds) -> Integer.parseInt(ds.getValue(list, "records processed")) == max_records_processed && ds.getValue(list, "measure").equals(measure));
 
         double max_windowed_f = 0.0;
 

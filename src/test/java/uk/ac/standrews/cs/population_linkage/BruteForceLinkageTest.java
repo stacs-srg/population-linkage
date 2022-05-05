@@ -4,13 +4,12 @@
  */
 package uk.ac.standrews.cs.population_linkage;
 
+import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkers.BruteForceLinker;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class BruteForceLinkageTest extends LinkageTest {
     @Override
     public Linker getLinker() {
 
-        return new TestLinker(Double.MAX_VALUE, metric);
+        return new TestLinker(Double.MAX_VALUE, measure);
     }
 
     @Override
@@ -36,15 +35,15 @@ public class BruteForceLinkageTest extends LinkageTest {
 
     class TestLinker extends BruteForceLinker {
 
-        TestLinker(double threshold, final Metric<LXP> metric) {
+        TestLinker(double threshold, final LXPMeasure measure) {
 
-            super(metric, 0.67, 0, "link type", "provenance", "role1", "role2", (r)-> true);
+            super(measure, 0.67, 0, "link type", "provenance", "role1", "role2", (r)-> true);
             setThreshold(threshold);
         }
 
         @Override
         public Iterable<List<RecordPair>> getMatchingLists() {
-            return null; // TODO &&&&
+            return null;
         }
     }
 }

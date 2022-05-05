@@ -6,11 +6,11 @@ package uk.ac.standrews.cs.population_linkage.linkers;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.utilities.PercentageProgressIndicator;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public abstract class Linker {
 
-    protected final Metric<LXP> distance_metric;
+    protected final LXPMeasure composite_measure;
     protected final ProgressIndicator linkage_progress_indicator;
     protected final Function<RecordPair, Boolean> is_viable_link;
     protected double threshold;
@@ -31,7 +31,7 @@ public abstract class Linker {
     private final String role_type_1;
     private final String role_type_2;
 
-    public Linker(Metric<LXP> distance_metric, double threshold, int number_of_progress_updates,
+    public Linker(LXPMeasure composite_measure, double threshold, int number_of_progress_updates,
                   String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> is_viable_link) {
 
         this.link_type = link_type;
@@ -40,7 +40,7 @@ public abstract class Linker {
         this.role_type_2 = role_type_2;
         this.is_viable_link = is_viable_link;
 
-        this.distance_metric = distance_metric;
+        this.composite_measure = composite_measure;
         this.threshold = threshold;
         linkage_progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
     }
@@ -158,8 +158,8 @@ public abstract class Linker {
         this.threshold = threshold;
     }
 
-    public Metric<LXP> getMetric() {
-        return distance_metric;
+    public LXPMeasure getMeasure() {
+        return composite_measure;
     }
 
     protected abstract Iterable<RecordPair> getMatchingRecordPairs(final Iterable<LXP> records1, final Iterable<LXP> records2);

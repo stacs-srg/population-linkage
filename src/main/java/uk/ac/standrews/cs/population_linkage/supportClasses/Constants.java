@@ -5,14 +5,13 @@
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.utilities.metrics.*;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.*;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 import uk.ac.standrews.cs.utilities.phonetic.Metaphone;
 import uk.ac.standrews.cs.utilities.phonetic.NYSIIS;
 import uk.ac.standrews.cs.utilities.phonetic.PhoneticWrapper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Constants {
@@ -37,22 +36,24 @@ public class Constants {
     public static final PhoneticWrapper METAPHONE = new PhoneticWrapper(new Metaphone(), new Levenshtein());
     public static final PhoneticWrapper NYSIIS = new PhoneticWrapper(new NYSIIS(), new Levenshtein());
 
-    public static final List<StringMetric> TRUE_METRICS = Arrays.asList(
-            COSINE, DAMERAU_LEVENSHTEIN, JACCARD, JENSEN_SHANNON, LEVENSHTEIN, SED);
+    public static final List<StringMeasure> TRUE_METRICS = List.of(
+//            COSINE, DAMERAU_LEVENSHTEIN, JACCARD, JENSEN_SHANNON, LEVENSHTEIN, SED);
+            COSINE);
 
-    public static final List<StringMetric> PSEUDO_METRICS = Arrays.asList(
+    public static final List<StringMeasure> NON_METRIC_MEASURES = List.of(
             BAG_DISTANCE, DICE, JARO, JARO_WINKLER, LONGEST_COMMON_SUBSTRING, NEEDLEMAN_WUNSCH, SMITH_WATERMAN);
 
-    public static final List<StringMetric> PHONETIC_COMPARATORS = Arrays.asList(
+    public static final List<StringMeasure> PHONETIC_COMPARATORS = List.of(
             METAPHONE, NYSIIS);
 
-    public static final List<StringMetric> BASE_METRICS = concatenate(TRUE_METRICS, PSEUDO_METRICS, PHONETIC_COMPARATORS);
+//    public static final List<StringMeasure> BASE_MEASURES = concatenate(TRUE_METRICS, NON_METRIC_MEASURES, PHONETIC_COMPARATORS);
+    public static final List<StringMeasure> BASE_MEASURES = TRUE_METRICS;
 
     public static String stringRepresentationOf(List<Integer> fields, Class<? extends LXP> record, List<String> labels) {
         StringBuilder sb = new StringBuilder();
         sb.append(record.getSimpleName()).append("[ ");
 
-        for(Integer field : fields)
+        for (int field : fields)
             sb.append(labels.get(field)).append(" ");
 
         sb.append("]");
@@ -60,24 +61,24 @@ public class Constants {
     }
 
     @SafeVarargs
-    private static List<StringMetric> concatenate(final List<StringMetric>... lists) {
+    private static List<StringMeasure> concatenate(final List<StringMeasure>... lists) {
 
-        final List<StringMetric> result = new ArrayList<>();
+        final List<StringMeasure> result = new ArrayList<>();
 
-        for (List<StringMetric> list : lists) {
+        for (List<StringMeasure> list : lists) {
             result.addAll(list);
         }
 
         return result;
     }
 
-    public static StringMetric get(String stringMetric) {
-        return get(stringMetric, DEFAULT_CHAR_VAL_UPPER_BOUND);
+    public static StringMeasure get(String StringMeasure) {
+        return get(StringMeasure, DEFAULT_CHAR_VAL_UPPER_BOUND);
     }
 
-    public static StringMetric get(String stringMetric, int charValUpperBound) {
+    public static StringMeasure get(String StringMeasure, int charValUpperBound) {
 
-        switch (stringMetric.toUpperCase()) {
+        switch (StringMeasure.toUpperCase()) {
             case "COSINE":
                 return COSINE;
             case "DAMERAU_LEVENSHTEIN":
@@ -109,7 +110,14 @@ public class Constants {
             case "NYSIIS":
                 return NYSIIS;
             default:
-                throw new UnsupportedOperationException("metric not supported: " + stringMetric);
+                throw new UnsupportedOperationException("metric not supported: " + StringMeasure);
+        }
+    }
+
+    public static void main(String[] args) {
+
+        for (StringMeasure measure : BASE_MEASURES) {
+            measure.printExamples();
         }
     }
 }

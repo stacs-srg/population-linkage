@@ -9,14 +9,14 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.*;
 
@@ -27,6 +27,7 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  * Now also performs subsetting 11/11/21
  */
 public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
+
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
 
     // TODO Some Wrigley rules not obvious where to place in viability checks.
@@ -78,12 +79,12 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
 
     public BirthBrideIdentityLinkageRecipeMatchLists(String source_repository_name, String number_of_records, int number_linkage_fields, List<LXP> search_matched, List<LXP> stored_matched, String links_persistent_name, double threshold, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_BIRTHS = EVERYTHING;
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired( number_linkage_fields );
+        setNoLinkageFieldsRequired(number_linkage_fields);
         setThreshold(threshold);
         this.search_matched = search_matched;
         this.stored_matched = stored_matched;
@@ -130,27 +131,27 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getBirthRecords() {
-        if( cached_records == null ) {
-            Iterable<LXP> f = filterOut( stored_matched,super.getBirthRecords() );
+        if (cached_records == null) {
+            Iterable<LXP> f = filterOut(stored_matched, super.getBirthRecords());
             f = filterBySex(f, Birth.SEX, "f");
             cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
         }
-        System.out.println( "Processing " + cached_records.size() + " birth records");
+        System.out.println("Processing " + cached_records.size() + " birth records");
         return cached_records;
     }
 
     @Override
     protected Collection<LXP> getMarriageRecords() {
         Collection<LXP> records = filterOut(search_matched, super.getMarriageRecords());
-        System.out.println( "Processing " + records.size() + " marriage records" );
+        System.out.println("Processing " + records.size() + " marriage records");
         return records;
     }
 
     private Collection<LXP> filterOut(List<LXP> matched, Iterable<LXP> records) {
         Collection<LXP> filteredRecords = new HashSet<>();
 
-        for( LXP record : records ) {
-            if (! matched.contains(record)) {
+        for (LXP record : records) {
+            if (!matched.contains(record)) {
                 filteredRecords.add(record);
             }
         }
@@ -159,15 +160,17 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return this.threshold;
+        return threshold;
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 
-    public void setThreshold( double threshold ) { this.threshold = threshold; }
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
 
     @Override
     public List<Integer> getQueryMappingFields() {
@@ -201,20 +204,20 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
         int count = 0;
-        for( LXP query_record : getQueryRecords() ) {
-            count += countBirthBrideIdentityGTLinks( bridge, query_record );
+        for (LXP query_record : getQueryRecords()) {
+            count += countBirthBrideIdentityGTLinks(bridge, query_record);
         }
         return count;
     }
 
     private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) WHERE m.STANDARDISED_ID = $standard_id_from RETURN r";
 
-    public static int countBirthBrideIdentityGTLinks(NeoDbCypherBridge bridge, LXP marriage_record ) {
-        String standard_id_from = marriage_record.getString( Marriage.STANDARDISED_ID );
+    public static int countBirthBrideIdentityGTLinks(NeoDbCypherBridge bridge, LXP marriage_record) {
+        String standard_id_from = marriage_record.getString(Marriage.STANDARDISED_ID);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
-        Result result = bridge.getNewSession().run(BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY,parameters);
+        Result result = bridge.getNewSession().run(BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY, parameters);
         List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
         return relationships.size();
     }

@@ -17,7 +17,7 @@ public class JobRunnerIO {
         if(FileManipulation.countLines(resultsFile) == 0) {
             new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
                     .appendToFile(
-                            "population,size,pop_number,corruption_number,linkage-type,metric,threshold," +
+                            "population,size,pop_number,corruption_number,linkage-type,measure,threshold," +
                             "preFilter,max-sibling-gap,tp,fp,fn,precision,recall,f-measure,link-time-seconds," +
                             "max-memory-usage,ROs,births-cache-size,marriages-cache-size,deaths-cache-size," +
                             "code-version,hostname,linkage-fields-1,linkage-fields-2" +
@@ -25,7 +25,7 @@ public class JobRunnerIO {
         }
     }
 
-    public static void appendToResultsFile(double threshold, String stringMetric, Integer maxSiblingGap, LinkageQuality lq,
+    public static void appendToResultsFile(double threshold, String StringMeasure, Integer maxSiblingGap, LinkageQuality lq,
                                            long timeTakenInSeconds, Path resultsFile, String populationName,
                                            String populationSize, String populationNumber, String corruptionNumber,
                                            String linkageApproach, int numberOfReferenceObjects,
@@ -34,7 +34,7 @@ public class JobRunnerIO {
 
         new FileChannelHandle(resultsFile, FileChannelHandle.optionsWA)
                 .appendToFile(populationName + "," + populationSize + "," + populationNumber + "," +
-                        corruptionNumber + "," + linkageApproach + "," + stringMetric + "," + threshold + "," +
+                        corruptionNumber + "," + linkageApproach + "," + StringMeasure + "," + threshold + "," +
                         preFilter + "," + maxSiblingGap + "," + lq.toCSV() + "," + timeTakenInSeconds + "," +
                         MemoryLogger.getMax()/1000000 + "," + numberOfReferenceObjects + "," + birthsCacheSize + "," +
                         marriagesCacheSize + "," + deathsCacheSize + "," + getGitVersion() + ","  +

@@ -5,55 +5,41 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma2;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.MeanOfFieldDistancesNormalised;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.StringMetric;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class performs linkage analysis on data pulled from two different data sources, for example births and deaths.
- * Classes extending this class are required to implement the following methods:
- * getSourceRecords(RecordRepository record_repository), which provides the records from the first data source
- * getSearchRecords(RecordRepository record_repository), which provides the records from the second data source
- * getSourceType(), which provides a textual description of the first data source, for example, "births"
- * getSearchType(), which provides a textual description of the first data source, for example, "deaths"
- * LinkStatus isTrueLink(final LXP record1, final LXP record2), returns the ground truth about equivalence of datum's from source 1 and source 2
- * getComparisonFields(), returns the set of fields to be used for distance comparison from data source 1 (note the name)
- * getComparisonFields2(), returns the set of fields to be used for distance comparison from data source 2
+ * Performs linkage analysis on data pulled from two different data sources, for example births and deaths.
  */
 public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
 
     private List<LXP> source_records2;
     private int number_of_records2;
 
-    protected TwoSourcesLinkageAnalysis(final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
+    protected TwoSourcesLinkageAnalysis(final String repo_name, final String[] args, final String linkage_results_filename, final String distance_results_filename, final boolean allow_multiple_links) throws IOException {
 
-        super(repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs, allow_multiple_links);
+        super(repo_name, args, linkage_results_filename, distance_results_filename, allow_multiple_links);
     }
 
-    protected abstract Iterable<uk.ac.standrews.cs.neoStorr.impl.LXP> getSourceRecords2(RecordRepository record_repository);
-
-    protected abstract String getSourceType2();
+    protected abstract Iterable<LXP> getSourceRecords2(RecordRepository record_repository);
 
     protected abstract List<Integer> getComparisonFields2();
 
-    protected abstract int getIdFieldIndex2();
-
     @Override
-    public List<Metric<uk.ac.standrews.cs.neoStorr.impl.LXP>> getCombinedMetrics() {
+    public List<LXPMeasure> getCombinedMeasures() {
 
-        final List<Metric<LXP>> result = new ArrayList<>();
+        final List<LXPMeasure> result = new ArrayList<>();
 
-        for (final StringMetric base_metric : Constants.BASE_METRICS) {
-            result.add(new Sigma2(base_metric, getComparisonFields(), getComparisonFields2(), getIdFieldIndex(), getIdFieldIndex2()));
+        for (final StringMeasure base_measure : Constants.BASE_MEASURES) {
+            result.add(new MeanOfFieldDistancesNormalised(base_measure, getComparisonFields(), getComparisonFields2(), getNormalisationCutoff()));
         }
         return result;
     }
@@ -78,26 +64,8 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
     }
 
     @Override
-    public void processRecord(final int record_index, final Metric<LXP> metric, final boolean increment_counts) {
+    public void processRecord(final int record_index, final LXPMeasure measure, final boolean increment_counts) {
 
-        processRecord(record_index, number_of_records2, source_records, source_records2, metric, increment_counts);
-    }
-
-    @Override
-    public void printMetaData() {
-
-        linkage_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
-        linkage_results_metadata_writer.println("Checking quality of linkage using various string similarity metrics and thresholds");
-        linkage_results_metadata_writer.println("Dataset: " + getDatasetName());
-        linkage_results_metadata_writer.println("EvidencePair type: " + getLinkageType());
-        linkage_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
-        linkage_results_metadata_writer.flush();
-
-        distance_results_metadata_writer.println("Output file created: " + LocalDateTime.now());
-        distance_results_metadata_writer.println("Checking distributions of record pair distances using various string similarity metrics and thresholds");
-        distance_results_metadata_writer.println("Dataset: " + getDatasetName());
-        distance_results_metadata_writer.println("EvidencePair type: " + getLinkageType());
-        distance_results_metadata_writer.println("Records: " + getSourceType() + ", " + getSourceType2());
-        distance_results_metadata_writer.flush();
+        processRecord(record_index, number_of_records2, source_records, source_records2, measure, increment_counts);
     }
 }

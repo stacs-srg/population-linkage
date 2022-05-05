@@ -6,7 +6,7 @@ setwd("~/Desktop")
 
 data <- read.table("results.csv", sep = ',',  header = TRUE, stringsAsFactors=FALSE)
 
-summary <- summarySE(data, measurevar="time", groupvars=c("code","par"))  # calculate mean,stdev,stderr
+summary <- summarySE(data, summarised_column_name="time", grouping_variable_column_names=c("code", "par"))  # calculate mean,stdev,stderr
 
 ggplot( summary, aes( x=par,colour=code ) ) +
   geom_line( aes( y=time ) ) +

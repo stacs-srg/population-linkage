@@ -7,12 +7,12 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.Sigma;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
             Marriage.GROOM_FATHER_SURNAME
     );
 
-    public static final List<Integer> SEARCH_FIELDS= list(
+    public static final List<Integer> SEARCH_FIELDS = list(
             Marriage.BRIDE_FORENAME,
             Marriage.BRIDE_SURNAME,
             Marriage.GROOM_FORENAME,
@@ -51,13 +51,13 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_IDENTITY )),
-            list(pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY ))
+            list(pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_IDENTITY)),
+            list(pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY))
     );
 
     public GroomMarriageParentsMarriageIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
-        if( number_of_records.equals(EVERYTHING_STRING) ) {
+        if (number_of_records.equals(EVERYTHING_STRING)) {
             NUMBER_OF_MARRIAGES = EVERYTHING;
         } else {
             NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
@@ -113,7 +113,9 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) { return isViable(proposedLink); }
+    public boolean isViableLink(RecordPair proposedLink) {
+        return isViable(proposedLink);
+    }
 
     /**
      * Checks whether a plausible period has elapsed between the marriage and the marriage of the daughter.
@@ -127,7 +129,9 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     }
 
     @Override
-    public List<Integer> getQueryMappingFields() { return SEARCH_FIELDS; }
+    public List<Integer> getQueryMappingFields() {
+        return SEARCH_FIELDS;
+    }
 
     @Override
     public Map<String, Link> getGroundTruthLinks() {
@@ -145,7 +149,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     }
 
     @Override
-    public Metric<LXP> getCompositeMetric() {
-        return new Sigma( getBaseMetric(),getLinkageFields(),ID_FIELD_INDEX1 );
+    public LXPMeasure getCompositeMeasure() {
+        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
     }
 }

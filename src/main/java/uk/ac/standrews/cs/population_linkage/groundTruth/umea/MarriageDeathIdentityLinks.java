@@ -5,6 +5,7 @@
 package uk.ac.standrews.cs.population_linkage.groundTruth.umea;
 
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -34,7 +35,7 @@ public class MarriageDeathIdentityLinks {
 
         int SAMPLE_SIZE = 1000;
 
-        try (RecordRepository repository = new RecordRepository("umea")) {
+        try (RecordRepository repository = new RecordRepository(Umea.REPOSITORY_NAME)) {
 
             List<Death> deaths = new ArrayList<>();
             for (Death death : repository.getDeaths()) deaths.add(death);

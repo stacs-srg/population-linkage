@@ -12,7 +12,9 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.interfaces.IRepository;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.datasets.Umea;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
@@ -27,7 +29,6 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.utilities.metrics.coreConcepts.Metric;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,13 +50,13 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     }
 
     public Linker getLinker(LinkageRecipe linkageRecipe) {
-        Metric<LXP> compositeMetric = linkageRecipe.getCompositeMetric();
-        return new SimilaritySearchLinker(getSearchFactory(compositeMetric), compositeMetric, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
+        LXPMeasure composite_measure = linkageRecipe.getCompositeMeasure();
+        return new SimilaritySearchLinker(getSearchFactory(composite_measure), composite_measure, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
                 linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
     }
 
-    public SearchStructureFactory<LXP> getSearchFactory(Metric<LXP> composite_metric) {
-        return new BitBlasterSearchStructureFactory<>(composite_metric);
+    public SearchStructureFactory<LXP> getSearchFactory(LXPMeasure composite_measure) {
+        return new BitBlasterSearchStructureFactory<>(composite_measure);
     }
 
     protected List<LXP> getReferencePoints() {
@@ -97,7 +98,6 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                     // showAltDistances( list_of_links );
                 }
             }
-
         }
 
         return processLinks(make_persistent, evaluate_quality, persist_links, linked_pairs);
@@ -149,7 +149,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     // Print non-links and distances
     private void printNonLinks(Iterable<Link> links, NeoDbCypherBridge bridge) throws RepositoryException, BucketException {
 
-        List<Relationship> gt_links = ((BirthDeathIdentityLinkageRecipe) linkage_recipe).getAllBirthDeathIdentityGTLinks(bridge);
+        List<Relationship> gt_links = BirthDeathIdentityLinkageRecipe.getAllBirthDeathIdentityGTLinks(bridge);
         IRepository umea_repo = Store.getInstance().getRepository(Umea.REPOSITORY_NAME);
         IBucket<Birth> births = umea_repo.getBucket("birth_records", Birth.class);
         IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
@@ -166,7 +166,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 long birth_storr_id = b.getId();
                 long death_storr_id = d.getId();
 
-                double distance = linkage_recipe.getCompositeMetric().distance(b, d);
+                double distance = linkage_recipe.getCompositeMeasure().distance(b, d);
                 System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tFN");
             }
         }
@@ -193,7 +193,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 long birth_storr_id = b.getId();
                 long death_storr_id = d.getId();
 
-                double distance = linkage_recipe.getCompositeMetric().distance(b, d);
+                double distance = linkage_recipe.getCompositeMeasure().distance(b, d);
                 System.out.println("No match for pair: " + birth_storr_id + " " + death_storr_id + " distance =" + distance);
                 Birth birth = births.getObjectById(birth_storr_id);
                 Death death = deaths.getObjectById(death_storr_id);
@@ -394,13 +394,10 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
         for (int i = 0; i < filterOn1.size(); i++) {
 
-            String value1 = record1.getString(filterOn1.get(i)).toLowerCase().trim();
-            String value2 = record2.getString(filterOn2.get(i)).toLowerCase().trim();
+            final String value1 = record1.getString(filterOn1.get(i)).toLowerCase().trim();
+            final String value2 = record2.getString(filterOn2.get(i)).toLowerCase().trim();
 
-            boolean value1_present = !(value1.equals("") || value1.contains("missing") || value1.equals("--") || value1.equals("----"));
-            boolean value2_present = !(value2.equals("") || value2.contains("missing") || value2.equals("--") || value2.equals("----"));
-
-            if (value1_present && value2_present) {
+            if (!RecordFiltering.isMissing(value1) && !RecordFiltering.isMissing(value2)) {
                 same_populated++;
             }
         }
@@ -408,10 +405,8 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         return same_populated;
     }
 
-
     private void addResult(Link match, List<Link> linked_pairs, Map<Long, List<Link>> map, List<LXP> matched_this_round) throws BucketException, RepositoryException {
         linked_pairs.add(match);
-//        System.out.println( ( doesGTSayIsTrue(match) ? "TP:" : "FP:" ) + match.getDistance() );
         matched_this_round.add(match.getRecord1().getReferend());
         map.remove(match.getRecord1().getReferend().getId());
     }

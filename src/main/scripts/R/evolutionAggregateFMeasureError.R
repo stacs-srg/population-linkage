@@ -10,7 +10,7 @@ conditionLoadIntoGlobal(INPUT_FILE_PATH, "mydata" )
 
 xlimits <- c(25000,227889)
 
-combinedstats <- summarySE(mydata, measurevar="f_measure", groupvars=c("metric", "threshold","records.processed")) # calculate mean,stdev,stderr
+combinedstats <- summarySE(mydata, summarised_column_name="f_measure", grouping_variable_column_names=c("metric", "threshold", "records.processed")) # calculate mean,stdev,stderr
 
 for (xlim in xlimits)
   plotAllZeroPlots(combinedstats, "f_measure", OUTPUT_DIRECTORY_PATH, xlim)

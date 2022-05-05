@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.groundTruthML;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.ApplicationProperties;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -34,14 +35,13 @@ public class UmeaBirthDeathML extends AllPairsTwoSourcesLinkageAnalysisML {
     private Iterable<LXP> cached_source_records = null;
     private Iterable<LXP> cached_source_records2 = null;
 
-    public UmeaBirthDeathML(Path store_path, String repo_name, final String distance_results_filename) throws IOException {
-        super(store_path,repo_name, distance_results_filename);
+    public UmeaBirthDeathML(String repo_name, final String distance_results_filename) throws IOException {
+        super(repo_name, distance_results_filename);
     }
 
     @Override
     public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
-        // return Utilities.getBirthRecords( record_repository );
-        if( cached_source_records == null ) {
+        if (cached_source_records == null) {
             cached_source_records = filter(ALL_LINKAGE_FIELDS, EVERYTHING, Utilities.getBirthRecords(record_repository), getComparisonFields());
         }
         return cached_source_records;
@@ -49,7 +49,7 @@ public class UmeaBirthDeathML extends AllPairsTwoSourcesLinkageAnalysisML {
 
     @Override
     public Iterable<LXP> getSourceRecords2(RecordRepository record_repository) {
-        if( cached_source_records2 == null ) {
+        if (cached_source_records2 == null) {
             cached_source_records2 = filter(ALL_LINKAGE_FIELDS, EVERYTHING, Utilities.getDeathRecords(record_repository), getComparisonFields());
         }
         return cached_source_records2;
@@ -83,7 +83,7 @@ public class UmeaBirthDeathML extends AllPairsTwoSourcesLinkageAnalysisML {
 
     @Override
     public List<Integer> getComparisonFields() {
-        return Arrays.asList(
+        return List.of(
                 Birth.FORENAME,
                 Birth.SURNAME,
                 Birth.MOTHER_FORENAME,
@@ -95,7 +95,7 @@ public class UmeaBirthDeathML extends AllPairsTwoSourcesLinkageAnalysisML {
 
     @Override
     public List<Integer> getComparisonFields2() {
-        return Arrays.asList(
+        return List.of(
                 Death.FORENAME,
                 Death.SURNAME,
                 Death.MOTHER_FORENAME,
@@ -107,11 +107,6 @@ public class UmeaBirthDeathML extends AllPairsTwoSourcesLinkageAnalysisML {
 
     public static void main(String[] args) throws Exception {
 
-        Path store_path = ApplicationProperties.getStorePath();
-        String repo_name = "Umea";
-
-        new UmeaBirthDeathML(store_path, repo_name, "UmeaBirthDeathMLDistances").run();
+        new UmeaBirthDeathML(Umea.REPOSITORY_NAME, "UmeaBirthDeathMLDistances").run();
     }
-
-
 }

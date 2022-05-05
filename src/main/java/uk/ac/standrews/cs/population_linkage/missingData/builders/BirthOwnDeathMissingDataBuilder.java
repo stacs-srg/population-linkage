@@ -15,7 +15,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 
 /**
  *  This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
- * It takes an extra parameter over standard Builders choosing which aggregate metric to use.
+ * It takes an extra parameter over standard Builders choosing which composite measure to use.
  */
 public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
@@ -46,12 +46,6 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
             }
             case "missing-half": {
                 BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingHalf(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
-                linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
-                break;
-            }
-            case "mean": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingMean(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;

@@ -5,11 +5,11 @@
 package uk.ac.standrews.cs.population_linkage.missingData.builders.failureinvestigation;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.utilities.metrics.JensenShannon;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 
 /**
  * This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
- * It takes an extra parameter over standard Builders choosing which aggregate metric to use.
+ * It takes an extra parameter over standard Builders choosing which composite measure to use.
  */
 public class TestJS4 {
 
@@ -20,7 +20,7 @@ public class TestJS4 {
 
         try {
 
-            double d = new JensenShannon(2048).distance(s1, s2);
+            double d = Constants.JENSEN_SHANNON.distance(s1, s2);
             System.out.println(d);
 
         } catch (RuntimeException e) {

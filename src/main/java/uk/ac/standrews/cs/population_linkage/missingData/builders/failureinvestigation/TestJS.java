@@ -8,12 +8,12 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.compositeMetrics.SigmaMissingZero;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.MeanOfFieldDistancesWithZeroForMissingFields;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 
 /**
  * This class attempts to find birth-death links: links a baby on a birth to the same person as the deceased on a death record.
- * It takes an extra parameter over standard Builders choosing which aggregate metric to use.
+ * It takes an extra parameter over standard Builders choosing which composite measure to use.
  */
 public class TestJS {
 
@@ -30,8 +30,7 @@ public class TestJS {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, TestJS.class.getCanonicalName(), bridge);
 
-            // StringMetric metric = linkageRecipe.getMetric();
-            SigmaMissingZero metric = new SigmaMissingZero(linkageRecipe.getBaseMetric(), linkageRecipe.getLinkageFields(), Birth.STANDARDISED_ID);
+            MeanOfFieldDistancesWithZeroForMissingFields measure = new MeanOfFieldDistancesWithZeroForMissingFields(linkageRecipe.getBaseMeasure(), linkageRecipe.getLinkageFields());
 
             Iterable<LXP> recs = linkageRecipe.getStoredRecords();
             for (LXP rec : recs) {
@@ -45,9 +44,7 @@ public class TestJS {
 
                 s2 = rec.getString(Birth.FATHER_SURNAME);
 
-//                System.out.println("String 1 = " + s1);
-//                System.out.println("String 2 = " + s2);
-                double d = metric.distance(b1, rec);
+                double d = measure.distance(b1, rec);
                 System.out.println(d);
             }
 
