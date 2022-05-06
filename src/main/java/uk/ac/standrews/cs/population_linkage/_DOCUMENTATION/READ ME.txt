@@ -7,7 +7,6 @@ New structure is as follows:
 
 Runners in package linkageRunners:
 
-
     These contain the main methods and actually perform linkage.
     Each runner specifies a particular form of linkage e.g. BirthBirth etc.
     Each runner provides as run method which performs the linkage.
