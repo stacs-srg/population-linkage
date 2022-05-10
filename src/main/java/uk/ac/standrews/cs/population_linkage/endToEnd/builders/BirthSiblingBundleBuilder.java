@@ -62,13 +62,13 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
 
             if( !std_id1.equals(std_id2 ) ) {
 
-                if (!Query.BBBirthSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+                if (!Query.BBBirthSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
                     Query.createBBSiblingReference(
                             recipe.getBridge(),
                             std_id1,
                             std_id2,
-                            recipe.getLinks_persistent_name(),
-                            recipe.getNoLinkageFieldsRequired(),
+                            recipe.getLinksPersistentName(),
+                            recipe.getNumberOfLinkageFieldsRequired(),
                             link.getDistance());
                 }
             }

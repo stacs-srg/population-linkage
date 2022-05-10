@@ -65,13 +65,13 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+        setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
         }
         return cached_records;
     }

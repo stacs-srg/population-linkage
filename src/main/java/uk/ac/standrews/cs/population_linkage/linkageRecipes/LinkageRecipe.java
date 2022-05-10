@@ -21,7 +21,6 @@ import uk.ac.standrews.cs.utilities.archive.ErrorHandling;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.StreamSupport;
 
@@ -52,15 +51,11 @@ public abstract class LinkageRecipe {
     protected static final String EVERYTHING_STRING = "EVERYTHING";
     public static final int EVERYTHING = Integer.MAX_VALUE;
 
-    private ArrayList<LXP> cached_records = null;
-
     protected final NeoDbCypherBridge bridge;
 
     protected final String source_repository_name;
     protected final String links_persistent_name;
     private final RecordRepository record_repository;
-
-    protected Path store_path;
 
     private Iterable<LXP> birth_records;
     private Iterable<LXP> marriage_records;
@@ -70,7 +65,7 @@ public abstract class LinkageRecipe {
     private Integer death_records_size = null;
     private Integer marriage_records_size = null;
 
-    private int no_linkage_fields_required;
+    private int number_of_linkage_fields_required;
     private StringMeasure base_measure;
 
     public LinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
@@ -86,12 +81,12 @@ public abstract class LinkageRecipe {
         return bridge;
     }
 
-    public int getNoLinkageFieldsRequired() {
-        return no_linkage_fields_required;
+    public int getNumberOfLinkageFieldsRequired() {
+        return number_of_linkage_fields_required;
     }
 
-    public void setNoLinkageFieldsRequired(int count) {
-        no_linkage_fields_required = count;
+    public void setNumberOfLinkageFieldsRequired(int number_of_linkage_fields_required) {
+        this.number_of_linkage_fields_required = number_of_linkage_fields_required;
     }
 
     public static LinkStatus trueMatch(final LXP record1, final LXP record2, final List<List<Pair>> true_match_alternatives) {
@@ -108,7 +103,7 @@ public abstract class LinkageRecipe {
         }
 
         boolean all_empty = allEmpty(record1, record2, true_match_alternatives);
-        boolean any_empty = anyEmpty(record1, record2, true_match_alternatives);
+        boolean any_empty = anyIdentityFieldsEmpty(record1, record2, true_match_alternatives);
 
         if ((TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN && any_empty) || (!TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN && all_empty)) {
 
@@ -122,12 +117,12 @@ public abstract class LinkageRecipe {
 
         for (List<Pair> true_match_fields : true_match_alternatives) {
 
-            if (!allFieldsEmpty(record1, record2, true_match_fields)) return false;
+            if (!allIdentityFieldsEmpty(record1, record2, true_match_fields)) return false;
         }
         return true;
     }
 
-    public static boolean allFieldsEmpty(final LXP record1, final LXP record2, final List<Pair> true_match_fields) {
+    public static boolean allIdentityFieldsEmpty(final LXP record1, final LXP record2, final List<Pair> true_match_fields) {
 
         for (Pair fields : true_match_fields) {
             if (identityFieldNotEmpty(record1, fields.first)) return false;
@@ -136,7 +131,7 @@ public abstract class LinkageRecipe {
         return true;
     }
 
-    public static boolean anyEmpty(final LXP record1, final LXP record2, final List<List<Pair>> true_match_alternatives) {
+    public static boolean anyIdentityFieldsEmpty(final LXP record1, final LXP record2, final List<List<Pair>> true_match_alternatives) {
 
         for (List<Pair> true_match_fields : true_match_alternatives) {
 
@@ -320,6 +315,7 @@ public abstract class LinkageRecipe {
     }
 
     public Map<String, Link> getGroundTruthLinksSymmetric() {
+
         Map<String, Link> map = new HashMap<>();
         LXP[] records = StreamSupport.stream(getStoredRecords().spliterator(), false).toArray(LXP[]::new);
 
@@ -359,9 +355,8 @@ public abstract class LinkageRecipe {
     }
 
     public void setNumberLinkageFieldsRequired(int number) {
-        no_linkage_fields_required = number;
+        number_of_linkage_fields_required = number;
     }
-
 
     public String toKey(LXP query_record, LXP stored_record) {
 
@@ -455,7 +450,7 @@ public abstract class LinkageRecipe {
         return filteredRecords;
     }
 
-    public String getLinks_persistent_name() {
+    public String getLinksPersistentName() {
         return links_persistent_name;
     }
 

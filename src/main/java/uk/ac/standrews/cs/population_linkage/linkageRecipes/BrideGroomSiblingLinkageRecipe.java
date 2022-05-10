@@ -73,13 +73,13 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
         } else {
             NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+        setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     protected Iterable<LXP> getMarriageRecords() {
         if (cached_records == null) {
-            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+            cached_records = filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
         }
         return cached_records;
     }

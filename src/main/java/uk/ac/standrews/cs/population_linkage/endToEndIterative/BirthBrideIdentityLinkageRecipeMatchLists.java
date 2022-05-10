@@ -84,7 +84,7 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(number_linkage_fields);
+        setNumberOfLinkageFieldsRequired(number_linkage_fields);
         setThreshold(threshold);
         this.search_matched = search_matched;
         this.stored_matched = stored_matched;
@@ -134,7 +134,7 @@ public class BirthBrideIdentityLinkageRecipeMatchLists extends LinkageRecipe {
         if (cached_records == null) {
             Iterable<LXP> f = filterOut(stored_matched, super.getBirthRecords());
             f = filterBySex(f, Birth.SEX, "f");
-            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
+            cached_records = filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
         }
         System.out.println("Processing " + cached_records.size() + " birth records");
         return cached_records;

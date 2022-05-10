@@ -77,14 +77,14 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         } else {
             number_of_deaths = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+        setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
-            System.out.println("Filtering death records require: " + getNoLinkageFieldsRequired() + " fields");
-            cached_records = filter(getNoLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getQueryMappingFields());
+            System.out.println("Filtering death records require: " + getNumberOfLinkageFieldsRequired() + " fields");
+            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getQueryMappingFields());
         }
         return cached_records;
     }

@@ -74,7 +74,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
             Iterable<LXP> filtered = filterBySex(super.getDeathRecords(), Death.SEX, "m");
-            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields());
         }
         return cached_records;
     }

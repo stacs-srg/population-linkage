@@ -63,13 +63,13 @@ public class DeathBrideSiblingBundleBuilder implements MakePersistent {
 
             if( !std_id1.equals(std_id2 ) ) {
 
-                if (!Query.DMBrideSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+                if (!Query.DMBrideSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
                     Query.createDMBrideSiblingReference(
                             recipe.getBridge(),
                             std_id1,
                             std_id2,
-                            recipe.getLinks_persistent_name(),
-                            recipe.getNoLinkageFieldsRequired(),
+                            recipe.getLinksPersistentName(),
+                            recipe.getNumberOfLinkageFieldsRequired(),
                             link.getDistance());
                 }
             }

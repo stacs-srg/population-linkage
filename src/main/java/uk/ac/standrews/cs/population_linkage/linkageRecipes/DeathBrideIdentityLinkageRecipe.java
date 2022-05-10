@@ -67,14 +67,14 @@ public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
         } else {
             NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+        setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
             Iterable<LXP> filtered = filterBySex(super.getDeathRecords(), Death.SEX, "f");
-            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_DEATHS, filtered, getLinkageFields());
         }
         return cached_records;
     }

@@ -30,7 +30,7 @@ public class BirthBrideOwnMarriageBuilder implements MakePersistent {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
             BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideOwnMarriageBuilder.class.getCanonicalName(),bridge);
 
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+            int linkage_fields = BirthBrideIdentityLinkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
 
             while( linkage_fields >= half_fields ) {
@@ -49,28 +49,24 @@ public class BirthBrideOwnMarriageBuilder implements MakePersistent {
         }
     }
 
-    public void makePersistent(BirthBrideIdentityLinkageRecipe birthBrideIdentityLinkageRecipe, Link link) {
+    @Override
+    public void makePersistent(LinkageRecipe linkage_recipe, Link link) {
         try {
             final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if (!Query.BMBirthBrideReferenceExists(birthBrideIdentityLinkageRecipe.getBridge(), std_id1, std_id2, birthBrideIdentityLinkageRecipe.getLinks_persistent_name())) {
+            if (!Query.BMBirthBrideReferenceExists(linkage_recipe.getBridge(), std_id1, std_id2, linkage_recipe.getLinksPersistentName())) {
 
                 Query.createBirthBrideOwnMarriageReference(
-                        birthBrideIdentityLinkageRecipe.getBridge(),
+                        linkage_recipe.getBridge(),
                         std_id1,
                         std_id2,
-                        birthBrideIdentityLinkageRecipe.getLinks_persistent_name(),
-                        birthBrideIdentityLinkageRecipe.getNoLinkageFieldsRequired(),
+                        linkage_recipe.getLinksPersistentName(),
+                        linkage_recipe.getNumberOfLinkageFieldsRequired(),
                         link.getDistance());
             }
-        } catch (uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException | RepositoryException e) {
+        } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void makePersistent(LinkageRecipe linkage_recipe, Link link) {
-
     }
 }

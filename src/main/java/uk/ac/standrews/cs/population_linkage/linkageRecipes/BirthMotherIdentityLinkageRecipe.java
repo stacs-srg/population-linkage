@@ -57,7 +57,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+        setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override

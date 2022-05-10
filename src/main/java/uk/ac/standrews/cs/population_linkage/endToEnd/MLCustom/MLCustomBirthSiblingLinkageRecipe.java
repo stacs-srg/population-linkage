@@ -68,12 +68,12 @@ public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe
 
             if( !std_id1.equals(std_id2 ) ) {
 
-                if (!Query.BBBirthSiblingReferenceExists(bridge, std_id1, std_id2, getLinks_persistent_name())) {
+                if (!Query.BBBirthSiblingReferenceExists(bridge, std_id1, std_id2, getLinksPersistentName())) {
                     Query.createBBSiblingReference(
                             bridge,
                             std_id1,
                             std_id2,
-                            getLinks_persistent_name(),
+                            getLinksPersistentName(),
                             linkage_fields,
                             link.getDistance());
                 }

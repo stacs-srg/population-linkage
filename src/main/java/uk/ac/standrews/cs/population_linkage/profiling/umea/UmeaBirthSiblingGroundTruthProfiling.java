@@ -74,7 +74,7 @@ public class UmeaBirthSiblingGroundTruthProfiling {
 
                 int alternative_index = 0;
                 for (List<LinkageRecipe.Pair> alternative : BirthSiblingLinkageRecipe.TRUE_MATCH_ALTERNATIVES) {
-                    if (!LinkageRecipe.allFieldsEmpty(record1, record2, alternative))
+                    if (!LinkageRecipe.allIdentityFieldsEmpty(record1, record2, alternative))
                         known_link_counts[alternative_index++]++;
                 }
             }

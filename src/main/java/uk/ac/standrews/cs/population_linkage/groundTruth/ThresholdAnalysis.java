@@ -292,11 +292,6 @@ public abstract class ThresholdAnalysis {
                 final LXP record2 = records2.get(j);
 
                 final double distance = measure.distance(record1, record2);
-//                if (distance > 1d) {
-//                    System.out.println("distance > 1 for measure: " + measure_name);
-//                    System.out.println("record 1: " + record1);
-//                    System.out.println("record 2: " + record2);
-//                }
                 final LinkStatus link_status = isTrueMatch(record1, record2);
                 final RecordPair possible_link = new RecordPair(record1, record2, distance);
 

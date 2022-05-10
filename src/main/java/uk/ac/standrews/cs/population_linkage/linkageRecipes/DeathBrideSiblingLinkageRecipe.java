@@ -65,7 +65,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
         } else {
             NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+        setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override

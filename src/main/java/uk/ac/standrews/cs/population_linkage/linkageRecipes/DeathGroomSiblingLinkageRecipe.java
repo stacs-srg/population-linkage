@@ -63,7 +63,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
         }
         return cached_records;
     }

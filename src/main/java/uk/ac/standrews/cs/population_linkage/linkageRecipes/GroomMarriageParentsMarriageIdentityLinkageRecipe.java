@@ -67,7 +67,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     protected Iterable<LXP> getMarriageRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNoLinkageFieldsRequired(), NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
         }
         return cached_records;
     }

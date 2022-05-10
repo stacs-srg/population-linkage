@@ -53,14 +53,14 @@ public class BirthGroomOwnMarriageBuilder implements MakePersistent {
             String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
             String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if (!Query.BMBirthGroomReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+            if (!Query.BMBirthGroomReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
 
                 Query.createBirthGroomOwnMarriageReference(
                         recipe.getBridge(),
                         std_id1,
                         std_id2,
-                        recipe.getLinks_persistent_name(),
-                        recipe.getNoLinkageFieldsRequired(),
+                        recipe.getLinksPersistentName(),
+                        recipe.getNumberOfLinkageFieldsRequired(),
                         link.getDistance());
             }
         } catch (uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException | RepositoryException e) {

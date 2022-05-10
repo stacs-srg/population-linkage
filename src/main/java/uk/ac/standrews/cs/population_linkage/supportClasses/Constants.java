@@ -37,8 +37,7 @@ public class Constants {
     public static final PhoneticWrapper NYSIIS = new PhoneticWrapper(new NYSIIS(), new Levenshtein());
 
     public static final List<StringMeasure> TRUE_METRICS = List.of(
-//            COSINE, DAMERAU_LEVENSHTEIN, JACCARD, JENSEN_SHANNON, LEVENSHTEIN, SED);
-            COSINE);
+            COSINE, DAMERAU_LEVENSHTEIN, JACCARD, JENSEN_SHANNON, LEVENSHTEIN, SED);
 
     public static final List<StringMeasure> NON_METRIC_MEASURES = List.of(
             BAG_DISTANCE, DICE, JARO, JARO_WINKLER, LONGEST_COMMON_SUBSTRING, NEEDLEMAN_WUNSCH, SMITH_WATERMAN);
@@ -46,8 +45,7 @@ public class Constants {
     public static final List<StringMeasure> PHONETIC_COMPARATORS = List.of(
             METAPHONE, NYSIIS);
 
-//    public static final List<StringMeasure> BASE_MEASURES = concatenate(TRUE_METRICS, NON_METRIC_MEASURES, PHONETIC_COMPARATORS);
-    public static final List<StringMeasure> BASE_MEASURES = TRUE_METRICS;
+    public static final List<StringMeasure> BASE_MEASURES = concatenate(TRUE_METRICS, NON_METRIC_MEASURES, PHONETIC_COMPARATORS);
 
     public static String stringRepresentationOf(List<Integer> fields, Class<? extends LXP> record, List<String> labels) {
         StringBuilder sb = new StringBuilder();

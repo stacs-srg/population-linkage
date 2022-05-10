@@ -59,13 +59,13 @@ public class GroomGroomSiblingBuilder implements MakePersistent {
             final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if( ! Query.MMGroomGroomSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+            if( ! Query.MMGroomGroomSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
                 Query.createMMGroomGroomSiblingReference(
                         recipe.getBridge(),
                         std_id1,
                         std_id2,
-                        recipe.getLinks_persistent_name(),
-                        recipe.getNoLinkageFieldsRequired(),
+                        recipe.getLinksPersistentName(),
+                        recipe.getNumberOfLinkageFieldsRequired(),
                         link.getDistance());
             }
         } catch (BucketException | RepositoryException e) {

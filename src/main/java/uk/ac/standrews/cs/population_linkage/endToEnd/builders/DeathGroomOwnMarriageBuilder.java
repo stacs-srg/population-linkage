@@ -54,13 +54,13 @@ public class DeathGroomOwnMarriageBuilder implements MakePersistent {
             final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
 
-            if( ! Query.DMDeathGroomOwnMarriageReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+            if( ! Query.DMDeathGroomOwnMarriageReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
                 Query.createDeathGroomOwnMarriageReference(
                         recipe.getBridge(),
                         std_id1,
                         std_id2,
-                        recipe.getLinks_persistent_name(),
-                        recipe.getNoLinkageFieldsRequired(),
+                        recipe.getLinksPersistentName(),
+                        recipe.getNumberOfLinkageFieldsRequired(),
                         link.getDistance());
             }
         } catch (BucketException | RepositoryException e) {

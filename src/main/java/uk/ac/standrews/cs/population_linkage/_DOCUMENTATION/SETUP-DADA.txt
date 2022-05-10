@@ -13,7 +13,7 @@ cd /home/secure/git
 
 If 'data-umea' and 'population-linkage' not present:
 
-    git clone ssh://secure@manifesto.cs.st-andrews.ac.uk/home/secure/git/repositories/data-umea
+    git clone ssh://manifesto.cs.st-andrews.ac.uk/data/secure/git/repositories/data-umea
     git clone https://github.com/stacs-srg/population-linkage.git
 
 If 'data-umea' and 'population-linkage' already present:

@@ -30,7 +30,6 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  * Now also performs subsetting 11/11/21
  */
 public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
-    public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
 
     // TODO Some Wrigley rules not obvious where to place in viability checks.
     // e.g. date of birth should not be after death of mother - identity linkage of mother on birth record to
@@ -74,6 +73,8 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     );
     protected List<LXP> cached_records = null;
 
+    public static final int ALL_LINKAGE_FIELDS = LINKAGE_FIELDS.size();
+
     public BirthBrideIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if (number_of_records.equals(EVERYTHING_STRING)) {
@@ -81,7 +82,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
         } else {
             NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
         }
-        setNoLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
+        setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
@@ -127,7 +128,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
             Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
-            cached_records = filter(getNoLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
+            cached_records = filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_BIRTHS, f, getLinkageFields());
         }
         System.out.println("Processing " + cached_records.size() + " birth records");
         return cached_records;

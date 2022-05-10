@@ -61,14 +61,14 @@ public class DeathSiblingBundleBuilder implements MakePersistent {
             String std_id2 = link.getRecord2().getReferend().getString( Death.STANDARDISED_ID );
 
             if (!std_id1.equals(std_id2)) {
-                if( ! Query.DDSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinks_persistent_name())) {
+                if( ! Query.DDSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
 
                     Query.createDDSiblingReference(
                             recipe.getBridge(),
                             std_id1,
                             std_id2,
-                            recipe.getLinks_persistent_name(),
-                            recipe.getNoLinkageFieldsRequired(),
+                            recipe.getLinksPersistentName(),
+                            recipe.getNumberOfLinkageFieldsRequired(),
                             link.getDistance());
                 }
             }
