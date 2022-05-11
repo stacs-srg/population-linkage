@@ -29,10 +29,8 @@ public abstract class ThresholdAnalysis {
 
     protected static final int CHECK_ALL_RECORDS = -1;
     static final long SEED = 87626L;
-    //    private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
-    private static final int NUMBER_OF_DISTANCES_SAMPLED = 11; // 0.1 granularity including 0.0 and 1.0.
-    //    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
-    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 11; // 0.1 granularity including 0.0 and 1.0.
+    private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
+    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;
     private static final String DELIMIT = ",";
@@ -93,8 +91,6 @@ public abstract class ThresholdAnalysis {
     }
 
     private void init(String repo_name, String linkage_results_filename, String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs, boolean allow_multiple_links) throws IOException {
-
-        verbose = true;
 
         this.repo_name = repo_name;
         this.number_of_records_to_be_checked = number_of_records_to_be_checked;
@@ -358,7 +354,7 @@ public abstract class ThresholdAnalysis {
 
         public void run() {
 
-            if (verbose) System.out.println("Starting run " + run_number + " with measure " + measure.getMeasureName());
+            System.out.println("Starting run " + run_number + " with measure " + measure.getMeasureName());
 
             final long number_of_blocks_to_be_checked = number_of_records_to_be_checked / BLOCK_SIZE;
 
