@@ -8,6 +8,7 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
@@ -16,11 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Base class for performing linkage analysis from ground truth.
@@ -32,30 +29,51 @@ public abstract class ThresholdAnalysis {
 
     protected static final int CHECK_ALL_RECORDS = -1;
     static final long SEED = 87626L;
-    private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
-    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
+    //    private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
+    private static final int NUMBER_OF_DISTANCES_SAMPLED = 11; // 0.1 granularity including 0.0 and 1.0.
+    //    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
+    private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 11; // 0.1 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
     private static final int BLOCK_SIZE = 100;
     private static final String DELIMIT = ",";
     protected boolean allow_multiple_links;
-    int number_of_records_to_be_checked;
+
     int number_of_runs;
     String repo_name;
+    RecordRepository record_repository;
+
+    private List<LXPMeasure> composite_measures;
     private PrintWriter linkage_results_metadata_writer;
     private PrintWriter distance_results_metadata_writer;
-    private List<Map<String, Sample[]>> linkage_results; // Maps from measure name to counts of TPFP etc.
-    private List<LXPMeasure> composite_measures;
-    private long[] pairs_evaluated;
-    private long[] pairs_ignored;
+
     private PrintWriter linkage_results_writer;
     private PrintWriter distance_results_writer;
-    private List<Map<String, int[]>> non_link_distance_counts;
-    private List<Map<String, int[]>> link_distance_counts;
-    private Map<String, Integer> run_numbers_for_measures;
-    List<LXP> source_records;
-    int number_of_records;
+
     boolean verbose = false;
-    private int records_processed = 0;
+    int number_of_records_to_be_checked;
+
+    /**
+     * @return list of comparison fields that will be used for comparing records
+     */
+    public abstract List<Integer> getComparisonFields();
+
+    public abstract String getDatasetName();
+
+    public abstract String getLinkageType();
+
+    public abstract Iterable<LXP> getSourceRecords1(RecordRepository record_repository);
+
+    public abstract Iterable<LXP> getSourceRecords2(RecordRepository record_repository);
+
+    public abstract boolean singleSource();
+
+    public abstract LinkStatus isTrueMatch(LXP record1, LXP record2);
+
+    public abstract boolean isViableLink(RecordPair proposed_link);
+
+    public abstract List<LXPMeasure> getCombinedMeasures();
+
+    protected abstract double getNormalisationCutoff();
 
     ThresholdAnalysis(final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
 
@@ -76,26 +94,23 @@ public abstract class ThresholdAnalysis {
 
     private void init(String repo_name, String linkage_results_filename, String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs, boolean allow_multiple_links) throws IOException {
 
+        verbose = true;
+
         this.repo_name = repo_name;
         this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         this.number_of_runs = number_of_runs;
         this.allow_multiple_links = allow_multiple_links || !MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE;
 
-        pairs_evaluated = new long[number_of_runs];
-        pairs_ignored = new long[number_of_runs];
         composite_measures = getCombinedMeasures();
-        linkage_results = initialiseState();
 
         linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".csv", false)));
         distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".csv", false)));
         linkage_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".meta", false)));
         distance_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".meta", false)));
 
-        non_link_distance_counts = initialiseDistances();
-        link_distance_counts = initialiseDistances();
-        run_numbers_for_measures = initialiseRunNumbers();
+        if (verbose) System.out.println("Reading records from repository: " + repo_name);
 
-        setupRecords();
+        record_repository = new RecordRepository(repo_name);
     }
 
     private static int distanceToIndex(final double distance) {
@@ -135,347 +150,61 @@ public abstract class ThresholdAnalysis {
         return (double) Runtime.getRuntime().maxMemory() / 1000000000;
     }
 
-    /**
-     * @return list of comparison fields that will be used for comparing records
-     */
-    public abstract List<Integer> getComparisonFields();
-
-    public abstract String getDatasetName();
-
-    public abstract String getLinkageType();
-
-    public abstract Iterable<LXP> getSourceRecords(RecordRepository record_repository);
-
-    public abstract void setupRecords();
-
-    public abstract void processRecord(int i, LXPMeasure measure, boolean evaluating_first_measure);
-
-    public abstract LinkStatus isTrueMatch(LXP record1, LXP record2);
-
-    public abstract List<LXPMeasure> getCombinedMeasures();
-
-    protected abstract double getNormalisationCutoff();
-
     public void run() throws Exception {
 
         printHeaders();
         printMetaData();
 
-        final long number_of_blocks_to_be_checked = number_of_records / BLOCK_SIZE;
-
-        for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
-
-            processBlock(block_index);
-            printSamples();
-
-            if (verbose) {
-                System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
-                System.out.flush();
-            }
-        }
-
-        if (verbose) {
-            System.out.println("Run completed");
-            System.out.flush();
-        }
-    }
-
-    private List<Map<String, Sample[]>> initialiseState() {
-
-        final List<Map<String, Sample[]>> result = new ArrayList<>();
-
         for (int i = 0; i < number_of_runs; i++) {
 
-            final Map<String, Sample[]> map = new HashMap<>();
+            if (verbose) System.out.println("Randomising record order");
+
+            final List<LXP> source_record_list1 = Utilities.permute(getSourceRecords1(record_repository), SEED);
+            final List<LXP> source_record_list2 = singleSource() ? source_record_list1 : Utilities.permute(getSourceRecords2(record_repository), SEED);
+
+            if (number_of_records_to_be_checked == CHECK_ALL_RECORDS) {
+                number_of_records_to_be_checked = source_record_list1.size();
+            }
 
             for (final var measure : composite_measures) {
 
-                final Sample[] samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
-                for (int j = 0; j < NUMBER_OF_THRESHOLDS_SAMPLED; j++) {
-                    samples[j] = new Sample();
-                }
-
-                map.put(measure.getMeasureName(), samples);
-            }
-
-            result.add(map);
-        }
-        return result;
-    }
-
-    private List<Map<String, int[]>> initialiseDistances() {
-
-        final List<Map<String, int[]>> result = new ArrayList<>();
-
-        for (int i = 0; i < number_of_runs; i++) {
-
-            final Map<String, int[]> map = new HashMap<>();
-
-            for (final var measure : composite_measures) {
-                map.put(measure.getMeasureName(), new int[NUMBER_OF_THRESHOLDS_SAMPLED]);
-            }
-
-            result.add(map);
-        }
-        return result;
-    }
-
-    private Map<String, Integer> initialiseRunNumbers() {
-
-        final Map<String, Integer> map = new HashMap<>();
-
-        for (final var measure : composite_measures) {
-            map.put(measure.getMeasureName(), 0);
-        }
-
-        return map;
-    }
-
-    private void processBlock(final int block_index) {
-
-        final CountDownLatch start_gate = new CountDownLatch(1);
-        final CountDownLatch end_gate = new CountDownLatch(composite_measures.size());
-
-        for (final var measure : composite_measures) {
-
-            new Thread(() -> processBlockWithMeasure(block_index, measure, start_gate, end_gate)).start();
-        }
-
-        try {
-            start_gate.countDown();
-            end_gate.await();
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        records_processed += BLOCK_SIZE;
-    }
-
-    private void processBlockWithMeasure(final int block_index, final LXPMeasure measure, final CountDownLatch start_gate, final CountDownLatch end_gate) {
-
-        try {
-            start_gate.await();
-
-            final boolean evaluating_first_measure = measure == composite_measures.get(0);
-
-            final int start_index = block_index * BLOCK_SIZE;
-            final int end_index = start_index + BLOCK_SIZE;
-
-            for (int i = start_index; i < end_index; i++) {
-                processRecord(i, measure, evaluating_first_measure);
-            }
-
-        } catch (InterruptedException ignored) {
-        } finally {
-
-            end_gate.countDown();
-        }
-    }
-
-    void processRecord(final int record_index, final int last_record_index, final List<LXP> records1, final List<LXP> records2, final LXPMeasure measure, final boolean increment_counts) {
-
-        final String measure_name = measure.getMeasureName();
-        int run_number = run_numbers_for_measures.get(measure_name);
-
-        final LXP record1 = records1.get(record_index);
-
-        double min_distance = 1.01;
-
-        Sample[] tentative_samples = null;
-        boolean tentative_link_is_true_link = false;
-
-        for (int j = 0; j < last_record_index; j++) { //******* Process all the records in the second source for each in block
-
-            if (j != record_index) {
-
-                final LXP record2 = records2.get(j);
-
-                final double distance = measure.distance(record1, record2);
-                final LinkStatus link_status = isTrueMatch(record1, record2);
-                final RecordPair possible_link = new RecordPair(record1, record2, distance);
-
-                final boolean distance_is_closest_encountered = distance < min_distance;
-                final boolean link_is_viable = isViableLink(possible_link);
-
-                if (link_status == LinkStatus.UNKNOWN) {
-                    updatePairsIgnoredCounts(increment_counts, run_number);
-
-                } else {
-
-                    final Sample[] samples = linkage_results.get(run_number).get(measure_name);
-                    final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
-
-                    if (allow_multiple_links) {
-                        recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
-                    } else {
-
-                        if (distance_is_closest_encountered && link_is_viable) {
-
-                            // Undo any previous tentative link decision.
-                            undoTentativeLinkDecision(tentative_samples, min_distance, tentative_link_is_true_link);
-
-                            recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
-
-                            // Record these as tentative in case another closer record is found.
-                            tentative_samples = samples;
-                            tentative_link_is_true_link = is_true_link;
-
-                        } else {
-                            recordNegativeLinkDecisions(samples, is_true_link);
-                        }
-                    }
-
-                    updateTrueLinkCounts(measure_name, run_number, distance, is_true_link);
-                    updatePairsEvaluatedCounts(increment_counts, run_number);
-                }
-
-                if (distance_is_closest_encountered) min_distance = distance;
-
-                run_number++;
-                if (run_number == number_of_runs) run_number = 0;
-            }
-        }
-
-        run_numbers_for_measures.put(measure_name, run_number);
-    }
-
-    private void updatePairsIgnoredCounts(final boolean increment_counts, final int run_number) {
-
-        if (increment_counts) {
-            pairs_ignored[run_number]++;
-        }
-    }
-
-    private void updatePairsEvaluatedCounts(final boolean increment_counts, final int run_number) {
-
-        if (increment_counts) {
-            pairs_evaluated[run_number]++;
-        }
-    }
-
-    private void updateTrueLinkCounts(final String measure_name, final int run_number, final double distance, final boolean is_true_link) {
-
-        final int index = distanceToIndex(distance);
-
-        if (is_true_link) {
-            link_distance_counts.get(run_number).get(measure_name)[index]++;
-        } else {
-            non_link_distance_counts.get(run_number).get(measure_name)[index]++;
-        }
-    }
-
-    private void recordNegativeLinkDecisions(final Sample[] samples, final boolean is_true_link) {
-
-        for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-
-            if (is_true_link) {
-                samples[threshold_index].fn++;
-            } else {
-                samples[threshold_index].tn++;
+                final int run_number = i;
+                new Thread(() -> new Run(run_number, measure, source_record_list1, source_record_list2).run()).start();
             }
         }
     }
 
-    private void recordLinkDecisions(final Sample[] samples, final double link_distance, final boolean link_is_viable, final boolean is_true_link) {
+    void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final long[] non_link_distance_counts, final long[] link_distance_counts) {
 
-        for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-
-            final double threshold = indexToThreshold(threshold_index);
-
-            if (link_distance <= threshold && link_is_viable) {
-
-                if (is_true_link) {
-                    samples[threshold_index].tp++;
-                } else {
-                    samples[threshold_index].fp++;
-                }
-
-            } else {
-                if (is_true_link) {
-                    samples[threshold_index].fn++;
-                } else {
-                    samples[threshold_index].tn++;
-                }
-            }
-        }
+        printDistances(run_number, measure_name, records_processed, pairs_evaluated, pairs_ignored, false, non_link_distance_counts);
+        printDistances(run_number, measure_name, records_processed, pairs_evaluated, pairs_ignored, true, link_distance_counts);
     }
 
-    private void undoTentativeLinkDecision(final Sample[] tentative_samples, final double tentative_link_distance, final boolean tentative_link_is_true_link) {
-
-        if (tentative_samples != null) {
-
-            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-
-                final double threshold = indexToThreshold(threshold_index);
-
-                if (tentative_link_distance <= threshold) {
-
-                    if (tentative_link_is_true_link) {
-                        tentative_samples[threshold_index].tp--;
-                        tentative_samples[threshold_index].fn++;
-                    } else {
-                        tentative_samples[threshold_index].fp--;
-                        tentative_samples[threshold_index].tn++;
-                    }
-
-                }
-            }
-        }
-    }
-
-    private void printSamples() {
-
-        for (final LXPMeasure measure : composite_measures) {
-
-            final String measure_name = measure.getMeasureName();
-
-            for (int run_number = 0; run_number < number_of_runs; run_number++) {
-                final Sample[] samples = linkage_results.get(run_number).get(measure_name);
-
-                for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                    printSample(run_number, measure_name, indexToThreshold(threshold_index), samples[threshold_index]);
-                }
-
-                printDistances(run_number, measure_name);
-            }
-        }
-    }
-
-    private void printDistances(final int run_number, final String measure_name) {
-
-        final int[] non_link_distance_counts_for_measure = non_link_distance_counts.get(run_number).get(measure_name);
-        final int[] link_distance_counts_for_measure = link_distance_counts.get(run_number).get(measure_name);
-
-        printDistances(run_number, measure_name, false, non_link_distance_counts_for_measure);
-        printDistances(run_number, measure_name, true, link_distance_counts_for_measure);
-    }
-
-    private void printMetaData() {
+    synchronized void printMetaData() {
 
         printMetaData(new PrintWriter(System.out), "Running ground truth analysis");
         printMetaData(linkage_results_metadata_writer, "Checking quality of linkage using various string similarity measures and thresholds");
         printMetaData(distance_results_metadata_writer, "Checking distributions of record pair distances using various string similarity measures and thresholds");
     }
 
-    private void printMetaData(final PrintWriter writer, final String description) {
+    synchronized void printMetaData(final PrintWriter writer, final String description) {
 
         writer.println("Output file created: " + LocalDateTime.now());
         writer.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
         writer.println(description);
         writer.println("Dataset: " + getDatasetName());
         writer.println("Linkage type: " + getLinkageType());
-        writer.println("Number of records considered from first set: " + number_of_records);
+        writer.println("Number of records considered from first set: " + number_of_records_to_be_checked);
         writer.println("Number of runs: " + number_of_runs);
         writer.println();
         writer.flush();
     }
 
-    private void printHeaders() {
+    synchronized void printHeaders() {
 
         linkage_results_writer.print("time");
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print("link_number");
+        linkage_results_writer.print("run_number");
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print("records_processed");
         linkage_results_writer.print(DELIMIT);
@@ -527,7 +256,7 @@ public abstract class ThresholdAnalysis {
         distance_results_writer.flush();
     }
 
-    private void printSample(final int run_number, final String measure_name, final double threshold, final Sample sample) {
+    synchronized void printSample(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final double threshold, final Sample sample) {
 
         linkage_results_writer.print(LocalDateTime.now());
         linkage_results_writer.print(DELIMIT);
@@ -535,9 +264,9 @@ public abstract class ThresholdAnalysis {
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print(records_processed);
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print(pairs_evaluated[run_number]);
+        linkage_results_writer.print(pairs_evaluated);
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print(pairs_ignored[run_number]);
+        linkage_results_writer.print(pairs_ignored);
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print(measure_name);
         linkage_results_writer.print(DELIMIT);
@@ -561,7 +290,7 @@ public abstract class ThresholdAnalysis {
         linkage_results_writer.flush();
     }
 
-    private void printDistances(final int run_number, final String measure_name, boolean links, int[] distances) {
+    synchronized void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final boolean links, final long[] distance_counts) {
 
         distance_results_writer.print(LocalDateTime.now());
         distance_results_writer.print(DELIMIT);
@@ -569,9 +298,9 @@ public abstract class ThresholdAnalysis {
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print(records_processed);
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print(pairs_evaluated[run_number]);
+        distance_results_writer.print(pairs_evaluated);
         distance_results_writer.print(DELIMIT);
-        distance_results_writer.print(pairs_ignored[run_number]);
+        distance_results_writer.print(pairs_ignored);
         distance_results_writer.print(DELIMIT);
         distance_results_writer.print(measure_name);
         distance_results_writer.print(DELIMIT);
@@ -579,15 +308,11 @@ public abstract class ThresholdAnalysis {
         distance_results_writer.print(DELIMIT);
 
         for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
-            distance_results_writer.print(distances[i]);
+            distance_results_writer.print(distance_counts[i]);
             distance_results_writer.print(DELIMIT);
         }
         distance_results_writer.println();
         distance_results_writer.flush();
-    }
-
-    public boolean isViableLink(RecordPair proposed_link) {
-        return true;
     }
 
     class Sample {
@@ -596,5 +321,209 @@ public abstract class ThresholdAnalysis {
         long tp = 0;
         long fn = 0;
         long tn = 0;
+    }
+
+    class Run {
+
+        List<LXP> source_record_list1;
+        List<LXP> source_record_list2;
+
+        final int run_number;
+        final LXPMeasure measure;
+
+        int records_processed = 0;
+        long pairs_evaluated = 0L;
+        long pairs_ignored = 0L;
+
+        long[] non_link_distance_counts;
+        long[] link_distance_counts;
+
+        Sample[] samples; // Counts of TP, FP etc at each threshold.
+
+        Run(final int run_number, final LXPMeasure measure, final List<LXP> source_record_list1, final List<LXP> source_record_list2) {
+
+            this.run_number = run_number;
+            this.measure = measure;
+            this.source_record_list1 = source_record_list1;
+            this.source_record_list2 = source_record_list2;
+
+            non_link_distance_counts = new long[NUMBER_OF_THRESHOLDS_SAMPLED];
+            link_distance_counts = new long[NUMBER_OF_THRESHOLDS_SAMPLED];
+
+            samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
+            for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
+                samples[i] = new Sample();
+            }
+        }
+
+        public void run() {
+
+            if (verbose) System.out.println("Starting run " + run_number + " with measure " + measure.getMeasureName());
+
+            final long number_of_blocks_to_be_checked = number_of_records_to_be_checked / BLOCK_SIZE;
+
+            for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
+
+                processBlock(block_index);
+                printSamples();
+
+                if (verbose) {
+                    System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
+                    System.out.flush();
+                }
+            }
+
+            if (verbose) {
+                System.out.println("Run completed");
+                System.out.flush();
+            }
+        }
+
+        private void processBlock(final int block_index) {
+
+            final int start_index = block_index * BLOCK_SIZE;
+            final int end_index = start_index + BLOCK_SIZE;
+
+            for (int i = start_index; i < end_index; i++) {
+                processRecordFromFirstSource(i, number_of_records_to_be_checked);
+            }
+
+            records_processed += BLOCK_SIZE;
+        }
+
+        private void printSamples() {
+
+            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+                printSample(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, indexToThreshold(threshold_index), samples[threshold_index]);
+            }
+
+            printDistances(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, non_link_distance_counts, link_distance_counts);
+        }
+
+        void processRecordFromFirstSource(final int record_index, final int last_record_index) {
+
+            final LXP record1 = source_record_list1.get(record_index);
+
+            double min_distance = 1.01;
+
+            boolean made_tentative_link = false;
+            boolean tentative_link_is_true_link = false;
+
+            for (int j = 0; j < last_record_index; j++) {
+
+                if (j != record_index) {
+
+                    final LXP record2 = source_record_list2.get(j);
+
+                    final double distance = measure.distance(record1, record2);
+                    final LinkStatus link_status = isTrueMatch(record1, record2);
+                    final RecordPair possible_link = new RecordPair(record1, record2, distance);
+
+                    final boolean distance_is_closest_encountered = distance < min_distance;
+                    final boolean link_is_viable = isViableLink(possible_link);
+
+                    if (link_status == LinkStatus.UNKNOWN) {
+                        pairs_ignored++;
+
+                    } else {
+
+                        final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
+
+                        if (allow_multiple_links) {
+                            recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
+                        } else {
+
+                            if (distance_is_closest_encountered && link_is_viable) {
+
+                                // Undo any previous tentative link decision.
+                                if (made_tentative_link) {
+                                    undoTentativeLinkDecision(min_distance, tentative_link_is_true_link);
+                                }
+
+                                recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
+
+                                // Record these as tentative in case another closer record is found.
+                                made_tentative_link = true;
+                                tentative_link_is_true_link = is_true_link;
+
+                            } else {
+                                recordNegativeLinkDecisions(is_true_link);
+                            }
+                        }
+
+                        updateTrueLinkCounts(distance, is_true_link);
+                        pairs_evaluated++;
+                    }
+
+                    if (distance_is_closest_encountered) min_distance = distance;
+                }
+            }
+        }
+
+        private void updateTrueLinkCounts(final double distance, final boolean is_true_link) {
+
+            final int index = distanceToIndex(distance);
+
+            if (is_true_link) {
+                link_distance_counts[index]++;
+            } else {
+                non_link_distance_counts[index]++;
+            }
+        }
+
+        private void recordNegativeLinkDecisions(final boolean is_true_link) {
+
+            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+
+                if (is_true_link) {
+                    samples[threshold_index].fn++;
+                } else {
+                    samples[threshold_index].tn++;
+                }
+            }
+        }
+
+        private void recordLinkDecisions(final Sample[] samples, final double link_distance, final boolean link_is_viable, final boolean is_true_link) {
+
+            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+
+                final double threshold = indexToThreshold(threshold_index);
+
+                if (link_distance <= threshold && link_is_viable) {
+
+                    if (is_true_link) {
+                        samples[threshold_index].tp++;
+                    } else {
+                        samples[threshold_index].fp++;
+                    }
+
+                } else {
+                    if (is_true_link) {
+                        samples[threshold_index].fn++;
+                    } else {
+                        samples[threshold_index].tn++;
+                    }
+                }
+            }
+        }
+
+        private void undoTentativeLinkDecision(final double tentative_link_distance, final boolean tentative_link_is_true_link) {
+
+            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+
+                final double threshold = indexToThreshold(threshold_index);
+
+                if (tentative_link_distance <= threshold) {
+
+                    if (tentative_link_is_true_link) {
+                        samples[threshold_index].tp--;
+                        samples[threshold_index].fn++;
+                    } else {
+                        samples[threshold_index].fp--;
+                        samples[threshold_index].tn++;
+                    }
+                }
+            }
+        }
     }
 }

@@ -36,7 +36,7 @@ public class UmeaBirthDeathIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(final RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords1(final RecordRepository record_repository) {
         return Utilities.getBirthRecords(record_repository);
     }
 

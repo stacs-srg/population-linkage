@@ -33,7 +33,12 @@ public class UmeaBirthMotherIdentity extends AsymmetricSingleSourceLinkageAnalys
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(final RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords1(final RecordRepository record_repository) {
+        return Utilities.getBirthRecords(record_repository);
+    }
+
+    @Override
+    public Iterable<LXP> getSourceRecords2(final RecordRepository record_repository) {
         return Utilities.getBirthRecords(record_repository);
     }
 

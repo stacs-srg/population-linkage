@@ -33,7 +33,12 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords1(RecordRepository record_repository) {
+        return Utilities.getMarriageRecords(record_repository);
+    }
+
+    @Override
+    public Iterable<LXP> getSourceRecords2(RecordRepository record_repository) {
         return Utilities.getMarriageRecords(record_repository);
     }
 

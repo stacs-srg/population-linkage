@@ -33,7 +33,12 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
     }
 
     @Override
-    public Iterable<LXP> getSourceRecords(final RecordRepository record_repository) {
+    public Iterable<LXP> getSourceRecords1(final RecordRepository record_repository) {
+        return Utilities.getDeathRecords(record_repository);
+    }
+
+    @Override
+    public Iterable<LXP> getSourceRecords2(final RecordRepository record_repository) {
         return Utilities.getDeathRecords(record_repository);
     }
 

@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * This class performs linkage analysis on data pulled from a single data sources, for example births.
  */
-public abstract class AsymmetricSingleSourceLinkageAnalysis extends SingleSourceLinkageAnalysis {
+public abstract class AsymmetricSingleSourceLinkageAnalysis extends ThresholdAnalysis {
 
     protected AsymmetricSingleSourceLinkageAnalysis(final String repo_name, final String[] args, final String linkage_results_filename, final String distance_results_filename, final boolean allow_multiple_links) throws IOException {
 
@@ -35,5 +35,10 @@ public abstract class AsymmetricSingleSourceLinkageAnalysis extends SingleSource
         }
 
         return result;
+    }
+
+    @Override
+    public boolean singleSource() {
+        return true;
     }
 }
