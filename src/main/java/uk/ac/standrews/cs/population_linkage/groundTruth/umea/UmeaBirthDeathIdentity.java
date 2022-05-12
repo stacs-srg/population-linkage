@@ -9,7 +9,6 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.groundTruth.TwoSourcesLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -84,8 +83,8 @@ public class UmeaBirthDeathIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     @Override
-    public boolean isViableLink(final RecordPair proposed_link) {
-        return BirthDeathIdentityLinkageRecipe.isViable(proposed_link);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return BirthDeathIdentityLinkageRecipe.isViable(record1, record2);
     }
 
     @Override
@@ -96,6 +95,11 @@ public class UmeaBirthDeathIdentity extends TwoSourcesLinkageAnalysis {
     @Override
     public String getLinkageType() {
         return "identity linkage between baby on birth record and deceased on death record";
+    }
+
+    @Override
+    protected boolean recordLinkDistances() {
+        return false;
     }
 
     public static void main(String[] args) throws Exception {

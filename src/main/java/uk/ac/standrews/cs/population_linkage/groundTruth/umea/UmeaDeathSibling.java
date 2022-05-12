@@ -62,8 +62,8 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
     }
 
     @Override
-    public boolean isViableLink(final RecordPair proposed_link) {
-        return DeathSiblingLinkageRecipe.isViable(proposed_link);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return DeathSiblingLinkageRecipe.isViable(record1, record2);
     }
 
     @Override
@@ -74,6 +74,11 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
     @Override
     public String getLinkageType() {
         return "sibling bundling between deceaseds on death records";
+    }
+
+    @Override
+    protected boolean recordLinkDistances() {
+        return false;
     }
 
     public static void main(String[] args) throws Exception {

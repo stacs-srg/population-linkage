@@ -10,7 +10,6 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.time.LocalDate;
@@ -30,7 +29,6 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    private int NUMBER_OF_DEATHS = EVERYTHING;
     public static final int ALL_LINKAGE_FIELDS = 8; // 8 is all of them
 
     public static final List<Integer> LINKAGE_FIELDS = list(
@@ -60,13 +58,9 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Marriage.GROOM_IDENTITY, Marriage.GROOM_IDENTITY))
     );
 
-    public GroomGroomIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public GroomGroomIdentityLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
+
         super(source_repository_name, links_persistent_name, bridge);
-        if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_DEATHS = EVERYTHING;
-        } else {
-            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
-        }
         setNumberLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
@@ -125,21 +119,20 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     /**
      * Checks whether the discrepancy between the recorded or calculated dates of birth on the two records is acceptably low.
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP record1, final LXP record2) {
 
         try {
-            LocalDate date_of_birth1 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.stored_record, false);
-            LocalDate date_of_birth2 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.query_record, false);
+            LocalDate date_of_birth1 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record1, false);
+            LocalDate date_of_birth2 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record2, false);
 
             return CommonLinkViabilityLogic.alternativeIdentityBirthDatesAreViable(date_of_birth1, date_of_birth2);
 

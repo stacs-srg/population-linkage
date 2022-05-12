@@ -67,8 +67,8 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return BrideGroomSiblingLinkageRecipe.isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return BrideGroomSiblingLinkageRecipe.isViable(record1, record2);
     }
 
     @Override
@@ -79,6 +79,11 @@ public class UmeaBrideGroomSibling extends AsymmetricSingleSourceLinkageAnalysis
     @Override
     public String getLinkageType() {
         return "sibling bundling between brides and grooms on marriage records";
+    }
+
+    @Override
+    protected boolean recordLinkDistances() {
+        return false;
     }
 
     public static void main(String[] args) throws Exception {

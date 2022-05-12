@@ -4,16 +4,13 @@
  */
 package uk.ac.standrews.cs.population_linkage.supportClasses;
 
-import java.time.Period;
-import java.time.temporal.ChronoUnit;
-
 public class LinkageConfig {
 
-    public static int birthCacheSize = 10000;
-    public static int deathCacheSize = 10000;
-    public static int marriageCacheSize = 10000;
+    public static final int BIRTH_CACHE_SIZE = 10000;
+    public static final int DEATH_CACHE_SIZE = 10000;
+    public static final int MARRIAGE_CACHE_SIZE = 10000;
 
-    public static int numberOfROs = 70;
+    public static final int NUMBER_OF_REFERENCE_OBJECTS = 70;
 
     public static final double AVERAGE_DAYS_IN_YEAR = 365.25;
     public static final double AVERAGE_DAYS_IN_MONTH = 30.4;

@@ -67,8 +67,8 @@ public class UmeaBirthFatherIdentity extends AsymmetricSingleSourceLinkageAnalys
     }
 
     @Override
-    public boolean isViableLink(final RecordPair proposed_link) {
-        return BirthFatherIdentityLinkageRecipe.isViable(proposed_link);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return BirthFatherIdentityLinkageRecipe.isViable(record1, record2);
     }
 
     @Override
@@ -79,6 +79,11 @@ public class UmeaBirthFatherIdentity extends AsymmetricSingleSourceLinkageAnalys
     @Override
     public String getLinkageType() {
         return "identity linkage between baby on birth record and father on birth record";
+    }
+
+    @Override
+    protected boolean recordLinkDistances() {
+        return false;
     }
 
     public static void main(String[] args) throws Exception {

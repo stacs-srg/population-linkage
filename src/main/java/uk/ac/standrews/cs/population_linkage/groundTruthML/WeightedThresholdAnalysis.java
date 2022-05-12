@@ -7,7 +7,6 @@ package uk.ac.standrews.cs.population_linkage.groundTruthML;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
@@ -195,8 +194,6 @@ public abstract class WeightedThresholdAnalysis {
 
     void processRecord(final int record_index, final int last_record_index, final List<LXP> records1, final List<LXP> records2, final LXPMeasure measure, final boolean increment_counts) {
 
-        final String measure_name = measure.getMeasureName();
-
         final LXP record1 = records1.get(record_index);
 
         double min_distance = 1.01;
@@ -212,10 +209,9 @@ public abstract class WeightedThresholdAnalysis {
 
                 final double distance = measure.distance(record1, record2);
                 final LinkStatus link_status = isTrueMatch(record1, record2);
-                final RecordPair possible_link = new RecordPair(record1, record2, distance);
 
                 final boolean distance_is_closest_encountered = distance < min_distance;
-                final boolean link_is_viable = isViableLink(possible_link);
+                final boolean link_is_viable = isViableLink(record1, record2);
 
                 if (link_status == LinkStatus.UNKNOWN) {
                     updatePairsIgnoredCounts(increment_counts, run_number);
@@ -452,7 +448,7 @@ public abstract class WeightedThresholdAnalysis {
         distance_results_writer.flush();
     }
 
-    public boolean isViableLink(RecordPair proposedLink) {
+    public boolean isViableLink(final LXP record1, final LXP record2) {
         return true;
     }
 

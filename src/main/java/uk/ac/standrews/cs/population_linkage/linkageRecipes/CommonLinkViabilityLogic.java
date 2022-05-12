@@ -6,7 +6,6 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -183,12 +182,9 @@ public class CommonLinkViabilityLogic {
         return years_between_alternative_birth_dates <= LinkageConfig.MAX_ALLOWABLE_AGE_DISCREPANCY;
     }
 
-    public static boolean birthMarriageSiblingLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
+    public static boolean birthMarriageSiblingLinkIsViable(final LXP birth_record, final LXP marriage_record, final boolean marriage_role_is_bride) {
 
         try {
-            final LXP birth_record = proposedLink.stored_record;
-            final LXP marriage_record = proposedLink.query_record;
-
             final LocalDate date_of_birth1 = getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_birth2 = getBirthDateFromMarriageRecord(marriage_record, marriage_role_is_bride);
 
@@ -199,12 +195,9 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    public static boolean deathMarriageSiblingLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
+    public static boolean deathMarriageSiblingLinkIsViable(final LXP death_record, final LXP marriage_record, final boolean marriage_role_is_bride) {
 
         try {
-            final LXP death_record = proposedLink.stored_record;
-            final LXP marriage_record = proposedLink.query_record;
-
             final LocalDate date_of_birth1 = getBirthDateFromDeathRecord(death_record);
             final LocalDate date_of_birth2 = getBirthDateFromMarriageRecord(marriage_record, marriage_role_is_bride);
 
@@ -215,12 +208,9 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    public static boolean spouseMarriageParentsMarriageIdentityLinkIsViable(final RecordPair proposedLink) {
+    public static boolean spouseMarriageParentsMarriageIdentityLinkIsViable(final LXP parents_marriage, final LXP spouse_marriage) {
 
         try {
-            final LXP parents_marriage = proposedLink.stored_record;
-            final LXP spouse_marriage = proposedLink.query_record;
-
             final LocalDate parents_date_of_marriage = getMarriageDateFromMarriageRecord(parents_marriage);
             final LocalDate spouse_date_of_marriage = getMarriageDateFromMarriageRecord(spouse_marriage);
 
@@ -234,16 +224,13 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    public static boolean birthMarriageIdentityLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
+    public static boolean birthMarriageIdentityLinkIsViable(final LXP birth_record, final LXP marriage_record, final boolean marriage_role_is_bride) {
 
         // Returns true if age at marriage as calculated from the date of birth on the birth record and date of marriage on the marriage
         // record is within acceptable range, and the discrepancy between that age and the age recorded on, or calculated from, the
         // marriage record is acceptably low.
 
         try {
-            final LXP birth_record = proposedLink.stored_record;
-            final LXP marriage_record = proposedLink.query_record;
-
             final LocalDate birth_date_from_birth_record = getBirthDateFromBirthRecord(birth_record);
             final LocalDate birth_date_from_marriage_record = getBirthDateFromMarriageRecord(marriage_record, marriage_role_is_bride);
             final LocalDate marriage_date_from_marriage_record = getMarriageDateFromMarriageRecord(marriage_record);
@@ -261,15 +248,12 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    public static boolean deathMarriageIdentityLinkIsViable(final RecordPair proposedLink, final boolean marriage_role_is_bride) {
+    public static boolean deathMarriageIdentityLinkIsViable(final LXP death_record, final LXP marriage_record, final boolean marriage_role_is_bride) {
 
         // Returns true if year of death is not before year of marriage, and year of birth inferred from death record is
         // consistent with year of birth inferred from marriage record.
 
         try {
-            final LXP death_record = proposedLink.stored_record;
-            final LXP marriage_record = proposedLink.query_record;
-
             final LocalDate death_date = getDeathDateFromDeathRecord(death_record);
             final LocalDate marriage_date = getMarriageDateFromMarriageRecord(marriage_record);
 
@@ -285,14 +269,11 @@ public class CommonLinkViabilityLogic {
         }
     }
 
-    public static boolean birthParentIdentityLinkIsViable(final RecordPair proposedLink, final boolean parent_role_is_mother) {
+    public static boolean birthParentIdentityLinkIsViable(final LXP birth_of_parent , final LXP birth_of_child, final boolean parent_role_is_mother) {
 
         // Returns true if difference in birth years is within acceptable range.
 
         try {
-            final LXP birth_of_parent = proposedLink.stored_record;
-            final LXP birth_of_child = proposedLink.query_record;
-
             final LocalDate parent_birth_date = getBirthDateFromBirthRecord(birth_of_parent);
             final LocalDate child_birth_date = getBirthDateFromBirthRecord(birth_of_child);
 

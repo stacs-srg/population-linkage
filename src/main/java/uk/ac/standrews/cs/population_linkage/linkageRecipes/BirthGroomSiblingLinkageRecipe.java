@@ -11,7 +11,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
@@ -32,7 +31,7 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    private int NUMBER_OF_BIRTHS = EVERYTHING;
+    private final int number_of_births;
     public static final int ALL_LINKAGE_FIELDS = 5;
 
     private List<LXP> cached_records = null;
@@ -61,9 +60,9 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     public BirthGroomSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_BIRTHS = EVERYTHING;
+            number_of_births = EVERYTHING;
         } else {
-            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+            number_of_births = Integer.parseInt(number_of_records);
         }
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
@@ -71,7 +70,7 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
         }
         return cached_records;
     }
@@ -121,22 +120,21 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     /**
      * Checks whether the difference in age between the potential siblings is within the acceptable range.
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP record1, final LXP record2) {
 
         // The previous version checked that the year of marriage was after the year of birth, but
         // this is incorrect: a person can be born after their sibling's marriage.
 
-        return CommonLinkViabilityLogic.birthMarriageSiblingLinkIsViable(proposedLink, false);
+        return CommonLinkViabilityLogic.birthMarriageSiblingLinkIsViable(record1, record2, false);
     }
 
     @Override

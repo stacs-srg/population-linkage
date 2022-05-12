@@ -12,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
@@ -29,14 +28,12 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    protected static final double DISTANCE_THRESHOLD = 0.53; // 0.53 - This is very high
+    protected static final double DISTANCE_THRESHOLD = 0.53;
 
     public static final String LINKAGE_TYPE = "death-death-sibling";
 
-    public static final int ID_FIELD_INDEX = Death.STANDARDISED_ID;
-
-    private int NUMBER_OF_DEATHS = EVERYTHING;
     public static final int ALL_LINKAGE_FIELDS = 4;
+    private final int number_of_deaths;
     private List<LXP> cached_records = null;
 
     public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
@@ -65,9 +62,9 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     public DeathSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_DEATHS = EVERYTHING;
+            number_of_deaths = EVERYTHING;
         } else {
-            NUMBER_OF_DEATHS = Integer.parseInt(number_of_records);
+            number_of_deaths = Integer.parseInt(number_of_records);
         }
         setNumberLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
@@ -75,7 +72,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_DEATHS, super.getDeathRecords(), getLinkageFields());
+            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
         }
         return cached_records;
     }
@@ -123,12 +120,9 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP death_record1, final LXP death_record2) {
 
         try {
-            final LXP death_record1 = proposedLink.stored_record;
-            final LXP death_record2 = proposedLink.query_record;
-
             final LocalDate date_of_birth_from_death_record1 = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record1);
             final LocalDate date_of_birth_from_death_record2 = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record2);
 
@@ -140,8 +134,8 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     @Override

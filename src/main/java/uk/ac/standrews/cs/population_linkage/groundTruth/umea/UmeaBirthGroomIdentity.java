@@ -66,8 +66,9 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
         return BirthGroomIdentityLinkageRecipe.trueMatch(record1, record2);
     }
 
-    public boolean isViableLink(RecordPair proposed_link) {
-        return BirthGroomIdentityLinkageRecipe.isViable(proposed_link);
+    @Override
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return BirthGroomIdentityLinkageRecipe.isViable(record1, record2);
     }
 
     @Override
@@ -78,6 +79,11 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
     @Override
     public String getLinkageType() {
         return "identity linkage between baby on birth record and groom on marriage record";
+    }
+
+    @Override
+    protected boolean recordLinkDistances() {
+        return false;
     }
 
     public static void main(String[] args) throws Exception {

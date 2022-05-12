@@ -377,7 +377,7 @@ public class SiblingBirthClusterOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
             SiblingBirthClusterOpenTriangleResolver resolver = new SiblingBirthClusterOpenTriangleResolver(bridge, sourceRepo, linkageRecipe);
 
             printHeaders();

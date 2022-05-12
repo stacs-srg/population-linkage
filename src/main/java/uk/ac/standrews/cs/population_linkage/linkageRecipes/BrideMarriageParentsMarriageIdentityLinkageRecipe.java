@@ -11,7 +11,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.util.List;
@@ -32,7 +31,7 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     public static final int ALL_LINKAGE_FIELDS = 5;
     private List<LXP> cached_records = null;
-    private int NUMBER_OF_MARRIAGES = EVERYTHING;
+    private final int number_of_marriages;
 
     // TODO should occupation be used, given long elapsed time?
 
@@ -59,9 +58,9 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     public BrideMarriageParentsMarriageIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_MARRIAGES = EVERYTHING;
+            number_of_marriages = EVERYTHING;
         } else {
-            NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
+            number_of_marriages = Integer.parseInt(number_of_records);
         }
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
@@ -69,7 +68,7 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     @Override
     protected Iterable<LXP> getMarriageRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_marriages, super.getMarriageRecords(), getLinkageFields());
         }
         return cached_records;
     }
@@ -116,17 +115,16 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     /**
      * Checks whether a plausible period has elapsed between the marriage and the marriage of the daughter.
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(final RecordPair proposedLink) {
+    public static boolean isViable(final LXP record1, final LXP record2) {
 
-        return CommonLinkViabilityLogic.spouseMarriageParentsMarriageIdentityLinkIsViable(proposedLink);
+        return CommonLinkViabilityLogic.spouseMarriageParentsMarriageIdentityLinkIsViable(record1, record2);
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     @Override

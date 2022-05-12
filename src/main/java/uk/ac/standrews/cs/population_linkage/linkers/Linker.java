@@ -7,6 +7,7 @@ package uk.ac.standrews.cs.population_linkage.linkers;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkViabilityChecker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.utilities.PercentageProgressIndicator;
@@ -15,14 +16,12 @@ import uk.ac.standrews.cs.utilities.ProgressIndicator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class Linker {
 
     protected final LXPMeasure composite_measure;
     protected final ProgressIndicator linkage_progress_indicator;
-    protected final Function<RecordPair, Boolean> is_viable_link;
     protected double threshold;
     protected Iterable<LXP> records1;
     protected Iterable<LXP> records2;
@@ -30,18 +29,20 @@ public abstract class Linker {
     private final String provenance;
     private final String role_type_1;
     private final String role_type_2;
+    protected LinkViabilityChecker link_viability_checker;
 
     public Linker(LXPMeasure composite_measure, double threshold, int number_of_progress_updates,
-                  String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> is_viable_link) {
+                  String link_type, String provenance, String role_type_1, String role_type_2, LinkViabilityChecker link_viability_checker) {
 
         this.link_type = link_type;
         this.provenance = provenance;
         this.role_type_1 = role_type_1;
         this.role_type_2 = role_type_2;
-        this.is_viable_link = is_viable_link;
 
         this.composite_measure = composite_measure;
         this.threshold = threshold;
+        this.link_viability_checker = link_viability_checker;
+
         linkage_progress_indicator = new PercentageProgressIndicator(number_of_progress_updates);
     }
 
@@ -105,9 +106,9 @@ public abstract class Linker {
                     RecordPair pair;
                     do {
                         pair = matching_pairs.next();
-                    } while ((pair.distance > threshold || !is_viable_link.apply(pair)) && matching_pairs.hasNext());
+                    } while (notFinished(pair));
 
-                    if (pair.distance <= threshold && is_viable_link.apply(pair)) {
+                    if (pair.distance <= threshold && (link_viability_checker == null || link_viability_checker.isViableLink(pair.stored_record, pair.query_record))) {
 
                         try {
                             next = new Link(pair.stored_record, getRoleType1(), pair.query_record, getRoleType2(), 1.0f,
@@ -117,6 +118,12 @@ public abstract class Linker {
                         }
                     } else throw new NoSuchElementException();
                 } else throw new NoSuchElementException();
+            }
+
+            private boolean notFinished(final RecordPair pair) {
+
+                final boolean non_viable = link_viability_checker != null && !link_viability_checker.isViableLink(pair.stored_record, pair.query_record);
+                return (pair.distance > threshold || non_viable) && matching_pairs.hasNext();
             }
         };
     }

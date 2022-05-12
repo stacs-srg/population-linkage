@@ -37,7 +37,7 @@ public abstract class LinkageRunner {
         MemoryLogger.update();
 
         linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
+        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = link(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks);
@@ -53,7 +53,7 @@ public abstract class LinkageRunner {
         MemoryLogger.update();
 
         linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
+        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = linkLists(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
@@ -69,7 +69,7 @@ public abstract class LinkageRunner {
         MemoryLogger.update();
 
         linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
+        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = investigatelinkLists(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
@@ -85,7 +85,7 @@ public abstract class LinkageRunner {
         MemoryLogger.update();
 
         linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.birthCacheSize,LinkageConfig.deathCacheSize,LinkageConfig.marriageCacheSize);
+        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = printLinksNonLinks(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);

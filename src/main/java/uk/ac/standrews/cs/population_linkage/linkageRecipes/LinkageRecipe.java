@@ -11,7 +11,6 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -31,7 +30,7 @@ import java.util.stream.StreamSupport;
  * So for example in BirthBrideIdentityLinkageRecipeMatchLists the stored type (stored in the search structure) is a birth and Marriages are used to query.
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  */
-public abstract class LinkageRecipe {
+public abstract class LinkageRecipe implements LinkViabilityChecker {
 
     /**
      * If TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN is false, then the recipe is tuned to the Umea dataset,
@@ -61,9 +60,9 @@ public abstract class LinkageRecipe {
     private Iterable<LXP> marriage_records;
     private Iterable<LXP> death_records;
 
-    private Integer birth_records_size = null;
-    private Integer death_records_size = null;
-    private Integer marriage_records_size = null;
+    private Integer birth_records_size;
+    private Integer death_records_size;
+    private Integer marriage_records_size;
 
     private int number_of_linkage_fields_required;
     private StringMeasure base_measure;
@@ -224,7 +223,7 @@ public abstract class LinkageRecipe {
 
     public abstract List<Integer> getLinkageFields();
 
-    public abstract boolean isViableLink(RecordPair proposedLink);
+    public abstract boolean isViableLink(LXP record1, LXP record2);
 
     /**
      * This identifies how to map the fields in the query records to the fields in the storage records

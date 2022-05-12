@@ -74,8 +74,8 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return BirthSiblingLinkageRecipe.isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return BirthSiblingLinkageRecipe.isViable(record1, record2);
     }
 
     @Override

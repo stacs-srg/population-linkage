@@ -13,7 +13,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
@@ -33,8 +32,8 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    private int NUMBER_OF_BIRTHS = EVERYTHING;
-    public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them
+    public static final int ALL_LINKAGE_FIELDS = 6;
+    private final int number_of_births;
     private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
@@ -64,9 +63,9 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     public BirthGroomIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_BIRTHS = EVERYTHING;
+            number_of_births = EVERYTHING;
         } else {
-            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+            number_of_births = Integer.parseInt(number_of_records);
         }
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
@@ -74,7 +73,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
             Iterable<LXP> filtered = filterBySex(super.getBirthRecords(), Birth.SEX, "m");
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_BIRTHS, filtered, getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, filtered, getLinkageFields());
         }
         return cached_records;
     }
@@ -119,8 +118,8 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     /**
@@ -129,12 +128,11 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
      * and the age derived from the marriage record (either explicitly recorded or derived from a date of birth
      * recorded there) is acceptably low.
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP record1, final LXP record2) {
 
-        return CommonLinkViabilityLogic.birthMarriageIdentityLinkIsViable(proposedLink, false);
+        return CommonLinkViabilityLogic.birthMarriageIdentityLinkIsViable(record1, record2, false);
     }
 
     @Override

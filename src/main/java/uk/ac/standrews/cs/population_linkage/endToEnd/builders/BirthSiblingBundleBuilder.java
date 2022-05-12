@@ -29,7 +29,7 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 

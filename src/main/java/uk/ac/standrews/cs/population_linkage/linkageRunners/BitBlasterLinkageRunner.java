@@ -22,10 +22,7 @@ import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.population_linkage.supportClasses.*;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -49,10 +46,10 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         return linkage_recipe;
     }
 
-    public Linker getLinker(LinkageRecipe linkageRecipe) {
-        LXPMeasure composite_measure = linkageRecipe.getCompositeMeasure();
-        return new SimilaritySearchLinker(getSearchFactory(composite_measure), composite_measure, linkageRecipe.getThreshold(), getNumberOfProgressUpdates(),
-                linkageRecipe.getLinkageType(), "threshold match at ", linkageRecipe.getStoredRole(), linkageRecipe.getQueryRole(), linkageRecipe::isViableLink, linkageRecipe);
+    public Linker getLinker(LinkageRecipe linkage_recipe) {
+        LXPMeasure composite_measure = linkage_recipe.getCompositeMeasure();
+        return new SimilaritySearchLinker(getSearchFactory(composite_measure), composite_measure, linkage_recipe.getThreshold(), getNumberOfProgressUpdates(),
+                linkage_recipe.getLinkageType(), "threshold match at ", linkage_recipe.getStoredRole(), linkage_recipe.getQueryRole(), linkage_recipe);
     }
 
     public SearchStructureFactory<LXP> getSearchFactory(LXPMeasure composite_measure) {
@@ -61,7 +58,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
     protected List<LXP> getReferencePoints() {
         List<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields());
-        return BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.numberOfROs);
+        return BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.NUMBER_OF_REFERENCE_OBJECTS);
     }
 
     public LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {

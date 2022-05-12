@@ -37,7 +37,7 @@ public class BruteForceLinkageTest extends LinkageTest {
 
         TestLinker(double threshold, final LXPMeasure measure) {
 
-            super(measure, 0.67, 0, "link type", "provenance", "role1", "role2", (r)-> true);
+            super(measure, 0.67, 0, "link type", "provenance", "role1", "role2", null);
             setThreshold(threshold);
         }
 

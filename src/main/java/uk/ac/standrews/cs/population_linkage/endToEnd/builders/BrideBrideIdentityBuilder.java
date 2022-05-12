@@ -28,7 +28,7 @@ public class BrideBrideIdentityBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BrideBrideIdentityLinkageRecipe linkageRecipe = new BrideBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BrideBrideIdentityBuilder.class.getCanonicalName(), bridge);
+            BrideBrideIdentityLinkageRecipe linkageRecipe = new BrideBrideIdentityLinkageRecipe(sourceRepo, BrideBrideIdentityBuilder.class.getCanonicalName(), bridge);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;

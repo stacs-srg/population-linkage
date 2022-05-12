@@ -14,7 +14,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
@@ -177,8 +176,8 @@ public class BirthBrideIdentityLinkageRecipeLol extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     /**
@@ -187,12 +186,11 @@ public class BirthBrideIdentityLinkageRecipeLol extends LinkageRecipe {
      * and the age derived from the marriage record (either explicitly recorded or derived from a date of birth
      * recorded there) is acceptably low.
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP record1, final LXP record2) {
 
-        return CommonLinkViabilityLogic.birthMarriageIdentityLinkIsViable(proposedLink, true);
+        return CommonLinkViabilityLogic.birthMarriageIdentityLinkIsViable(record1, record2, true);
     }
 
     @Override

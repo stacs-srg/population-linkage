@@ -13,7 +13,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -129,8 +128,8 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     /**
@@ -138,15 +137,11 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
      * derived in three different ways are consistent (recorded on death record; difference between birth year on birth
      * record and death year; difference between birth year on death record and death year).
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(final RecordPair proposedLink) {
+    public static boolean isViable(final LXP birth_record, final LXP death_record) {
 
         try {
-            final LXP birth_record = proposedLink.stored_record;
-            final LXP death_record = proposedLink.query_record;
-
             final LocalDate date_of_birth_from_birth_record = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_birth_from_death_record = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
             final LocalDate date_of_death_from_death_record = CommonLinkViabilityLogic.getDeathDateFromDeathRecord(death_record);

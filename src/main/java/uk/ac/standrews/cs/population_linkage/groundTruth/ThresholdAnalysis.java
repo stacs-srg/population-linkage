@@ -7,7 +7,6 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
@@ -67,11 +66,13 @@ public abstract class ThresholdAnalysis {
 
     public abstract LinkStatus isTrueMatch(LXP record1, LXP record2);
 
-    public abstract boolean isViableLink(RecordPair proposed_link);
+    public abstract boolean isViableLink(LXP record1, LXP record2);
 
     public abstract List<LXPMeasure> getCombinedMeasures();
 
     protected abstract double getNormalisationCutoff();
+
+    protected abstract boolean recordLinkDistances();
 
     ThresholdAnalysis(final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
 
@@ -100,9 +101,12 @@ public abstract class ThresholdAnalysis {
         composite_measures = getCombinedMeasures();
 
         linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".csv", false)));
-        distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".csv", false)));
         linkage_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".meta", false)));
-        distance_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".meta", false)));
+
+        if (recordLinkDistances()) {
+            distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".csv", false)));
+            distance_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".meta", false)));
+        }
 
         if (verbose) System.out.println("Reading records from repository: " + repo_name);
 
@@ -180,7 +184,7 @@ public abstract class ThresholdAnalysis {
 
         printMetaData(new PrintWriter(System.out), "Running ground truth analysis");
         printMetaData(linkage_results_metadata_writer, "Checking quality of linkage using various string similarity measures and thresholds");
-        printMetaData(distance_results_metadata_writer, "Checking distributions of record pair distances using various string similarity measures and thresholds");
+        if (recordLinkDistances()) printMetaData(distance_results_metadata_writer, "Checking distributions of record pair distances using various string similarity measures and thresholds");
     }
 
     synchronized void printMetaData(final PrintWriter writer, final String description) {
@@ -197,6 +201,37 @@ public abstract class ThresholdAnalysis {
     }
 
     synchronized void printHeaders() {
+
+        printLinkageResultsHeaders();
+        if (recordLinkDistances()) printDistanceResultsHeaders();
+    }
+
+    private void printDistanceResultsHeaders() {
+
+        distance_results_writer.print("time");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("link_number");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("records_processed");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("pairs_evaluated");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("pairs_ignored");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("measure");
+        distance_results_writer.print(DELIMIT);
+        distance_results_writer.print("links_non-link");
+        distance_results_writer.print(DELIMIT);
+
+        for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
+            if (i > 0) distance_results_writer.print(DELIMIT);
+            distance_results_writer.print(String.format("%.2f", indexToThreshold(i)));
+        }
+        distance_results_writer.println();
+        distance_results_writer.flush();
+    }
+
+    private void printLinkageResultsHeaders() {
 
         linkage_results_writer.print("time");
         linkage_results_writer.print(DELIMIT);
@@ -228,28 +263,6 @@ public abstract class ThresholdAnalysis {
 
         linkage_results_writer.println();
         linkage_results_writer.flush();
-
-        distance_results_writer.print("time");
-        distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("link_number");
-        distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("records_processed");
-        distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("pairs_evaluated");
-        distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("pairs_ignored");
-        distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("measure");
-        distance_results_writer.print(DELIMIT);
-        distance_results_writer.print("links_non-link");
-        distance_results_writer.print(DELIMIT);
-
-        for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
-            if (i > 0) distance_results_writer.print(DELIMIT);
-            distance_results_writer.print(String.format("%.2f", indexToThreshold(i)));
-        }
-        distance_results_writer.println();
-        distance_results_writer.flush();
     }
 
     synchronized void printSample(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final double threshold, final Sample sample) {
@@ -321,8 +334,8 @@ public abstract class ThresholdAnalysis {
 
     class Run {
 
-        List<LXP> source_record_list1;
-        List<LXP> source_record_list2;
+        final List<LXP> source_record_list1;
+        final List<LXP> source_record_list2;
 
         final int run_number;
         final LXPMeasure measure;
@@ -343,12 +356,14 @@ public abstract class ThresholdAnalysis {
             this.source_record_list1 = source_record_list1;
             this.source_record_list2 = source_record_list2;
 
-            non_link_distance_counts = new long[NUMBER_OF_THRESHOLDS_SAMPLED];
-            link_distance_counts = new long[NUMBER_OF_THRESHOLDS_SAMPLED];
-
             samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
             for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
                 samples[i] = new Sample();
+            }
+
+            if (recordLinkDistances()) {
+                non_link_distance_counts = new long[NUMBER_OF_THRESHOLDS_SAMPLED];
+                link_distance_counts = new long[NUMBER_OF_THRESHOLDS_SAMPLED];
             }
         }
 
@@ -387,16 +402,7 @@ public abstract class ThresholdAnalysis {
             records_processed += BLOCK_SIZE;
         }
 
-        private void printSamples() {
-
-            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                printSample(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, indexToThreshold(threshold_index), samples[threshold_index]);
-            }
-
-            printDistances(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, non_link_distance_counts, link_distance_counts);
-        }
-
-        void processRecordFromFirstSource(final int record_index, final int last_record_index) {
+        private void processRecordFromFirstSource(final int record_index, final int last_record_index) {
 
             final LXP record1 = source_record_list1.get(record_index);
 
@@ -413,10 +419,8 @@ public abstract class ThresholdAnalysis {
 
                     final double distance = measure.distance(record1, record2);
                     final LinkStatus link_status = isTrueMatch(record1, record2);
-                    final RecordPair possible_link = new RecordPair(record1, record2, distance);
-
+                    final boolean link_is_viable = isViableLink(record1, record2);
                     final boolean distance_is_closest_encountered = distance < min_distance;
-                    final boolean link_is_viable = isViableLink(possible_link);
 
                     if (link_status == LinkStatus.UNKNOWN) {
                         pairs_ignored++;
@@ -426,7 +430,7 @@ public abstract class ThresholdAnalysis {
                         final boolean is_true_link = link_status == LinkStatus.TRUE_MATCH;
 
                         if (allow_multiple_links) {
-                            recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
+                            recordLinkDecisions(distance, link_is_viable, is_true_link);
                         } else {
 
                             if (distance_is_closest_encountered && link_is_viable) {
@@ -436,7 +440,7 @@ public abstract class ThresholdAnalysis {
                                     undoTentativeLinkDecision(min_distance, tentative_link_is_true_link);
                                 }
 
-                                recordLinkDecisions(samples, distance, link_is_viable, is_true_link);
+                                recordLinkDecisions(distance, link_is_viable, is_true_link);
 
                                 // Record these as tentative in case another closer record is found.
                                 made_tentative_link = true;
@@ -447,13 +451,22 @@ public abstract class ThresholdAnalysis {
                             }
                         }
 
-                        updateTrueLinkCounts(distance, is_true_link);
+                        if (recordLinkDistances()) updateTrueLinkCounts(distance, is_true_link);
                         pairs_evaluated++;
                     }
 
                     if (distance_is_closest_encountered) min_distance = distance;
                 }
             }
+        }
+
+        private void printSamples() {
+
+            for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
+                printSample(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, indexToThreshold(threshold_index), samples[threshold_index]);
+            }
+
+            if (recordLinkDistances()) printDistances(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, non_link_distance_counts, link_distance_counts);
         }
 
         private void updateTrueLinkCounts(final double distance, final boolean is_true_link) {
@@ -479,7 +492,7 @@ public abstract class ThresholdAnalysis {
             }
         }
 
-        private void recordLinkDecisions(final Sample[] samples, final double link_distance, final boolean link_is_viable, final boolean is_true_link) {
+        private void recordLinkDecisions(final double link_distance, final boolean link_is_viable, final boolean is_true_link) {
 
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
 

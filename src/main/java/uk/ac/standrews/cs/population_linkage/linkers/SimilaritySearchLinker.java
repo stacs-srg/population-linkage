@@ -15,21 +15,20 @@ import uk.ac.standrews.cs.utilities.measures.coreConcepts.DataDistance;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SimilaritySearchLinker extends Linker {
 
     private final SearchStructureFactory<LXP> search_structure_factory;
+    private final LinkageRecipe linkage_recipe;
     protected SearchStructure<LXP> search_structure;
     protected Iterable<LXP> search_set;
-    protected LinkageRecipe linkage_recipe;
 
     public SimilaritySearchLinker(SearchStructureFactory<LXP> search_structure_factory, LXPMeasure distance_measure, double threshold, int number_of_progress_updates,
-                                  String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> is_viable_link, LinkageRecipe linkage_recipe) {
+                                  String link_type, String provenance, String role_type_1, String role_type_2, LinkageRecipe linkage_recipe) {
 
-        super(distance_measure, threshold, number_of_progress_updates, link_type, provenance, role_type_1, role_type_2, is_viable_link);
+        super(distance_measure, threshold, number_of_progress_updates, link_type, provenance, role_type_1, role_type_2, linkage_recipe);
 
         this.search_structure_factory = search_structure_factory;
         this.linkage_recipe = linkage_recipe;

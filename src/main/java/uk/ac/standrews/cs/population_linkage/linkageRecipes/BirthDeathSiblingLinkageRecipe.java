@@ -13,7 +13,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -39,7 +38,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
     public static final int ALL_LINKAGE_FIELDS = 4;
-    private static int NUMBER_OF_BIRTHS;
+    private final int number_of_births;
     private List<LXP> cached_records = null;
 
     // Don't use father/mother occupation due to likely long duration between birth and death events.
@@ -66,9 +65,9 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     public BirthDeathSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_BIRTHS = EVERYTHING;
+            number_of_births = EVERYTHING;
         } else {
-            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
+            number_of_births = Integer.parseInt(number_of_records);
         }
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
@@ -76,7 +75,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
         }
         return cached_records;
     }
@@ -126,22 +125,18 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     /**
      * Checks whether the age difference between the potential siblings is plausible.
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP birth_record, final LXP death_record) {
 
         try {
-            final LXP birth_record = proposedLink.stored_record;
-            final LXP death_record = proposedLink.query_record;
-
             final LocalDate date_of_birth_from_birth_record = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_birth_from_death_record = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
 
@@ -159,6 +154,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public long getNumberOfGroundTruthTrueLinks() {
+
         int count = 0;
         for (LXP query_record : getQueryRecords()) {
             count += countBirthDeathSiblingGTLinks(bridge, query_record);
@@ -169,6 +165,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     private static final String BIRTH_DEATH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_SIBLING]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countBirthDeathSiblingGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
+
         String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);
 
         Map<String, Object> parameters = new HashMap<>();

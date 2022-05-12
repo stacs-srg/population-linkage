@@ -11,7 +11,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
@@ -70,7 +69,7 @@ public class UmeaDeathSiblingProfiling {
 
                 final LinkStatus match_status = DeathSiblingLinkageRecipe.trueMatch(record1, record2);
                 final boolean close_enough = distance <= DISTANCE_THRESHOLD;
-                final boolean viable = DeathSiblingLinkageRecipe.isViable(new RecordPair(record1, record2, distance));
+                final boolean viable = DeathSiblingLinkageRecipe.isViable(record1, record2);
 
                 switch (match_status) {
 

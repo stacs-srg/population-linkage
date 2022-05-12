@@ -53,7 +53,7 @@ public class BirthSiblingBundleThenBirthDeathBuilder implements MakePersistent {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-            LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName(), bridge);
+            LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName(), bridge);
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
             LinkageResult lr = runner1.run(bb_recipe, new BirthSiblingBundleThenBirthDeathBuilder(), false, false);

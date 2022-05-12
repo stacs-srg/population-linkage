@@ -12,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -120,22 +119,18 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     /**
      * Checks whether a plausible period has elapsed between the marriage and the child's death.
      *
-     * @param proposedLink the proposed link
      * @return true if the link is viable
      */
-    public static boolean isViable(final RecordPair proposedLink) {
+    public static boolean isViable(final LXP death_record, final LXP marriage_record) {
 
         try {
-            final LXP death_record = proposedLink.stored_record;
-            final LXP marriage_record = proposedLink.query_record;
-
             final LocalDate date_of_child_birth = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
             final LocalDate date_of_child_death = CommonLinkViabilityLogic.getDeathDateFromDeathRecord(death_record);
             final LocalDate date_of_parents_marriage = CommonLinkViabilityLogic.getMarriageDateFromMarriageRecord(marriage_record);

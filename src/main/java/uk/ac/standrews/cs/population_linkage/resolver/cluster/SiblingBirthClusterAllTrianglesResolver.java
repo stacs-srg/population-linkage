@@ -22,7 +22,7 @@ public class SiblingBirthClusterAllTrianglesResolver extends SiblingBirthCluster
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "10000", DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
             SiblingBirthClusterAllTrianglesResolver resolver = new SiblingBirthClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();

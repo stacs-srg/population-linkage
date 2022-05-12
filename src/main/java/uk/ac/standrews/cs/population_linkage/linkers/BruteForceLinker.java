@@ -6,11 +6,11 @@ package uk.ac.standrews.cs.population_linkage.linkers;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkViabilityChecker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.utilities.ProgressIndicator;
 
 import java.util.Iterator;
-import java.util.function.Function;
 
 public abstract class BruteForceLinker extends Linker {
 
@@ -18,9 +18,9 @@ public abstract class BruteForceLinker extends Linker {
      * @param number_of_progress_updates the number of updates to be given, zero or negative to suppress updates
      */
     public BruteForceLinker(LXPMeasure composite_measure, double threshold, int number_of_progress_updates,
-                            String link_type, String provenance, String role_type_1, String role_type_2, Function<RecordPair, Boolean> isViableLink) {
+                            String link_type, String provenance, String role_type_1, String role_type_2, LinkViabilityChecker link_viability_checker) {
 
-        super(composite_measure, threshold, number_of_progress_updates, link_type, provenance, role_type_1, role_type_2, isViableLink);
+        super(composite_measure, threshold, number_of_progress_updates, link_type, provenance, role_type_1, role_type_2, link_viability_checker);
     }
 
     @Override

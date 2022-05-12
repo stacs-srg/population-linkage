@@ -12,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.time.LocalDate;
@@ -34,8 +33,8 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    private int NUMBER_OF_MARRIAGES;
     public static final int ALL_LINKAGE_FIELDS = 4;
+    private final int number_of_marriages;
     private List<LXP> cached_records;
 
     // TODO Why not father occupation?
@@ -69,9 +68,9 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
     public BrideGroomSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
         super(source_repository_name, links_persistent_name, bridge);
         if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_MARRIAGES = EVERYTHING;
+            number_of_marriages = EVERYTHING;
         } else {
-            NUMBER_OF_MARRIAGES = Integer.parseInt(number_of_records);
+            number_of_marriages = Integer.parseInt(number_of_records);
         }
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
@@ -79,7 +78,7 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     protected Iterable<LXP> getMarriageRecords() {
         if (cached_records == null) {
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), NUMBER_OF_MARRIAGES, super.getMarriageRecords(), getLinkageFields());
+            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_marriages, super.getMarriageRecords(), getLinkageFields());
         }
         return cached_records;
     }
@@ -124,15 +123,15 @@ public class BrideGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP record1, final LXP record2) {
 
         try {
-            final LocalDate date_of_birth1 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.stored_record, true);
-            final LocalDate date_of_birth2 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(proposedLink.query_record, false);
+            final LocalDate date_of_birth1 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record1, true);
+            final LocalDate date_of_birth2 = CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record2, false);
 
             return CommonLinkViabilityLogic.siblingBirthDatesAreViable(date_of_birth1, date_of_birth2);
 

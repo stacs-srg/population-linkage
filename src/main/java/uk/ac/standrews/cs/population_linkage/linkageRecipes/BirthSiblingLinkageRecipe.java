@@ -12,7 +12,6 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 
 import java.time.LocalDate;
@@ -33,10 +32,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final int ID_FIELD_INDEX = Birth.STANDARDISED_ID;
 
-    private int NUMBER_OF_BIRTHS = EVERYTHING;
     public static final int ALL_LINKAGE_FIELDS = 8;
-
-    public int linkage_fields = ALL_LINKAGE_FIELDS;
 
     private Iterable<LXP> cached_records = null;
 
@@ -64,21 +60,15 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.MOTHER_BIRTH_RECORD_IDENTITY, Birth.MOTHER_BIRTH_RECORD_IDENTITY), pair(Birth.FATHER_BIRTH_RECORD_IDENTITY, Birth.FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public BirthSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public BirthSiblingLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
+
         super(source_repository_name, links_persistent_name, bridge);
-        if (number_of_records.equals(EVERYTHING_STRING)) {
-            NUMBER_OF_BIRTHS = EVERYTHING;
-        } else {
-            NUMBER_OF_BIRTHS = Integer.parseInt(number_of_records);
-        }
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-//            cached_records = filter(linkage_fields, NUMBER_OF_BIRTHS, super.getBirthRecords(), getLinkageFields());
-            System.out.println("***** COMMENTED OUT FILTERING FOR OZ");
             cached_records = super.getBirthRecords();
         }
         return cached_records;
@@ -123,12 +113,9 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
-    public static boolean isViable(RecordPair proposedLink) {
+    public static boolean isViable(final LXP birth_record1, final LXP birth_record2) {
 
         try {
-            final LXP birth_record1 = proposedLink.stored_record;
-            final LXP birth_record2 = proposedLink.query_record;
-
             final LocalDate date_of_birth_from_birth_record1 = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record1);
             final LocalDate date_of_birth_from_birth_record2 = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record2);
 
@@ -140,8 +127,8 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     @Override
-    public boolean isViableLink(RecordPair proposedLink) {
-        return isViable(proposedLink);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return isViable(record1, record2);
     }
 
     @Override

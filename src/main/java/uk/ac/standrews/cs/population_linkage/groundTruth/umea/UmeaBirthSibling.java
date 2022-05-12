@@ -9,7 +9,6 @@ import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.datasets.Umea;
 import uk.ac.standrews.cs.population_linkage.groundTruth.SymmetricSingleSourceLinkageAnalysis;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 
@@ -62,8 +61,8 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
     }
 
     @Override
-    public boolean isViableLink(final RecordPair proposed_link) {
-        return BirthSiblingLinkageRecipe.isViable(proposed_link);
+    public boolean isViableLink(final LXP record1, final LXP record2) {
+        return BirthSiblingLinkageRecipe.isViable(record1, record2);
     }
 
     @Override
@@ -74,6 +73,11 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
     @Override
     public String getLinkageType() {
         return "sibling bundling between babies on birth records";
+    }
+
+    @Override
+    protected boolean recordLinkDistances() {
+        return false;
     }
 
     public static void main(String[] args) throws Exception {
