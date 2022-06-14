@@ -1,4 +1,4 @@
-# Figure 3: evolution of F1 measure error for specific metric and threshold.
+# Figure 3: evolution of F1 measure error for specific metric and threshold, for first 25,000 records.
 #
 # Input file: output from Umea birth sibling bundling ground truth:
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthSibling

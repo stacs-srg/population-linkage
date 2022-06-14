@@ -19,6 +19,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This class performs linkage analysis on data pulled from a single data sources, for example births.
@@ -103,7 +104,7 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         System.out.println("Randomising record order");
 
-        source_records = Utilities.permute(records, SEED);
+        source_records = Utilities.permute(records, new Random(SEED));
         number_of_records = source_records.size();
     }
 

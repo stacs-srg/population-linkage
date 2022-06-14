@@ -21,7 +21,7 @@ OUTPUT_FILE_NAME_ROOT_DETAIL <- 2
 
 DISTANCE_MEASURE_NAME <- "Normalised mean of field distances using: Cosine"
 THRESHOLDS <- c(0.0, 0.05, 0.1)
-X_UPPER_BOUND <- 25000
+X_UPPER_BOUND <- 270500
 X_AXIS_LABEL <- "Records processed"
 Y_AXIS_LABEL <- "F1-measure"
 COLOURS <- c("firebrick2", "dodgerblue2", "green3")

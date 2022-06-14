@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Base class for performing linkage analysis from ground truth.
@@ -155,12 +156,14 @@ public abstract class ThresholdAnalysis {
         printHeaders();
         printMetaData();
 
+        final Random random = new Random(SEED);
+
         for (int i = 0; i < number_of_runs; i++) {
 
             if (verbose) System.out.println("Randomising record order");
 
-            final List<LXP> source_record_list1 = Utilities.permute(getSourceRecords1(record_repository), SEED);
-            final List<LXP> source_record_list2 = singleSource() ? source_record_list1 : Utilities.permute(getSourceRecords2(record_repository), SEED);
+            final List<LXP> source_record_list1 = Utilities.permute(getSourceRecords1(record_repository), random);
+            final List<LXP> source_record_list2 = singleSource() ? source_record_list1 : Utilities.permute(getSourceRecords2(record_repository), random);
 
             if (number_of_records_to_be_checked == CHECK_ALL_RECORDS) {
                 number_of_records_to_be_checked = source_record_list1.size();

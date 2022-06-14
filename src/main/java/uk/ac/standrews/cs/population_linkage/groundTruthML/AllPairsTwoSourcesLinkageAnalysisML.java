@@ -13,6 +13,7 @@ import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This class performs linkage analysis on data pulled from two different data sources, for example births and deaths.
@@ -42,8 +43,8 @@ public abstract class AllPairsTwoSourcesLinkageAnalysisML extends AllPairsSameSo
         final Iterable<LXP> records1 = getSourceRecords(record_repository);
         final Iterable<LXP> records2 = getSourceRecords2(record_repository);
 
-        source_records = Utilities.permute(records1, SEED);
-        source_records2 = Utilities.permute(records2, SEED);
+        source_records = Utilities.permute(records1, new Random(SEED));
+        source_records2 = Utilities.permute(records2, new Random(SEED));
 
         number_of_records = source_records.size();
         number_of_records2 = source_records2.size();

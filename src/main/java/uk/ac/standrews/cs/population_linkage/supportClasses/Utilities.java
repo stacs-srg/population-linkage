@@ -80,12 +80,10 @@ public class Utilities {
 
     public static <T> List<T> permute(final Iterable<T> records) {
 
-        return permute(records, SEED);
+        return permute(records, new Random(SEED));
     }
 
-    public static <T> List<T> permute(final Iterable<T> records, long seed) {
-
-        Random random = new Random(seed);
+    public static <T> List<T> permute(final Iterable<T> records, final Random random) {
 
         List<T> record_list = new ArrayList<>();
         for (T record : records) {

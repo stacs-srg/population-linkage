@@ -11,6 +11,7 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 /**
  * This class performs linkage analysis on data pulled from a single data sources, for example births.
@@ -32,7 +33,7 @@ public abstract class SingleSourceWeightedLinkageAnalysis extends WeightedThresh
 
         if (verbose) System.out.println("Randomising record order");
 
-        source_records = Utilities.permute(records, SEED);
+        source_records = Utilities.permute(records, new Random(SEED));
         number_of_records = number_of_records_to_be_checked == CHECK_ALL_RECORDS ? source_records.size() : number_of_records_to_be_checked;
     }
 

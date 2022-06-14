@@ -16,9 +16,8 @@ PALETTE <- c('#ffcc00', '#CC66FF', '#99cc00', '#cc9900', '#ff6633',
              '#333300', '#ff3366', '#336633', '#ffff33', '#cc3399',
              '#3399ff', '#33cccc', '#ff00CC', '#00ffcc', '#000000')
 
-INPUT_FILE_NAME_ROOTS <- c("UmeaBirthSibling")
-# INPUT_FILE_NAME_ROOTS <- c("UmeaBirthGroomIdentity", "UmeaBirthSibling", "UmeaBirthBrideIdentity", "UmeaBirthDeathIdentity", "UmeaBirthFatherIdentity",
-#                            "UmeaBirthMotherIdentity", "UmeaBrideBrideSibling", "UmeaBrideGroomSibling", "UmeaDeathSibling", "UmeaGroomGroomSibling")
+INPUT_FILE_NAME_ROOTS <- c("UmeaBirthGroomIdentity", "UmeaBirthSibling", "UmeaBirthBrideIdentity", "UmeaBirthDeathIdentity", "UmeaBirthFatherIdentity",
+                           "UmeaBirthMotherIdentity", "UmeaBrideBrideSibling", "UmeaBrideGroomSibling", "UmeaDeathSibling", "UmeaGroomGroomSibling")
 
 DISTANCE_MEASURE_NAME_PREFIX <- "Normalised mean of field distances using:"
 
