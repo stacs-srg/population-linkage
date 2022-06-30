@@ -188,6 +188,8 @@ public abstract class ThresholdAnalysis {
                 new Thread(() -> new Run(run_number, measure, source_record_list1, source_record_list2).run()).start();
             }
         }
+
+        System.exit(0); // Work round BitBlaster not shutting down.
     }
 
     void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final long[] non_link_distance_counts, final long[] link_distance_counts) {
