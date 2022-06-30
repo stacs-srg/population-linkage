@@ -6,4 +6,4 @@
 
 source "$(dirname "$0")"/../../set_heap_size.sh
 
-mvn exec:java -q -e -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaGroomGroomSibling" -Dexec.args="$2 $3"
+mvn exec:java -q -e -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaGroomGroomSibling" -Dexec.args="$2 $3 $4"

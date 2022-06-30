@@ -11,10 +11,11 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -36,9 +37,10 @@ public abstract class ThresholdAnalysis {
     private static final String DELIMIT = ",";
     protected boolean allow_multiple_links;
 
-    int number_of_runs;
-    String repo_name;
-    RecordRepository record_repository;
+    private int number_of_records_to_be_checked;
+    private int number_of_runs;
+    private String output_file_parent_path;           // Empty string for relative to project root.
+    private RecordRepository record_repository;
 
     private List<LXPMeasure> composite_measures;
     private PrintWriter linkage_results_metadata_writer;
@@ -48,7 +50,6 @@ public abstract class ThresholdAnalysis {
     private PrintWriter distance_results_writer;
 
     boolean verbose = false;
-    int number_of_records_to_be_checked;
 
     /**
      * @return list of comparison fields that will be used for comparing records
@@ -75,43 +76,55 @@ public abstract class ThresholdAnalysis {
 
     protected abstract boolean recordLinkDistances();
 
-    ThresholdAnalysis(final String repo_name, final String linkage_results_filename, final String distance_results_filename, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
+    ThresholdAnalysis(final String repo_name, final String linkage_results_file_root, final String distance_results_file_root, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
 
-        init(repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs, allow_multiple_links);
+        init(repo_name, linkage_results_file_root, distance_results_file_root, number_of_records_to_be_checked, number_of_runs, "", allow_multiple_links);
     }
 
-    ThresholdAnalysis(final String repo_name, final String[] args, final String linkage_results_filename, final String distance_results_filename, final boolean allow_multiple_links) throws IOException {
+    ThresholdAnalysis(final String repo_name, final String[] args, final String linkage_results_file_root, final String distance_results_file_root, final boolean allow_multiple_links) throws IOException {
 
         if (args.length < 2) {
             throw new RuntimeException("usage: <number of records to be checked> <number of runs>");
         }
 
-        int number_of_records_to_be_checked = Integer.parseInt(args[0]);
-        int number_of_runs = Integer.parseInt(args[1]);
+        final int number_of_records_to_be_checked = Integer.parseInt(args[0]);
+        final int number_of_runs = Integer.parseInt(args[1]);
+        final String output_file_parent_path = args.length > 2 ? args[2] : "";
 
-        init(repo_name, linkage_results_filename, distance_results_filename, number_of_records_to_be_checked, number_of_runs, allow_multiple_links);
+        init(repo_name, linkage_results_file_root, distance_results_file_root, number_of_records_to_be_checked, number_of_runs, output_file_parent_path, allow_multiple_links);
     }
 
-    private void init(String repo_name, String linkage_results_filename, String distance_results_filename, int number_of_records_to_be_checked, int number_of_runs, boolean allow_multiple_links) throws IOException {
+    private void init(final String repo_name, final String linkage_results_file_root, final String distance_results_file_root, final int number_of_records_to_be_checked, final int number_of_runs, final String output_file_parent_path, final boolean allow_multiple_links) throws IOException {
 
-        this.repo_name = repo_name;
         this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         this.number_of_runs = number_of_runs;
+        this.output_file_parent_path = output_file_parent_path;
         this.allow_multiple_links = allow_multiple_links || !MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE;
 
         composite_measures = getCombinedMeasures();
 
-        linkage_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".csv", false)));
-        linkage_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(linkage_results_filename + ".meta", false)));
+        linkage_results_writer = getPrintWriter(getResultsPath(linkage_results_file_root, ".csv"));
+        linkage_results_metadata_writer = getPrintWriter(getResultsPath(linkage_results_file_root, ".meta"));
 
         if (recordLinkDistances()) {
-            distance_results_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".csv", false)));
-            distance_results_metadata_writer = new PrintWriter(new BufferedWriter(new FileWriter(distance_results_filename + ".meta", false)));
+            distance_results_writer = getPrintWriter(getResultsPath(distance_results_file_root, ".csv"));
+            distance_results_metadata_writer = getPrintWriter(getResultsPath(distance_results_file_root, ".meta"));
         }
 
         if (verbose) System.out.println("Reading records from repository: " + repo_name);
 
         record_repository = new RecordRepository(repo_name);
+    }
+
+    private Path getResultsPath(String results_file_root, String suffix) {
+        System.out.println("parent path: " + output_file_parent_path);
+        Path path = Paths.get(output_file_parent_path, results_file_root + suffix);
+        System.out.println("results path: " + path);
+        return path;
+    }
+
+    private static PrintWriter getPrintWriter(Path path) throws IOException {
+        return new PrintWriter(Files.newBufferedWriter(path));
     }
 
     private static int distanceToIndex(final double distance) {
@@ -128,7 +141,7 @@ public abstract class ThresholdAnalysis {
 
     private static String getCallingClassName() {
 
-        String full_classname = new RuntimeException().getStackTrace()[2].getClassName(); // need to jump over getCallingClassName frame and getLinkageResultsFilename frame
+        final String full_classname = new RuntimeException().getStackTrace()[2].getClassName(); // need to jump over getCallingClassName frame and getLinkageResultsFilename frame
         return full_classname.substring(full_classname.lastIndexOf(".") + 1);
     }
 
@@ -146,7 +159,7 @@ public abstract class ThresholdAnalysis {
         this.verbose = verbose;
     }
 
-    private double getMaxHeapinGB() {
+    private double getMaxHeapInGB() {
 
         return (double) Runtime.getRuntime().maxMemory() / 1000000000;
     }
@@ -193,7 +206,7 @@ public abstract class ThresholdAnalysis {
     synchronized void printMetaData(final PrintWriter writer, final String description) {
 
         writer.println("Output file created: " + LocalDateTime.now());
-        writer.printf("Max heap size: %.1fGB\n", getMaxHeapinGB());
+        writer.printf("Max heap size: %.1fGB\n", getMaxHeapInGB());
         writer.println(description);
         writer.println("Dataset: " + getDatasetName());
         writer.println("Linkage type: " + getLinkageType());
