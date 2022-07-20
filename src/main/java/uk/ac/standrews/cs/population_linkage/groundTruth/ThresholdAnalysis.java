@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Base class for performing linkage analysis from ground truth.
@@ -117,10 +118,7 @@ public abstract class ThresholdAnalysis {
     }
 
     private Path getResultsPath(String results_file_root, String suffix) {
-        System.out.println("parent path: " + output_file_parent_path);
-        Path path = Paths.get(output_file_parent_path, results_file_root + suffix);
-        System.out.println("results path: " + path);
-        return path;
+        return Paths.get(output_file_parent_path, results_file_root + suffix);
     }
 
     private static PrintWriter getPrintWriter(Path path) throws IOException {
@@ -171,6 +169,9 @@ public abstract class ThresholdAnalysis {
 
         final Random random = new Random(SEED);
 
+        final CountDownLatch start_gate = new CountDownLatch(1);
+        final CountDownLatch end_gate = new CountDownLatch(number_of_runs * composite_measures.size());
+
         for (int i = 0; i < number_of_runs; i++) {
 
             if (verbose) System.out.println("Randomising record order");
@@ -185,11 +186,17 @@ public abstract class ThresholdAnalysis {
             for (final var measure : composite_measures) {
 
                 final int run_number = i;
-                new Thread(() -> new Run(run_number, measure, source_record_list1, source_record_list2).run()).start();
+                new Thread(() -> new Run(run_number, measure, source_record_list1, source_record_list2, start_gate, end_gate).run()).start();
             }
         }
 
-        System.exit(0); // Work round BitBlaster not shutting down.
+        try {
+            start_gate.countDown();
+            end_gate.await();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final long[] non_link_distance_counts, final long[] link_distance_counts) {
@@ -352,11 +359,14 @@ public abstract class ThresholdAnalysis {
 
     class Run {
 
+        final int run_number;
+        final LXPMeasure measure;
+
         final List<LXP> source_record_list1;
         final List<LXP> source_record_list2;
 
-        final int run_number;
-        final LXPMeasure measure;
+        final CountDownLatch start_gate;
+        final CountDownLatch end_gate;
 
         int records_processed = 0;
         long pairs_evaluated = 0L;
@@ -367,12 +377,14 @@ public abstract class ThresholdAnalysis {
 
         Sample[] samples; // Counts of TP, FP etc at each threshold.
 
-        Run(final int run_number, final LXPMeasure measure, final List<LXP> source_record_list1, final List<LXP> source_record_list2) {
+        Run(final int run_number, final LXPMeasure measure, final List<LXP> source_record_list1, final List<LXP> source_record_list2, final CountDownLatch start_gate, final CountDownLatch end_gate) {
 
             this.run_number = run_number;
             this.measure = measure;
             this.source_record_list1 = source_record_list1;
             this.source_record_list2 = source_record_list2;
+            this.start_gate = start_gate;
+            this.end_gate = end_gate;
 
             samples = new Sample[NUMBER_OF_THRESHOLDS_SAMPLED];
             for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
@@ -387,24 +399,33 @@ public abstract class ThresholdAnalysis {
 
         public void run() {
 
-            System.out.println("Starting run " + run_number + " with measure " + measure.getMeasureName());
+            try {
+                start_gate.await();
 
-            final long number_of_blocks_to_be_checked = number_of_records_to_be_checked / BLOCK_SIZE;
+                System.out.println("Starting run " + run_number + " with measure " + measure.getMeasureName());
 
-            for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
+                final long number_of_blocks_to_be_checked = number_of_records_to_be_checked / BLOCK_SIZE;
 
-                processBlock(block_index);
-                printSamples();
+                for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
+
+                    processBlock(block_index);
+                    printSamples();
+
+                    if (verbose) {
+                        System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
+                        System.out.flush();
+                    }
+                }
 
                 if (verbose) {
-                    System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
+                    System.out.println("Run completed");
                     System.out.flush();
                 }
-            }
 
-            if (verbose) {
-                System.out.println("Run completed");
-                System.out.flush();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                end_gate.countDown();
             }
         }
 
