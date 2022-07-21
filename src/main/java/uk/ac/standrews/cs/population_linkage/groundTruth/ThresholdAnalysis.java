@@ -171,6 +171,8 @@ public abstract class ThresholdAnalysis {
 
         final CountDownLatch start_gate = new CountDownLatch(1);
         final CountDownLatch end_gate = new CountDownLatch(number_of_runs * composite_measures.size());
+        System.out.println("initial end_gate count: " + end_gate.getCount());
+        System.out.flush();
 
         for (int i = 0; i < number_of_runs; i++) {
 
@@ -192,11 +194,20 @@ public abstract class ThresholdAnalysis {
 
         try {
             start_gate.countDown();
+            System.out.println("end_gate count before wait: " + end_gate.getCount());
+            System.out.flush();
             end_gate.await();
+            System.out.println("finished wait");
+            System.out.flush();
+
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+
+        System.out.println("finished run");
+        System.out.flush();
+
     }
 
     void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final long[] non_link_distance_counts, final long[] link_distance_counts) {
@@ -426,6 +437,9 @@ public abstract class ThresholdAnalysis {
                 Thread.currentThread().interrupt();
             } finally {
                 end_gate.countDown();
+                System.out.println("\nmeasure: " + measure.getMeasureName());
+                System.out.println("end_gate count after run: " + end_gate.getCount());
+                System.out.flush();
             }
         }
 
