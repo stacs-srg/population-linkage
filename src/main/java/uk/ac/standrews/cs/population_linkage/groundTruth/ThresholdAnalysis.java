@@ -208,6 +208,7 @@ public abstract class ThresholdAnalysis {
         System.out.println("finished run");
         System.out.flush();
 
+        record_repository.close();
     }
 
     void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final long[] non_link_distance_counts, final long[] link_distance_counts) {

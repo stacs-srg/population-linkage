@@ -10,7 +10,7 @@ NUMBER_OF_RUNS="1"
 OUTPUT_DIR="full-experiment"      # Blank for project root directory.
 
 "$(dirname $0)"/umea_birth_father_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#"$(dirname $0)"/umea_birth_mother_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+"$(dirname $0)"/umea_birth_mother_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
 #"$(dirname $0)"/umea_birth_death_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
 #
 #"$(dirname $0)"/umea_birth_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
