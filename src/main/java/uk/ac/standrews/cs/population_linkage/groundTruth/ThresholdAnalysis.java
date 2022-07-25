@@ -164,15 +164,15 @@ public abstract class ThresholdAnalysis {
 
     public void run() throws Exception {
 
-        printHeaders();
-        printMetaData();
+        recordHeaders();
+        recordMetaData();
 
         final Random random = new Random(SEED);
 
+        final int number_of_threads = number_of_runs * composite_measures.size();
+
         final CountDownLatch start_gate = new CountDownLatch(1);
-        final CountDownLatch end_gate = new CountDownLatch(number_of_runs * composite_measures.size());
-        System.out.println("initial end_gate count: " + end_gate.getCount());
-        System.out.flush();
+        final CountDownLatch end_gate = new CountDownLatch(number_of_threads);
 
         for (int i = 0; i < number_of_runs; i++) {
 
@@ -194,37 +194,29 @@ public abstract class ThresholdAnalysis {
 
         try {
             start_gate.countDown();
-            System.out.println("end_gate count before wait: " + end_gate.getCount());
-            System.out.flush();
             end_gate.await();
-            System.out.println("finished wait");
-            System.out.flush();
-
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("finished run");
-        System.out.flush();
-
         record_repository.close();
     }
 
-    void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final long[] non_link_distance_counts, final long[] link_distance_counts) {
+    void recordDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final long[] non_link_distance_counts, final long[] link_distance_counts) {
 
-        printDistances(run_number, measure_name, records_processed, pairs_evaluated, pairs_ignored, false, non_link_distance_counts);
-        printDistances(run_number, measure_name, records_processed, pairs_evaluated, pairs_ignored, true, link_distance_counts);
+        recordDistances(run_number, measure_name, records_processed, pairs_evaluated, pairs_ignored, false, non_link_distance_counts);
+        recordDistances(run_number, measure_name, records_processed, pairs_evaluated, pairs_ignored, true, link_distance_counts);
     }
 
-    synchronized void printMetaData() {
+    synchronized void recordMetaData() {
 
-        printMetaData(new PrintWriter(System.out), "Running ground truth analysis");
-        printMetaData(linkage_results_metadata_writer, "Checking quality of linkage using various string similarity measures and thresholds");
-        if (recordLinkDistances()) printMetaData(distance_results_metadata_writer, "Checking distributions of record pair distances using various string similarity measures and thresholds");
+        recordMetaData(new PrintWriter(System.out), "Running ground truth analysis");
+        recordMetaData(linkage_results_metadata_writer, "Checking quality of linkage using various string similarity measures and thresholds");
+        if (recordLinkDistances()) recordMetaData(distance_results_metadata_writer, "Checking distributions of record pair distances using various string similarity measures and thresholds");
     }
 
-    synchronized void printMetaData(final PrintWriter writer, final String description) {
+    synchronized void recordMetaData(final PrintWriter writer, final String description) {
 
         writer.println("Output file created: " + LocalDateTime.now());
         writer.printf("Max heap size: %.1fGB\n", getMaxHeapInGB());
@@ -237,13 +229,13 @@ public abstract class ThresholdAnalysis {
         writer.flush();
     }
 
-    synchronized void printHeaders() {
+    synchronized void recordHeaders() {
 
-        printLinkageResultsHeaders();
-        if (recordLinkDistances()) printDistanceResultsHeaders();
+        recordLinkageResultsHeaders();
+        if (recordLinkDistances()) recordDistanceResultsHeaders();
     }
 
-    private void printDistanceResultsHeaders() {
+    private void recordDistanceResultsHeaders() {
 
         distance_results_writer.print("time");
         distance_results_writer.print(DELIMIT);
@@ -268,7 +260,7 @@ public abstract class ThresholdAnalysis {
         distance_results_writer.flush();
     }
 
-    private void printLinkageResultsHeaders() {
+    private void recordLinkageResultsHeaders() {
 
         linkage_results_writer.print("time");
         linkage_results_writer.print(DELIMIT);
@@ -302,7 +294,7 @@ public abstract class ThresholdAnalysis {
         linkage_results_writer.flush();
     }
 
-    synchronized void printSample(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final double threshold, final Sample sample) {
+    synchronized void recordSample(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final double threshold, final Sample sample) {
 
         linkage_results_writer.print(LocalDateTime.now());
         linkage_results_writer.print(DELIMIT);
@@ -336,7 +328,7 @@ public abstract class ThresholdAnalysis {
         linkage_results_writer.flush();
     }
 
-    synchronized void printDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final boolean links, final long[] distance_counts) {
+    synchronized void recordDistances(final int run_number, final String measure_name, final int records_processed, final long pairs_evaluated, final long pairs_ignored, final boolean links, final long[] distance_counts) {
 
         distance_results_writer.print(LocalDateTime.now());
         distance_results_writer.print(DELIMIT);
@@ -414,14 +406,12 @@ public abstract class ThresholdAnalysis {
             try {
                 start_gate.await();
 
-                System.out.println("Starting run " + run_number + " with measure " + measure.getMeasureName());
-
                 final long number_of_blocks_to_be_checked = number_of_records_to_be_checked / BLOCK_SIZE;
 
                 for (int block_index = 0; block_index < number_of_blocks_to_be_checked; block_index++) {
 
                     processBlock(block_index);
-                    printSamples();
+                    recordSamples();
 
                     if (verbose) {
                         System.out.println("finished block: checked " + (block_index + 1) * BLOCK_SIZE + " records");
@@ -438,9 +428,6 @@ public abstract class ThresholdAnalysis {
                 Thread.currentThread().interrupt();
             } finally {
                 end_gate.countDown();
-                System.out.println("\nmeasure: " + measure.getMeasureName());
-                System.out.println("end_gate count after run: " + end_gate.getCount());
-                System.out.flush();
             }
         }
 
@@ -514,13 +501,13 @@ public abstract class ThresholdAnalysis {
             }
         }
 
-        private void printSamples() {
+        private void recordSamples() {
 
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                printSample(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, indexToThreshold(threshold_index), samples[threshold_index]);
+                recordSample(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, indexToThreshold(threshold_index), samples[threshold_index]);
             }
 
-            if (recordLinkDistances()) printDistances(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, non_link_distance_counts, link_distance_counts);
+            if (recordLinkDistances()) recordDistances(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, non_link_distance_counts, link_distance_counts);
         }
 
         private void updateTrueLinkCounts(final double distance, final boolean is_true_link) {

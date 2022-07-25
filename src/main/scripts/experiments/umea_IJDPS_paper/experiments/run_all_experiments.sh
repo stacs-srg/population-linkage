@@ -11,14 +11,14 @@ OUTPUT_DIR="full-experiment"      # Blank for project root directory.
 
 "$(dirname $0)"/umea_birth_father_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
 "$(dirname $0)"/umea_birth_mother_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#"$(dirname $0)"/umea_birth_death_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#
-#"$(dirname $0)"/umea_birth_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#"$(dirname $0)"/umea_death_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#
-#"$(dirname $0)"/umea_birth_groom_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#"$(dirname $0)"/umea_birth_bride_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#
-#"$(dirname $0)"/umea_groom_groom_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#"$(dirname $0)"/umea_bride_bride_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
-#"$(dirname $0)"/umea_bride_groom_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+"$(dirname $0)"/umea_birth_death_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+
+"$(dirname $0)"/umea_birth_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+"$(dirname $0)"/umea_death_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+
+"$(dirname $0)"/umea_birth_groom_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+"$(dirname $0)"/umea_birth_bride_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+
+"$(dirname $0)"/umea_groom_groom_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+"$(dirname $0)"/umea_bride_bride_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
+"$(dirname $0)"/umea_bride_groom_sibling.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}

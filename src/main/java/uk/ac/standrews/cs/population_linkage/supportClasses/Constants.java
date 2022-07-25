@@ -45,8 +45,7 @@ public class Constants {
     public static final List<StringMeasure> PHONETIC_COMPARATORS = List.of(
             METAPHONE, NYSIIS);
 
-    public static final List<StringMeasure> BASE_MEASURES = concatenate(PHONETIC_COMPARATORS);
-//    public static final List<StringMeasure> BASE_MEASURES = concatenate(TRUE_METRICS, NON_METRIC_MEASURES, PHONETIC_COMPARATORS);
+    public static final List<StringMeasure> BASE_MEASURES = concatenate(TRUE_METRICS, NON_METRIC_MEASURES, PHONETIC_COMPARATORS);
 
     public static String stringRepresentationOf(List<Integer> fields, Class<? extends LXP> record, List<String> labels) {
         StringBuilder sb = new StringBuilder();
