@@ -29,7 +29,7 @@ public class BirthOwnDeathBuilderListsInvestigateNL implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNL.class.getCanonicalName(), bridge);
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderListsInvestigateNL.class.getName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
             LinkageResult res = new BitBlasterLinkageRunner().investigateRun(linkageRecipe, new BirthOwnDeathBuilderListsInvestigateNL(), false, false, true, bridge);
         } catch (Exception e) {

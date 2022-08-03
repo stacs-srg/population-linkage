@@ -24,7 +24,7 @@ public class MLCustomBirthSiblingBundleBuilder implements MakePersistent {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            MLCustomBirthSiblingLinkageRecipe linkageRecipe = new MLCustomBirthSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, MLCustomBirthSiblingBundleBuilder.class.getCanonicalName());
+            MLCustomBirthSiblingLinkageRecipe linkageRecipe = new MLCustomBirthSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, MLCustomBirthSiblingBundleBuilder.class.getName());
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 

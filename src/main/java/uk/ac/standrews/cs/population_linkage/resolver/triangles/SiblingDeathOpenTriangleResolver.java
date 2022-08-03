@@ -249,7 +249,7 @@ public class SiblingDeathOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, DeathSiblingBundleBuilder.class.getName(), bridge);
             SiblingDeathOpenTriangleResolver resolver = new SiblingDeathOpenTriangleResolver(bridge, sourceRepo, linkageRecipe);
             resolver.resolve();
 

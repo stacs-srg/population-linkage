@@ -28,7 +28,7 @@ public class BirthOwnDeathBuilderLists2 implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderLists2.class.getCanonicalName(), bridge);
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilderLists2.class.getName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
             new BitBlasterLinkageRunner().investigateRun(linkageRecipe, new BirthOwnDeathBuilderLists2(), false, true, true, bridge);
 

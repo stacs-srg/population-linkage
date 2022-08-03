@@ -109,7 +109,7 @@ public class Utilities {
         if (record instanceof Death)
             return record.getString(Death.ORIGINAL_ID);
 
-        throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());
+        throw new Error("Record of unknown type: " + record.getClass().getName());
     }
 
     public static List<String> getLabels(LXP record) {
@@ -120,6 +120,6 @@ public class Utilities {
         if (record instanceof Death)
             return Death.getLabels();
 
-        throw new Error("Record of unknown type: " + record.getClass().getCanonicalName());
+        throw new Error("Record of unknown type: " + record.getClass().getName());
     }
 }

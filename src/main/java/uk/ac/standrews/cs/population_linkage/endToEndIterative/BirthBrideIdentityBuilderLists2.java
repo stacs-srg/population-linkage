@@ -30,9 +30,9 @@ public class BirthBrideIdentityBuilderLists2 implements MakePersistent {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
 
- //           BirthBrideIdentityLinkageRecipeLol linkageRecipe = new BirthBrideIdentityLinkageRecipeLol(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), bridge);
+ //           BirthBrideIdentityLinkageRecipeLol linkageRecipe = new BirthBrideIdentityLinkageRecipeLol(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getName(), bridge);
 
-            BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), bridge);
+            BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideIdentityBuilderIterative.class.getName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0); // No restrictions on fields
             BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
             LinkageResult lrs = bb.investigateRun(linkageRecipe, new BirthBrideIdentityBuilderLists2(), true, false, true, bridge);

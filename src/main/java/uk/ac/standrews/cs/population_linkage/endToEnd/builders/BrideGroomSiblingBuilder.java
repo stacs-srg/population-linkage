@@ -29,7 +29,7 @@ public class BrideGroomSiblingBuilder implements MakePersistent {
 
         try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            BrideGroomSiblingLinkageRecipe linkageRecipe = new BrideGroomSiblingLinkageRecipe(sourceRepo, number_of_records, BrideGroomSiblingBuilder.class.getCanonicalName(), bridge);
+            BrideGroomSiblingLinkageRecipe linkageRecipe = new BrideGroomSiblingLinkageRecipe(sourceRepo, number_of_records, BrideGroomSiblingBuilder.class.getName(), bridge);
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 

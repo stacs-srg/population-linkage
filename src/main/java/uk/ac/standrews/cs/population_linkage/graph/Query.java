@@ -18,7 +18,8 @@ import java.util.Map;
 public class Query {
 
     // Standard creation queries
-    // BB, BM etc. refer to Births Deaths and Marriages NOT babies, mothers etc.
+    // BB,
+    // etc. refer to Births Deaths and Marriages NOT babies, mothers etc.
 
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 

@@ -21,6 +21,8 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
  *  This is NOT STRONG: uses the 3 names: the groom/baby and the names of the mother and father.
  */
 public class BirthOwnDeathBuilder implements MakePersistent {
+    
+    // Cannonical name is: uk.ac.standrews.cs.population_linkage.BirthOwnDeathBuilder
 
     public static void main(String[] args) throws BucketException {
 
@@ -30,7 +32,7 @@ public class BirthOwnDeathBuilder implements MakePersistent {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
             // First run with no field requirements
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getCanonicalName(), bridge);
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0);
             new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), true, false);
 
@@ -38,9 +40,9 @@ public class BirthOwnDeathBuilder implements MakePersistent {
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
 
             while( linkage_fields >= half_fields ) {
-                linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getCanonicalName(), bridge);
+                linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getName(), bridge);
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), true, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), false, true);
 
                 linkage_fields--;
             }

@@ -261,7 +261,7 @@ public class SiblingBrideOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BrideBrideSiblingLinkageRecipe linkageRecipe = new BrideBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            BrideBrideSiblingLinkageRecipe linkageRecipe = new BrideBrideSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
             SiblingBrideOpenTriangleResolver resolver = new SiblingBrideOpenTriangleResolver(bridge, sourceRepo, linkageRecipe);
             resolver.resolve();
 

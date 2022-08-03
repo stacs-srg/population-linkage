@@ -30,7 +30,7 @@ public class DeathGroomSiblingBundleBuilder implements MakePersistent {
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            DeathGroomSiblingLinkageRecipe linkageRecipe = new DeathGroomSiblingLinkageRecipe(sourceRepo, number_of_records, DeathGroomSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            DeathGroomSiblingLinkageRecipe linkageRecipe = new DeathGroomSiblingLinkageRecipe(sourceRepo, number_of_records, DeathGroomSiblingBundleBuilder.class.getName(), bridge);
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 

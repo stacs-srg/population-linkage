@@ -248,7 +248,7 @@ public class SiblingBirthOpenHexagonResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
             SiblingBirthOpenHexagonResolver resolver = new SiblingBirthOpenHexagonResolver(bridge, sourceRepo, linkageRecipe);
             resolver.resolve();
 

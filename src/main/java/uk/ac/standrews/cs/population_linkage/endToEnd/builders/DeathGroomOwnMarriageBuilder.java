@@ -28,7 +28,7 @@ public class DeathGroomOwnMarriageBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            DeathGroomIdentityLinkageRecipe linkageRecipe = new DeathGroomIdentityLinkageRecipe(sourceRepo, number_of_records, DeathGroomOwnMarriageBuilder.class.getCanonicalName(), bridge );
+            DeathGroomIdentityLinkageRecipe linkageRecipe = new DeathGroomIdentityLinkageRecipe(sourceRepo, number_of_records, DeathGroomOwnMarriageBuilder.class.getName(), bridge );
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
@@ -36,7 +36,7 @@ public class DeathGroomOwnMarriageBuilder implements MakePersistent {
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
 
-                new BitBlasterLinkageRunner().run(linkageRecipe, new DeathGroomOwnMarriageBuilder(), false, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new DeathGroomOwnMarriageBuilder(), false, true);
                 linkage_fields--;
             }
         } catch (Exception e) {

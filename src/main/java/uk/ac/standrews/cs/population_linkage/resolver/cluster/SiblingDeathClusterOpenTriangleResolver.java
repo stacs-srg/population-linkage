@@ -379,7 +379,7 @@ public class SiblingDeathClusterOpenTriangleResolver {
         String resultsRepo = args[1]; // e.g. synth_results
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
-            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
 
 
             printHeaders();

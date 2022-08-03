@@ -10,6 +10,7 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -72,6 +73,7 @@ public abstract class LinkageRecipe implements LinkViabilityChecker {
         this.source_repository_name = source_repository_name;
         this.links_persistent_name = links_persistent_name;
         this.bridge = bridge;
+        setBaseMeasure(Constants.get("JENSEN_SHANNON"));
 
         this.record_repository = new RecordRepository(source_repository_name);
     }

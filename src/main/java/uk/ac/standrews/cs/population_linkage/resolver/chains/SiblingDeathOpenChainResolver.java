@@ -247,7 +247,7 @@ public class SiblingDeathOpenChainResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); ) {
 
-            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, DeathSiblingBundleBuilder.class.getName(), bridge);
             SiblingDeathOpenChainResolver resolver = new SiblingDeathOpenChainResolver( bridge,sourceRepo,linkageRecipe );
             resolver.resolve();
 

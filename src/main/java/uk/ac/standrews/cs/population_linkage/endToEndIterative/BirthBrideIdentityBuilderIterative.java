@@ -47,7 +47,7 @@ public class BirthBrideIdentityBuilderIterative implements MakePersistent {
                 for (double thresh = 0.05; thresh < BirthBrideIdentityLinkageRecipeMatchLists.DISTANCE_THRESHOLD; thresh += 0.05) {
 
                     System.out.println( "Running with " + linkage_fields + " required and threshold " + thresh );
-                    BirthBrideIdentityLinkageRecipeMatchLists linkageRecipe = new BirthBrideIdentityLinkageRecipeMatchLists(sourceRepo, number_of_records, linkage_fields, search_matched, stored_matched, BirthBrideIdentityBuilderIterative.class.getCanonicalName(), thresh, bridge);
+                    BirthBrideIdentityLinkageRecipeMatchLists linkageRecipe = new BirthBrideIdentityLinkageRecipeMatchLists(sourceRepo, number_of_records, linkage_fields, search_matched, stored_matched, BirthBrideIdentityBuilderIterative.class.getName(), thresh, bridge);
 
                     BitBlasterLinkageRunner bb = new BitBlasterLinkageRunner();
                     LinkageResult lrs = bb.run(linkageRecipe, new BirthBrideIdentityBuilderIterative(), true, true);

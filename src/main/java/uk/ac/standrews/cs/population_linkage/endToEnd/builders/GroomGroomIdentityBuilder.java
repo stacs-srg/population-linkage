@@ -28,14 +28,14 @@ public class GroomGroomIdentityBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            GroomGroomIdentityLinkageRecipe linkageRecipe = new GroomGroomIdentityLinkageRecipe(sourceRepo, GroomGroomIdentityBuilder.class.getCanonicalName(), bridge);
+            GroomGroomIdentityLinkageRecipe linkageRecipe = new GroomGroomIdentityLinkageRecipe(sourceRepo, GroomGroomIdentityBuilder.class.getName(), bridge);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkageRecipe, new GroomGroomIdentityBuilder(), false, false);
+                new BitBlasterLinkageRunner().run(linkageRecipe, new GroomGroomIdentityBuilder(), false, true);
 
                 linkage_fields--;
             }

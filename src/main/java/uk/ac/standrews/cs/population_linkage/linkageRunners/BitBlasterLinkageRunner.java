@@ -473,7 +473,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
             LinkageQuality lq = getLinkageQuality(evaluate_quality, tp, fp);
             return new LinkageResult(lq, links);
         } else {
-            return new LinkageResult(null, null); // TODO What should this return in this case?
+            return new LinkageResult(new LinkageQuality("Not requested"), null); // TODO What should this return in this case?
         }
     }
 

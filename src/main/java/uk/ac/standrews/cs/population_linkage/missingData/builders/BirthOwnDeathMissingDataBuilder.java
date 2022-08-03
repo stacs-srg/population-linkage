@@ -27,37 +27,37 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
         switch (mode) {
 
             case "missing-zero": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingZero(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingZero(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkage_recipe, new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "missing-one": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingOne(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingOne(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "max": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMax(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMax(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "missing-half": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingHalf(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMissingHalf(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "mean-of-present": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMeanOfPresent(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BDLinkageRecipeMeanOfPresent(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkage_recipe,new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
             }
             case "standard": {
-                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+                BirthDeathIdentityLinkageRecipe linkage_recipe = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getName(), bridge);
                 linkage_recipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkage_recipe, new BirthOwnDeathMissingDataBuilder(), true, false);
                 break;
@@ -77,7 +77,7 @@ public class BirthOwnDeathMissingDataBuilder implements MakePersistent {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
 
-            BirthDeathIdentityLinkageRecipe recipe_unused_in_expt = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getCanonicalName(), bridge);
+            BirthDeathIdentityLinkageRecipe recipe_unused_in_expt = new BirthDeathIdentityLinkageRecipe(source_repo, number_of_records, BirthOwnDeathMissingDataBuilder.class.getName(), bridge);
 
             final int all_fields = recipe_unused_in_expt.ALL_LINKAGE_FIELDS;
             final int half_fields = all_fields - (all_fields / 2) + 1;

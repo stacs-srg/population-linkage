@@ -22,7 +22,7 @@ public class SiblingGroomClusterAllTrianglesResolver extends SiblingGroomCluster
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, "10000", BirthSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, "10000", BirthSiblingBundleBuilder.class.getName(), bridge);
 
 
             printHeaders();

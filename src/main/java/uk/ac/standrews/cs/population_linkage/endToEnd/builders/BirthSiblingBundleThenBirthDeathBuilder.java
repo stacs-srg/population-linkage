@@ -53,14 +53,14 @@ public class BirthSiblingBundleThenBirthDeathBuilder implements MakePersistent {
             String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
             String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-            LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName(), bridge);
+            LinkageRecipe bb_recipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleThenBirthDeathBuilder.class.getName(), bridge);
 
             final BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner runner1 = new BitBlasterSubsetOfDataEndtoEndSiblingBundleLinkageRunner();
-            LinkageResult lr = runner1.run(bb_recipe, new BirthSiblingBundleThenBirthDeathBuilder(), false, false);
+            LinkageResult lr = runner1.run(bb_recipe, new BirthSiblingBundleThenBirthDeathBuilder(), false, true);
 
             HashMap<Long, List<Link>> families = runner1.getFamilyBundles(); // from LXP Id to Links.
 
-            LinkageRecipe death_birth_recipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleThenBirthDeathBuilder.class.getCanonicalName(), bridge);
+            LinkageRecipe death_birth_recipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleThenBirthDeathBuilder.class.getName(), bridge);
 
             Iterable<LXP> death_records = death_birth_recipe.getStoredRecords();
 

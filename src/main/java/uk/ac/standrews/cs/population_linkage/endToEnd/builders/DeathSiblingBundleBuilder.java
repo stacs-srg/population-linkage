@@ -30,7 +30,7 @@ public class DeathSiblingBundleBuilder implements MakePersistent {
 
         try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
-            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, number_of_records, DeathSiblingBundleBuilder.class.getCanonicalName(), bridge);
+            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, number_of_records, DeathSiblingBundleBuilder.class.getName(), bridge);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;

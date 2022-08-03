@@ -28,7 +28,7 @@ public class BirthGroomOwnMarriageBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthGroomIdentityLinkageRecipe linkageRecipe = new BirthGroomIdentityLinkageRecipe(sourceRepo, number_of_records, BirthGroomOwnMarriageBuilder.class.getCanonicalName(), bridge);
+            BirthGroomIdentityLinkageRecipe linkageRecipe = new BirthGroomIdentityLinkageRecipe(sourceRepo, number_of_records, BirthGroomOwnMarriageBuilder.class.getName(), bridge);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
