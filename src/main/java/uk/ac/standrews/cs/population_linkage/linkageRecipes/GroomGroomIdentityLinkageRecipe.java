@@ -42,16 +42,7 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
             Marriage.GROOM_OCCUPATION
     );
 
-    public static final List<Integer> SEARCH_FIELDS = list(
-            Marriage.GROOM_FORENAME,
-            Marriage.GROOM_SURNAME,
-            Marriage.GROOM_MOTHER_FORENAME,
-            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
-            Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME,
-            Marriage.GROOM_FATHER_OCCUPATION,
-            Marriage.GROOM_OCCUPATION
-    );
+    public static final List<Integer> SEARCH_FIELDS = LINKAGE_FIELDS;
 
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(

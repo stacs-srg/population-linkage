@@ -20,41 +20,41 @@ public class CreateGTLinks {
             "b1.CHILD_IDENTITY <> \"\" AND " +
             "b2.FATHER_IDENTITY <> \"\" AND " +
             "b1.CHILD_IDENTITY = b2.FATHER_IDENTITY " +
-            "MERGE (b1)-[r:GROUND_TRUTH_BIRTH_FATHER_IDENTITY]->(b2)";
+            "MERGE (b1)-[:GROUND_TRUTH_BIRTH_FATHER_IDENTITY]->(b2)";
 
     private static final String MOTHER_OWN_BIRTH_IDENTITY = "MATCH (b1:Birth),(b2:Birth) WHERE " +
             "b1.CHILD_IDENTITY <> \"\" AND " +
             "b2.MOTHER_IDENTITY <> \"\" AND " +
             "b1.CHILD_IDENTITY = b2.MOTHER_IDENTITY " +
-            "MERGE (b1)-[r:GROUND_TRUTH_BIRTH_MOTHER_IDENTITY]->(b2)";
+            "MERGE (b1)-[:GROUND_TRUTH_BIRTH_MOTHER_IDENTITY]->(b2)";
 
     private static final String BIRTH_BIRTH_SIBLING = "MATCH (b1:Birth),(b2:Birth) WHERE " +
+            "NOT (b1)-[:GROUND_TRUTH_BIRTH_SIBLING]-(b2) AND " +
             "b1.MOTHER_IDENTITY <> \"\" AND " +
             "b1.FATHER_IDENTITY <> \"\" AND " +
             "b2.MOTHER_IDENTITY <> \"\" AND " +
             "b2.FATHER_IDENTITY <> \"\" AND " +
             "b1 <> b2 AND " +
             "b1.MOTHER_IDENTITY = b2.MOTHER_IDENTITY AND " +
-            "b1.FATHER_IDENTITY = b2.FATHER_IDENTITY AND " +
-            "NOT (b1)-[]-(b2) " +
-            "MERGE (b1)-[r:GROUND_TRUTH_BIRTH_SIBLING]-(b2) ";
+            "b1.FATHER_IDENTITY = b2.FATHER_IDENTITY " +
+            "MERGE (b1)-[:GROUND_TRUTH_BIRTH_SIBLING]-(b2) ";
 
     private static final String BIRTH_BIRTH_HALF_SIBLING = "MATCH (b1:Birth),(b2:Birth) WHERE " +
+            "NOT (b1)-[:GROUND_TRUTH_BIRTH_HALF_SIBLING]-(b2) AND " +
             "b1.MOTHER_IDENTITY <> \"\" AND " +
             "b2.MOTHER_IDENTITY <> \"\" AND " +
             "b1.FATHER_IDENTITY <> \"\" AND " +
             "b2.FATHER_IDENTITY <> \"\" AND " +
             "b1 <> b2 AND " +
             "(b1.MOTHER_IDENTITY = b2.MOTHER_IDENTITY OR b1.FATHER_IDENTITY = b2.FATHER_IDENTITY) AND " +
-            "NOT (b1.MOTHER_IDENTITY = b2.MOTHER_IDENTITY AND b1.FATHER_IDENTITY = b2.FATHER_IDENTITY) AND " +
-            "NOT (b1)-[]-(b2) " +
-            "MERGE (b1)-[r:GROUND_TRUTH_BIRTH_HALF_SIBLING]-(b2)";
+            "NOT (b1.MOTHER_IDENTITY = b2.MOTHER_IDENTITY AND b1.FATHER_IDENTITY = b2.FATHER_IDENTITY) " +
+            "MERGE (b1)-[:GROUND_TRUTH_BIRTH_HALF_SIBLING]-(b2)";
 
     private static final String BIRTH_DEATH_IDENTITY = "MATCH (b:Birth),(d:Death) WHERE " + "" +
             "b.CHILD_IDENTITY <> \"\" AND " +
             "d.DECEASED_IDENTITY <> \"\" AND " +
             "b.CHILD_IDENTITY = d.DECEASED_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(d)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(d)";
 
     private static final String BIRTH_DEATH_SIBLING = "MATCH (b:Birth),(d:Death) WHERE " +
             "b.MOTHER_IDENTITY <> \"\" AND " +
@@ -64,7 +64,7 @@ public class CreateGTLinks {
             "b.MOTHER_IDENTITY = d.MOTHER_IDENTITY AND " +
             "b.FATHER_IDENTITY = d.FATHER_IDENTITY AND " +
             "b.CHILD_IDENTITY <> d.DECEASED_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_DEATH_SIBLING]-(d)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_DEATH_SIBLING]-(d)";
 
     private static final String BIRTH_DEATH_HALF_SIBLING = "MATCH (b:Birth),(d:Death) WHERE " +
             "b.MOTHER_IDENTITY <> \"\" AND " +
@@ -73,31 +73,31 @@ public class CreateGTLinks {
             "d.FATHER_IDENTITY <> \"\" AND " +
             "(b.MOTHER_IDENTITY = d.MOTHER_IDENTITY OR b.FATHER_IDENTITY = d.FATHER_IDENTITY) AND " +
             "NOT (b.MOTHER_IDENTITY = d.MOTHER_IDENTITY AND b.FATHER_IDENTITY = d.FATHER_IDENTITY) " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_DEATH_HALF_SIBLING]-(d)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_DEATH_HALF_SIBLING]-(d)";
 
     private static final String BIRTH_GROOM_IDENTITY = "MATCH (b:Birth),(m:Marriage) WHERE " +
             "b.CHILD_IDENTITY <> \"\" AND " +
             "m.GROOM_IDENTITY <> \"\" AND " +
             "b.CHILD_IDENTITY = m.GROOM_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_GROOM_IDENTITY]-(m)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_GROOM_IDENTITY]-(m)";
 
     private static final String BIRTH_BRIDE_IDENTITY = "MATCH (b:Birth),(m:Marriage) WHERE " +
             "b.CHILD_IDENTITY <> \"\" AND " +
             "m.BRIDE_IDENTITY <> \"\" AND " +
             "b.CHILD_IDENTITY = m.BRIDE_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m)";
 
     private static final String FATHER_GROOM_IDENTITY = "MATCH (b:Birth),(m:Marriage) WHERE " +
             "b.FATHER_IDENTITY <> \"\" AND " +
             "m.GROOM_IDENTITY <> \"\" AND " +
             "b.FATHER_IDENTITY = m.GROOM_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_FATHER_GROOM_IDENTITY]-(m)";
+            "MERGE (b)-[:GROUND_TRUTH_FATHER_GROOM_IDENTITY]-(m)";
 
     private static final String MOTHER_BRIDE_IDENTITY = "MATCH (b:Birth),(m:Marriage) WHERE " +
             "b.MOTHER_IDENTITY <> \"\" AND " +
             "m.BRIDE_IDENTITY <> \"\" AND " +
             "b.MOTHER_IDENTITY = m.BRIDE_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_MOTHER_BRIDE_IDENTITY]-(m)";
+            "MERGE (b)-[:GROUND_TRUTH_MOTHER_BRIDE_IDENTITY]-(m)";
 
     private static final String BIRTH_PARENTS_MARRIAGE_IDENTITY = "MATCH (b:Birth),(m:Marriage) WHERE " +
             "b.MOTHER_IDENTITY <> \"\" AND " +
@@ -106,7 +106,7 @@ public class CreateGTLinks {
             "m.GROOM_IDENTITY <> \"\" AND " +
             "b.MOTHER_IDENTITY = m.BRIDE_IDENTITY AND " +
             "b.FATHER_IDENTITY = m.GROOM_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_PARENTS_MARRIAGE]-(m)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_PARENTS_MARRIAGE]-(m)";
 
     private static final String DEATH_PARENTS_MARRIAGE_IDENTITY = "MATCH (d:Death),(m:Marriage) WHERE " +
             "d.MOTHER_IDENTITY <> \"\" AND " +
@@ -115,7 +115,7 @@ public class CreateGTLinks {
             "m.GROOM_IDENTITY <> \"\" AND " +
             "d.MOTHER_IDENTITY = m.BRIDE_IDENTITY AND " +
             "d.FATHER_IDENTITY = m.GROOM_IDENTITY " +
-            "MERGE (d)-[r:GROUND_TRUTH_DEATH_PARENTS_MARRIAGE]-(m)";
+            "MERGE (d)-[:GROUND_TRUTH_DEATH_PARENTS_MARRIAGE]-(m)";
 
     private static final String BIRTH_GROOM_SIBLING = "MATCH (b:Birth),(m:Marriage) WHERE " +
             "b.MOTHER_IDENTITY <> \"\" AND " +
@@ -125,7 +125,7 @@ public class CreateGTLinks {
             "b.MOTHER_IDENTITY = m.GROOM_MOTHER_IDENTITY AND " +
             "b.FATHER_IDENTITY = m.GROOM_FATHER_IDENTITY AND " +
             "b.CHILD_IDENTITY <> m.GROOM_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_GROOM_SIBLING]-(m)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_GROOM_SIBLING]-(m)";
 
     private static final String BIRTH_BRIDE_SIBLING = "MATCH (b:Birth),(m:Marriage) WHERE " +
             "b.MOTHER_IDENTITY <> \"\" AND " +
@@ -135,19 +135,19 @@ public class CreateGTLinks {
             "b.MOTHER_IDENTITY = m.BRIDE_MOTHER_IDENTITY AND " +
             "b.FATHER_IDENTITY = m.BRIDE_FATHER_IDENTITY AND " +
             "b.CHILD_IDENTITY <> m.BRIDE_IDENTITY " +
-            "MERGE (b)-[r:GROUND_TRUTH_BIRTH_BRIDE_SIBLING]-(m)";
+            "MERGE (b)-[:GROUND_TRUTH_BIRTH_BRIDE_SIBLING]-(m)";
 
     private static final String DEATH_GROOM_IDENTITY = "MATCH (d:Death),(m:Marriage) WHERE " +
             "d.DECEASED_IDENTITY <> \"\" AND " +
             "m.GROOM_IDENTITY <> \"\" AND " +
             "d.DECEASED_IDENTITY = m.GROOM_IDENTITY " +
-            "MERGE (d)-[r:GROUND_TRUTH_DEATH_GROOM_IDENTITY]-(m)";
+            "MERGE (d)-[:GROUND_TRUTH_DEATH_GROOM_IDENTITY]-(m)";
 
     private static final String DEATH_BRIDE_IDENTITY = "MATCH (d:Death),(m:Marriage) WHERE " +
             "d.DECEASED_IDENTITY <> \"\" AND " +
             "m.BRIDE_IDENTITY <> \"\" AND " +
             "d.DECEASED_IDENTITY = m.BRIDE_IDENTITY " +
-            "MERGE (d)-[r:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]-(m)";
+            "MERGE (d)-[:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]-(m)";
 
     private static final String DEATH_GROOM_SIBLING = "MATCH (d:Death),(m:Marriage) WHERE " +
             "d.MOTHER_IDENTITY <> \"\" AND " +
@@ -157,7 +157,7 @@ public class CreateGTLinks {
             "d.MOTHER_IDENTITY = m.GROOM_MOTHER_IDENTITY AND " +
             "d.FATHER_IDENTITY = m.GROOM_FATHER_IDENTITY AND " +
             "d.DECEASED_IDENTITY <> m.GROOM_IDENTITY " +
-            "MERGE (d)-[r:GROUND_TRUTH_DEATH_GROOM_SIBLING]-(m)";
+            "MERGE (d)-[:GROUND_TRUTH_DEATH_GROOM_SIBLING]-(m)";
 
     private static final String DEATH_BRIDE_SIBLING = "MATCH (d:Death),(m:Marriage) WHERE " +
             "d.MOTHER_IDENTITY <> \"\" AND " +
@@ -167,23 +167,23 @@ public class CreateGTLinks {
             "d.MOTHER_IDENTITY = m.BRIDE_MOTHER_IDENTITY AND " +
             "d.FATHER_IDENTITY = m.BRIDE_FATHER_IDENTITY AND " +
             "d.DECEASED_IDENTITY <> m.BRIDE_IDENTITY " +
-            "MERGE (d)-[r:GROUND_TRUTH_DEATH_BRIDE_SIBLING]-(m)";
+            "MERGE (d)-[:GROUND_TRUTH_DEATH_BRIDE_SIBLING]-(m)";
 
     private static final String GROOM_GROOM_IDENTITY = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT (m1)-[:GROUND_TRUTH_GROOM_GROOM_IDENTITY]-(m2) AND " +
             "m1.GROOM_IDENTITY <> \"\" AND " +
             "m2.GROOM_IDENTITY <> \"\" AND " +
             "m1 <> m2 AND " +
-            "m1.GROOM_IDENTITY = m2.GROOM_IDENTITY AND " +
-            "NOT (m1)-[]-(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_GROOM_GROOM_IDENTITY]-(m2)";
+            "m1.GROOM_IDENTITY = m2.GROOM_IDENTITY " +
+            "MERGE (m1)-[:GROUND_TRUTH_GROOM_GROOM_IDENTITY]-(m2)";
 
     private static final String BRIDE_BRIDE_IDENTITY = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT (m1)-[:GROUND_TRUTH_BRIDE_BRIDE_IDENTITY]-(m2) AND " +
             "m1.BRIDE_IDENTITY <> \"\" AND " +
             "m2.BRIDE_IDENTITY <> \"\" AND " +
             "m1 <> m2 AND " +
-            "m1.BRIDE_IDENTITY = m2.BRIDE_IDENTITY AND " +
-            "NOT (m1)-[]-(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_IDENTITY]-(m2)";
+            "m1.BRIDE_IDENTITY = m2.BRIDE_IDENTITY " +
+            "MERGE (m1)-[:GROUND_TRUTH_BRIDE_BRIDE_IDENTITY]-(m2)";
 
     private static final String GROOM_PARENTS_MARRIAGE_IDENTITY = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
             "m1.GROOM_FATHER_IDENTITY <> \"\" AND " +
@@ -193,7 +193,7 @@ public class CreateGTLinks {
             "m1 <> m2 AND " +
             "m1.GROOM_MOTHER_IDENTITY = m2.BRIDE_IDENTITY AND " +
             "m1.GROOM_FATHER_IDENTITY = m2.GROOM_IDENTITY " +
-            "MERGE (m1)-[r:GROUND_TRUTH_GROOM_PARENTS_MARRIAGE]->(m2)";
+            "MERGE (m1)-[:GROUND_TRUTH_GROOM_PARENTS_MARRIAGE]->(m2)";
 
     private static final String BRIDE_PARENTS_MARRIAGE_IDENTITY = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
             "m1.BRIDE_FATHER_IDENTITY <> \"\" AND " +
@@ -203,94 +203,94 @@ public class CreateGTLinks {
             "m1 <> m2 AND " +
             "m1.BRIDE_MOTHER_IDENTITY = m2.BRIDE_IDENTITY AND " +
             "m1.BRIDE_FATHER_IDENTITY = m2.GROOM_IDENTITY " +
-            "MERGE (m1)-[r:GROUND_TRUTH_BRIDE_PARENTS_MARRIAGE]->(m2)";
+            "MERGE (m1)-[:GROUND_TRUTH_BRIDE_PARENTS_MARRIAGE]->(m2)";
 
     private static final String GROOM_GROOM_SIBLING = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT (m1)-[:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2) AND " +
             "m1.GROOM_MOTHER_IDENTITY <> \"\" AND " +
             "m1.GROOM_FATHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_MOTHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_FATHER_IDENTITY <> \"\" AND " +
             "m1.GROOM_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY AND " +
             "m1.GROOM_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY AND " +
-            "m1.GROOM_IDENTITY <> m2.GROOM_IDENTITY AND " +
-            "NOT (m1)-[]-(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2)";
+            "m1.GROOM_IDENTITY <> m2.GROOM_IDENTITY " +
+            "MERGE (m1)-[:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2)";
 
     private static final String BRIDE_BRIDE_SIBLING = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT  (m1)-[:GROUND_TRUTH_BRIDE_BRIDE_SIBLING]-(m2) AND " +
             "m1.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
             "m1.BRIDE_FATHER_IDENTITY <> \"\" AND " +
             "m2.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
             "m2.BRIDE_FATHER_IDENTITY <> \"\" AND " +
             "m1.BRIDE_MOTHER_IDENTITY = m2.BRIDE_MOTHER_IDENTITY AND " +
             "m1.BRIDE_FATHER_IDENTITY = m2.BRIDE_FATHER_IDENTITY AND " +
-            "m1.BRIDE_IDENTITY <> m2.BRIDE_IDENTITY AND " +
-            "NOT  (m1)-[]-(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_SIBLING]-(m2)";
+            "m1.BRIDE_IDENTITY <> m2.BRIDE_IDENTITY " +
+            "MERGE (m1)-[:GROUND_TRUTH_BRIDE_BRIDE_SIBLING]-(m2)";
 
     private static final String BRIDE_GROOM_SIBLING = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT (m1)-[:GROUND_TRUTH_BRIDE_GROOM_SIBLING]-(m2) AND " +
             "m1.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
             "m1.BRIDE_FATHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_MOTHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_FATHER_IDENTITY <> \"\" AND " +
             "m1.BRIDE_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY AND " +
-            "m1.BRIDE_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY AND " +
-            "NOT (m1)-[]-(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_BRIDE_GROOM_SIBLING]-(m2)";
+            "m1.BRIDE_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY " +
+            "MERGE (m1)-[:GROUND_TRUTH_BRIDE_GROOM_SIBLING]-(m2)";
 
     private static final String GROOM_GROOM_HALF_SIBLING = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT (m1)-[:GROUND_TRUTH_GROOM_GROOM_HALF_SIBLING]-(m2) AND " +
             "m1.GROOM_MOTHER_IDENTITY <> \"\" AND " +
             "m1.GROOM_FATHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_MOTHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_FATHER_IDENTITY <> \"\" AND " +
             "m1 <> m2 AND " +
             "(m1.GROOM_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY OR m1.GROOM_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY ) AND " +
-            "NOT (m1.GROOM_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY AND m1.GROOM_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY ) AND " +
-            "NOT (m1)-[]-(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_GROOM_GROOM_HALF_SIBLING]-(m2)";
+            "NOT (m1.GROOM_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY AND m1.GROOM_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY ) " +
+            "MERGE (m1)-[:GROUND_TRUTH_GROOM_GROOM_HALF_SIBLING]-(m2)";
 
     private static final String BRIDE_BRIDE_HALF_SIBLING = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT (m1)-[:GROUND_TRUTH_BRIDE_BRIDE_HALF_SIBLING]-(m2) AND " +
             "m1.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
             "m1.BRIDE_FATHER_IDENTITY <> \"\" AND " +
             "m2.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
             "m2.BRIDE_FATHER_IDENTITY <> \"\" AND " +
             "m1 <> m2 AND " +
             "(m1.BRIDE_MOTHER_IDENTITY = m2.BRIDE_MOTHER_IDENTITY OR m1.BRIDE_FATHER_IDENTITY = m2.BRIDE_FATHER_IDENTITY) AND " +
-            "NOT (m1.BRIDE_MOTHER_IDENTITY = m2.BRIDE_MOTHER_IDENTITY AND m1.BRIDE_FATHER_IDENTITY = m2.BRIDE_FATHER_IDENTITY) AND " +
-            "NOT (m1)-[]-(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_HALF_SIBLING]-(m2)";
+            "NOT (m1.BRIDE_MOTHER_IDENTITY = m2.BRIDE_MOTHER_IDENTITY AND m1.BRIDE_FATHER_IDENTITY = m2.BRIDE_FATHER_IDENTITY) " +
+            "MERGE (m1)-[:GROUND_TRUTH_BRIDE_BRIDE_HALF_SIBLING]-(m2)";
 
     private static final String BRIDE_GROOM_HALF_SIBLING = "MATCH (m1:Marriage),(m2:Marriage) WHERE " +
+            "NOT (m1)-[:GROUND_TRUTH_BRIDE_GROOM_HALF_SIBLING]->(m2) AND " +
             "m1.BRIDE_MOTHER_IDENTITY <> \"\" AND " +
             "m1.BRIDE_FATHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_MOTHER_IDENTITY <> \"\" AND " +
             "m2.GROOM_FATHER_IDENTITY <> \"\" AND " +
             "m1 <> m2 AND " +
             "(m1.BRIDE_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY OR m1.BRIDE_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY ) AND " +
-            "NOT (m1.BRIDE_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY AND m1.BRIDE_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY) AND " +
-            "NOT (m1)-[]->(m2) " +
-            "MERGE (m1)-[r:GROUND_TRUTH_BRIDE_GROOM_HALF_SIBLING]-(m2)";
+            "NOT (m1.BRIDE_MOTHER_IDENTITY = m2.GROOM_MOTHER_IDENTITY AND m1.BRIDE_FATHER_IDENTITY = m2.GROOM_FATHER_IDENTITY) " +
+            "MERGE (m1)-[:GROUND_TRUTH_BRIDE_GROOM_HALF_SIBLING]-(m2)";
 
     private static final String DEATH_DEATH_SIBLING = "MATCH (d1:Death),(d2:Death) WHERE " +
+            "NOT (d1)-[:GROUND_TRUTH_DEATH_SIBLING]-(d2) AND " +
             "d1.MOTHER_IDENTITY <> \"\" AND " +
             "d1.FATHER_IDENTITY <> \"\" AND " +
             "d2.MOTHER_IDENTITY <> \"\" AND " +
             "d2.FATHER_IDENTITY <> \"\" AND " +
             "d1 <> d2 AND " +
             "d1.MOTHER_IDENTITY = d2.MOTHER_IDENTITY AND " +
-            "d1.FATHER_IDENTITY = d2.FATHER_IDENTITY AND " +
-            "NOT (d1)-[]-(d2) " +
-            "MERGE (d1)-[r:GROUND_TRUTH_DEATH_SIBLING]-(d2)";
+            "d1.FATHER_IDENTITY = d2.FATHER_IDENTITY " +
+            "MERGE (d1)-[:GROUND_TRUTH_DEATH_SIBLING]-(d2)";
 
     private static final String DEATH_DEATH_HALF_SIBLING = "MATCH (d1:Death),(d2:Death) WHERE " +
+            "NOT (d1)-[:GROUND_TRUTH_DEATH_HALF_SIBLING]-(d2) AND " +
             "d1.MOTHER_IDENTITY <> \"\" AND " +
             "d2.MOTHER_IDENTITY <> \"\" AND " +
             "d1.FATHER_IDENTITY <> \"\" AND " +
             "d2.FATHER_IDENTITY <> \"\" AND " +
             "d1 <> d2 AND " +
             "(d1.MOTHER_IDENTITY = d2.MOTHER_IDENTITY OR d1.FATHER_IDENTITY = d2.FATHER_IDENTITY) AND " +
-            "NOT (d1.MOTHER_IDENTITY = d2.MOTHER_IDENTITY AND d1.FATHER_IDENTITY = d2.FATHER_IDENTITY) AND " +
-            "NOT (d1)-[]-(d2) " +
-            "MERGE (d1)-[r:GROUND_TRUTH_DEATH_HALF_SIBLING]-(d2)";
+            "NOT (d1.MOTHER_IDENTITY = d2.MOTHER_IDENTITY AND d1.FATHER_IDENTITY = d2.FATHER_IDENTITY) " +
+            "MERGE (d1)-[:GROUND_TRUTH_DEATH_HALF_SIBLING]-(d2)";
 
     private static void doQueries(String... queries) {
 
@@ -299,7 +299,9 @@ public class CreateGTLinks {
             System.out.println("Creating GT links @ " + LocalDateTime.now());
 
             for (String query : queries) {
+                System.out.println( "Running: " + query );
                 session.run(query);
+                System.out.println("Finished query @ " + LocalDateTime.now());
             }
 
             System.out.println("Complete @ " + LocalDateTime.now());

@@ -37,6 +37,7 @@ public class GroomGroomIdentityBuilder implements MakePersistent {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
                 new BitBlasterLinkageRunner().run(linkageRecipe, new GroomGroomIdentityBuilder(), false, true);
 
+
                 linkage_fields--;
             }
         } catch (Exception e) {

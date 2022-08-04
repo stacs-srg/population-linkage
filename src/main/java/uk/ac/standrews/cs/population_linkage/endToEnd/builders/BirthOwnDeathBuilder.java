@@ -34,7 +34,7 @@ public class BirthOwnDeathBuilder implements MakePersistent {
             // First run with no field requirements
             BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getName(), bridge);
             linkageRecipe.setNumberLinkageFieldsRequired(0);
-            new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), true, false);
+            new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), false, true);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
