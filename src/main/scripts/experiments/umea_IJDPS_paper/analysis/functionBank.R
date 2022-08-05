@@ -32,6 +32,10 @@ false_positive_rate <- function(tn, fp) {
   return(fp / (tn + fp))
 }
 
+true_negative_rate <- function(tn, fp) {
+  return(tn / (tn + fp))
+}
+
 f_measure <- function(precision, recall) {
   return(2 * (precision * recall) / (precision + recall))
 }
@@ -119,6 +123,17 @@ plotFMeasureVsThreshold <- function(data, x_axis_label, y_axis_label, custom_pal
   return(plot)
 }
 
+plotSpecificityVsThreshold <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  # Discard all but the final results.
+  data <- data[which(data$records_processed == max(data$records_processed)),]
+  data <- recalculateStatistics(data)
+
+  plot <- makeSpecificityVsThresholdPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
+
+  return(plot)
+}
+
 plotROC <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
 
   # Discard all but the final results.
@@ -141,6 +156,17 @@ plotPrecisionVsRecall <- function(data, x_axis_label, y_axis_label, custom_palet
   return(plot)
 }
 
+plotSpecificityVsRecall <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  # Discard all but the final results.
+  data <- data[which(data$records_processed == max(data$records_processed)),]
+  data <- recalculateStatistics(data)
+
+  plot <- makeSpecificityVsRecallPlot(data, x_axis_label, y_axis_label, custom_palette, faceted)
+
+  return(plot)
+}
+
 filter <- function(data, distance_measure, thresholds) {
 
   data <- data[which(data$distance_measure == distance_measure),]
@@ -156,6 +182,7 @@ recalculateStatistics <- function(data) {
   data$recall <- recall(data$tp, data$fn)
   data$false_positive_rate <- false_positive_rate(data$tn, data$fp)
   data$true_positive_rate <- data$recall
+  data$true_negative_rate <- true_negative_rate(data$tn, data$fp)
   data$f_measure <- f_measure(data$precision, data$recall)
 
   return(data)
@@ -218,6 +245,11 @@ makeFMeasureVsThresholdPlot <- function(data, x_axis_label, y_axis_label, custom
   return(makePerDistanceMeasurePlot(data, "threshold", "f_measure", x_axis_label, y_axis_label, custom_palette, faceted))
 }
 
+makeSpecificityVsThresholdPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  return(makePerDistanceMeasurePlot(data, "threshold", "true_negative_rate", x_axis_label, y_axis_label, custom_palette, faceted, 0, 1, 0.99995, 1.000001))
+}
+
 makeROCPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
 
   return(makePerDistanceMeasurePlot(data, "false_positive_rate", "true_positive_rate", x_axis_label, y_axis_label, custom_palette, faceted))
@@ -228,7 +260,12 @@ makePrecisionVsRecallPlot <- function(data, x_axis_label, y_axis_label, custom_p
   return(makePerDistanceMeasurePlot(data, "recall", "precision", x_axis_label, y_axis_label, custom_palette, faceted))
 }
 
-makePerDistanceMeasurePlot <- function(data, x_axis_name, y_axis_name, x_axis_label, y_axis_label, custom_palette, faceted) {
+makeSpecificityVsRecallPlot <- function(data, x_axis_label, y_axis_label, custom_palette, faceted) {
+
+  return(makePerDistanceMeasurePlot(data, "recall", "true_negative_rate", x_axis_label, y_axis_label, custom_palette, faceted, 0, 1, 0.99995, 1.000001))
+}
+
+makePerDistanceMeasurePlot <- function(data, x_axis_name, y_axis_name, x_axis_label, y_axis_label, custom_palette, faceted, x_lower_bound = 0, x_upper_bound = 1, y_lower_bound = 0, y_upper_bound = 1) {
 
   collated_data <- collateData(data)
 
@@ -240,14 +277,14 @@ makePerDistanceMeasurePlot <- function(data, x_axis_name, y_axis_name, x_axis_la
   if (faceted) {
     plot <- plot +
       facet_wrap(~distance_measure) +
-      scale_x_continuous(limits = c(0, 1), minor_breaks = NULL) +
-      scale_y_continuous(limits = c(0, 1), minor_breaks = NULL) +
+      scale_x_continuous(limits = c(x_lower_bound, x_upper_bound), minor_breaks = NULL) +
+      scale_y_continuous(limits = c(y_lower_bound, y_upper_bound), minor_breaks = NULL) +
       theme(legend.position = "bottom", panel.spacing = unit(0.75, "lines")) # space out the images a little
   }
   else {
     plot <- plot +
-      scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
-      scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1), minor_breaks = NULL) +
+      scale_x_continuous(limits = c(x_lower_bound, x_upper_bound), breaks = seq(x_lower_bound, x_upper_bound, 0.1), minor_breaks = NULL) +
+      scale_y_continuous(limits = c(y_lower_bound, y_upper_bound), breaks = seq(y_lower_bound, y_upper_bound, 0.1), minor_breaks = NULL) +
       theme(legend.position = "bottom", panel.background = element_rect(fill = "white"),
             panel.grid.major = element_line(size = 0.25, linetype = "solid", colour = "grey"))
   }
@@ -270,6 +307,7 @@ collateData <- function(data) {
       # Assignments below make sense because filtered_data only contains a single row.
       collated_data[nrow(collated_data), "false_positive_rate"] <- filtered_data$false_positive_rate
       collated_data[nrow(collated_data), "true_positive_rate"] <- filtered_data$true_positive_rate
+      collated_data[nrow(collated_data), "true_negative_rate"] <- filtered_data$true_negative_rate
       collated_data[nrow(collated_data), "precision"] <- filtered_data$precision
       collated_data[nrow(collated_data), "recall"] <- filtered_data$recall
       collated_data[nrow(collated_data), "f_measure"] <- filtered_data$f_measure
@@ -287,6 +325,14 @@ saveFMeasureVsThreshold <- function(input_file_path, output_file_path, x_axis_la
   ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
 }
 
+saveSpecificityVsThreshold <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
+
+  loadIntoGlobal(input_file_path, "linkage_data")
+
+  plot <- plotSpecificityVsThreshold(linkage_data, x_axis_label, y_axis_label, palette, faceted)
+  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
+}
+
 saveROC <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
 
   loadIntoGlobal(input_file_path, "linkage_data")
@@ -300,6 +346,14 @@ savePrecisionVsRecall <- function(input_file_path, output_file_path, x_axis_labe
   loadIntoGlobal(input_file_path, "linkage_data")
 
   plot <- plotPrecisionVsRecall(linkage_data, x_axis_label, y_axis_label, palette, faceted)
+  ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
+}
+
+saveSpecificityVsRecall <- function(input_file_path, output_file_path, x_axis_label, y_axis_label, palette, image_dpi, x_image_width, y_image_width, image_size_units, faceted) {
+
+  loadIntoGlobal(input_file_path, "linkage_data")
+
+  plot <- plotSpecificityVsRecall(linkage_data, x_axis_label, y_axis_label, palette, faceted)
   ggsave(output_file_path, plot, dpi = image_dpi, width = x_image_width, height = y_image_width, units = image_size_units)
 }
 

@@ -19,7 +19,7 @@ OUTPUT_FILE_NAME_ROOT_DETAIL <- 4
 ##########################################################################
 # Edit if adjustments to figure required.
 
-X_UPPER_BOUND <- 30000
+X_UPPER_BOUND <- 270500
 X_AXIS_LABEL <- "Records processed"
 Y_AXIS_LABEL <- "Absolute error in F1-measure"
 COLOUR <- "black"
