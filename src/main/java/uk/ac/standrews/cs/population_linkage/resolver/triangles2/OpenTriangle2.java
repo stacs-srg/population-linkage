@@ -1,0 +1,47 @@
+/*
+ * Copyright 2022 Systems Research Group, University of St Andrews:
+ * <https://github.com/stacs-srg>
+ */
+package uk.ac.standrews.cs.population_linkage.resolver.triangles2;
+
+import org.neo4j.driver.types.Node;
+import org.neo4j.driver.types.Relationship;
+
+/**
+ * Used to encode unmatched triangles with nodes x and y and z
+ * x and y are xy_distance apart, y and z are yz_distance apart
+ * but xz is not connected.
+ * All the ids are storr ids of Nodes.
+ */
+public class OpenTriangle2 {
+    public final Node x;
+    public final Node y;
+    public final Node z;
+    public final Relationship xy;
+    public final Relationship yz;
+
+    public OpenTriangle2(Node x, Node y, Node z, Relationship xy, Relationship yz) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.xy = xy;
+        this.yz = yz;
+    }
+
+    public static double getDistance( Relationship r ) {
+        return r.get("distance").asDouble();
+    }
+
+    public static long getStorrId( Node n ) {
+        return n.get("STORR_ID").asLong();
+    }
+
+    public static long getNeoId(Node n ) {
+        return n.id();
+    }
+
+    public String toString() {
+        return "X = " + getStorrId( x ) + " Y = " + getStorrId( y  ) + " Z = " + getStorrId( z ) + "\n" +
+        " xy= " + getDistance( xy ) + " yz = " + getDistance( yz) ;
+    }
+}

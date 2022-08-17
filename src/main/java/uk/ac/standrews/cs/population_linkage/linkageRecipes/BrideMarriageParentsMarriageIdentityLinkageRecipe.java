@@ -41,7 +41,7 @@ public class BrideMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     public static final int ID_FIELD_INDEX1 = Marriage.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    public static final int ALL_LINKAGE_FIELDS = 5;
+    public static final int ALL_LINKAGE_FIELDS = 4;
     private List<LXP> cached_records = null;
     private final int number_of_marriages;
 

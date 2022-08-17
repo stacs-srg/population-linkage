@@ -27,8 +27,8 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 /**
  * This class attempts to perform birth-marriage sibling linkage.
@@ -47,7 +47,7 @@ public class DeathBrideSiblingBundleBuilder implements MakePersistent {
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
+            int half_fields = linkage_fields - (linkage_fields / 2 ); // TODO Take out +1 everywhere
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
@@ -70,8 +70,11 @@ public class DeathBrideSiblingBundleBuilder implements MakePersistent {
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
 
-            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
-            String std_id2 = link.getRecord2().getReferend().getString(Birth.STANDARDISED_ID );
+            // role/record 1 is stored role role/record 2 is query role
+            // getStoredType() return Death.class;
+
+            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);   // changed 17/8/22
+            String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID );
 
             if( !std_id1.equals(std_id2 ) ) {
 

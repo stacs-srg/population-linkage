@@ -40,7 +40,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    // TODO Do something to avoid self-links (linker & ground truth)
+    // TODO Do something to avoid self-links (in linker, ground truth sorted)
 
     private static final double DISTANCE_THRESHOLD = 0.36;
 

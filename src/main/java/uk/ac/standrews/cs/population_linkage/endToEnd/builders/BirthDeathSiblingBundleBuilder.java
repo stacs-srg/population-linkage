@@ -69,8 +69,12 @@ public class BirthDeathSiblingBundleBuilder implements MakePersistent {
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
 
-            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
-            String std_id2 = link.getRecord2().getReferend().getString(Birth.STANDARDISED_ID );
+            // role/record 1 is stored role
+            // role/record 2 is query role
+            // getStoredType() return Birth.class;
+
+            String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID); // changed 17/8/22
+            String std_id2 = link.getRecord2().getReferend().getString(Death.STANDARDISED_ID );
 
             if( !std_id1.equals(std_id2 ) ) {
 

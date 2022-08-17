@@ -458,9 +458,14 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now());
 
         if (persist_links) {
+            int links_made = 0;
             for (Link linkage_says_true_link : links) {
                 make_persistent.makePersistent(linkage_recipe, linkage_says_true_link);
+                links_made = links_made + 1;
             }
+            System.out.println("Links made: " + links_made);
+        } else {
+            System.out.println("Persist links not requested");
         }
 
         long tp = 0;
@@ -485,7 +490,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
             LinkageQuality lq = getLinkageQuality(evaluate_quality, tp, fp);
             return new LinkageResult(lq, links);
         } else {
-            return new LinkageResult(new LinkageQuality("Not requested"), null); // TODO What should this return in this case?
+            return new LinkageResult(new LinkageQuality("Linkage Quality not requested"), null); // TODO What should this return in this case?
         }
     }
 

@@ -183,7 +183,7 @@ public class SiblingBirthOpenTriangleResolver {
      * std_id_x - the standard id of node x
      * std_id_z - the standard id of node z
      *
-     * @return the number of node that x and z share as neighbours
+     * @return the number of nodes that x and z share as neighbours
      * @throws BucketException
      */
     private int countIntersectionDirectSiblingsBetween(String std_id_x, String std_id_z) throws BucketException {

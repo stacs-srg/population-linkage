@@ -56,10 +56,10 @@ public class CountGTLinks {
     private static final String GROOM_GROOM_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2) return count(r)";
     private static final String BRIDE_BRIDE_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_SIBLING]-(m2) return count(r)";
     private static final String BRIDE_GROOM_SIBLING = "MATCH(m1)-[r:GROUND_TRUTH_BRIDE_GROOM_SIBLING]-(m2) return count(r)";
+    private static final String DEATH_DEATH_SIBLING = "MATCH (d1)-[r:GROUND_TRUTH_DEATH_SIBLING]-(d2) return count(r)";
     private static final String GROOM_GROOM_HALF_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_GROOM_GROOM_HALF_SIBLING]-(m2) return count(r)";
     private static final String BRIDE_BRIDE_HALF_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_HALF_SIBLING]-(m2) return count(r)";
     private static final String BRIDE_GROOM_HALF_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_GROOM_HALF_SIBLING]-(m2) return count(r)";
-    private static final String DEATH_DEATH_SIBLING = "MATCH (d1)-[r:GROUND_TRUTH_DEATH_SIBLING]-(d2) return count(r)";
     private static final String DEATH_DEATH_HALF_SIBLING = "MATCH (d1)-[r:GROUND_TRUTH_DEATH_HALF_SIBLING]-(d2) return count(r)";
 
     private static void doQuery(Session session, String title, String query) {
@@ -86,15 +86,15 @@ public class CountGTLinks {
             doQuery(session, "Birth-bride identity", BIRTH_BRIDE_IDENTITY);
             doQuery(session, "Father-groom identity", FATHER_GROOM_IDENTITY);
             doQuery(session, "Mother-bride identity", MOTHER_BRIDE_IDENTITY);
-            doQuery(session, "Birth-parents identity", BIRTH_PARENTS_MARRIAGE_IDENTITY);
-            doQuery(session, "Death-parents identity", DEATH_PARENTS_MARRIAGE_IDENTITY);
+            doQuery(session, "Birth-parents marriage identity", BIRTH_PARENTS_MARRIAGE_IDENTITY);
+            doQuery(session, "Death-parents marriage identity", DEATH_PARENTS_MARRIAGE_IDENTITY);
             doQuery(session, "Birth-groom sibling", BIRTH_GROOM_SIBLING);
             doQuery(session, "Birth-bride sibling", BIRTH_BRIDE_SIBLING);
             doQuery(session, "Death-groom identity", DEATH_GROOM_IDENTITY);
             doQuery(session, "Death-bride identity", DEATH_BRIDE_IDENTITY);
             doQuery(session, "Death-groom sibling", DEATH_GROOM_SIBLING);
             doQuery(session, "Death-bride sibling", DEATH_BRIDE_SIBLING);
-            doQuery(session, "Groom-grppm identity", GROOM_GROOM_IDENTITY);
+            doQuery(session, "Groom-groom identity", GROOM_GROOM_IDENTITY);
             doQuery(session, "Bride-bride identity", BRIDE_BRIDE_IDENTITY);
             doQuery(session, "Groom parents marriage", GROOM_PARENTS_MARRIAGE_IDENTITY);
             doQuery(session, "Bride parents marriage", BRIDE_PARENTS_MARRIAGE_IDENTITY);
