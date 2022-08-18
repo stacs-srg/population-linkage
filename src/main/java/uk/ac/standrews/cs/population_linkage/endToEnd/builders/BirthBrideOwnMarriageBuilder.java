@@ -43,7 +43,7 @@ public class BirthBrideOwnMarriageBuilder implements MakePersistent {
             BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideOwnMarriageBuilder.class.getName(),bridge);
 
             int linkage_fields = BirthBrideIdentityLinkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
+            int half_fields = linkage_fields - (linkage_fields / 2 );
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);

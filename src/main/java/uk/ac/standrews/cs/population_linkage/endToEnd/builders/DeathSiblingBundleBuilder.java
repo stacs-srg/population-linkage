@@ -45,7 +45,7 @@ public class DeathSiblingBundleBuilder implements MakePersistent {
             DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, number_of_records, DeathSiblingBundleBuilder.class.getName(), bridge);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
+            int half_fields = linkage_fields - (linkage_fields / 2 );
 
             while( linkage_fields >= half_fields ) {
                 BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();

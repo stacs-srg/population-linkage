@@ -41,7 +41,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    public static final int ALL_LINKAGE_FIELDS = 5;
+    public static final int ALL_LINKAGE_FIELDS = 4;
     private final int number_of_deaths;
     private List<LXP> cached_records = null;
 
@@ -49,16 +49,16 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
             Death.MOTHER_FORENAME,
             Death.MOTHER_MAIDEN_SURNAME,
             Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
-            Death.FATHER_OCCUPATION
+            Death.FATHER_SURNAME
+          //  Death.FATHER_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
             Marriage.GROOM_MOTHER_FORENAME,
             Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
             Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME,
-            Marriage.GROOM_FATHER_OCCUPATION
+            Marriage.GROOM_FATHER_SURNAME
+          //  Marriage.GROOM_FATHER_OCCUPATION
     );
 
     public DeathGroomSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {

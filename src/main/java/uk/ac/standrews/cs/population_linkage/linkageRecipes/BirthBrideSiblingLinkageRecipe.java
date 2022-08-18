@@ -46,23 +46,23 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     private List<LXP> cached_records;
 
     private final int number_of_births;
-    public static final int ALL_LINKAGE_FIELDS = 5;
+    public static final int ALL_LINKAGE_FIELDS = 4;
     public int no_linkage_fields_required;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.MOTHER_FORENAME,
             Birth.MOTHER_MAIDEN_SURNAME,
             Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.FATHER_OCCUPATION
+            Birth.FATHER_SURNAME
+        //    Birth.FATHER_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
             Marriage.BRIDE_MOTHER_FORENAME,
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
             Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_FATHER_OCCUPATION
+            Marriage.BRIDE_FATHER_SURNAME
+         //   Marriage.BRIDE_FATHER_OCCUPATION
     );
 
     @SuppressWarnings("unchecked")

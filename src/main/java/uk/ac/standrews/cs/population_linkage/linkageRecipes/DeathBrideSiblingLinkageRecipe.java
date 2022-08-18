@@ -41,7 +41,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    public static final int ALL_LINKAGE_FIELDS = 5;
+    public static final int ALL_LINKAGE_FIELDS = 4;
     private final int number_of_deaths;
     private List<LXP> cached_records = null;
 
@@ -50,8 +50,8 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
             Death.MOTHER_FORENAME,
             Death.MOTHER_MAIDEN_SURNAME,
             Death.FATHER_FORENAME,
-            Death.FATHER_SURNAME,
-            Death.FATHER_OCCUPATION
+            Death.FATHER_SURNAME
+         //   Death.FATHER_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
@@ -59,8 +59,8 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
             Marriage.BRIDE_MOTHER_FORENAME,
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
             Marriage.BRIDE_FATHER_FORENAME,
-            Marriage.BRIDE_FATHER_SURNAME,
-            Marriage.BRIDE_FATHER_OCCUPATION
+            Marriage.BRIDE_FATHER_SURNAME
+         //   Marriage.BRIDE_FATHER_OCCUPATION
     );
 
     @SuppressWarnings("unchecked")
@@ -82,7 +82,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfGroundTruthTrueLinks(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
         }
         return cached_records;
     }

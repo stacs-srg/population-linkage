@@ -44,7 +44,7 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     private final int number_of_births;
-    public static final int ALL_LINKAGE_FIELDS = 5;
+    public static final int ALL_LINKAGE_FIELDS = 4;
 
     private List<LXP> cached_records = null;
 
@@ -52,16 +52,16 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
             Birth.MOTHER_FORENAME,
             Birth.MOTHER_MAIDEN_SURNAME,
             Birth.FATHER_FORENAME,
-            Birth.FATHER_SURNAME,
-            Birth.FATHER_OCCUPATION
+            Birth.FATHER_SURNAME
+          //  Birth.FATHER_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
             Marriage.GROOM_MOTHER_FORENAME,
             Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
             Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME,
-            Marriage.GROOM_FATHER_OCCUPATION
+            Marriage.GROOM_FATHER_SURNAME
+         //   Marriage.GROOM_FATHER_OCCUPATION
     );
 
     @SuppressWarnings("unchecked")

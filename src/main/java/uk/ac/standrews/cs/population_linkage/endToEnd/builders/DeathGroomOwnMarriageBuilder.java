@@ -43,7 +43,7 @@ public class DeathGroomOwnMarriageBuilder implements MakePersistent {
             DeathGroomIdentityLinkageRecipe linkageRecipe = new DeathGroomIdentityLinkageRecipe(sourceRepo, number_of_records, DeathGroomOwnMarriageBuilder.class.getName(), bridge );
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 ) + 1;
+            int half_fields = linkage_fields - (linkage_fields / 2 );
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);

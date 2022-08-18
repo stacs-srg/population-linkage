@@ -16,6 +16,7 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
+import com.google.common.collect.Iterables;
 import uk.ac.standrews.cs.neoStorr.impl.DynamicLXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
@@ -200,15 +201,25 @@ public abstract class LinkageRecipe implements LinkViabilityChecker {
 
     Iterable<LXP> getByType(Class<? extends LXP> type) {
         if (type.equals(Birth.class)) {
-            return getBirthRecords();
+            Iterable<LXP> records = getBirthRecords();
+            printSize( records,"birth");
+            return records;
         }
         if (type.equals(Marriage.class)) {
-            return getMarriageRecords();
+            Iterable<LXP> records =  getMarriageRecords();
+            printSize( records,"marriage");
+            return records;
         }
         if (type.equals(Death.class)) {
-            return getDeathRecords();
+            Iterable<LXP> records = getDeathRecords();
+            printSize( records,"death");
+            return records;
         }
         throw new RuntimeException("Invalid source type");
+    }
+
+    private void printSize( Iterable<LXP> iterable, String label) {
+        System.out.println( "Retrieved " + Iterables.size(iterable) + " " + label + " records" );
     }
 
     public Iterable<LXP> getStoredRecords() {
@@ -287,7 +298,6 @@ public abstract class LinkageRecipe implements LinkViabilityChecker {
 
     /**
      * Returns the count of ground truth links among source records 1 and 2
-     *
      * @return A count of all ground truth links
      */
     public int getNumberOfGroundTruthLinksAsymmetric() {
