@@ -74,6 +74,7 @@ public class BirthDeathSiblingBundleBuilder implements MakePersistent {
 
             String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
             String std_id2 = link.getRecord2().getReferend(Death.class).getString(Death.STANDARDISED_ID );
+
             // if( !std_id1.equals(std_id2 ) ) { // DELETE IN NON homogeneous linkages
 
                 if (!Query.DBSiblingReferenceExists(recipe.getBridge(), std_id2, std_id1, recipe.getLinksPersistentName())) {

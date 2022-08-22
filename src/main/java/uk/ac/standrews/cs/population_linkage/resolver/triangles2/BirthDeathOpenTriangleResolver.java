@@ -163,7 +163,7 @@ public class BirthDeathOpenTriangleResolver {
 
             if (!x_f_id.equals("") && ! y_f_id.equals("") && ! z_f_id.equals("")) {
                 if (exactlyOneFalse(hypothesis_1, hypothesis_2, hypothesis_3)) {
-                    System.out.print("Found exactly one hypothsis false: ");
+                    System.out.print("Found exactly one hypothesis false: ");
                     if (! hypothesis_1) System.out.println("probablyBirthDeathMatch is false");
                     if (! hypothesis_2) System.out.println("probablyDeathsOfSiblings is false");
                     if (! hypothesis_3) System.out.println("probablyBirthSiblingDeath is true");
@@ -174,6 +174,7 @@ public class BirthDeathOpenTriangleResolver {
                     // DO some correction here!
                 }
                 System.out.println("GT: fids: " + x_f_id + " / " + y_f_id + " / " + z_f_id);
+
             }
 
             // otherwise do nothing!
@@ -244,11 +245,7 @@ public class BirthDeathOpenTriangleResolver {
         getDeathNames( getSiblings(bridge, GET_DEATH_SIBLINGS, lxp2_std_id),sibling_names2 );
         //getMarriageNames( getSiblings(bridge, GET_MARRIAGE_SIBLINGS, lxp2_std_id),sibling_names2  );
 
-        if( enoughCommonality( sibling_names1,sibling_names2 ) ) { // debug
-            System.out.println( "B D siblings in common" );
-            return true;
-        }
-        return false;
+        return enoughCommonality( sibling_names1,sibling_names2 );
     }
 
     private boolean enoughCommonality(Set<String> sibling_names1, Set<String> sibling_names2) {
@@ -266,6 +263,7 @@ public class BirthDeathOpenTriangleResolver {
                 count = count +1;
             }
         }
+        System.out.println( "B D siblings in common = " + count );
         return count > 2; // arbitrary!
     }
 

@@ -67,8 +67,6 @@ public class BirthGroomSiblingBundleBuilder implements MakePersistent {
             String std_id1 = link.getRecord1().getReferend(Death.class).getString(Death.STANDARDISED_ID);
             String std_id2 = link.getRecord2().getReferend(Birth.class).getString(Birth.STANDARDISED_ID );
 
-            if( !std_id1.equals(std_id2 ) ) {
-
                 if (!Query.BMGroomSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
                     Query.createBMGroomSiblingReference(
                             recipe.getBridge(),
@@ -78,7 +76,6 @@ public class BirthGroomSiblingBundleBuilder implements MakePersistent {
                             recipe.getNumberOfLinkageFieldsRequired(),
                             link.getDistance());
                 }
-            }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }
