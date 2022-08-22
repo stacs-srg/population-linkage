@@ -20,6 +20,7 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,8 @@ public class Util {
     public static Set<LXP> getBirthSiblings(List<Link> this_family) throws BucketException, RepositoryException {
         Set<LXP> results = new TreeSet<>();
         for( Link l : this_family ) {
-            results.add( l.getRecord1().getReferend() );
-            results.add( l.getRecord2().getReferend());
+            results.add( l.getRecord1().getReferend(Birth.class) );
+            results.add( l.getRecord2().getReferend(Birth.class));
         }
         return results;
     }

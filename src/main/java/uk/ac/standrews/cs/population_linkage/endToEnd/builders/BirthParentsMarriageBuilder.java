@@ -57,12 +57,7 @@ public class BirthParentsMarriageBuilder implements MakePersistent {
                 quality.print(System.out);
                 linkage_fields--;
             }
-        } catch (Exception e) {
-            System.out.println( "Runtime exception:" );
-            e.printStackTrace();
-        } finally {
             System.out.println("Run finished");
-            System.exit(0); // make sure process dies.
         }
     }
 
@@ -70,8 +65,8 @@ public class BirthParentsMarriageBuilder implements MakePersistent {
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
 
-            String std_id1 = link.getRecord1().getReferend().getString( Birth.STANDARDISED_ID );
-            String std_id2 = link.getRecord2().getReferend().getString( Marriage.STANDARDISED_ID );
+            String std_id1 = link.getRecord1().getReferend(Birth.class).getString( Birth.STANDARDISED_ID );
+            String std_id2 = link.getRecord2().getReferend(Marriage.class).getString( Marriage.STANDARDISED_ID );
 
             if( !std_id1.equals(std_id2)) {
 

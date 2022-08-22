@@ -51,20 +51,15 @@ public class DeathGroomOwnMarriageBuilder implements MakePersistent {
                 new BitBlasterLinkageRunner().run(linkageRecipe, new DeathGroomOwnMarriageBuilder(), false, true);
                 linkage_fields--;
             }
-        } catch (Exception e) {
-            System.out.println( "Runtime exception:" );
-            e.printStackTrace();
-        } finally {
-            System.out.println( "Run finished" );
-            System.exit(0); // Make sure it all shuts down properly.
+            System.out.println("Run finished");
         }
     }
 
     @Override
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
-            final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
-            final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+            final String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID);
 
             if( ! Query.DMDeathGroomOwnMarriageReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
                 Query.createDeathGroomOwnMarriageReference(

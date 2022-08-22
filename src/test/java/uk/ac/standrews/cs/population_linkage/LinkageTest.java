@@ -238,7 +238,7 @@ public abstract class LinkageTest {
 
         for (final Link link : record_pairs) {
 
-            final LXP link_record1 = link.getRecord1().getReferend();
+            final LXP link_record1 = link.getRecord1().getReferend();  // OK to use getReferencd without type here as refs do not escape scope
             final LXP link_record2 = link.getRecord2().getReferend();
 
             if (link_record1.equals(record1) && link_record2.equals(record2) || link_record1.equals(record2) && link_record2.equals(record1))

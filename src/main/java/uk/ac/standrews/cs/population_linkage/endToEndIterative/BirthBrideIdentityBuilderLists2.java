@@ -26,6 +26,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRun
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 /**
@@ -60,12 +61,12 @@ public class BirthBrideIdentityBuilderLists2 implements MakePersistent {
 
         public void makePersistent (LinkageRecipe recipe, Link link){
             try {
-                final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
-                final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+                final String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+                final String std_id2 = link.getRecord2().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID);
 
-                if (!Query.MMBrideBrideIdReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
+                if (!Query.BMBirthBrideReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
 
-                    Query.createMMBrideBrideIdReference(
+                    Query.createBirthBrideOwnMarriageReference(
                             recipe.getBridge(),
                             std_id1,
                             std_id2,

@@ -62,7 +62,6 @@ public class BirthDeathSiblingBundleBuilder implements MakePersistent {
             e.printStackTrace();
         } finally {
             System.out.println("Run finished");
-            System.exit(0); // make sure process dies.
         }
     }
 
@@ -73,21 +72,19 @@ public class BirthDeathSiblingBundleBuilder implements MakePersistent {
             // role/record 2 is query role
             // getStoredType() return Birth.class;
 
-            String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID); // changed 17/8/22
-            String std_id2 = link.getRecord2().getReferend().getString(Death.STANDARDISED_ID );
+            String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend(Death.class).getString(Death.STANDARDISED_ID );
+            // if( !std_id1.equals(std_id2 ) ) { // DELETE IN NON homogeneous linkages
 
-            if( !std_id1.equals(std_id2 ) ) {
-
-                if (!Query.DBSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
+                if (!Query.DBSiblingReferenceExists(recipe.getBridge(), std_id2, std_id1, recipe.getLinksPersistentName())) {
                     Query.createDBSiblingReference(
                             recipe.getBridge(),
-                            std_id1,
                             std_id2,
+                            std_id1,
                             recipe.getLinksPersistentName(),
                             recipe.getNumberOfLinkageFieldsRequired(),
                             link.getDistance());
                 }
-            }
         } catch (BucketException | RepositoryException e) {
             throw new RuntimeException(e);
         }

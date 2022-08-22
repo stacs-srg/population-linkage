@@ -51,21 +51,18 @@ public class BirthBrideOwnMarriageBuilder implements MakePersistent {
                 new BitBlasterLinkageRunner().run(linkageRecipe, new BirthBrideOwnMarriageBuilder(), false, true);
 
                 linkage_fields--;
+                System.out.println( "Run finished" );
             }
         } catch (Exception e) {
-            System.out.println( "Runtime exception:" );
             e.printStackTrace();
-        } finally {
-            System.out.println( "Run finished" );
-            System.exit(0); // Make sure it all shuts down properly.
         }
     }
 
     @Override
     public void makePersistent(LinkageRecipe linkage_recipe, Link link) {
         try {
-            final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
-            final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+            final String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID);
 
             if (!Query.BMBirthBrideReferenceExists(linkage_recipe.getBridge(), std_id1, std_id2, linkage_recipe.getLinksPersistentName())) {
 

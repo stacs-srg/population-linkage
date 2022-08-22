@@ -128,8 +128,12 @@ public abstract class Linker {
                         } catch (PersistentObjectException e) {
                             throw new RuntimeException(e);
                         }
-                    } else throw new NoSuchElementException();
-                } else throw new NoSuchElementException();
+                    } else {
+                        throw new NoSuchElementException();
+                    }
+                } else {
+                    throw new NoSuchElementException();
+                }
             }
 
             private boolean notFinished(final RecordPair pair) {

@@ -16,7 +16,6 @@
  */
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
@@ -34,7 +33,7 @@ import uk.ac.standrews.cs.population_records.record_types.Marriage;
  */
 public class BirthGroomOwnMarriageBuilder implements MakePersistent {
 
-    public static void main(String[] args) throws BucketException {
+    public static void main(String[] args) throws Exception {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
@@ -51,19 +50,14 @@ public class BirthGroomOwnMarriageBuilder implements MakePersistent {
                 new BitBlasterLinkageRunner().run(linkageRecipe, new BirthGroomOwnMarriageBuilder(), false, true);
                 linkage_fields--;
             }
-        } catch (Exception e) {
-            System.out.println( "Runtime exception:" );
-            e.printStackTrace();
-        } finally {
-            System.out.println( "Run finished" );
-            System.exit(0); // Make sure it all shuts down properly.
+            System.out.println("Run finished");
         }
     }
 
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
-            String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
-            String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+            String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID);
 
             if (!Query.BMBirthGroomReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
 

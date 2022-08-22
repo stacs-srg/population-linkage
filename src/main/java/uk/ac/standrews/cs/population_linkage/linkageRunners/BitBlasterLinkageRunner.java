@@ -34,7 +34,10 @@ import uk.ac.standrews.cs.population_linkage.linkers.SimilaritySearchLinker;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructure;
 import uk.ac.standrews.cs.population_linkage.searchStructures.BitBlasterSearchStructureFactory;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructureFactory;
-import uk.ac.standrews.cs.population_linkage.supportClasses.*;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageConfig;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -79,9 +82,9 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
         System.out.println("Constructing link iterable @ " + LocalDateTime.now());
 
+        List<Link> links_as_list;
         Iterable<Link> links = linker.getLinks();
-        List<Link> links_as_list = StreamSupport.stream(links.spliterator(), false).collect(Collectors.toList());
-
+        links_as_list = StreamSupport.stream(links.spliterator(), false).collect(Collectors.toList());
         return processLinks(make_persistent, evaluate_quality, persist_links, links_as_list);
     }
 
@@ -113,7 +116,8 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     }
 
     @Override
-    protected LinkageResult investigatelinkLists(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception {
+    protected LinkageResult investigatelinkLists(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge
+        bridge) throws Exception {
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
         ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
         System.out.println("Constructing lists of lists @ " + LocalDateTime.now());
@@ -242,29 +246,21 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
     private List<Link> processListsOfLists(Iterable<List<Link>> lists_of_list_of_links, boolean isIdentityLinkage) throws BucketException, RepositoryException {
 
-        System.out.println("processing list of lists ");
-
         // TODO fix isIdentityLinkage if this works! - some code in other linkage linkLists
 
         List<Link> linked_pairs = new ArrayList<>();
         List<LXP> previously_matched = new ArrayList<>();
-
-        System.out.println("2");
 
         // Link.getRecord1 is the stored record - Birth in test case - BirthBrideIdentity
         // Link.getRecord2 is the query record - Marriage in test
 
         Map<Long, List<Link>> map_of_links = linksListToMap(lists_of_list_of_links);
 
-        System.out.println("3");
-
 //        showMap( map_of_links );
 
         double max_t = linkage_recipe.getThreshold();
         int all_fields = linkage_recipe.getLinkageFields().size();
         final int half_fields = all_fields - (all_fields / 2) + 1;
-
-        System.out.println("4 " + all_fields + " " + half_fields);
 
         for (int required_fields = all_fields; required_fields >= half_fields; required_fields--) {
             System.out.println("Fields = " + required_fields);
@@ -283,7 +279,6 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 previously_matched.addAll(matched_this_round); // All all the new matches we have made this time around
             }
         }
-        System.out.println("5 ");
 
         return linked_pairs;
     }
@@ -297,29 +292,19 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     private Map<Long, List<Link>> linksListToMap(Iterable<List<Link>> lists_of_list_of_links) throws RepositoryException, BucketException {
 
         try {
-            System.out.println("a");
             Map<Long, List<Link>> map_of_links = new HashMap<>();
-            System.out.println("b");
             for (List<Link> list_of_links : lists_of_list_of_links) {
-                System.out.println("c");
                 if (list_of_links.size() != 0) {
-                    System.out.println("d");
                     long query_id = list_of_links.get(0).getRecord2().getReferend().getId();
-                    System.out.println("e");
                     map_of_links.put(query_id, list_of_links);
-                    System.out.println("f");
                 }
             }
-            System.out.println("g");
             return map_of_links;
         } catch (RuntimeException e) {
-            System.out.println("RTE");
             e.printStackTrace(System.out);
         } catch (Exception e) {
-            System.out.println("Ex");
             e.printStackTrace(System.out);
         }
-        System.out.println("h");
         return null;
     }
 

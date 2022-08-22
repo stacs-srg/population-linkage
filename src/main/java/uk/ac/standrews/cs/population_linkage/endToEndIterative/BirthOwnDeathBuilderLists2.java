@@ -56,8 +56,8 @@ public class BirthOwnDeathBuilderLists2 implements MakePersistent {
     @Override
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
-            final String std_id1 = link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
-            final String std_id2 = link.getRecord2().getReferend().getString(Death.STANDARDISED_ID);
+            final String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            final String std_id2 = link.getRecord2().getReferend(Death,class).getString(Death.STANDARDISED_ID);
 
             if( ! Query.BDDeathReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
 

@@ -150,7 +150,12 @@ public class SimilaritySearchLinker extends Linker {
                 private void loadPair() {
 
                     do {
-                        if (moreLinksToConsider()) {
+                        if (moreLinksToConsider()) { // either something in outer loop to process or there are more results
+
+                            if (!moreResultsAvailable()) {
+                                // Case when result records empty - there are not more results to process
+                                getNextRecordFromSearchSet();
+                            }
 
                             DataDistance<LXP> data_distance = result_records.get(result_index++);
                             next_pair = new RecordPair(data_distance.value, next_record_from_search_set, data_distance.distance);

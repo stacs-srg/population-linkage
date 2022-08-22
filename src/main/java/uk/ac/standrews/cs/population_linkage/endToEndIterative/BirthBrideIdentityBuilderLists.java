@@ -87,8 +87,8 @@ public class BirthBrideIdentityBuilderLists implements MakePersistent {
 
         public void makePersistent (LinkageRecipe recipe, Link link){
             try {
-                final String std_id1 = link.getRecord1().getReferend().getString(Marriage.STANDARDISED_ID);
-                final String std_id2 = link.getRecord2().getReferend().getString(Marriage.STANDARDISED_ID);
+                final String std_id1 = link.getRecord1().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID);
+                final String std_id2 = link.getRecord2().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID);
 
                 if (!Query.MMBrideBrideIdReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
 

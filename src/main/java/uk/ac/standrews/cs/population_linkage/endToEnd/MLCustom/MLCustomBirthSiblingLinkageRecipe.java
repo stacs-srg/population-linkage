@@ -75,8 +75,8 @@ public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe
     public void makeLinkPersistent(Link link) {
         try {
 
-            String std_id1 = link.getRecord1().getReferend().getString(Death.STANDARDISED_ID);
-            String std_id2 = link.getRecord2().getReferend().getString( Death.STANDARDISED_ID );
+            String std_id1 = link.getRecord1().getReferend(Death.class).getString(Death.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend(Death.class).getString( Death.STANDARDISED_ID );
 
             if( !std_id1.equals(std_id2 ) ) {
 
