@@ -54,7 +54,7 @@ public class BruteForceLinkageTest extends LinkageTest {
         }
 
         @Override
-        public void terminate() {
+        public void close() {
         }
 
         @Override

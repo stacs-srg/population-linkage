@@ -73,7 +73,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     );
 
     public BirthGroomIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
-        super(source_repository_name, links_persistent_name, bridge);
+        super(source_repository_name, links_persistent_name);
         if (number_of_records.equals(EVERYTHING_STRING)) {
             number_of_births = EVERYTHING;
         } else {

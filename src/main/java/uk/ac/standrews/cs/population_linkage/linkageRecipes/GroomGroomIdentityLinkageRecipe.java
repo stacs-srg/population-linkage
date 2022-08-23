@@ -63,7 +63,7 @@ public class GroomGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public GroomGroomIdentityLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
 
-        super(source_repository_name, links_persistent_name, bridge);
+        super(source_repository_name, links_persistent_name);
         setNumberLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 

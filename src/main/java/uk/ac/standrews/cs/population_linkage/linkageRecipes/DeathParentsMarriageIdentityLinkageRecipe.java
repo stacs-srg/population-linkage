@@ -60,7 +60,7 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public DeathParentsMarriageIdentityLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
-        super(source_repository_name, links_persistent_name, bridge);
+        super(source_repository_name, links_persistent_name);
     }
 
     @Override

@@ -19,6 +19,7 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import com.google.common.collect.Iterables;
 import uk.ac.standrews.cs.neoStorr.impl.DynamicLXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.PersistentObjectException;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
@@ -44,7 +45,7 @@ import java.util.stream.StreamSupport;
  * So for example in BirthBrideIdentityLinkageRecipeMatchLists the stored type (stored in the search structure) is a birth and Marriages are used to query.
  * In all recipes if the query and the stored types are not the same the query type is converted to a stored type using getQueryMappingFields() before querying.
  */
-public abstract class LinkageRecipe implements LinkViabilityChecker {
+public abstract class LinkageRecipe implements LinkViabilityChecker, AutoCloseable {
 
     /**
      * If TREAT_ANY_ABSENT_GROUND_TRUTH_AS_UNKNOWN is false, then the recipe is tuned to the Umea dataset,
@@ -64,8 +65,6 @@ public abstract class LinkageRecipe implements LinkViabilityChecker {
     protected static final String EVERYTHING_STRING = "EVERYTHING";
     public static final int EVERYTHING = Integer.MAX_VALUE;
 
-    protected final NeoDbCypherBridge bridge;
-
     protected final String source_repository_name;
     protected final String links_persistent_name;
     private final RecordRepository record_repository;
@@ -80,19 +79,25 @@ public abstract class LinkageRecipe implements LinkViabilityChecker {
 
     private int number_of_linkage_fields_required;
     private StringMeasure base_measure;
+    protected NeoDbCypherBridge bridge;
 
-    public LinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public LinkageRecipe(String source_repository_name, String links_persistent_name) {
 
         this.source_repository_name = source_repository_name;
         this.links_persistent_name = links_persistent_name;
-        this.bridge = bridge;
         setBaseMeasure(Constants.get("JENSEN_SHANNON"));
 
         this.record_repository = new RecordRepository(source_repository_name);
+        bridge = Store.getInstance().getBridge(); // lovely :)
     }
 
-    public NeoDbCypherBridge getBridge() {
+    public NeoDbCypherBridge getBridge() { 
         return bridge;
+    }
+
+    public void close() {
+        record_repository.close();
+        bridge.close();
     }
 
     public int getNumberOfLinkageFieldsRequired() {

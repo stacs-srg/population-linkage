@@ -64,7 +64,7 @@ public abstract class Linker {
         this.records2 = records2;
     }
 
-    public abstract void terminate();
+    public abstract void close();
 
     public abstract Iterable<List<RecordPair>> getMatchingLists();
 

@@ -70,7 +70,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
                     pair(Death.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)));
 
     public DeathBrideSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
-        super(source_repository_name, links_persistent_name, bridge);
+        super(source_repository_name, links_persistent_name);
         if (number_of_records.equals(EVERYTHING_STRING)) {
             number_of_deaths = EVERYTHING;
         } else {

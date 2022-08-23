@@ -62,7 +62,7 @@ public class SimilaritySearchLinker extends Linker {
         search_structure = search_structure_factory.newSearchStructure(storedSet, reference_objects);
     }
 
-    public void terminate() {
+    public void close() {
         if( search_structure != null ) { // if it were not initialised
             search_structure.terminate();
         }

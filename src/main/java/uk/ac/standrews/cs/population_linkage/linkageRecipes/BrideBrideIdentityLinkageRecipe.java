@@ -72,7 +72,7 @@ public class BrideBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     public BrideBrideIdentityLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
 
-        super(source_repository_name, links_persistent_name, bridge);
+        super(source_repository_name, links_persistent_name);
 
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }

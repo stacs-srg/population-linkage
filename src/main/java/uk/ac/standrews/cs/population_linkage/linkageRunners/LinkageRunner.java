@@ -53,7 +53,7 @@ public abstract class LinkageRunner implements AutoCloseable {
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = link(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks);
-        linker.terminate();
+        linker.close();
         return result;
     }
 
@@ -69,7 +69,7 @@ public abstract class LinkageRunner implements AutoCloseable {
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = linkLists(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
-        linker.terminate();
+        linker.close();
         return result;
     }
 
@@ -85,7 +85,7 @@ public abstract class LinkageRunner implements AutoCloseable {
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = investigatelinkLists(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
-        linker.terminate();
+        linker.close();
         return result;
     }
 
@@ -101,7 +101,7 @@ public abstract class LinkageRunner implements AutoCloseable {
         int numberOGroundTruthLinks = 0;
         MemoryLogger.update();
         LinkageResult result = printLinksNonLinks(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
-        linker.terminate();
+        linker.close();
         return result;
     }
 
@@ -142,8 +142,7 @@ public abstract class LinkageRunner implements AutoCloseable {
     }
 
     public void close() {
-        System.out.println( "Called" );
-        linker.terminate();
+        linker.close();
     }
 
     ///////////////////////////// I/O /////////////////////////////
