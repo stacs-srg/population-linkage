@@ -260,7 +260,7 @@ public class SiblingBirthOpenHexagonResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName());
             SiblingBirthOpenHexagonResolver resolver = new SiblingBirthOpenHexagonResolver(bridge, sourceRepo, linkageRecipe);
             resolver.resolve();
 

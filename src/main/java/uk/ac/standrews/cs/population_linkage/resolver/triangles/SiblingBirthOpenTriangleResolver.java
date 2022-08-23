@@ -259,9 +259,8 @@ public class SiblingBirthOpenTriangleResolver {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
-
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName())) {
             SiblingBirthOpenTriangleResolver resolver = new SiblingBirthOpenTriangleResolver(bridge, sourceRepo, linkageRecipe);
             resolver.resolve();
 

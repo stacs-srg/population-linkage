@@ -36,7 +36,7 @@ public class BirthBrideSiblingBundleBuilder implements MakePersistent {
 
     public static void main(String[] args) throws Exception {
 
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String sourceRepo = args[0];  // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try(BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
@@ -50,7 +50,6 @@ public class BirthBrideSiblingBundleBuilder implements MakePersistent {
                 LinkageResult lr = runner.run(linkageRecipe, new BirthBrideSiblingBundleBuilder(), false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
-
                 linkage_fields--;
             }
         }

@@ -17,13 +17,14 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthGroomIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
@@ -35,22 +36,22 @@ public class BirthGroomOwnMarriageBuilder implements MakePersistent {
 
     public static void main(String[] args) throws Exception {
 
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String sourceRepo = args[0];  // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-            BirthGroomIdentityLinkageRecipe linkageRecipe = new BirthGroomIdentityLinkageRecipe(sourceRepo, number_of_records, BirthGroomOwnMarriageBuilder.class.getName(), bridge);
+        try(BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            BirthGroomIdentityLinkageRecipe linkageRecipe = new BirthGroomIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideSiblingBundleBuilder.class.getName(), null) ) {
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 );
 
             while( linkage_fields >= half_fields ) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-
-                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthGroomOwnMarriageBuilder(), false, true);
+                LinkageResult lr = runner.run(linkageRecipe, new BirthGroomOwnMarriageBuilder(), false, true);
+                LinkageQuality quality = lr.getLinkageQuality();
+                quality.print(System.out);
                 linkage_fields--;
             }
-            System.out.println("Run finished");
         }
     }
 

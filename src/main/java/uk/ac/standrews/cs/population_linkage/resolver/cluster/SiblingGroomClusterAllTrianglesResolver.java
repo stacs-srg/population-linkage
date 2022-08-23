@@ -32,9 +32,8 @@ public class SiblingGroomClusterAllTrianglesResolver extends SiblingGroomCluster
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-
-            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, "10000", BirthSiblingBundleBuilder.class.getName(), bridge);
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
+            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, "10000", BirthSiblingBundleBuilder.class.getName()) ) {
 
 
             printHeaders();

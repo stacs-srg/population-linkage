@@ -383,9 +383,8 @@ public class SiblingGroomClusterOpenTriangleResolver {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
-
-            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
+            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, resultsRepo, BirthSiblingBundleBuilder.class.getName())) {
             SiblingGroomClusterOpenTriangleResolver resolver = new SiblingGroomClusterOpenTriangleResolver(bridge, sourceRepo, linkageRecipe);
 
             printHeaders();

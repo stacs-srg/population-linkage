@@ -72,7 +72,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.MOTHER_BIRTH_RECORD_IDENTITY, Birth.MOTHER_BIRTH_RECORD_IDENTITY), pair(Birth.FATHER_BIRTH_RECORD_IDENTITY, Birth.FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public BirthSiblingLinkageRecipe(String source_repository_name, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public BirthSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
 
         super(source_repository_name, links_persistent_name);
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);

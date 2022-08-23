@@ -18,7 +18,6 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomGroomSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
@@ -39,25 +38,19 @@ public class GroomGroomSiblingBuilder implements MakePersistent {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-        try( NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-
-            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, number_of_records, GroomGroomSiblingBuilder.class.getName(), bridge);
-
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+        try(BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            GroomGroomSiblingLinkageRecipe linkageRecipe = new GroomGroomSiblingLinkageRecipe(sourceRepo, number_of_records, GroomGroomSiblingBuilder.class.getName()) ) {
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2) + 1;
 
             while (linkage_fields >= half_fields) {
-
+                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
                 LinkageResult lr = runner.run(linkageRecipe, new GroomGroomSiblingBuilder(), false, true);
-
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
-
                 linkage_fields--;
             }
-            System.out.println("Run finished");
         }
     }
 

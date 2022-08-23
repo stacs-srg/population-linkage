@@ -32,9 +32,8 @@ public class SiblingBirthClusterAllTrianglesResolver extends SiblingBirthCluster
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, DeathSiblingBundleBuilder.class.getName(), bridge);
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, DeathSiblingBundleBuilder.class.getName())) {
             SiblingBirthClusterAllTrianglesResolver resolver = new SiblingBirthClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();

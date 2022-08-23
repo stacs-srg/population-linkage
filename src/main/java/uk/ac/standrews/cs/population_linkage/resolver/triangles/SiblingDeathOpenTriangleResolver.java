@@ -28,6 +28,7 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.resolver.util.OpenTriangle;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -259,11 +260,11 @@ public class SiblingDeathOpenTriangleResolver {
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
-
-            DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, DeathSiblingBundleBuilder.class.getName(), bridge);
-            SiblingDeathOpenTriangleResolver resolver = new SiblingDeathOpenTriangleResolver(bridge, sourceRepo, linkageRecipe);
-            resolver.resolve();
+        try (BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+             NeoDbCypherBridge bridge = new NeoDbCypherBridge();
+             DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe(sourceRepo, resultsRepo, DeathSiblingBundleBuilder.class.getName()) ) {
+             SiblingDeathOpenTriangleResolver resolver = new SiblingDeathOpenTriangleResolver(bridge, sourceRepo, linkageRecipe);
+             resolver.resolve();
 
         } catch (Exception e) {
             System.out.println("Exception closing bridge");

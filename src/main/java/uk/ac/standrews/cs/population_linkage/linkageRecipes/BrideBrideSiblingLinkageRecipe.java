@@ -67,7 +67,7 @@ public class BrideBrideSiblingLinkageRecipe extends LinkageRecipe {
                     pair(Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY, Marriage.BRIDE_FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public BrideBrideSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public BrideBrideSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
         if (number_of_records.equals(EVERYTHING_STRING)) {
             number_of_marriages = EVERYTHING;

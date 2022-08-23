@@ -451,7 +451,7 @@ public class BirthDeathOpenTriangleResolver {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName());
             BirthDeathOpenTriangleResolver resolver = new BirthDeathOpenTriangleResolver(bridge, sourceRepo, linkageRecipe); // this class
             resolver.resolve();
         } catch (Exception e) {

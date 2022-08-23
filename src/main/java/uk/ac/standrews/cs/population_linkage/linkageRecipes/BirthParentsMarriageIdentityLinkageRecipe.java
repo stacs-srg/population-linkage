@@ -17,7 +17,6 @@
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
@@ -76,7 +75,7 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY), pair(Birth.FATHER_IDENTITY, Marriage.GROOM_IDENTITY))
     );
 
-    public BirthParentsMarriageIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public BirthParentsMarriageIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
         if (number_of_records.equals(EVERYTHING_STRING)) {
             number_of_births = EVERYTHING;

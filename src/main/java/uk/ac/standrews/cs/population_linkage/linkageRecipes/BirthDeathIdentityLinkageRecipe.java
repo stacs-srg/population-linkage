@@ -81,7 +81,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.DEATH_RECORD_IDENTITY, Death.STANDARDISED_ID))
     );
 
-    public BirthDeathIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public BirthDeathIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
         if (number_of_records.equals(EVERYTHING_STRING)) {
             number_of_deaths = EVERYTHING;

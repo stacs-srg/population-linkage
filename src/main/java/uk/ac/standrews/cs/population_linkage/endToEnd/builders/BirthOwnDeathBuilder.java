@@ -17,13 +17,14 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 
@@ -32,18 +33,14 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
  *  This is NOT STRONG: uses the 3 names: the groom/baby and the names of the mother and father.
  */
 public class BirthOwnDeathBuilder implements MakePersistent {
-    
-    // Cannonical name is: uk.ac.standrews.cs.population_linkage.BirthOwnDeathBuilder
 
     public static void main(String[] args) throws Exception {
 
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String sourceRepo = args[0];  // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-
-            // First run with no field requirements
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getName(), bridge);
+        try (BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+             BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getName() ) ) {
             linkageRecipe.setNumberLinkageFieldsRequired(0);
             new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), false, true);
 
@@ -51,13 +48,12 @@ public class BirthOwnDeathBuilder implements MakePersistent {
             int half_fields = linkage_fields - (linkage_fields / 2 );
 
             while( linkage_fields >= half_fields ) {
-                linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getName(), bridge);
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                new BitBlasterLinkageRunner().run(linkageRecipe, new BirthOwnDeathBuilder(), false, true);
-
+                LinkageResult lr = runner.run(linkageRecipe, new BirthOwnDeathBuilder(), false, true);
+                LinkageQuality quality = lr.getLinkageQuality();
+                quality.print(System.out);
                 linkage_fields--;
             }
-            System.out.println("Run finished");
         }
     }
 

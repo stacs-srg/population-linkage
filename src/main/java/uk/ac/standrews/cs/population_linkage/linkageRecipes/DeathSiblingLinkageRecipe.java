@@ -71,7 +71,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
             list(pair(Death.MOTHER_BIRTH_RECORD_IDENTITY, Death.MOTHER_BIRTH_RECORD_IDENTITY), pair(Death.FATHER_BIRTH_RECORD_IDENTITY, Death.FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public DeathSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+    public DeathSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name) {
         super(source_repository_name, links_persistent_name);
         if (number_of_records.equals(EVERYTHING_STRING)) {
             number_of_deaths = EVERYTHING;

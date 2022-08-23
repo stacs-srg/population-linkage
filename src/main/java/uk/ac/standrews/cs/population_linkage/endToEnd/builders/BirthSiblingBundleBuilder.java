@@ -18,7 +18,6 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
@@ -36,14 +35,11 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
 
     public static void main(String[] args) throws Exception {
 
-        String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
+        String sourceRepo = args[0];  // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-        try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
-
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
-
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+        try(BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName() ) ) {
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 );
@@ -53,7 +49,6 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
                 LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
-
                 linkage_fields--;
             }
             System.out.println("Run finished");

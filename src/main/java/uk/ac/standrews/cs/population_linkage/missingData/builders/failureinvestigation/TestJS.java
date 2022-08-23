@@ -40,7 +40,7 @@ public class TestJS {
         LXP b1 = null;
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
-            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, TestJS.class.getName(), bridge);
+            BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, TestJS.class.getName());
 
             MeanOfFieldDistancesWithZeroForMissingFields measure = new MeanOfFieldDistancesWithZeroForMissingFields(linkageRecipe.getBaseMeasure(), linkageRecipe.getLinkageFields());
 
