@@ -84,6 +84,10 @@ public class BirthDeathOpenTriangleResolver {
     private static final String BD_GET_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
     private static final String DD_GET_SIBLINGS = "MATCH (a:Death)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
 
+    private int correct_count = 0;
+    private int error_count = 0;
+    private int harmless_count = 0;
+
     public BirthDeathOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
         RecordRepository record_repository = new RecordRepository(source_repo_name);
@@ -100,7 +104,14 @@ public class BirthDeathOpenTriangleResolver {
     private void resolve() {
         Stream<OpenTriangle2> oddballs = findOpenTriangles();
         oddballs.forEach(this::process);
+        reportResults();
         //printResults();
+    }
+
+    private void reportResults() {
+        System.out.println( "correct_count = " + correct_count );
+        System.out.println( "error_count = " + error_count );
+        System.out.println( " harmless_count = " + harmless_count );
     }
 
     /**
@@ -135,10 +146,6 @@ public class BirthDeathOpenTriangleResolver {
             final String std_id_y = lxp_y.getString(Death.STANDARDISED_ID);
             final String std_id_z = lxp_z.getString(Death.STANDARDISED_ID);
 
-            System.out.println( "MATCH (a:Birth),(b:Death),(c:Death) WHERE a.STANDARDISED_ID = \"" + std_id_x + "\" AND " +
-                    " b.STANDARDISED_ID = \"" +  std_id_y + "\" AND " +
-                    " c.STANDARDISED_ID = \"" +  std_id_z + "\" RETURN a,b,c" );
-
             final double xy_dist = getDistance( open_triangle.xy );
             final double yz_dist = getDistance( open_triangle.yz );
 
@@ -154,27 +161,48 @@ public class BirthDeathOpenTriangleResolver {
              *                         z:Death
              */
 
-            // At least one of the following hypotheses are not true:
             /* 1. x is the birth record of death record for y */ boolean hypothesis_1 = probablyBirthIdDeath( lxp_x, lxp_y, std_id_x,std_id_y,xy_dist );
             /* 2. y and z are siblings */ boolean hypothesis_2 = probablyDeathSiblingDeath( lxp_y, lxp_z, std_id_y,std_id_z,yz_dist );
-            /* 3. x and z NOT are siblings */ boolean hypothesis_3 = ! probablyBirthSiblingDeath( lxp_x, lxp_z, std_id_x,std_id_z );
+            /* 3. x and z NOT are siblings */ boolean hypothesis_3 = probablyBirthSiblingDeath( lxp_x, lxp_z, std_id_x,std_id_z );
 
             // We are interested in exactly one of these being wrong otherwise we cannot reason about them.
 
             if (!x_f_id.equals("") && ! y_f_id.equals("") && ! z_f_id.equals("")) {
-                if (exactlyOneFalse(hypothesis_1, hypothesis_2, hypothesis_3)) {
-                    System.out.print("Found exactly one hypothesis false: ");
-                    if (! hypothesis_1) System.out.println("probablyBirthDeathMatch is false");
-                    if (! hypothesis_2) System.out.println("probablyDeathsOfSiblings is false");
-                    if (! hypothesis_3) System.out.println("probablyBirthSiblingDeath is true");
-
-                    // If the hypothesis 1 or 2 is true annotate the appropriate link for that hypothesis
-                    // If the hypothesis 3 is false - create the link
-
-                    // DO some correction here!
+                 if (allTrue(hypothesis_1, hypothesis_2, hypothesis_3)) {
+                     reportAndCount(x_f_id, z_f_id);
+                 } else if( exactlyOneFalse(hypothesis_1, hypothesis_2, hypothesis_3)) {
+                    if( ! hypothesis_1 ) {
+                        reportAndCount(x_f_id,y_f_id);
+                    } else if( ! hypothesis_2 ) {
+                        reportAndCount(y_f_id,z_f_id);
+                    } else if( ! hypothesis_3 ) {
+                        // there was no link there and still no evidence for it - do nothing
+                        boolean correct = ! x_f_id.equals(z_f_id);
+                        String correct_str = correct ? "Correctly" : "INCORRECTLY";
+                        System.out.println( ">>>>> No evidence for B-D link between x and z " + correct + " harmless" );
+                        if( correct ) {
+                            correct_count = correct_count  + 1;
+                        } else {
+                            harmless_count = harmless_count + 1;
+                        }
+                    }
+                } else {
+                    System.out.println( ">>>>> 2 hypotheses are false: BidD " + hypothesis_1 + " DDSib " + hypothesis_2 + " BDSib " + hypothesis_3 );
+                    if( x_f_id.equals(y_f_id) && y_f_id.equals(z_f_id) ) {
+                        error_count = error_count + 1;
+                    } else {
+                        harmless_count = harmless_count + 1;
+                    }
                 }
-                System.out.println("GT: fids: " + x_f_id + " / " + y_f_id + " / " + z_f_id);
-
+//                System.out.println( "MATCH (a:Birth),(b:Death),(c:Death) WHERE a.STANDARDISED_ID = \"" + std_id_x + "\" AND " +
+//                        " b.STANDARDISED_ID = \"" +  std_id_y + "\" AND " +
+//                        " c.STANDARDISED_ID = \"" +  std_id_z + "\" RETURN a,b,c" );
+//                System.out.println("GT: fids: " + x_f_id + " / " + y_f_id + " / " + z_f_id);
+//                System.out.println( "Evidence: xy_dist: " + xy_dist + " yz_dist: " + yz_dist +
+//                        " common sibs xy: " + countCommonSiblings(std_id_x,std_id_y) +
+//                        " common sibs yz: " + countCommonSiblings(std_id_x,std_id_z) +
+//                        " common sibs xz: " + countCommonSiblings(std_id_x,std_id_z) );
+//                System.out.println();
             }
 
             // otherwise do nothing!
@@ -184,8 +212,31 @@ public class BirthDeathOpenTriangleResolver {
         }
     }
 
+    private void reportAndCount(String a_id, String b_id) {
+        boolean correct = a_id.equals(b_id);
+        String correct_str = correct ? "Correctly" : "INCORRECTLY";
+        if( correct ) {
+            correct_count = correct_count  + 1;
+        } else {
+            error_count = error_count + 1;
+        }
+        System.out.println(">>>>> Establish " + correct_str + " BD link between x and z");
+
+    }
+
+    private boolean allTrue(boolean hypothesis_1, boolean hypothesis_2, boolean hypothesis_3) {
+        return hypothesis_1 && hypothesis_2 && hypothesis_3;
+    }
+
+    private boolean exactlyOneFalse(boolean A, boolean B, boolean C) {
+        if( A ) {
+            return B != C;
+        } else {
+            return B && C;
+        }
+    }
+
     private boolean probablyDeathSiblingDeath(LXP death1_lxp, LXP death2_lxp, String death1_std_id, String death2_std_id, double dist) throws BucketException {
-        System.out.println( "B sib D dist:" + dist);
         if( dist < LOW_DISTANCE_MATCH_THRESHOLD ) {
             return true;
         }
@@ -206,7 +257,6 @@ public class BirthDeathOpenTriangleResolver {
     }
 
     private boolean probablyBirthIdDeath(LXP birth_lxp, LXP death_lxp, String birth_std_id, String death_std_id, double dist) throws BucketException {
-        System.out.println( "B Id D dist:" + dist + " " );
         if( dist < LOW_DISTANCE_MATCH_THRESHOLD ) { // was this a highly matching link - might be provenance or confidence etc.
             return true;
         }
@@ -218,7 +268,6 @@ public class BirthDeathOpenTriangleResolver {
     }
 
     private boolean probablyBirthIdDeath(LXP birth_lxp, LXP death_lxp, String birth_std_id, String death_std_id) throws BucketException { // the open side of the triangle - no point in checking dist - it is above threshold
-        System.out.println( "B id D" );
         if( /* haveBirthDeathParentsInCommon( birth_lxp,death_lxp ) ||  */
                 haveSiblingsInCommon( birth_std_id,death_std_id ) ) {
             return true;
@@ -227,13 +276,21 @@ public class BirthDeathOpenTriangleResolver {
     }
 
     /**
-     *
      * @param lxp1_std_id - a birth or death record (doesn't matter which)
      * @param lxp2_std_id - a birth or death record (doesn't matter which)
      * @return true if there is commonality amongst siblings
      * @throws BucketException
      */
     private boolean haveSiblingsInCommon(String lxp1_std_id, String lxp2_std_id) throws BucketException {
+        return countCommonSiblings( lxp1_std_id,lxp2_std_id ) >= 2; // arbitrary
+    }
+
+    /**
+     * @param lxp1_std_id - a birth or death record (doesn't matter which)
+     * @param lxp2_std_id - a birth or death record (doesn't matter which)
+     * @return number of common siblings
+     */
+    private int countCommonSiblings(String lxp1_std_id, String lxp2_std_id) throws BucketException {
         Set<String> sibling_names1 = new TreeSet<>();
         Set<String> sibling_names2 = new TreeSet<>();
 
@@ -245,13 +302,18 @@ public class BirthDeathOpenTriangleResolver {
         getDeathNames( getSiblings(bridge, GET_DEATH_SIBLINGS, lxp2_std_id),sibling_names2 );
         //getMarriageNames( getSiblings(bridge, GET_MARRIAGE_SIBLINGS, lxp2_std_id),sibling_names2  );
 
-        return enoughCommonality( sibling_names1,sibling_names2 );
+        return countCommonSiblings( sibling_names1,sibling_names2 );
     }
 
-    private boolean enoughCommonality(Set<String> sibling_names1, Set<String> sibling_names2) {
+    /**
+     * @param sibling_names1 - a set of sibling names
+     * @param sibling_names2 - a set of sibling names
+     * @return number of names in common
+     */
+    private int countCommonSiblings(Set<String> sibling_names1, Set<String> sibling_names2) {
         int size1 = sibling_names1.size();
         int size2 = sibling_names2.size();
-        if( size1 == 0 || size2 == 0  ) return false;
+        if( size1 == 0 || size2 == 0  ) return 0;
         if( size1 < size2 ) { // swap
             Set<String> temp = sibling_names1;
             sibling_names1 = sibling_names2;
@@ -263,8 +325,7 @@ public class BirthDeathOpenTriangleResolver {
                 count = count +1;
             }
         }
-        System.out.println( "B D siblings in common = " + count );
-        return count > 2; // arbitrary!
+        return count;
     }
 
     private void getDeathNames(List<Long> storr_sibling_ids, Set<String> sibling_names) throws BucketException {
@@ -283,10 +344,6 @@ public class BirthDeathOpenTriangleResolver {
         }
     }
 
-    private void getMarriageNames(List<Long> storr_sibling_ids, Set<String> sibling_names) {
-        // TODO Marriage could be bride or groom - don't know how to deal with this!
-    }
-
 //    private boolean haveDeathSiblingsInCommon(String adeath1_std_id, String adeath2_std_id) throws BucketException {
 //        return similarityOfDirectDDSiblings( adeath1_std_id,adeath2_std_id ) < SIBLING_SET_SIMILARITY_THRESHOLD;
 //    }
@@ -303,14 +360,6 @@ public class BirthDeathOpenTriangleResolver {
 //    private boolean haveBirthDeathParentsInCommon(LXP adeath1_std_id, LXP adeath2_std_id) throws BucketException {
 //        return false;
 //    }
-
-    private boolean exactlyOneFalse(boolean A, boolean B, boolean C) {
-        if( A ) {
-            return B != C;
-        } else {
-            return B && C;
-        }
-    }
 
     /**
      *
@@ -405,12 +454,10 @@ public class BirthDeathOpenTriangleResolver {
             BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName(), bridge);
             BirthDeathOpenTriangleResolver resolver = new BirthDeathOpenTriangleResolver(bridge, sourceRepo, linkageRecipe); // this class
             resolver.resolve();
-
         } catch (Exception e) {
             System.out.println("Exception closing bridge");
         } finally {
             System.out.println("Run finished");
-            System.exit(0); // Make sure it all shuts down properly.
         }
     }
 

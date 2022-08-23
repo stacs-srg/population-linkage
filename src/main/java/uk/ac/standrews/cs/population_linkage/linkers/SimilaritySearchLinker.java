@@ -63,7 +63,9 @@ public class SimilaritySearchLinker extends Linker {
     }
 
     public void terminate() {
-        search_structure.terminate();
+        if( search_structure != null ) { // if it were not initialised
+            search_structure.terminate();
+        }
     }
 
     @Override

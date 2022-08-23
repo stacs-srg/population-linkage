@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
 
-public abstract class LinkageRunner {
+public abstract class LinkageRunner implements AutoCloseable {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
     protected Linker linker;
@@ -139,6 +139,11 @@ public abstract class LinkageRunner {
         } catch (RepositoryException e) {
             throw new RuntimeException("Bucket exception from accessing referend - bucket no longer contains expected records (TD)", e);
         }
+    }
+
+    public void close() {
+        System.out.println( "Called" );
+        linker.terminate();
     }
 
     ///////////////////////////// I/O /////////////////////////////

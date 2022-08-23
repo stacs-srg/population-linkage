@@ -54,6 +54,10 @@ public class BruteForceLinkageTest extends LinkageTest {
         }
 
         @Override
+        public void terminate() {
+        }
+
+        @Override
         public Iterable<List<RecordPair>> getMatchingLists() {
             return null;
         }
