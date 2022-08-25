@@ -33,6 +33,30 @@ public class CommonLinkViabilityLogic {
     // Default month to be used for dates if only year is recorded.
     public static final int DEFAULT_MONTH = 7;
 
+    public static String getPrimaryNameFromBirthRecord(final LXP record) {
+        String forename = record.getString(Birth.FORENAME);
+        String surname = record.getString(Birth.SURNAME);
+        return forename + " " + surname;
+    }
+
+    public static String getPrimaryNameFromDeathRecord(final LXP record) {
+        String forename = record.getString(Death.FORENAME);
+        String surname = record.getString(Death.SURNAME);
+        return forename + " " + surname;
+    }
+
+    public static String getGroomNameFromMarriageRecord(final LXP record) {
+        String forename = record.getString(Marriage.GROOM_FORENAME);
+        String surname = record.getString(Marriage.GROOM_SURNAME);
+        return forename + " " + surname;
+    }
+
+    public static String getBrideNameFromMarriageRecord(final LXP record) {
+        String forename = record.getString(Marriage.BRIDE_FORENAME);
+        String surname = record.getString(Marriage.BRIDE_SURNAME);
+        return forename + " " + surname;
+    }
+
     public static LocalDate getBirthDateFromBirthRecord(final LXP record) {
 
         try {

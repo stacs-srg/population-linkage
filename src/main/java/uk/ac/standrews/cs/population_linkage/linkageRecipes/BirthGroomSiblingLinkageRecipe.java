@@ -136,7 +136,9 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     /**
-     * Checks whether the difference in age between the potential siblings is within the acceptable range.
+     * Checks:
+     *     1. whether the age difference between the potential siblings is plausible.
+     *     2. If the two primaries are actually the same person (to prevent self links)
      *
      * @return true if the link is viable
      */
@@ -144,6 +146,12 @@ public class BirthGroomSiblingLinkageRecipe extends LinkageRecipe {
 
         // The previous version checked that the year of marriage was after the year of birth, but
         // this is incorrect: a person can be born after their sibling's marriage.
+
+        String birth_name = CommonLinkViabilityLogic.getPrimaryNameFromBirthRecord(record1);
+        String marriage_name = CommonLinkViabilityLogic.getGroomNameFromMarriageRecord(record2);
+        if( birth_name.equals(marriage_name)) {
+            return false; // they are the same person and therefore not siblings
+        }
 
         return CommonLinkViabilityLogic.birthMarriageSiblingLinkIsViable(record1, record2, false);
     }

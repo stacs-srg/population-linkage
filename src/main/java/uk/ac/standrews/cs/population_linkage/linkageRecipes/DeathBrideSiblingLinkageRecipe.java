@@ -136,11 +136,20 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     /**
-     * Checks whether the difference in age between the potential siblings is within the acceptable range.
+     /**
+     * Checks:
+     *     1. whether the age difference between the potential siblings is plausible.
+     *     2. If the two primaries are actually the same person (to prevent self links)
      *
      * @return true if the link is viable
      */
     public static boolean isViable(final LXP record1, final LXP record2) {
+
+        String death_name = CommonLinkViabilityLogic.getPrimaryNameFromDeathRecord(record1);
+        String marriage_name = CommonLinkViabilityLogic.getBrideNameFromMarriageRecord(record2);
+        if( death_name.equals(marriage_name)) {
+            return false; // they are the same person and therefore not siblings
+        }
 
         return CommonLinkViabilityLogic.deathMarriageSiblingLinkIsViable(record1, record2, true);
     }

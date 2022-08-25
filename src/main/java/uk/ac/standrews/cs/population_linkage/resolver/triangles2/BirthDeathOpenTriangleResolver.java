@@ -26,6 +26,7 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
+import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -64,6 +65,16 @@ public class BirthDeathOpenTriangleResolver {
 
     protected static final String TRIANGLE_QUERY = "MATCH (x:Birth)-[xy:DEATH]-(y:Death)-[yz:SIBLING]-(z:Death) WHERE NOT (z)-[:SIBLING]-(x) return x,y,z,xy,yz";
 
+    private static final String GET_BIRTH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+    private static final String GET_DEATH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+    private static final String GET_MARRIAGE_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+
+    private static final String BB_GET_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+    private static final String BD_GET_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+    private static final String DD_GET_SIBLINGS = "MATCH (a:Death)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
+
+    private static final String UPDATE_RELATIONSHIP_QUERY = "MATCH (a)-[r]-(b) WHERE id(r) = $id SET r += {link_refuted:TRUE,link_refuted_by:$provenance} return r";
+
     private static final double SIBLING_SET_SIMILARITY_THRESHOLD = 0.2;
     public static double LOW_DISTANCE_MATCH_THRESHOLD = 0.05;
 
@@ -76,17 +87,10 @@ public class BirthDeathOpenTriangleResolver {
     private final StringMeasure base_measure;
     private final LXPMeasure composite_measure;
 
-    private static final String GET_BIRTH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
-    private static final String GET_DEATH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
-    private static final String GET_MARRIAGE_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
-
-    private static final String BB_GET_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
-    private static final String BD_GET_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
-    private static final String DD_GET_SIBLINGS = "MATCH (a:Death)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
-
     private int correct_count = 0;
     private int error_count = 0;
     private int harmless_count = 0;
+    private int ambiguous_count = 0;
 
     public BirthDeathOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
@@ -112,6 +116,7 @@ public class BirthDeathOpenTriangleResolver {
         System.out.println( "correct_count = " + correct_count );
         System.out.println( "error_count = " + error_count );
         System.out.println( " harmless_count = " + harmless_count );
+        System.out.println( " ambiguous_count = " + ambiguous_count );
     }
 
     /**
@@ -136,6 +141,9 @@ public class BirthDeathOpenTriangleResolver {
             final Node y = open_triangle.y;
             final Node z = open_triangle.z;
 
+            Relationship xy = open_triangle.xy;
+            Relationship yz = open_triangle.yz;
+
             final LXP lxp_x = (LXP) births.getObjectById(getStorrId(x));
             final LXP lxp_y = (LXP) deaths.getObjectById(getStorrId(y));
             final LXP lxp_z = (LXP) deaths.getObjectById(getStorrId(z));
@@ -146,8 +154,8 @@ public class BirthDeathOpenTriangleResolver {
             final String std_id_y = lxp_y.getString(Death.STANDARDISED_ID);
             final String std_id_z = lxp_z.getString(Death.STANDARDISED_ID);
 
-            final double xy_dist = getDistance( open_triangle.xy );
-            final double yz_dist = getDistance( open_triangle.yz );
+            final double xy_dist = getDistance( xy );
+            final double yz_dist = getDistance( yz );
 
             String x_f_id = lxp_x.getString(Birth.FATHER_IDENTITY);
             String y_f_id = lxp_y.getString(Death.FATHER_IDENTITY);
@@ -170,16 +178,18 @@ public class BirthDeathOpenTriangleResolver {
             if (!x_f_id.equals("") && ! y_f_id.equals("") && ! z_f_id.equals("")) {
                  if (allTrue(hypothesis_1, hypothesis_2, hypothesis_3)) {
                      reportAndCount(x_f_id, z_f_id);
+                     createNewBDSiblingLink(std_id_x,std_id_z,this.getClass().getSimpleName()); // Create a new link between x and z
                  } else if( exactlyOneFalse(hypothesis_1, hypothesis_2, hypothesis_3)) {
                     if( ! hypothesis_1 ) {
+                        annotateSiblingLink( xy,this.getClass().getSimpleName() ); // annotate the link between x and y as possibly incorrect.
                         reportAndCount(x_f_id,y_f_id);
                     } else if( ! hypothesis_2 ) {
+                        annotateSiblingLink( yz,this.getClass().getSimpleName() ); // annotate the link between between y and z as possibly incorrect.
                         reportAndCount(y_f_id,z_f_id);
                     } else if( ! hypothesis_3 ) {
                         // there was no link there and still no evidence for it - do nothing
                         boolean correct = ! x_f_id.equals(z_f_id);
-                        String correct_str = correct ? "Correctly" : "INCORRECTLY";
-                        System.out.println( ">>>>> No evidence for B-D link between x and z " + correct + " harmless" );
+//                        System.out.println( ">>>>> No evidence for B-D link between x and z " + correct + " harmless" );
                         if( correct ) {
                             correct_count = correct_count  + 1;
                         } else {
@@ -187,11 +197,10 @@ public class BirthDeathOpenTriangleResolver {
                         }
                     }
                 } else {
-                    System.out.println( ">>>>> 2 hypotheses are false: BidD " + hypothesis_1 + " DDSib " + hypothesis_2 + " BDSib " + hypothesis_3 );
+                     // situation is ambiguous - do nothing
+//                    System.out.println( ">>>>> 2 hypotheses are false: BidD " + hypothesis_1 + " DDSib " + hypothesis_2 + " BDSib " + hypothesis_3 );
                     if( x_f_id.equals(y_f_id) && y_f_id.equals(z_f_id) ) {
-                        error_count = error_count + 1;
-                    } else {
-                        harmless_count = harmless_count + 1;
+                        ambiguous_count = ambiguous_count + 1;
                     }
                 }
 //                System.out.println( "MATCH (a:Birth),(b:Death),(c:Death) WHERE a.STANDARDISED_ID = \"" + std_id_x + "\" AND " +
@@ -205,11 +214,21 @@ public class BirthDeathOpenTriangleResolver {
 //                System.out.println();
             }
 
-            // otherwise do nothing!
-
         } catch (BucketException e) {
             e.printStackTrace();
         }
+    }
+
+    private void createNewBDSiblingLink(String std_id_birth, String std_id_death, String provenance) {
+        Query.createDBSiblingReference(
+                bridge,
+                std_id_death,
+                std_id_birth,
+                provenance );
+    }
+
+    private void annotateSiblingLink(Relationship r, String provenance) {
+        Query.updateReference( bridge, r, UPDATE_RELATIONSHIP_QUERY, provenance );
     }
 
     private void reportAndCount(String a_id, String b_id) {
@@ -220,8 +239,6 @@ public class BirthDeathOpenTriangleResolver {
         } else {
             error_count = error_count + 1;
         }
-        System.out.println(">>>>> Establish " + correct_str + " BD link between x and z");
-
     }
 
     private boolean allTrue(boolean hypothesis_1, boolean hypothesis_2, boolean hypothesis_3) {
@@ -260,11 +277,7 @@ public class BirthDeathOpenTriangleResolver {
         if( dist < LOW_DISTANCE_MATCH_THRESHOLD ) { // was this a highly matching link - might be provenance or confidence etc.
             return true;
         }
-        if( /* haveBirthDeathParentsInCommon( birth_lxp,death_lxp ) || */
-                haveSiblingsInCommon( birth_std_id,death_std_id ) ) {
-            return true;
-        }
-        return false; // cannot say for sure
+        return probablyBirthIdDeath( birth_lxp, death_lxp, birth_std_id, death_std_id);
     }
 
     private boolean probablyBirthIdDeath(LXP birth_lxp, LXP death_lxp, String birth_std_id, String death_std_id) throws BucketException { // the open side of the triangle - no point in checking dist - it is above threshold
@@ -344,23 +357,6 @@ public class BirthDeathOpenTriangleResolver {
         }
     }
 
-//    private boolean haveDeathSiblingsInCommon(String adeath1_std_id, String adeath2_std_id) throws BucketException {
-//        return similarityOfDirectDDSiblings( adeath1_std_id,adeath2_std_id ) < SIBLING_SET_SIMILARITY_THRESHOLD;
-//    }
-//
-//    private boolean haveBirthDeathSiblingsInCommon(String adeath1_std_id, String adeath2_std_id) throws BucketException {
-//        return similarityOfDirectBDSiblings( adeath1_std_id,adeath2_std_id ) < SIBLING_SET_SIMILARITY_THRESHOLD;
-//    }
-//
-
-//    private boolean haveDeathParentsInCommon(LXP adeath1_std_id, LXP adeath2_std_id) {
-//
-//    }
-//
-//    private boolean haveBirthDeathParentsInCommon(LXP adeath1_std_id, LXP adeath2_std_id) throws BucketException {
-//        return false;
-//    }
-
     /**
      *
      * @param bridge
@@ -388,76 +384,14 @@ public class BirthDeathOpenTriangleResolver {
         return result.list(r -> r.get("b").asNode());
     }
 
-    /**
-     * std_id_x - the standard id of node x
-     * std_id_z - the standard id of node z
-     * @return jaccard distance between the sets of ids of siblings
-     * @throws BucketException
-     */
-//    private double similarityOfDirectBBSiblingsB(String std_id1, String std_id2) throws BucketException {
-//        Set<Long> siblings_of_1 = getBBSiblingIds(std_id1);
-//        Set<Long> siblings_of_2 = getBBSiblingIds(std_id2);
-//
-//        return jaccard.distance(siblings_of_1,siblings_of_2);
-//    }
-
-
-    /**
-     * std_id_x - the standard id of node x
-     * std_id_z - the standard id of node z
-     * @return jaccard distance between the sets of ids of siblings
-     * @throws BucketException
-     */
-//    private double similarityOfDirectBDSiblings(String std_id1, String std_id2) throws BucketException {
-//        Set<Long> siblings_of_1 = getBDSiblingIds(std_id1);
-//        Set<Long> siblings_of_2 = getBDSiblingIds(std_id2);
-//
-//        if( siblings_of_1.size() == 0 && siblings_of_2.size() == 0) { // TODO copy code elsewhere
-//            return 0;
-//        }
-//        double d = jaccard.distance(siblings_of_1,siblings_of_2);
-//        return d;
-//    }
-
-    /**
-     * std_id_x - the standard id of node x
-     * std_id_z - the standard id of node z
-     * @return jaccard distance between the sets of ids of siblings
-     * @throws BucketException
-     */
-//    private double similarityOfDirectDDSiblings(String std_id1, String std_id2) throws BucketException {
-//        Set<Long> siblings_of_1 = getDDSiblingIds(std_id1);
-//        Set<Long> siblings_of_2 = getDDSiblingIds(std_id2);
-//
-//        return jaccard.distance(siblings_of_1,siblings_of_2);
-//    }
-
-//    private Set<Long> getBBSiblingIds(String std_id) throws BucketException {
-//        return new HashSet<>(getSiblings(bridge, BB_GET_SIBLINGS, std_id));
-//    }
-//
-//    private Set<Long> getBDSiblingIds(String std_id) throws BucketException {
-//        return new HashSet<>(getSiblings(bridge, BD_GET_SIBLINGS, std_id));
-//    }
-//
-//    private Set<Long> getDDSiblingIds(String std_id) throws BucketException {
-//        return new HashSet<>(getSiblings(bridge, DD_GET_SIBLINGS, std_id));
-//    }
-
-
     public static void main(String[] args) {
 
         String sourceRepo = args[0]; // e.g. umea
 
-        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
-
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName());
+        try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName()) ) {
             BirthDeathOpenTriangleResolver resolver = new BirthDeathOpenTriangleResolver(bridge, sourceRepo, linkageRecipe); // this class
             resolver.resolve();
-        } catch (Exception e) {
-            System.out.println("Exception closing bridge");
-        } finally {
-            System.out.println("Run finished");
         }
     }
 

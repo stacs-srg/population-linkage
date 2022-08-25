@@ -40,8 +40,6 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    // TODO Do something to avoid self-links (in linker, ground truth sorted)
-
     private static final double DISTANCE_THRESHOLD = 0.36;
 
     public static final String LINKAGE_TYPE = "birth-death-sibling";
@@ -142,13 +140,20 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     /**
-     * Checks whether the age difference between the potential siblings is plausible.
+     * Checks:
+     *    1. whether the age difference between the potential siblings is plausible.
+     *    2. If the two primaries are actually the same person (to prevent self links)
      *
      * @return true if the link is viable
      */
     public static boolean isViable(final LXP birth_record, final LXP death_record) {
-
         try {
+            String birth_name = CommonLinkViabilityLogic.getPrimaryNameFromBirthRecord(birth_record);
+            String death_name = CommonLinkViabilityLogic.getPrimaryNameFromDeathRecord(death_record);
+            if( birth_name.equals(death_name)) {
+                return false; // they are the same person and therefore not siblings
+            }
+
             final LocalDate date_of_birth_from_birth_record = CommonLinkViabilityLogic.getBirthDateFromBirthRecord(birth_record);
             final LocalDate date_of_birth_from_death_record = CommonLinkViabilityLogic.getBirthDateFromDeathRecord(death_record);
 

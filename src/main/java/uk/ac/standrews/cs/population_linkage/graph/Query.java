@@ -20,6 +20,7 @@ package uk.ac.standrews.cs.population_linkage.graph;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
+import org.neo4j.driver.Value;
 import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
@@ -53,6 +54,7 @@ public class Query {
     private static final String MM_GB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
 
     private static final String DB_SIBLING_QUERY = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String DB_SIBLING_QUERY_SIMPLE = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov } ]->(b)";
 
     private static final String MM_GROOM_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM_PARENTS { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
     private static final String MM_BRIDE_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE_PARENTS { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
@@ -229,6 +231,10 @@ public class Query {
         createReference(bridge, DB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
+    public static void createDBSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
+        createReference(bridge, DB_SIBLING_QUERY_SIMPLE, standard_id_from, standard_id_to, provenance);
+    }
+
     /**
      * Creates a reference between node with standard_id_from and standard_id_to and returns the number of relationships created
      * The first parameter should be the id of a marriage and the second a marriage - it will not work if this is not the case!
@@ -362,6 +368,36 @@ public class Query {
         return linkExists( bridge, DM_DECEASED_GROOM_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
     }
 
+    private static String getRefutedAlreadyQuery(NeoDbCypherBridge bridge, long id) {
+        String query_string = "MATCH (a)-[r:SIBLING]-(b) WHERE id(r) = $id return r.link_refuted_by";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("id", id);
+        Result result = bridge.getNewSession().run(query_string,parameters);
+
+        List<Value> results = result.list(r -> r.get("r.link_refuted_by"));
+        if( results.isEmpty() ) return null;
+        Value qresult = results.get(0);
+        if( qresult.isNull() ) return null;
+        return qresult.asString();
+    }
+
+    public static void updateReference(NeoDbCypherBridge bridge, Relationship r, String query, String new_provenance) {
+
+        long id = r.id();
+        String refuted_previously = getRefutedAlreadyQuery(bridge,id);
+        String provenance = refuted_previously == null ? new_provenance : refuted_previously + "/" + new_provenance;
+
+        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("id", id);
+            parameters.put("provenance", provenance);
+            tx.run(query, parameters);
+            tx.commit();
+        }
+    }
+
     //=====================// private methods //=====================//
 
     /**
@@ -372,19 +408,27 @@ public class Query {
      * @param standard_id_from - the STANDARDISED_ID of the node from which we are creating a reference (note some labels are directed - e.g. MOTHER, FATHER etc.)
      * @param standard_id_to   - the STANDARDISED_ID of the node to which we are creating a reference
      * @param provenance       - the provenance of this reference
-     * @param fields_populated   - the number of fields used in establishing the link - might need the actual fields and measure (?) but could find this from provenance (if includes classname)
-     * @return the number of relationships created
+     * @param fields_populated - the number of fields used in establishing the link - might need the actual fields and measure (?) but could find this from provenance (if includes classname)
+     * @param distance         - the metric distance between the nodes.
      */
     private static void createReference(NeoDbCypherBridge bridge, String query, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            Map<String, Object> parameters = getparams(standard_id_from, standard_id_to, provenance, fields_populated, distance);
+            Map<String, Object> parameters = getCreationParameterMap(standard_id_from, standard_id_to, provenance, fields_populated, distance);
+            tx.run(query, parameters);
+            tx.commit();
+        }
+    }
+
+    private static void createReference(NeoDbCypherBridge bridge, String query, String standard_id_from, String standard_id_to, String provenance) {
+        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+            Map<String, Object> parameters = getCreationParameterMap(standard_id_from, standard_id_to, provenance);
             tx.run(query, parameters);
             tx.commit();
         }
     }
 
     private static boolean linkExists(NeoDbCypherBridge bridge, String query_string, String standard_id_from, String standard_id_to, String provenance) {
-        Map<String, Object> parameters = getparams(standard_id_from, standard_id_to, provenance);
+        Map<String, Object> parameters = getCreationParameterMap(standard_id_from, standard_id_to, provenance);
         Result result = bridge.getNewSession().run(query_string,parameters);
         List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
         if( relationships.size() == 0 ) {
@@ -393,7 +437,9 @@ public class Query {
         return true;
     }
 
-    private static Map<String, Object> getparams(String standard_id_from, String standard_id_to, String provenance) {
+
+
+    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String provenance) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
@@ -401,7 +447,7 @@ public class Query {
         return parameters;
     }
 
-    private static Map<String, Object> getparams(String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
