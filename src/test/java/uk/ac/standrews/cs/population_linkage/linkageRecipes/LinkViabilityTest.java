@@ -24,6 +24,7 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.time.LocalDate;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -1167,7 +1168,10 @@ public class LinkViabilityTest {
         for (int i = 0; i < Birth.BIRTH_YEAR; i++) {
             record.put(i, "");
         }
+        Random r = new Random( 6789143561L );
 
+        record.put(Birth.FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Birth.SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
         record.put(Birth.BIRTH_YEAR, String.valueOf(birth_year));
         record.put(Birth.BIRTH_DAY, String.valueOf(birth_day));
         record.put(Birth.BIRTH_MONTH, String.valueOf(birth_month));
@@ -1182,6 +1186,11 @@ public class LinkViabilityTest {
             record.put(i, "");
         }
 
+        Random r = new Random( 6783456341143561L );
+
+        record.put(Birth.FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Birth.SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
+
         record.put(Birth.BIRTH_YEAR, "Unknown");
         return record;
     }
@@ -1194,6 +1203,10 @@ public class LinkViabilityTest {
             record.put(i, "");
         }
 
+        Random r = new Random( 23432333L );
+
+        record.put(Death.FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Death.SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
         record.put(Death.DEATH_YEAR, String.valueOf(death_year));
         return record;
     }
@@ -1254,6 +1267,11 @@ public class LinkViabilityTest {
             record.put(i, "");
         }
 
+        Random r = new Random( 2455432333L );
+
+        record.put(Death.FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Death.SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
+
         record.put(Death.DEATH_YEAR, "Unknown");
         record.put(Death.AGE_AT_DEATH, "Unknown");
         return record;
@@ -1267,6 +1285,12 @@ public class LinkViabilityTest {
             record.put(i, "");
         }
 
+        Random r = new Random( 2343243241L );
+
+        record.put(Marriage.GROOM_FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Marriage.GROOM_SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
+        record.put(Marriage.BRIDE_FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Marriage.BRIDE_SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
         record.put(Marriage.MARRIAGE_YEAR, String.valueOf(marriage_year));
         return record;
     }
@@ -1274,6 +1298,7 @@ public class LinkViabilityTest {
     private Marriage makeMarriage(final int marriage_day, final int marriage_month, final int marriage_year) {
 
         final Marriage record = makeMarriage(marriage_year);
+
 
         record.put(Marriage.MARRIAGE_DAY, String.valueOf(marriage_day));
         record.put(Marriage.MARRIAGE_MONTH, String.valueOf(marriage_month));
@@ -1304,6 +1329,13 @@ public class LinkViabilityTest {
         for (int i = 0; i < Marriage.MARRIAGE_DAY; i++) {
             record.put(i, "");
         }
+
+        Random r = new Random( 23431L );
+
+        record.put(Marriage.GROOM_FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Marriage.GROOM_SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
+        record.put(Marriage.BRIDE_FORENAME, String.valueOf(r.nextDouble() ) ); // random forename
+        record.put(Marriage.BRIDE_SURNAME, String.valueOf(r.nextDouble() ) ); // random surname
 
         record.put(Marriage.STANDARDISED_ID, id);
         record.put(Marriage.MARRIAGE_DAY, "Unknown");
