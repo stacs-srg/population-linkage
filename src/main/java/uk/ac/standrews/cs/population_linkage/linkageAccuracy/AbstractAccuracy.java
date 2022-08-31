@@ -76,4 +76,8 @@ public abstract class AbstractAccuracy {
         return value;
     }
 
+    protected long nChoose2(long num) {
+        return ( num * (num-1) ) /2;
+    }
+
 }
