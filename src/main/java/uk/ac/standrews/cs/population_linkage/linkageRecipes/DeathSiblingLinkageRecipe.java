@@ -169,7 +169,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String DEATH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Death)-[r:GROUND_TRUTH_DEATH_SIBLING]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String DEATH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Death)-[r:GT_SIBLING, { actors: \"Deceased-Deceased\" } ]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countDeathSiblingGTLinks(NeoDbCypherBridge bridge, LXP death_record) {
         String standard_id_from = death_record.getString(Death.STANDARDISED_ID);

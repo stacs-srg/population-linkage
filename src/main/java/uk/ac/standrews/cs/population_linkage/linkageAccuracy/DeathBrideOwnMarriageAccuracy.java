@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class DeathBrideOwnMarriageAccuracy extends AbstractAccuracy {
 
-    private static final String DEATH_BRIDE_ID_TPC = "MATCH (d:Death)-[r:BRIDE]-(m:Marriage) WHERE (d)-[:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]-(m) return count(r)";
-    private static final String DEATH_BRIDE_ID_FPC = "MATCH (d:Death)-[r:BRIDE]-(m:Marriage) WHERE NOT (d)-[:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]-(m) return count(r)";
-    private static final String DEATH_BRIDE_ID_FNC = "MATCH (d:Death)-[r:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]-(m:Marriage) WHERE NOT (d)-[:BRIDE]-(m) return count(r)";
+    private static final String DEATH_BRIDE_ID_TPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Bride\"}]-(m:Marriage) WHERE (d)-[:GT_ID {actors: \"Deceased-Bride\"}]-(m) return count(r)";
+    private static final String DEATH_BRIDE_ID_FPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Bride\"}]-(m:Marriage) WHERE NOT (d)-[:GT_ID {actors: \"Deceased-Bride\"}]-(m) return count(r)";
+    private static final String DEATH_BRIDE_ID_FNC = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Bride\"}]-(m:Marriage) WHERE NOT (d)-[:ID {actors: \"Deceased-Bride\"}]-(m) return count(r)";
 
     public DeathBrideOwnMarriageAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);

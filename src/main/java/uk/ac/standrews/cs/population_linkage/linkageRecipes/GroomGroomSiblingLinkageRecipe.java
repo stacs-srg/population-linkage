@@ -170,7 +170,7 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String GROOM_GROOM_GT_SIBLING_LINKS_QUERY = "MATCH (a:Marriage)-[r:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(b:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String GROOM_GROOM_GT_SIBLING_LINKS_QUERY = "MATCH (a:Marriage)-[r:GT_SIBLING, { actors: \"Groom-Groom\" } ]-(b:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countGroomGroomSiblingGTLinks(NeoDbCypherBridge bridge, LXP marriage_record) {
         String standard_id_from = marriage_record.getString(Marriage.STANDARDISED_ID);

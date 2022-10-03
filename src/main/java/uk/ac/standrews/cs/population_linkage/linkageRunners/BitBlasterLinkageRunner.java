@@ -54,7 +54,7 @@ import static uk.ac.standrews.cs.population_linkage.graph.NeoUtil.getByNeoId;
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods.*;
 
-public class BitBlasterLinkageRunner extends LinkageRunner {
+public class BitBlasterLinkageRunner extends LinkageRunner implements AutoCloseable {
 
     @Override
     public LinkageRecipe getLinkageRecipe(String links_persistent_name, String source_repository_name, String results_repository_name, RecordRepository record_repository) {

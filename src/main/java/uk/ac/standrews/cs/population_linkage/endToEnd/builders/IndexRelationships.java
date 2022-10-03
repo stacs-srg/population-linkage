@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks;
+package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 
 import org.neo4j.driver.Session;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
@@ -22,25 +22,26 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import java.time.LocalDateTime;
 
 /*
- * Deletes ground truth links in Neo4J for Umea data set
- *
  * @author al
+ *
+ * Creates relationship indices for the GT data.
+ * Makes things go a lot faster.
  */
-public class DeleteGTLinks {
+public class IndexRelationships {
 
-    public static String[] queries = new String[] {
-            "MATCH (a)-[r:GT_ID]-(b) DELETE r",
-            "MATCH (a)-[r:GT_SIBLING]-(b) DELETE r",
-            "MATCH (a)-[r:GT_HALF_SIBLING]-(b) DELETE r" };
+    private static final String SIBLING_INDEX = "CREATE INDEX SIBLING_INDEX FOR ()-[r:SIBLING]-() ON (r.role)";
+    private static final String ID_INDEX  = "CREATE INDEX ID_INDEX FOR ()-[r:ID]-() ON (r.role)";
 
     private static void doQueries(String... queries) {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); Session session = bridge.getNewSession()) {
 
-            System.out.println("Deleting GT links @ " + LocalDateTime.now());
+            System.out.println("Creating GT Indices @ " + LocalDateTime.now());
 
             for (String query : queries) {
+                System.out.println( "Running: " + query );
                 session.run(query);
+                System.out.println("Finished query @ " + LocalDateTime.now());
             }
 
             System.out.println("Complete @ " + LocalDateTime.now());
@@ -48,7 +49,9 @@ public class DeleteGTLinks {
     }
 
     public static void main(String[] args) {
-
-        doQueries( queries );
+        doQueries(
+                SIBLING_INDEX,
+                ID_INDEX
+        );
     }
 }

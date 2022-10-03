@@ -166,7 +166,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String BIRTH_GROOM_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_GROOM_IDENTITY]-(m:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BIRTH_GROOM_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GT_ID, { actors: \"Child-Groom\" } ]-(m:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countBirthGroomIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
         String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);

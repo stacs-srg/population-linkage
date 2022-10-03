@@ -30,37 +30,37 @@ import java.time.LocalDateTime;
  */
 public class CountGTLinks {
 
-    private static final String FATHER_OWN_BIRTH_IDENTITY = "MATCH (b1)-[r:GROUND_TRUTH_BIRTH_FATHER_IDENTITY]->(b2) return count(r)";
-    private static final String MOTHER_OWN_BIRTH_IDENTITY = "MATCH (b1)-[r:GROUND_TRUTH_BIRTH_MOTHER_IDENTITY]->(b2) return count(r)";
-    private static final String BIRTH_BIRTH_SIBLING = "MATCH (b1:Birth)-[r:GROUND_TRUTH_BIRTH_SIBLING]-(b2:Birth) return count(r)";
-    private static final String BIRTH_BIRTH_HALF_SIBLING = "MATCH (b1:Birth)-[r:GROUND_TRUTH_BIRTH_HALF_SIBLING]-(b2:Birth) return count(r)";
-    private static final String BIRTH_DEATH_IDENTITY = "MATCH (b)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(d) return count(r)";
-    private static final String BIRTH_DEATH_SIBLING = "MATCH (b)-[r:GROUND_TRUTH_BIRTH_DEATH_SIBLING]-(d) return count(r)";
-    private static final String BIRTH_DEATH_HALF_SIBLING = "MATCH (b)-[r:GROUND_TRUTH_BIRTH_DEATH_HALF_SIBLING]-(d) return count(r)";
-    private static final String BIRTH_GROOM_IDENTITY = "MATCH  (b)-[r:GROUND_TRUTH_BIRTH_GROOM_IDENTITY]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_IDENTITY = "MATCH (b)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m) return count(r)";
-    private static final String FATHER_GROOM_IDENTITY = "MATCH (b)-[r:GROUND_TRUTH_FATHER_GROOM_IDENTITY]-(m) return count(r)";
-    private static final String MOTHER_BRIDE_IDENTITY = "MATCH (b)-[r:GROUND_TRUTH_MOTHER_BRIDE_IDENTITY]-(m) return count(r)";
-    private static final String BIRTH_PARENTS_MARRIAGE_IDENTITY = "MATCH  (b)-[r:GROUND_TRUTH_BIRTH_PARENTS_MARRIAGE]-(m) return count(r)";
-    private static final String DEATH_PARENTS_MARRIAGE_IDENTITY = "MATCH (d)-[r:GROUND_TRUTH_DEATH_PARENTS_MARRIAGE]-(m)  return count(r)";
-    private static final String BIRTH_GROOM_SIBLING = "MATCH (b)-[r:GROUND_TRUTH_BIRTH_GROOM_SIBLING]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_SIBLING = "MATCH (b)-[r:GROUND_TRUTH_BIRTH_BRIDE_SIBLING]-(m) return count(r)";
-    private static final String DEATH_GROOM_IDENTITY = "MATCH(d)-[r:GROUND_TRUTH_DEATH_GROOM_IDENTITY]-(m) return count(r)";
-    private static final String DEATH_BRIDE_IDENTITY = "MATCH (d)-[r:GROUND_TRUTH_DEATH_BRIDE_IDENTITY]-(m) return count(r)";
-    private static final String DEATH_GROOM_SIBLING = "MATCH (d)-[r:GROUND_TRUTH_DEATH_GROOM_SIBLING]-(m) return count(r)";
-    private static final String DEATH_BRIDE_SIBLING = "MATCH (d)-[r:GROUND_TRUTH_DEATH_BRIDE_SIBLING]-(m) return count(r)";
-    private static final String GROOM_GROOM_IDENTITY = "MATCH (m1)-[r:GROUND_TRUTH_GROOM_GROOM_IDENTITY]-(m2) return count(r)";
-    private static final String BRIDE_BRIDE_IDENTITY = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_IDENTITY]-(m2) return count(r)";
-    private static final String GROOM_PARENTS_MARRIAGE_IDENTITY = "MATCH (m1)-[r:GROUND_TRUTH_GROOM_PARENTS_MARRIAGE]->(m2) return count(r)";
-    private static final String BRIDE_PARENTS_MARRIAGE_IDENTITY = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_PARENTS_MARRIAGE]->(m2) return count(r)";
-    private static final String GROOM_GROOM_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2) return count(r)";
-    private static final String BRIDE_BRIDE_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_SIBLING]-(m2) return count(r)";
-    private static final String BRIDE_GROOM_SIBLING = "MATCH(m1)-[r:GROUND_TRUTH_BRIDE_GROOM_SIBLING]-(m2) return count(r)";
-    private static final String DEATH_DEATH_SIBLING = "MATCH (d1)-[r:GROUND_TRUTH_DEATH_SIBLING]-(d2) return count(r)";
-    private static final String GROOM_GROOM_HALF_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_GROOM_GROOM_HALF_SIBLING]-(m2) return count(r)";
-    private static final String BRIDE_BRIDE_HALF_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_BRIDE_HALF_SIBLING]-(m2) return count(r)";
-    private static final String BRIDE_GROOM_HALF_SIBLING = "MATCH (m1)-[r:GROUND_TRUTH_BRIDE_GROOM_HALF_SIBLING]-(m2) return count(r)";
-    private static final String DEATH_DEATH_HALF_SIBLING = "MATCH (d1)-[r:GROUND_TRUTH_DEATH_HALF_SIBLING]-(d2) return count(r)";
+    private static final String FATHER_OWN_BIRTH_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Child-Father\" } ]->(b) return count(r)";
+    private static final String MOTHER_OWN_BIRTH_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Child-Mother\" } ]->(b) return count(r)";
+    private static final String BIRTH_BIRTH_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Child-Child\" } ]->(b) return count(r)";
+    private static final String BIRTH_BIRTH_HALF_SIBLING = "MATCH (a)-[r:GT_HALF_SIBLING { actors: \"Child-Child\" } ]->(b) return count(r)";
+    private static final String BIRTH_DEATH_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Child-Deceased\" } ]->(b) return count(r)";
+    private static final String BIRTH_DEATH_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Child-Deceased\" } ]->(b) return count(r)";
+    private static final String BIRTH_DEATH_HALF_SIBLING = "MATCH (a)-[r:GT_HALF_SIBLING { actors: \"Child-Deceased\" } ]->(b) return count(r)";
+    private static final String BIRTH_GROOM_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Child-Groom\" } ]->(b) return count(r)";
+    private static final String BIRTH_BRIDE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Child-Bride\" } ]->(b) return count(r)";
+    private static final String FATHER_GROOM_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Father-Groom\" } ]->(b) return count(r)";
+    private static final String MOTHER_BRIDE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Mother-Bride\" } ]->(b) return count(r)";
+    private static final String BIRTH_PARENTS_MARRIAGE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Child-Couple\" } ]->(b) return count(r)";
+    private static final String DEATH_PARENTS_MARRIAGE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Deceased-Couple\" } ]->(b) return count(r)";
+    private static final String BIRTH_GROOM_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Child-Groom\" } ]->(b) return count(r)";
+    private static final String BIRTH_BRIDE_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Child-Bride\" } ]->(b) return count(r)";
+    private static final String DEATH_GROOM_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Deceased-Groom\" } ]->(b) return count(r)";
+    private static final String DEATH_BRIDE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Deceased-Bride\" } ]->(b) return count(r)";
+    private static final String DEATH_GROOM_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Deceased-Groom\" } ]->(b) return count(r)";
+    private static final String DEATH_BRIDE_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Deceased-Bride\" } ]->(b) return count(r)";
+    private static final String GROOM_GROOM_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Groom-Groom\" } ]->(b) return count(r)";
+    private static final String BRIDE_BRIDE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Bride-Bride\" } ]->(b) return count(r)";
+    private static final String GROOM_PARENTS_MARRIAGE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Groom-Couple\" } ]->(b) return count(r)";
+    private static final String BRIDE_PARENTS_MARRIAGE_IDENTITY = "MATCH (a)-[r:GT_ID { actors: \"Bride-Couple\" } ]->(b) return count(r)";
+    private static final String GROOM_GROOM_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Groom-Groom\" } ]->(b) return count(r)";
+    private static final String BRIDE_BRIDE_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Bride-Bride\" } ]->(b) return count(r)";
+    private static final String BRIDE_GROOM_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Bride-Groom\" } ]->(b) return count(r)";
+    private static final String DEATH_DEATH_SIBLING = "MATCH (a)-[r:GT_SIBLING { actors: \"Deceased-Deceased\" } ]->(b) return count(r)";
+    private static final String GROOM_GROOM_HALF_SIBLING = "MATCH (a)-[r:GT_HALF_SIBLING { actors: \"Groom-Groom\" } ]->(b) return count(r)";
+    private static final String BRIDE_BRIDE_HALF_SIBLING = "MATCH (a)-[r:GT_HALF_SIBLING { actors: \"Bride-Bride\" } ]->(b) return count(r)";
+    private static final String BRIDE_GROOM_HALF_SIBLING = "MATCH (a)-[r:GT_HALF_SIBLING { actors: \"Bride-Groom\" } ]->(b) return count(r)";
+    private static final String DEATH_DEATH_HALF_SIBLING = "MATCH (a)-[r:GT_HALF_SIBLING { actors: \"Deceased-Deceased\" } ]->(b) return count(r)";
 
     private static void doQuery(Session session, String title, String query) {
 

@@ -20,18 +20,18 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthBirthSiblingAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_DEATH_SIBLING_TPC = "MATCH (b1:Birth)-[r:SIBLING]-(b2:Birth) WHERE (b1)-[:GROUND_TRUTH_BIRTH_SIBLING]-(b2) return count(r)";
-    private static final String BIRTH_DEATH_SIBLING_FPC = "MATCH (b1:Birth)-[r:SIBLING]-(b2:Birth) WHERE NOT (b1)-[:GROUND_TRUTH_BIRTH_SIBLING]-(b2) return count(r)";
-    private static final String BIRTH_DEATH_SIBLING_FNC = "MATCH (b1:Birth)-[r:GROUND_TRUTH_BIRTH_SIBLING]-(b2:Birth) WHERE NOT (b1)-[:SIBLING]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_SIBLING_TPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]-(b2:Birth) WHERE (b1)-[:GT_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_SIBLING_FPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]-(b2:Birth) WHERE NOT (b1)-[:GT_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_SIBLING_FNC = "MATCH (b1:Birth)-[r:GT_SIBLING { actors: \"Child-Child\"}]-(b2:Birth) WHERE NOT (b1)-[:SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
 
     public BirthBirthSiblingAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);
     }
 
     private void doqueries() {
-        long fpc = doQuery(BIRTH_DEATH_SIBLING_FPC);
-        long tpc = doQuery(BIRTH_DEATH_SIBLING_TPC);
-        long fnc = doQuery(BIRTH_DEATH_SIBLING_FNC);
+        long fpc = doQuery(BIRTH_BIRTH_SIBLING_FPC);
+        long tpc = doQuery(BIRTH_BIRTH_SIBLING_TPC);
+        long fnc = doQuery(BIRTH_BIRTH_SIBLING_FNC);
 
         long birth_count = doQuery( ALL_BIRTHS );
         long all_pair_count = nChoose2( birth_count );

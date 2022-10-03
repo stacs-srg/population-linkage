@@ -139,7 +139,7 @@ public class BirthMotherIdentityLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String BIRTH_MOTHER_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_MOTHER_IDENTITY]-(b:Birth) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BIRTH_MOTHER_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GT_ID, { actors: \"Child-Mother\" } ]-(b:Birth) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countBirthMotherIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
         String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);

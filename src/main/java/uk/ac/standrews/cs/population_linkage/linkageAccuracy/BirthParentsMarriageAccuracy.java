@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthParentsMarriageAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_PARENTS_MARRIAGE_TPC = "MATCH (b:Birth)-[r:FATHER]-(m:Marriage) WHERE (b)-[:GROUND_TRUTH_BIRTH_PARENTS_MARRIAGE]-(m) return count(r)";
-    private static final String BIRTH_PARENTS_MARRIAGE_FPC = "MATCH (b:Birth)-[r:FATHER]-(m:Marriage) WHERE NOT (b)-[:GROUND_TRUTH_BIRTH_PARENTS_MARRIAGE]-(m) return count(r)";
-    private static final String BIRTH_PARENTS_MARRIAGE_FNC = "MATCH (b:Birth)-[r:GROUND_TRUTH_BIRTH_PARENTS_MARRIAGE]-(m:Marriage) WHERE NOT (b)-[:FATHER]-(m) return count(r)";
+    private static final String BIRTH_PARENTS_MARRIAGE_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Couple\"}]-(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) return count(r)";
+    private static final String BIRTH_PARENTS_MARRIAGE_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Couple\"}]-(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) return count(r)";
+    private static final String BIRTH_PARENTS_MARRIAGE_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Couple\"}]-(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Couple\"}]-(m) return count(r)";
 
     // FATHER
     // MOTHER

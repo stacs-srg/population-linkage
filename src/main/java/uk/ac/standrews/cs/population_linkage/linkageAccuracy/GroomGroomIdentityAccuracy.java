@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class GroomGroomIdentityAccuracy extends AbstractAccuracy {
 
-    private static final String GROOM_GROOM_ID_TPC = "MATCH (m1:Marriage)-[r:GROOM]-(m2:Marriage) WHERE (m1)-[:GROUND_TRUTH_GROOM_GROOM_IDENTITY]-(m2) return count(r)";
-    private static final String GROOM_GROOM_ID_FPC = "MATCH (m1:Marriage)-[r:GROOM]-(m2:Marriage) WHERE NOT (m1)-[:GROUND_TRUTH_GROOM_GROOM_IDENTITY]-(m2) return count(r)";
-    private static final String GROOM_GROOM_ID_FNC = "MATCH (m1:Marriage)-[r:GROUND_TRUTH_GROOM_GROOM_IDENTITY]-(m2:Marriage) WHERE NOT (m1)-[:GROOM]-(m2) return count(r)";
+    private static final String GROOM_GROOM_ID_TPC = "MATCH (m1:Marriage)-[r:ID {actors: \"Groom-Groom\"}]-(m2:Marriage) WHERE (m1)-[:GT_ID {actors: \"Groom-Groom\"}]-(m2) return count(r)";
+    private static final String GROOM_GROOM_ID_FPC = "MATCH (m1:Marriage)-[r:ID {actors: \"Groom-Groom\"}]-(m2:Marriage) WHERE NOT (m1)-[:GT_ID {actors: \"Groom-Groom\"}]-(m2) return count(r)";
+    private static final String GROOM_GROOM_ID_FNC = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Groom-Groom\"}]-(m2:Marriage) WHERE NOT (m1)-[:ID {actors: \"Groom-Groom\"}]-(m2) return count(r)";
 
     public GroomGroomIdentityAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);

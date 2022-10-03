@@ -179,7 +179,7 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String BIRTH_DEATH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_SIBLING]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BIRTH_DEATH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Birth)-[r:GT_SIBLING, { actors: \"Child-Deceased\" } ]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countBirthDeathSiblingGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
 

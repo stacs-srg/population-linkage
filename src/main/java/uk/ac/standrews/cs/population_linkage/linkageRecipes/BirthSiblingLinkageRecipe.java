@@ -162,7 +162,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String BIRTH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_SIBLING]-(b:Birth) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BIRTH_GT_SIBLING_LINKS_QUERY = "MATCH (a:Birth)-[r:GT_SIBLING, { actors: \"Child-Child\" } ]-(b:Birth) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countBirthSiblingGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
         String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);

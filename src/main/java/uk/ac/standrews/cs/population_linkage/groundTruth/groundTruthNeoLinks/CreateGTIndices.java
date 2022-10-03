@@ -22,25 +22,27 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import java.time.LocalDateTime;
 
 /*
- * Deletes ground truth links in Neo4J for Umea data set
- *
  * @author al
+ *
+ * Creates relationship indices for the GT data.
+ * Makes things go a lot faster.
  */
-public class DeleteGTLinks {
+public class CreateGTIndices {
 
-    public static String[] queries = new String[] {
-            "MATCH (a)-[r:GT_ID]-(b) DELETE r",
-            "MATCH (a)-[r:GT_SIBLING]-(b) DELETE r",
-            "MATCH (a)-[r:GT_HALF_SIBLING]-(b) DELETE r" };
+    private static final String GT_SIBLING_INDEX = "CREATE INDEX GT_SIBLING_INDEX FOR ()-[r:GT_SIBLING]-() ON (r.role)";
+    private static final String GT_HALF_SIBLING_INDEX = "CREATE INDEX GT_HALF_SIBLING_INDEX FOR ()-[r:GT_HALF_SIBLING]-() ON (r.role)";
+    private static final String GT_ID_INDEX  = "CREATE INDEX GT_ID_INDEX FOR ()-[r:GT_ID]-() ON (r.role)";
 
     private static void doQueries(String... queries) {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); Session session = bridge.getNewSession()) {
 
-            System.out.println("Deleting GT links @ " + LocalDateTime.now());
+            System.out.println("Creating GT Indices @ " + LocalDateTime.now());
 
             for (String query : queries) {
+                System.out.println( "Running: " + query );
                 session.run(query);
+                System.out.println("Finished query @ " + LocalDateTime.now());
             }
 
             System.out.println("Complete @ " + LocalDateTime.now());
@@ -48,7 +50,10 @@ public class DeleteGTLinks {
     }
 
     public static void main(String[] args) {
-
-        doQueries( queries );
+        doQueries(
+                GT_SIBLING_INDEX,
+                GT_HALF_SIBLING_INDEX,
+                GT_ID_INDEX
+        );
     }
 }

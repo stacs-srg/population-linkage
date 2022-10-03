@@ -157,7 +157,7 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String DEATH_GROOM_GT_IDENTITY = "MATCH (a:Death)-[r:GROUND_TRUTH_DEATH_GROOM_IDENTITY]-(b:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String DEATH_GROOM_GT_IDENTITY = "MATCH (a:Death)-[r:GT_ID, { actors: \"Deceased-Groom\" } ]-(b:Marriage) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
 
     public static int countDeathGroomSiblingGTLinks(NeoDbCypherBridge bridge, LXP death_record) {
         String standard_id_from = death_record.getString(Death.STANDARDISED_ID);

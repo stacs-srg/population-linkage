@@ -195,8 +195,8 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         return count;
     }
 
-    private static final String BIRTH_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
-    private static final String BIRTH_DEATH_ALL_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) RETURN r";
+    private static final String BIRTH_DEATH_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GT_ID, { actors: \"Child-Deceased\" } ]-(b:Death) WHERE b.STANDARDISED_ID = $standard_id_from RETURN r";
+    private static final String BIRTH_DEATH_ALL_GT_IDENTITY_LINKS_QUERY = "MATCH (a:Birth)-[r:GT_ID, { actors: \"Child-Deceased\" } ]-(b:Death) RETURN r";
 
     public static List<Relationship> getBirthDeathIdentityGTLinks(NeoDbCypherBridge bridge, LXP birth_record) {
         String standard_id_from = birth_record.getString(Birth.STANDARDISED_ID);

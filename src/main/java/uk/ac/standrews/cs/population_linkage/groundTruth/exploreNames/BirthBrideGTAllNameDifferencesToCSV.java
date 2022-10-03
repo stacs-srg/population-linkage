@@ -29,17 +29,17 @@ import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class BirthBrideGTAllNameDifferences {
+public class BirthBrideGTAllNameDifferencesToCSV {
 
     private final PrintWriter writer;
     private StringMeasure measure = Constants.JENSEN_SHANNON;
     public static final String OUTPUT_FILE_PATH = "/Users/al/Desktop/bride_babies_gt_all_names.csv";
 
-    public BirthBrideGTAllNameDifferences(PrintWriter writer) {
+    public BirthBrideGTAllNameDifferencesToCSV(PrintWriter writer) {
         this.writer = writer;
     }
 
-    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) RETURN b,m";
+    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GT_ID { actors: \"Child-Bride\" } ]-(m:Marriage) RETURN b,m";
 
     public static List<Pair<Node, Node>> getPairs(NeoDbCypherBridge bridge) {
 
@@ -183,14 +183,17 @@ public class BirthBrideGTAllNameDifferences {
     }
 
     private String quoteStrip(String name) {
-        return name.substring(1, name.length() - 1);
+        if( name.contains("\"") ) {
+            return name.substring(1, name.length() - 1);
+        }
+        return name;
     }
 
     public static void main(String[] args) throws BucketException {
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge(); PrintWriter writer = new PrintWriter(FileManipulation.getOutputStreamWriter(Paths.get(OUTPUT_FILE_PATH)))) {
 
-            BirthBrideGTAllNameDifferences en = new BirthBrideGTAllNameDifferences(writer);
+            BirthBrideGTAllNameDifferencesToCSV en = new BirthBrideGTAllNameDifferencesToCSV(writer);
             en.header();
             en.show(bridge);
 

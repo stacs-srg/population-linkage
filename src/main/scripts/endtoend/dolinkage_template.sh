@@ -33,6 +33,9 @@ COPYDIR=/Users/al/Desktop/NEOCOPY/
 
 export MAVEN_OPTS="-Xmx16G"
 
+echo "0. Perform indexing of GT and Relationships - may fail if already in Db"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.IndexRelationships" -e
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.groundTruth.groundTruthNeoLinks.CreateGTIndices" -e
 echo "1. Performing birth sibling bundling"
 mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder" -e -Dexec.args="${EXEC_ARGS}"
 echo "2. Performing birth own death linkage"

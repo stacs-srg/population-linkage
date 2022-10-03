@@ -31,15 +31,15 @@ import java.util.List;
 
 public class BirthBrideGTNameDifferences {
 
-    private final PrintWriter writer;
-    private StringMeasure measure = Constants.JENSEN_SHANNON;
+    protected final PrintWriter writer;
+    protected StringMeasure jensenShannon = Constants.JENSEN_SHANNON;
     public static final String OUTPUT_FILE_PATH = "/Users/al/Desktop/bride_babies_gt_names.csv";
 
     public BirthBrideGTNameDifferences(PrintWriter writer) {
         this.writer = writer;
     }
 
-    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) RETURN b,m";
+    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GT_ID, actors: \"Child-Bride\"]-(m:Marriage) RETURN b,m";
 
     public static List<Pair<Node, Node>> getPairs(NeoDbCypherBridge bridge) {
 
@@ -49,10 +49,10 @@ public class BirthBrideGTNameDifferences {
 
     private void show(NeoDbCypherBridge bridge) {
         List<Pair<Node, Node>> nodes = getPairs(bridge);
-        examineNodes(nodes);
+        showNodes(nodes);
     }
 
-    private void examineNodes(List<Pair<Node, Node>> nodes) {
+    private void showNodes(List<Pair<Node, Node>> nodes) {
 
         for (Pair<Node, Node> p : nodes) {
             Node birth = p.X();
@@ -76,7 +76,7 @@ public class BirthBrideGTNameDifferences {
         }
     }
 
-    private void header() {
+    protected void header() {
         StringBuilder line = new StringBuilder();
         line.append("code");
         line.append(",");
@@ -96,7 +96,7 @@ public class BirthBrideGTNameDifferences {
         writer.println(line);
     }
 
-    private void showPair(int code, String baby_firstname, String baby_surname, String baby_id, String bride_firstname, String bride_surname, String bride_id) {
+    protected void showPair(int code, String baby_firstname, String baby_surname, String baby_id, String bride_firstname, String bride_surname, String bride_id) {
 
         String qs_baby_firstname = quoteStrip(baby_firstname);
         String qs_baby_surname = quoteStrip(baby_surname);
@@ -108,9 +108,13 @@ public class BirthBrideGTNameDifferences {
             System.exit(-1);
         }
 
-        double fnd = measure.distance(qs_baby_firstname, qs_bride_firstname);
-        double snd = measure.distance(qs_baby_surname, qs_bride_surname);
+        double fnd = jensenShannon.distance(qs_baby_firstname, qs_bride_firstname);
+        double snd = jensenShannon.distance(qs_baby_surname, qs_bride_surname);
 
+        printPair(code, qs_baby_firstname, qs_baby_surname, qs_bride_firstname, qs_bride_surname, fnd, snd);
+    }
+
+    protected void printPair(int code, String qs_baby_firstname, String qs_baby_surname, String qs_bride_firstname, String qs_bride_surname, double fnd, double snd) {
         StringBuilder line = new StringBuilder();
         line.append(code);
         line.append(",");
@@ -132,9 +136,11 @@ public class BirthBrideGTNameDifferences {
     }
 
     private String quoteStrip(String name) {
-        return name.substring(1, name.length() - 1);
+        if( name.contains("\"") ) {
+            return name.substring(1, name.length() - 1);
+        }
+        return name;
     }
-
 
     public static void main(String[] args) throws BucketException {
 

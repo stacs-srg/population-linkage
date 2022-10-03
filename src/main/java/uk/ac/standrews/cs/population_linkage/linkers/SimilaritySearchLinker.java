@@ -50,7 +50,6 @@ public class SimilaritySearchLinker extends Linker {
 
         super.addRecords(storedSet, searchSet);
         this.search_set = searchSet;
-
         search_structure = search_structure_factory.newSearchStructure(storedSet);
     }
 
@@ -58,7 +57,6 @@ public class SimilaritySearchLinker extends Linker {
 
         super.addRecords(storedSet, searchSet);
         this.search_set = searchSet;
-
         search_structure = search_structure_factory.newSearchStructure(storedSet, reference_objects);
     }
 

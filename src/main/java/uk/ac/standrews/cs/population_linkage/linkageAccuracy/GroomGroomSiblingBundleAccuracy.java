@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class GroomGroomSiblingBundleAccuracy extends AbstractAccuracy {
 
-    private static final String GROOM_GROOM_SIBLING_TPC = "MATCH (m1:Marriage)-[r:SIBLING]-(m2:Marriage) WHERE (m1)-[:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2) return count(r)";
-    private static final String GROOM_GROOM_SIBLING_FPC = "MATCH (m1:Marriage)-[r:SIBLING]-(m2:Marriage) WHERE NOT (m1)-[:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2) return count(r)";
-    private static final String GROOM_GROOM_SIBLING_FNC = "MATCH (m1:Marriage)-[r:GROUND_TRUTH_GROOM_GROOM_SIBLING]-(m2:Marriage) WHERE NOT (m1)-[:SIBLING]-(m2) return count(r)";
+    private static final String GROOM_GROOM_SIBLING_TPC = "MATCH (m1:Marriage)-[r:SIBLING {actors: \"Groom-Groom\"}]-(m2:Marriage) WHERE (m1)-[:GT_SIBLING {actors: \"Groom-Groom\"}]-(m2) return count(r)";
+    private static final String GROOM_GROOM_SIBLING_FPC = "MATCH (m1:Marriage)-[r:SIBLING {actors: \"Groom-Groom\"}]-(m2:Marriage) WHERE NOT (m1)-[:GT_SIBLING {actors: \"Groom-Groom\"}]-(m2) return count(r)";
+    private static final String GROOM_GROOM_SIBLING_FNC = "MATCH (m1:Marriage)-[r:GT_SIBLING {actors: \"Groom-Groom\"}]-(m2:Marriage) WHERE NOT (m1)-[:SIBLING {actors: \"Groom-Groom\"}]-(m2) return count(r)";
 
     public GroomGroomSiblingBundleAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);

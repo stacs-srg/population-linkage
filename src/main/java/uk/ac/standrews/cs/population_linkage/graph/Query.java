@@ -28,79 +28,92 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *  Neo4J Cypher queries for use elsewhere.
+ *  @author al
+ *  Reworked wirh generic labels 31/8/2022
+ *
+ *  * All the links are labelled as:
+ *  * ID for identity linkage
+ *  * SIBLING for sibling linkage
+ *  * Each relationship has an attribute 'actors' which indicates the actors on the linked certificates.
+ *  * The actors are hyphen separated e.g. [:ID { actors: "Child-Father" } ]
+ *  * The strings used to identify the actors are: Child, Deceased, Father, Mother, Couple, Bride, Groom
+ */
 public class Query {
 
     // Standard creation queries
     // BB,
     // etc. refer to Births Deaths and Marriages NOT babies, mothers etc.
 
-    private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Child\" } ]->(b)";
 
-    private static final String BM_FATHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:FATHER { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String BM_MOTHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:MOTHER { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_FATHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Father\" } ]->(b)";
+    private static final String BM_MOTHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Mother\" } ]->(b)";
 
-    private static final String BM_BIRTH_GROOM_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String BM_BIRTH_BRIDE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_BIRTH_GROOM_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Groom\"  } ]->(b)";
+    private static final String BM_BIRTH_BRIDE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Bride\"  } ]->(b)";
 
-    private static final String DD_SIBLING_QUERY = "MATCH (a:Death), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String DD_SIBLING_QUERY = "MATCH (a:Death), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Deceased\" } ]->(b)";
 
-    private static final String BD_DEATH_QUERY = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:DEATH { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BD_DEATH_QUERY = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Deceased\" } ]->(b)";
 
-    private static final String DM_DEATH_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String DM_DEATH_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";;
+    private static final String DM_DEATH_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Groom\" } } ]->(b)";
+    private static final String DM_DEATH_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Bride\" } } ]->(b)";;
 
-    private static final String MM_BB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String MM_GG_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String MM_GB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"GB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String MM_BB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Bride-Bride\" } ]->(b)";
+    private static final String MM_GG_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Groom\" } ]->(b)";
+    private static final String MM_GB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Bride\" } ]->(b)";
 
-    private static final String DB_SIBLING_QUERY = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String DB_SIBLING_QUERY_SIMPLE = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov } ]->(b)";
+    private static final String DB_SIBLING_QUERY = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Child\" } ]->(b)";
+    private static final String DB_SIBLING_QUERY_SIMPLE = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, actors: \"Deceased-Child\" } ]->(b)";
 
-    private static final String MM_GROOM_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM_PARENTS { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String MM_BRIDE_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE_PARENTS { provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String MM_GROOM_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Couple\" } ]->(b)";
+    private static final String MM_BRIDE_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Bride-Couple\" } ]->(b)";
 
-    private static final String BM_GROOM_MARRIAGE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String BM_BRIDE_MARRIAGE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"BB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String BM_GROOM_SIBLING_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Groom\" } ]->(b)";
+    private static final String BM_BRIDE_SIBLING_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Bride\" } ]->(b)";
 
-    private static final String MM_BRIDE_BRIDE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:BRIDE { actors: \"BB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String MM_GROOM_GROOM_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:GROOM { actors: \"GG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String MM_BRIDE_BRIDE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Bride-Bride\" } } ]->(b)";
+    private static final String MM_GROOM_GROOM_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Groom\" } } ]->(b)";
 
-    private static final String DM_DECEASED_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"DB\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
-    private static final String DM_DECEASED_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { actors: \"DG\", provenance: $prov, fields_populated: $fields, distance: $distance } ]->(b)";
+    private static final String DM_DECEASED_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Bride\" } } ]->(b)";
+    private static final String DM_DECEASED_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Groom\" } } ]->(b)";
 
     // queries for use in predicates - return a relationship if it exists
 
-    private static final String BB_SIBLING_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BB_SIBLING_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Child\" }]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String BM_FATHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:FATHER]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String BM_MOTHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:MOTHER]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BM_FATHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:ID { actors: \"Child-Father\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BM_MOTHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:ID { actors: \"Child-Mother\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String BM_BIRTH_GROOM_EXISTS_QUERY = "MATCH (a:Birth)-[r:GROOM]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String BM_BIRTH_BRIDE_EXISTS_QUERY = "MATCH (a:Birth)-[r:BRIDE]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BM_BIRTH_GROOM_EXISTS_QUERY = "MATCH (a:Birth)-[r:ID { actors: \"Child-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BM_BIRTH_BRIDE_EXISTS_QUERY = "MATCH (a:Birth)-[r:ID { actors: \"Child-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String DD_SIBLING_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String DD_SIBLING_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Deceased\" }]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String BD_DEATH_EXISTS_QUERY = "MATCH (a:Birth)-[r:DEATH]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to  RETURN r";
+    private static final String BD_DEATH_EXISTS_QUERY = "MATCH (a:Birth)-[r:ID { actors: \"Child-Deceased\" }]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to  RETURN r";
 
-    private static final String DM_DEATH_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:GROOM]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov RETURN r";
-    private static final String DM_DEATH_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:BRIDE]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String DM_DEATH_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:ID actors: \"Deceased-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov RETURN r";
+    private static final String DM_DEATH_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:ID actors: \"Deceased-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String MM_BB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_GG_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_GB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String DB_SIBLING_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_BB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Bride-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_GG_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Groom-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_GB_SIBLING_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Groom-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String MM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:GROOM_PARENTS]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:BRIDE_PARENTS]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String DB_SIBLING_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Child\" }]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String BM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String BM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:ID { actors: \"Groom-Couple\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:ID { actors: \"Bride-Couple\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String MM_BRIDE_BRIDE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_GROOM_GROOM_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String DM_DECEASED_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String DM_DECEASED_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_BRIDE_BRIDE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Bride-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_GROOM_GROOM_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Groom-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+
+    private static final String DM_DECEASED_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String DM_DECEASED_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
     // Create Operations
 
@@ -254,11 +267,11 @@ public class Query {
     }
 
     public static void createBMGroomSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
-        createReference(bridge, BM_GROOM_MARRIAGE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+        createReference(bridge, BM_GROOM_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
     public static void createBMBrideSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance,  int fields_populated, double distance) {
-        createReference(bridge, BM_BRIDE_MARRIAGE_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+        createReference(bridge, BM_BRIDE_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
     public static void createMMBrideBrideIdReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance,  int fields_populated, double distance) {
@@ -436,8 +449,6 @@ public class Query {
         }
         return true;
     }
-
-
 
     private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String provenance) {
         Map<String, Object> parameters = new HashMap<>();

@@ -26,7 +26,7 @@ import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
-import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
@@ -59,8 +59,8 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
 
-            String std_id1 = link.getRecord1().getReferend(Death.class).getString(Death.STANDARDISED_ID);
-            String std_id2 = link.getRecord2().getReferend(Death.class).getString( Death.STANDARDISED_ID );
+            String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend(Birth.class).getString( Birth.STANDARDISED_ID );
 
             if( !std_id1.equals(std_id2 ) ) {
 

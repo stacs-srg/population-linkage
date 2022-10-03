@@ -63,7 +63,9 @@ public class BirthDeathOpenTriangleResolver {
      *                         z:Death
      */
 
-    protected static final String TRIANGLE_QUERY = "MATCH (x:Birth)-[xy:DEATH]-(y:Death)-[yz:SIBLING]-(z:Death) WHERE NOT (z)-[:SIBLING]-(x) return x,y,z,xy,yz";
+    // TODO Move into Query??
+
+    protected static final String TRIANGLE_QUERY = "MATCH (x:Birth)-[xy:ID]-(y:Death)-[yz:SIBLING]-(z:Death) WHERE NOT (z)-[:SIBLING]-(x) return x,y,z,xy,yz";
 
     private static final String GET_BIRTH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
     private static final String GET_DEATH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
@@ -203,15 +205,6 @@ public class BirthDeathOpenTriangleResolver {
                         ambiguous_count = ambiguous_count + 1;
                     }
                 }
-//                System.out.println( "MATCH (a:Birth),(b:Death),(c:Death) WHERE a.STANDARDISED_ID = \"" + std_id_x + "\" AND " +
-//                        " b.STANDARDISED_ID = \"" +  std_id_y + "\" AND " +
-//                        " c.STANDARDISED_ID = \"" +  std_id_z + "\" RETURN a,b,c" );
-//                System.out.println("GT: fids: " + x_f_id + " / " + y_f_id + " / " + z_f_id);
-//                System.out.println( "Evidence: xy_dist: " + xy_dist + " yz_dist: " + yz_dist +
-//                        " common sibs xy: " + countCommonSiblings(std_id_x,std_id_y) +
-//                        " common sibs yz: " + countCommonSiblings(std_id_x,std_id_z) +
-//                        " common sibs xz: " + countCommonSiblings(std_id_x,std_id_z) );
-//                System.out.println();
             }
 
         } catch (BucketException e) {

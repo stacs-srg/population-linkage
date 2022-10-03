@@ -53,9 +53,9 @@ public class UmeaBirthDeathHardNegativeML {
     private static final String hard_negatives_filename = "Umea_BD_hard_negatives";
     private static final String metdata_filename = "Umea_BD_metadata";
 
-    private static final String BIRTH_DEATH_IDENTITY_QUERY = "MATCH (a:Birth)-[r:GROUND_TRUTH_BIRTH_DEATH_IDENTITY]-(b:Death) WHERE a.CHILD_IDENTITY = b.DECEASED_IDENTITY RETURN a,b,r";
-    private static final String NON_LINKS_DEATHS_QUERY = "MATCH (x:Death) WHERE NOT (:Birth)-[]-(x) RETURN x LIMIT $number";
-    private static final String NON_LINKS_BIRTHS_QUERY = "MATCH (x:Birth) WHERE NOT (:Death)-[]-(x) RETURN x LIMIT $number";
+    private static final String BIRTH_DEATH_IDENTITY_QUERY = "MATCH (a:Birth)-[r:GT_ID]-(b:Death, actors: \"Child-Deceased\") WHERE a.CHILD_IDENTITY = b.DECEASED_IDENTITY RETURN a,b,r";
+    private static final String NON_LINKS_DEATHS_QUERY = "MATCH (x:Death) WHERE NOT (:Birth)-[]-(x) RETURN x LIMIT $number"; // This is OK - just looking for non linked data
+    private static final String NON_LINKS_BIRTHS_QUERY = "MATCH (x:Birth) WHERE NOT (:Death)-[]-(x) RETURN x LIMIT $number"; // This is OK - just looking for non linked data
 
     protected static final String DELIMIT = ",";
 

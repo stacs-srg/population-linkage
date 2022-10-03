@@ -26,6 +26,7 @@ import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.TreeSet;
 
 public class ExploreNames {
 
@@ -35,7 +36,7 @@ public class ExploreNames {
     public ExploreNames() {
     }
 
-    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GROUND_TRUTH_BIRTH_BRIDE_IDENTITY]-(m:Marriage) RETURN b,m";
+    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Bride\"}]-(m:Marriage) RETURN b,m";
 
     public static List<Pair<Node, Node>> getPairs(NeoDbCypherBridge bridge) {
 
@@ -49,6 +50,14 @@ public class ExploreNames {
     }
 
     private void examineNodes(List<Pair<Node, Node>> nodes) {
+        TreeSet<String> baby_first_names = new TreeSet<>();
+        TreeSet<String> bride_first_names = new TreeSet<>();
+        TreeSet<String> first_names = new TreeSet<>();
+
+        TreeSet<String> baby_surnames = new TreeSet<>();
+        TreeSet<String> bride_surnames = new TreeSet<>();
+        TreeSet<String> surnames = new TreeSet<>();
+
         int different_first_names = 0;
         int different_surnames = 0;
         int both_different = 0;
@@ -62,6 +71,18 @@ public class ExploreNames {
             String bride_firstname = marriage.get("BRIDE_FORENAME").toString();
             String bride_surname = marriage.get("BRIDE_SURNAME").toString();
             String bride_id = marriage.get("BRIDE_IDENTITY").toString();
+
+            baby_first_names.add( baby_firstname );
+            first_names.add( baby_firstname );
+            baby_surnames.add( baby_surname );
+            surnames.add( baby_surname );
+
+            bride_first_names.add( bride_firstname );
+            first_names.add( bride_firstname );
+            bride_surnames.add( bride_surname );
+            surnames.add( bride_surname );
+
+
             if (baby_firstname.equals(bride_firstname) && baby_surname.equals(bride_surname)) {
                 same++;
             } else if (!baby_firstname.equals(bride_firstname) && !baby_surname.equals(bride_surname)) {
@@ -77,8 +98,19 @@ public class ExploreNames {
         }
         System.out.println("Number of pairs examined: " + nodes.size());
         System.out.println("Number of identical names baby-bride: " + same);
+
+        System.out.println("Number of baby first names: " + baby_first_names.size() );
+        System.out.println("Number of bride first names: " + bride_first_names.size() );
+        System.out.println("Number of first names: " + first_names.size() );
+
         System.out.println("Number of different first names baby-bride: " + different_first_names);
+
+        System.out.println("Number of baby surnames: " + baby_surnames.size() );
+        System.out.println("Number of bride surnames: " + bride_surnames.size() );
+        System.out.println("Number of surnames: " + surnames.size() );
+
         System.out.println("Number of different surnames baby-bride: " + different_surnames);
+
         System.out.println("Number of names both different baby-bride: " + both_different);
     }
 
