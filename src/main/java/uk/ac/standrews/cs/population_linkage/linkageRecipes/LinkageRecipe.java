@@ -207,17 +207,14 @@ public abstract class LinkageRecipe implements LinkViabilityChecker, AutoCloseab
     Iterable<LXP> getByType(Class<? extends LXP> type) {
         if (type.equals(Birth.class)) {
             Iterable<LXP> records = getBirthRecords();
-            printSize( records,"birth");
             return records;
         }
         if (type.equals(Marriage.class)) {
             Iterable<LXP> records =  getMarriageRecords();
-            printSize( records,"marriage");
             return records;
         }
         if (type.equals(Death.class)) {
             Iterable<LXP> records = getDeathRecords();
-            printSize( records,"death");
             return records;
         }
         throw new RuntimeException("Invalid source type");
@@ -228,11 +225,15 @@ public abstract class LinkageRecipe implements LinkViabilityChecker, AutoCloseab
     }
 
     public Iterable<LXP> getStoredRecords() {
-        return getByType(getStoredType());
+        Iterable<LXP> records = getByType(getStoredType());
+        printSize( records,"stored");
+        return records;
     }
 
     public Iterable<LXP> getQueryRecords() {
-        return getByType(getQueryType());
+        Iterable<LXP> records = getByType(getQueryType());
+        printSize( records,"query");
+        return records;
     }
 
     public abstract LinkStatus isTrueMatch(LXP record1, LXP record2);

@@ -44,7 +44,7 @@ public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe
     private double threshold = 0.360571156;
 
     public MLCustomBirthSiblingLinkageRecipe(String source_repository_name, String number_of_records, NeoDbCypherBridge bridge, String links_persistent_name) {
-        super( source_repository_name, links_persistent_name );
+        super( source_repository_name, number_of_records, links_persistent_name );
         this.bridge = bridge;
     }
 

@@ -54,7 +54,7 @@ import static uk.ac.standrews.cs.population_linkage.graph.NeoUtil.getByNeoId;
 import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filter;
 import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethods.*;
 
-public class BitBlasterLinkageRunner extends LinkageRunner implements AutoCloseable {
+public class BitBlasterLinkageRunner extends LinkageRunner {
 
     @Override
     public LinkageRecipe getLinkageRecipe(String links_persistent_name, String source_repository_name, String results_repository_name, RecordRepository record_repository) {
@@ -76,11 +76,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner implements AutoClosea
         return BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.NUMBER_OF_REFERENCE_OBJECTS);
     }
 
-    public LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {
-
-        System.out.println("Adding records into linker @ " + LocalDateTime.now());
-        ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
-        System.out.println("Constructing link iterable @ " + LocalDateTime.now());
+    public LinkageResult link(Linker linker, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception {
 
         List<Link> links_as_list;
         Iterable<Link> links = linker.getLinks();
@@ -88,11 +84,20 @@ public class BitBlasterLinkageRunner extends LinkageRunner implements AutoClosea
         return processLinks(make_persistent, evaluate_quality, persist_links, links_as_list);
     }
 
-    @Override
-    public LinkageResult linkLists(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links, boolean isIdentityLinkage) throws Exception {
+    public void addRecords(Linker linker) {
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
         ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
-        System.out.println("Constructing link iterable @ " + LocalDateTime.now());
+        System.out.println("Finished adding records @ " + LocalDateTime.now());
+    }
+
+    private void addRecordsDummy() {
+        System.out.println("Should Add records into linker @ " + LocalDateTime.now());
+        System.exit(1);
+    }
+
+    @Override
+    public LinkageResult linkLists(Linker linker, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links, boolean isIdentityLinkage) throws Exception {
+        addRecordsDummy();
 
         List<Link> linked_pairs = new ArrayList<>();
 
@@ -116,11 +121,10 @@ public class BitBlasterLinkageRunner extends LinkageRunner implements AutoClosea
     }
 
     @Override
-    protected LinkageResult investigatelinkLists(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge
+    protected LinkageResult investigatelinkLists(Linker linker, MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge
         bridge) throws Exception {
-        System.out.println("Adding records into linker @ " + LocalDateTime.now());
-        ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
-        System.out.println("Constructing lists of lists @ " + LocalDateTime.now());
+        addRecordsDummy();
+
         System.out.println("Threshold = " + linkage_recipe.getThreshold());
 //        Iterable<List<Link>> lol = linker.getListsOfLinks();
 //        showlol( lol );
@@ -131,7 +135,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner implements AutoClosea
     }
 
     @Override
-    protected LinkageResult printLinksNonLinks(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception {
+    protected LinkageResult printLinksNonLinks(Linker linker, MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception {
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
         ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
         System.out.println("Constructing lists of lists @ " + LocalDateTime.now());

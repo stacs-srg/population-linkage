@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-public abstract class Linker {
+public abstract class Linker implements AutoCloseable {
 
     protected final LXPMeasure composite_measure;
     protected final ProgressIndicator linkage_progress_indicator;

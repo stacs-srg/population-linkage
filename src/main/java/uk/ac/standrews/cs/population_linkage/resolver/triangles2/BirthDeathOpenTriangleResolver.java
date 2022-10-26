@@ -382,7 +382,7 @@ public class BirthDeathOpenTriangleResolver {
         String sourceRepo = args[0]; // e.g. umea
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName()) ) {
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleBuilder.class.getName()) ) {
             BirthDeathOpenTriangleResolver resolver = new BirthDeathOpenTriangleResolver(bridge, sourceRepo, linkageRecipe); // this class
             resolver.resolve();
         }

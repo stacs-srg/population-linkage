@@ -256,11 +256,11 @@ public class SiblingBirthOpenHexagonResolver {
     public static void main(String[] args) {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
-        String resultsRepo = args[1]; // e.g. synth_results
+        String number_of_births = args[1]; // e.g. EVERYTHING
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();) {
 
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName());
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_births, BirthSiblingBundleBuilder.class.getName());
             SiblingBirthOpenHexagonResolver resolver = new SiblingBirthOpenHexagonResolver(bridge, sourceRepo, linkageRecipe);
             resolver.resolve();
 

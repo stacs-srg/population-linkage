@@ -40,8 +40,10 @@ public class DeathBrideOwnMarriageBuilder implements MakePersistent {
         String sourceRepo = args[0]; // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-        try (BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+        try (
              DeathBrideIdentityLinkageRecipe linkageRecipe = new DeathBrideIdentityLinkageRecipe(sourceRepo, number_of_records, DeathBrideOwnMarriageBuilder.class.getName()) ) {
+
+            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2);

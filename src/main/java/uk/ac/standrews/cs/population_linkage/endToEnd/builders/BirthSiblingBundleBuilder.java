@@ -38,20 +38,25 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
         String sourceRepo = args[0];  // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
-        try(BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, BirthSiblingBundleBuilder.class.getName() ) ) {
+        int count = 1;
+
+        try(BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleBuilder.class.getName() ) ) {
+
+            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 );
+            int half_fields = linkage_fields - (linkage_fields / 2);
 
-            while( linkage_fields >= half_fields ) {
+            while (linkage_fields >= half_fields) {
+
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+                System.out.println("Num linkage fields = " + linkage_fields);
                 LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
                 linkage_fields--;
+                count++;
             }
-            System.out.println("Run finished");
         }
     }
 

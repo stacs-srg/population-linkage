@@ -17,7 +17,7 @@
 package uk.ac.standrews.cs.population_linkage.resolver.cluster;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 
 public class SiblingBirthClusterAllTrianglesResolver extends SiblingBirthClusterOpenTriangleResolver {
@@ -33,7 +33,7 @@ public class SiblingBirthClusterAllTrianglesResolver extends SiblingBirthCluster
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, DeathSiblingBundleBuilder.class.getName())) {
+            BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleBuilder.class.getName())) {
             SiblingBirthClusterAllTrianglesResolver resolver = new SiblingBirthClusterAllTrianglesResolver( bridge,sourceRepo,linkageRecipe );
 
             printHeaders();

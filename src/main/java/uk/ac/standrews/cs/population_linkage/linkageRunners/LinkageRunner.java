@@ -35,10 +35,9 @@ import java.util.concurrent.TimeUnit;
 
 import static uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus.TRUE_MATCH;
 
-public abstract class LinkageRunner implements AutoCloseable {
+public abstract class LinkageRunner {
 
     private static final int DEFAULT_NUMBER_OF_PROGRESS_UPDATES = 100;
-    protected Linker linker;
     protected LinkageRecipe linkage_recipe;
 
     public LinkageResult run(LinkageRecipe linkage_recipe,
@@ -48,12 +47,14 @@ public abstract class LinkageRunner implements AutoCloseable {
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
 
-        linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
-        int numberOGroundTruthLinks = 0;
-        MemoryLogger.update();
-        LinkageResult result = link(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks);
-        return result;
+        try( Linker linker = getLinker(linkage_recipe) ) {
+            linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE, LinkageConfig.DEATH_CACHE_SIZE, LinkageConfig.MARRIAGE_CACHE_SIZE);
+            int numberOGroundTruthLinks = 0;
+            MemoryLogger.update();
+            addRecords(linker);
+            LinkageResult result = link(linker, make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks);
+            return result;
+        }
     }
 
     public LinkageResult listsRun(LinkageRecipe linkage_recipe,
@@ -63,27 +64,30 @@ public abstract class LinkageRunner implements AutoCloseable {
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
 
-        linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
-        int numberOGroundTruthLinks = 0;
-        MemoryLogger.update();
-        LinkageResult result = linkLists(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
-        return result;
+        try( Linker linker = getLinker(linkage_recipe) ) {
+            linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE, LinkageConfig.DEATH_CACHE_SIZE, LinkageConfig.MARRIAGE_CACHE_SIZE);
+            int numberOGroundTruthLinks = 0;
+            MemoryLogger.update();
+            LinkageResult result = linkLists(linker, make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
+            return result;
+        }
     }
 
     public LinkageResult investigateRun(LinkageRecipe linkage_recipe,
                                         MakePersistent make_persistent,
-                                        boolean evaluateQuality, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception {
+                                        boolean evaluateQuality, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge
+        bridge) throws Exception {
 
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
 
-        linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
-        int numberOGroundTruthLinks = 0;
-        MemoryLogger.update();
-        LinkageResult result = investigatelinkLists(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
-        return result;
+        try( Linker linker = getLinker(linkage_recipe) ) {
+            linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE, LinkageConfig.DEATH_CACHE_SIZE, LinkageConfig.MARRIAGE_CACHE_SIZE);
+            int numberOGroundTruthLinks = 0;
+            MemoryLogger.update();
+            LinkageResult result = investigatelinkLists(linker, make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
+            return result;
+        }
     }
 
     public LinkageResult printLinksNonLinksRun(LinkageRecipe linkage_recipe,
@@ -93,21 +97,24 @@ public abstract class LinkageRunner implements AutoCloseable {
         this.linkage_recipe = linkage_recipe;
         MemoryLogger.update();
 
-        linker = getLinker(linkage_recipe);
-        linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE,LinkageConfig.DEATH_CACHE_SIZE,LinkageConfig.MARRIAGE_CACHE_SIZE);
-        int numberOGroundTruthLinks = 0;
-        MemoryLogger.update();
-        LinkageResult result = printLinksNonLinks(make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
-        return result;
+        try( Linker linker = getLinker(linkage_recipe) ) {
+            linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE, LinkageConfig.DEATH_CACHE_SIZE, LinkageConfig.MARRIAGE_CACHE_SIZE);
+            int numberOGroundTruthLinks = 0;
+            MemoryLogger.update();
+            LinkageResult result = printLinksNonLinks(linker, make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage, bridge);
+            return result;
+        }
     }
 
-    protected abstract LinkageResult printLinksNonLinks(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception;
+    public abstract void addRecords(Linker linker);
 
-    protected abstract LinkageResult investigatelinkLists(MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception;
+    protected abstract LinkageResult printLinksNonLinks(Linker linker, MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception;
 
-    public abstract LinkageResult link(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception;
+    protected abstract LinkageResult investigatelinkLists(Linker linker, MakePersistent make_persistent, boolean evaluateQuality, int numberOGroundTruthLinks, boolean persistLinks, boolean isIdentityLinkage, NeoDbCypherBridge bridge) throws Exception;
 
-    public abstract LinkageResult linkLists(MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persistLinks, boolean isIdentityLinkage) throws Exception;
+    public abstract LinkageResult link(Linker linker, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception;
+
+    public abstract LinkageResult linkLists(Linker linker, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persistLinks, boolean isIdentityLinkage) throws Exception;
 
     protected LinkageQuality getLinkageQuality(boolean evaluate_quality, long numberOfGroundTruthTrueLinks, long tp, long fp) {
         if(evaluate_quality) {
@@ -134,12 +141,6 @@ public abstract class LinkageRunner implements AutoCloseable {
             throw new RuntimeException("Bucket exception from accessing referend - bucket no longer contains expected records (TD)", e);
         } catch (RepositoryException e) {
             throw new RuntimeException("Bucket exception from accessing referend - bucket no longer contains expected records (TD)", e);
-        }
-    }
-
-    public void close() {
-        if( linker != null ) {
-            linker.close();
         }
     }
 

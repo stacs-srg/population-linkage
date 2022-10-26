@@ -39,8 +39,10 @@ public class BrideMarriageParentsMarriageBuilder implements MakePersistent {
         String sourceRepo = args[0]; // e.g. umea
         String number_of_records = args[1]; // e.g. 10000, EVERYTHING
 
-        try (BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+        try (
              BrideMarriageParentsMarriageIdentityLinkageRecipe linkageRecipe = new BrideMarriageParentsMarriageIdentityLinkageRecipe(sourceRepo, number_of_records, BrideMarriageParentsMarriageBuilder.class.getName()) ) {
+
+            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 );

@@ -23,6 +23,7 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
+import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 
@@ -45,6 +46,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX = Birth.STANDARDISED_ID;
 
     public static final int ALL_LINKAGE_FIELDS = 8;
+    private int number_of_births = 0;
 
     private Iterable<LXP> cached_records = null;
 
@@ -72,16 +74,21 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.MOTHER_BIRTH_RECORD_IDENTITY, Birth.MOTHER_BIRTH_RECORD_IDENTITY), pair(Birth.FATHER_BIRTH_RECORD_IDENTITY, Birth.FATHER_BIRTH_RECORD_IDENTITY))
     );
 
-    public BirthSiblingLinkageRecipe(String source_repository_name, String links_persistent_name) {
+    public BirthSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name) {
 
         super(source_repository_name, links_persistent_name);
+        if (number_of_records.equals(EVERYTHING_STRING)) {
+            number_of_births = EVERYTHING;
+        } else {
+            number_of_births = Integer.parseInt(number_of_records);
+        }
         setNumberOfLinkageFieldsRequired(ALL_LINKAGE_FIELDS);
     }
 
     @Override
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-            cached_records = super.getBirthRecords();
+                cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
         }
         return cached_records;
     }
