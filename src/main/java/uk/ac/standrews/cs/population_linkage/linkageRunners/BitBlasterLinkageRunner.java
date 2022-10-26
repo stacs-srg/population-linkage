@@ -63,6 +63,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
     public Linker getLinker(LinkageRecipe linkage_recipe) {
         LXPMeasure composite_measure = linkage_recipe.getCompositeMeasure();
+        System.out.println( composite_measure.getMeasureName() + " : " + composite_measure.hashCode() );
         return new SimilaritySearchLinker(getSearchFactory(composite_measure), composite_measure, linkage_recipe.getThreshold(), getNumberOfProgressUpdates(),
                 linkage_recipe.getLinkageType(), "threshold match at ", linkage_recipe.getStoredRole(), linkage_recipe.getQueryRole(), linkage_recipe);
     }

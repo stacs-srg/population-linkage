@@ -52,7 +52,10 @@ public abstract class LinkageRunner {
             int numberOGroundTruthLinks = 0;
             MemoryLogger.update();
             addRecords(linker);
+            System.out.println( "Linkage fields required: " + linkage_recipe.getNumberOfLinkageFieldsRequired() );
+
             LinkageResult result = link(linker, make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks);
+
             return result;
         }
     }

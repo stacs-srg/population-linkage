@@ -50,8 +50,7 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
             while (linkage_fields >= half_fields) {
 
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                System.out.println("Num linkage fields = " + linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, true);
+                LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, true); // TODO Cypher errors if evaluateQuality is tru
                 LinkageQuality quality = lr.getLinkageQuality();
                 quality.print(System.out);
                 linkage_fields--;
