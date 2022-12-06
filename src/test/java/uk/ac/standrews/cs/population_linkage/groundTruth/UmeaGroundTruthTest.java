@@ -86,7 +86,7 @@ public class UmeaGroundTruthTest {
 //        final List<List<Integer>> expected_unknown_links = Arrays.asList(
 //                Arrays.asList(56464,745114));
 //
-//        assertLinks(birth_records, marriage_records, expected_true_links, expected_unknown_links, UmeaBirthGroomIdentity::trueMatch, false);
+//        assertLinks(birth_records, marriage_records, expected_true_links, expected_unknown_links, UmeaBirthParentsMarriageIdentity::trueMatch, false);
 //    }
 //
 //    @Test
@@ -106,7 +106,7 @@ public class UmeaGroundTruthTest {
 //                Arrays.asList(64654, 654521)
 //        );
 //
-//        assertLinks(birth_records, birth_records, expected_true_links, expected_unknown_links, UmeaBirthMotherIdentity::trueMatch, false);
+//        assertLinks(birth_records, birth_records, expected_true_links, expected_unknown_links, FelligiSunterBirthParentsMarriageAnalysis::trueMatch, false);
 //    }
 //
 //    @Test

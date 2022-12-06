@@ -39,7 +39,7 @@ public class BirthBrideGTNameDifferences {
         this.writer = writer;
     }
 
-    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GT_ID, actors: \"Child-Bride\"]-(m:Marriage) RETURN b,m";
+    private static final String BIRTH_BRIDE_GT_IDENTITY_LINKS_QUERY = "MATCH (b:Birth)-[r:GT_ID { actors: \"Child-Bride\" }]-(m:Marriage) RETURN b,m";
 
     public static List<Pair<Node, Node>> getPairs(NeoDbCypherBridge bridge) {
 

@@ -1,0 +1,186 @@
+M_prior on fields
+U_prior on fields
+
+number of expected matches
+	 	 
+Number in the master file 
+number in the file of interest
+
+
+
+m_prior
+u_prior 
+
+odds_prior = m_prior / u_prior
+
+
+
+
+
+
+---------
+
+AXB = {(a,b): a,A, b,B} is the union of two disjoint sets:
+
+matches
+
+M = {(a,b): a=b, a,A, b,B}
+
+and nonmatches
+
+U = {(a,b): aÖb, a,A, b,B}.
+
+-------
+
+the records of A and B are denoted alpha(a) and beta(b)
+
+y([ alpha(a),beta(b)] = { y1[alpha(a),beta(b)] , y2alpha(a),beta(b)] , ... yk[alpha(a),beta(b)] }
+
+m(y) = P{ y[ alpha(a),beta(b)] | (a,b) memberof M }  = Sigma P{ y[alpha(a),beta(b) ] } · P[(a,b)| M].
+
+m(y) = P(y| (a,b) memberof M)   Probability that the fields match when Pair is a ground truth match
+
+u(y) = P{ y[ alpha(a),beta(b)] | (a,b) memberof U }  = Sigma P{ y[alpha(a),beta(b) ] } · P[(a,b)| U] .
+
+u(y) = P(y| (a,b) memberof U)	Probability that the fields match when Pair is NOT a ground truth match
+
+
+These can be estimated from the frequency distribution of the pairs in the whole set.
+
+likelihood ratio
+
+= m(y) / u(y)
+
+----------------------
+
+Mother-Mother's marriage
+
+For above Example - mother-bride
+	 upper bound is the number of the smallest set (marriages) at most 0-1:0-1 mapping hard constraint
+	 lower bound is ??
+	 in Umea we know how many matches there actually are.
+
+------------
+
+
+n_gt_match = 187554				(MATCH (b:Birth)-[r:GT_ID { actors: "Mother-Bride" } ]-(m:Marriage) RETURN count(r))
+actual_match = 65002			Actual number of identical strings in fields in the dataset (Mother-Bride)
+n_exp_match ???
+n_master (births) = 270580		(MATCH (b:Birth) return count(b))
+n_foi  (marriages) = 50567		(MATCH (m:Marriage) return count(m))
+
+
+
+Prior probability of a match P(M)prior
+
+M_prior =      n_exp_match                      65002                 65002               0.0000047507
+              ----------------------  =    ---------------------- = ----------------  =
+                n_master * n_foi                50567 * 270580        13682418860
+
+
+U_prior = 1 - P(M)prior = 0.99999  		The chance that a random pair will not be a match.
+
+odds_prior = 	(M_prior/U_prior) = 0.00000475072
+
+
+Generated Priors from GT
+------------------------
+
+M mother_first match = 109620
+M mother_first unmatched = 77934
+M Total = 187554
+M Prior mother_first field = 0.58447164
+
+M mother_surname match = 103344
+M mother_surname unmatched = 84210
+M Total = 187554
+M Prior mother_surname field = 0.5510093
+
+M father_first match = 134983
+M father_first unmatched = 66814
+M Total = 201797
+M Prior father_first field = 0.6689049
+
+M father_surname match = 142091
+M father_surname unmatched = 59706
+M Total = 201797
+M Prior father_surname field = 0.7041284
+
+M place_of_marriage match = 194653
+M place_of_marriage unmatched = 7144
+M Total = 201797
+M Prior place_of_marriage field = 0.96459806
+
+M day_of_marriage match = 167687
+M day_of_marriage unmatched = 34110
+M Total = 201797
+M Prior day_of_marriage field = 0.83096874
+
+M month_of_marriage match = 169360
+M month_of_marriage unmatched = 32437
+M Total = 201797
+M Prior month_of_marriage field = 0.83925927
+
+M year_of_marriage match = 167435
+M year_of_marriage unmatched = 34362
+M Total = 201797
+M Prior year_of_marriage field = 0.82971996
+
+U mother_first match = 63
+U mother_first unmatched = 25038
+U Total = 25101
+U Prior mother_first field = 0.00250986
+
+U mother_surname match = 97
+U mother_surname unmatched = 25004
+U Total = 25101
+U Prior mother_surname field = 0.003864388
+
+U father_first match = 363
+U father_first unmatched = 25047
+U Total = 25410
+U Prior father_first field = 0.014285714
+
+U father_surname match = 248
+U father_surname unmatched = 25162
+U Total = 25410
+U Prior father_surname field = 0.009759937
+
+U place_of_marriage match = 17155
+U place_of_marriage unmatched = 8261
+U Total = 25416
+U Prior place_of_marriage field = 0.67496854
+
+U day_of_marriage match = 781
+U day_of_marriage unmatched = 24635
+U Total = 25416
+U Prior day_of_marriage field = 0.030728675
+
+U month_of_marriage match = 1763
+U month_of_marriage unmatched = 23653
+U Total = 25416
+U Prior month_of_marriage field = 0.069365755
+
+U year_of_marriage match = 167
+U year_of_marriage unmatched = 25249
+U Total = 25416
+U Prior year_of_marriage field = 0.0065706642
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

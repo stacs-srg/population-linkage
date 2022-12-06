@@ -22,8 +22,8 @@
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthBrideIdentity
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthDeathIdentity
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthFatherIdentity
-# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthGroomIdentity
-# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthMotherIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthParentsMarriageIdentity
+# uk.ac.standrews.cs.population_linkage.groundTruth.umea.FelligiSunterBirthParentsMarriageAnalysis
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBirthSibling
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBrideBrideSibling
 # uk.ac.standrews.cs.population_linkage.groundTruth.umea.UmeaBrideGroomSibling

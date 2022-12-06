@@ -42,7 +42,7 @@ public abstract class ThresholdAnalysis {
     public static final boolean MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE = true;
 
     protected static final int CHECK_ALL_RECORDS = -1;
-    static final long SEED = 87626L;
+    protected static final long SEED = 87626L;
     private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final int NUMBER_OF_THRESHOLDS_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
     private static final double EPSILON = 0.00001;
@@ -50,19 +50,19 @@ public abstract class ThresholdAnalysis {
     private static final String DELIMIT = ",";
     protected boolean allow_multiple_links;
 
-    private int number_of_records_to_be_checked;
-    private int number_of_runs;
+    protected int number_of_records_to_be_checked;
+    protected int number_of_runs;
     private String output_file_parent_path;           // Empty string for relative to project root.
-    private RecordRepository record_repository;
+    protected RecordRepository record_repository;
 
-    private List<LXPMeasure> composite_measures;
+    protected List<LXPMeasure> composite_measures;
     private PrintWriter linkage_results_metadata_writer;
     private PrintWriter distance_results_metadata_writer;
 
     private PrintWriter linkage_results_writer;
     private PrintWriter distance_results_writer;
 
-    boolean verbose = false;
+    protected boolean verbose = false;
 
     /**
      * @return list of comparison fields that will be used for comparing records
@@ -146,7 +146,7 @@ public abstract class ThresholdAnalysis {
 
     private static double indexToThreshold(final int index) {
 
-        return (double) index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
+        return (double) index / ( (NUMBER_OF_THRESHOLDS_SAMPLED - 1) * 100 );  // (0000) TODO DO NOT COMMIT HACKED BY AL *************** * 1000000 to limit range.
     }
 
     private static String getCallingClassName() {
@@ -221,7 +221,7 @@ public abstract class ThresholdAnalysis {
         recordDistances(run_number, measure_name, records_processed, pairs_evaluated, pairs_ignored, true, link_distance_counts);
     }
 
-    synchronized void recordMetaData() {
+    protected synchronized void recordMetaData() {
 
         recordMetaData(new PrintWriter(System.out), "Running ground truth analysis");
         recordMetaData(linkage_results_metadata_writer, "Checking quality of linkage using various string similarity measures and thresholds");
@@ -241,7 +241,7 @@ public abstract class ThresholdAnalysis {
         writer.flush();
     }
 
-    synchronized void recordHeaders() {
+    protected synchronized void recordHeaders() {
 
         recordLinkageResultsHeaders();
         if (recordLinkDistances()) recordDistanceResultsHeaders();
@@ -266,7 +266,7 @@ public abstract class ThresholdAnalysis {
 
         for (int i = 0; i < NUMBER_OF_THRESHOLDS_SAMPLED; i++) {
             if (i > 0) distance_results_writer.print(DELIMIT);
-            distance_results_writer.print(String.format("%.2f", indexToThreshold(i)));
+            distance_results_writer.print(String.format("%.3f", indexToThreshold(i))); // was %.2f
         }
         distance_results_writer.println();
         distance_results_writer.flush();
@@ -320,7 +320,7 @@ public abstract class ThresholdAnalysis {
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print(measure_name);
         linkage_results_writer.print(DELIMIT);
-        linkage_results_writer.print(String.format("%.2f", threshold));
+        linkage_results_writer.print(String.format("%.8f", threshold));  // TODO CHANGED BY AL FOR FS METHODS
         linkage_results_writer.print(DELIMIT);
         linkage_results_writer.print(sample.tp);
         linkage_results_writer.print(DELIMIT);
@@ -373,7 +373,7 @@ public abstract class ThresholdAnalysis {
         long tn = 0;
     }
 
-    class Run {
+    protected class Run {
 
         final int run_number;
         final LXPMeasure measure;

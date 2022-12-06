@@ -30,7 +30,7 @@ public class FMeasureTables {
     public static final Path INPUT_FILES_DIRECTORY_PATH = Paths.get("/Users/graham/Desktop/data");
 
     public static final List<String> FILE_NAME_ROOTS = Arrays.asList(
-            "UmeaBirthBrideIdentity", "UmeaBirthDeathIdentity", "UmeaBirthFatherIdentity", "UmeaBirthGroomIdentity", "UmeaBirthMotherIdentity",
+            "UmeaBirthBrideIdentity", "UmeaBirthDeathIdentity", "UmeaBirthFatherIdentity", "UmeaBirthParentsMarriageIdentity", "FelligiSunterBirthParentsMarriageAnalysis",
             "UmeaBirthSibling", "UmeaBrideBrideSibling", "UmeaBrideGroomSibling", "UmeaGroomGroomSibling", "UmeaDeathSibling");
 
     static {
