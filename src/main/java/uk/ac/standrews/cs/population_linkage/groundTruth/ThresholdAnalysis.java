@@ -146,7 +146,7 @@ public abstract class ThresholdAnalysis {
 
     private static double indexToThreshold(final int index) {
 
-        return (double) index / ( (NUMBER_OF_THRESHOLDS_SAMPLED - 1) * 100 );  // (0000) TODO DO NOT COMMIT HACKED BY AL *************** * 1000000 to limit range.
+        return (double) index / ( (NUMBER_OF_THRESHOLDS_SAMPLED - 1) /* * 100 */ );  //  (0000)  HACKED BY AL *************** The commented but adjusts range - could be as high as 100000
     }
 
     private static String getCallingClassName() {
