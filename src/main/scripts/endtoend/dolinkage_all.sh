@@ -16,4 +16,4 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-. dolinkage_template.sh EVERYTHING
+. "$(dirname $0)"/dolinkage_template.sh EVERYTHING

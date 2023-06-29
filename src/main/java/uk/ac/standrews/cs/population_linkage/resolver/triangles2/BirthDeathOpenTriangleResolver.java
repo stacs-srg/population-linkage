@@ -67,6 +67,8 @@ public class BirthDeathOpenTriangleResolver {
 
     protected static final String TRIANGLE_QUERY = "MATCH (x:Birth)-[xy:ID]-(y:Death)-[yz:SIBLING]-(z:Death) WHERE NOT (z)-[:SIBLING]-(x) return x,y,z,xy,yz";
 
+    // protected static final String TRIANGLE_QUERY = "MATCH (x:Birth)-[xy:ID]-(y:Birth)-[yz:SIBLING]-(z:Birth) WHERE NOT (z)-[:SIBLING]-(x) return x,y,z,xy,yz";
+
     private static final String GET_BIRTH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
     private static final String GET_DEATH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";
     private static final String GET_MARRIAGE_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from RETURN b";

@@ -44,7 +44,8 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  */
 public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
-    protected static double THRESHOLD = 0.38;  // from earlier experiments
+    public static double TOP_OF_BEST_F = 0.0089;
+    public static double THRESHOLD = 0.01;  // a bit more than above!
 
     public static final String LINKAGE_TYPE = "birth-death-identity-feligi-sunter";
 

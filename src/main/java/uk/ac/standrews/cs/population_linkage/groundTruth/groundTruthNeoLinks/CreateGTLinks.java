@@ -333,12 +333,12 @@ public class CreateGTLinks {
                 // Birth - Birth
                 FATHER_OWN_BIRTH_IDENTITY, MOTHER_OWN_BIRTH_IDENTITY,
                 BIRTH_BIRTH_SIBLING,
-//                BIRTH_BIRTH_HALF_SIBLING,
+                BIRTH_BIRTH_HALF_SIBLING,
 
                 // Birth - Death
                 BIRTH_DEATH_IDENTITY,
                 BIRTH_DEATH_SIBLING,
-//                BIRTH_DEATH_HALF_SIBLING,
+                BIRTH_DEATH_HALF_SIBLING,
 
                 // Birth - Marriage
                 BIRTH_GROOM_IDENTITY, BIRTH_BRIDE_IDENTITY,
@@ -354,11 +354,11 @@ public class CreateGTLinks {
                 GROOM_GROOM_IDENTITY, BRIDE_BRIDE_IDENTITY,
                 GROOM_PARENTS_MARRIAGE_IDENTITY, BRIDE_PARENTS_MARRIAGE_IDENTITY,
                 GROOM_GROOM_SIBLING, BRIDE_BRIDE_SIBLING, BRIDE_GROOM_SIBLING,
- //               GROOM_GROOM_HALF_SIBLING, BRIDE_BRIDE_HALF_SIBLING, BRIDE_GROOM_HALF_SIBLING,
+                GROOM_GROOM_HALF_SIBLING, BRIDE_BRIDE_HALF_SIBLING, BRIDE_GROOM_HALF_SIBLING,
 
                 // Death - Death
-                DEATH_DEATH_SIBLING //,
-//                DEATH_DEATH_HALF_SIBLING
+                DEATH_DEATH_SIBLING,
+                DEATH_DEATH_HALF_SIBLING
         );
     }
 }

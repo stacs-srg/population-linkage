@@ -29,9 +29,9 @@ import java.time.LocalDateTime;
  */
 public class CreateGTIndices {
 
-    private static final String GT_SIBLING_INDEX = "CREATE INDEX GT_SIBLING_INDEX FOR ()-[r:GT_SIBLING]-() ON (r.role)";
-    private static final String GT_HALF_SIBLING_INDEX = "CREATE INDEX GT_HALF_SIBLING_INDEX FOR ()-[r:GT_HALF_SIBLING]-() ON (r.role)";
-    private static final String GT_ID_INDEX  = "CREATE INDEX GT_ID_INDEX FOR ()-[r:GT_ID]-() ON (r.role)";
+    private static final String GT_SIBLING_INDEX = "CREATE INDEX GT_SIBLING_INDEX FOR ()-[r:GT_SIBLING]-() ON (r.actors)";
+    private static final String GT_HALF_SIBLING_INDEX = "CREATE INDEX GT_HALF_SIBLING_INDEX FOR ()-[r:GT_HALF_SIBLING]-() ON (r.actors)";
+    private static final String GT_ID_INDEX  = "CREATE INDEX GT_ID_INDEX FOR ()-[r:GT_ID]-() ON (r.actors)";
 
     private static void doQueries(String... queries) {
 

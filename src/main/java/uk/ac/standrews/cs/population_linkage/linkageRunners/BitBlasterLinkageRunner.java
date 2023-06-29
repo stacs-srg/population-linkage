@@ -97,7 +97,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     }
 
     @Override
-    public LinkageResult linkLists(Linker linker, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links, boolean isIdentityLinkage) throws Exception {
+    public LinkageResult linkLists(Linker linker, NeoDbCypherBridge bridge, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links, boolean isIdentityLinkage) throws Exception {
         addRecordsDummy();
 
         List<Link> linked_pairs = new ArrayList<>();
@@ -443,7 +443,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     }
 
 
-    private LinkageResult processLinks(MakePersistent make_persistent, boolean evaluate_quality, boolean persist_links, List<Link> links) {
+    protected LinkageResult processLinks(MakePersistent make_persistent, boolean evaluate_quality, boolean persist_links, List<Link> links) {
 
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now());
 

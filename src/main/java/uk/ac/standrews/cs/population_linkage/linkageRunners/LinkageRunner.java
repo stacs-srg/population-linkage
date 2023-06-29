@@ -68,10 +68,11 @@ public abstract class LinkageRunner {
         MemoryLogger.update();
 
         try( Linker linker = getLinker(linkage_recipe) ) {
+            addRecords(linker);
             linkage_recipe.setCacheSizes(LinkageConfig.BIRTH_CACHE_SIZE, LinkageConfig.DEATH_CACHE_SIZE, LinkageConfig.MARRIAGE_CACHE_SIZE);
             int numberOGroundTruthLinks = 0;
             MemoryLogger.update();
-            LinkageResult result = linkLists(linker, make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
+            LinkageResult result = linkLists(linker, linkage_recipe.getBridge(), make_persistent, evaluateQuality, numberOGroundTruthLinks, persistLinks, isIdentityLinkage);
             return result;
         }
     }
@@ -117,7 +118,7 @@ public abstract class LinkageRunner {
 
     public abstract LinkageResult link(Linker linker, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persist_links) throws Exception;
 
-    public abstract LinkageResult linkLists(Linker linker, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persistLinks, boolean isIdentityLinkage) throws Exception;
+    public abstract LinkageResult linkLists(Linker linker, NeoDbCypherBridge bridge, MakePersistent make_persistent, boolean evaluate_quality, long numberOfGroundTruthTrueLinks, boolean persistLinks, boolean isIdentityLinkage) throws Exception;
 
     protected LinkageQuality getLinkageQuality(boolean evaluate_quality, long numberOfGroundTruthTrueLinks, long tp, long fp) {
         if(evaluate_quality) {
