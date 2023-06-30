@@ -31,7 +31,11 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.measures.JensenShannon;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -44,7 +48,10 @@ public class Explore {
     private final IBucket<Birth> births;
     private final JensenShannon baseMeasure;
 
-    private static final String GET_BIRTH_SIBLINGS = "MATCH (a)-[r:SIBLING]-(b:Birth) WHERE a.STORR_ID = $stor_id_from RETURN b";
+    // TODO There is a problem here - if n is > 2 in query below it takes forever to execute - not sure how to constrain to Births
+    // TODO in the example of example_query_stor_id6 the bundle should be about 10 records
+
+    private static final String GET_BIRTH_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING*1..2]-(b:Birth) WHERE a.STORR_ID = $stor_id_from RETURN b";
     protected static final String SIBLING_QUERY = "MATCH (x:Birth)-[xy:SIBLING]-(y:Birth) WHERE x.STORR_ID = $stor_id_from  return x,xy,y";
     private final BirthSiblingLinkageRecipe recipe;
 
@@ -88,7 +95,10 @@ public class Explore {
     }
 
     public List<Long> getSiblingStorIds(long lxp1_storr_id ) throws BucketException {
-        return getSiblings(bridge, GET_BIRTH_SIBLINGS, lxp1_storr_id);
+        List<Long> sibs = getSiblings(bridge, GET_BIRTH_SIBLINGS, lxp1_storr_id);
+        List<Long> siblings= sibs.stream().distinct().collect(Collectors.toList()); // get rid of duplicates
+        for( long l : siblings ) { showRecord(l); }
+        return siblings;
     }
 
     private void showRecord(long stor_id) throws BucketException {
@@ -164,7 +174,8 @@ public class Explore {
         return bs;
     }
 
-    public void showMsedDists(OrderedList<List<Birth>, Double> all_msed_dists) {
+    public void showMsedDists(OrderedList<List<Birth>, Double> all_msed_dists, int main_group_size, int k ) {
+        System.out.println( "Choosing " + k + " from a group of size " + main_group_size );
         List<Double> distances = all_msed_dists.getComparators();
         List<List<Birth>> births = all_msed_dists.getList();
 
@@ -194,7 +205,7 @@ public class Explore {
     private void examineAll(List<Long> sibling_ids) throws BucketException {
         // showBirthRecords(sibling_ids);
         OrderedList<List<Birth>, Double> all_msed_dists = examineDivergences(sibling_ids);
-        showMsedDists(all_msed_dists);
+        showMsedDists(all_msed_dists, sibling_ids.size(), -1);
     }
 
     private void examineAll(long query_from_bundle_stor_ids, long extra_stor_id) throws BucketException {
@@ -210,17 +221,23 @@ public class Explore {
         examineAll( all_stor_ids );                     // now examine the whole lot.
     }
 
-    private void examineTriples(List<Long> sibling_ids) throws BucketException {
+    private void examineGroupsOfSizeK(List<Long> sibling_ids, int k) throws BucketException {
         // showBirthRecords(sibling_ids);
-        OrderedList<List<Birth>, Double> all_msed_dists = getDivergenceForK(sibling_ids,4);
-        showMsedDists(all_msed_dists);
+        OrderedList<List<Birth>, Double> all_msed_dists = getDivergenceForK(sibling_ids,k);
+        showMsedDists(all_msed_dists, sibling_ids.size(), k);
     }
 
-    private void examineTriples(long query_from_bundle_stor_ids, long extra_stor_id) throws BucketException {
+    private void examineGroupsOfSizeK(long query_from_bundle_stor_ids, long extra_stor_id, int k) throws BucketException {
         List<Long> all_stor_ids =getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
         all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
         all_stor_ids.add(extra_stor_id);                // add the extra member
-        examineTriples( new ArrayList<>( all_stor_ids ) ); // now examine the whole lot.
+        examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ), k); // now examine the whole lot.
+    }
+
+    private void examineGroupsOfSizeK(long query_from_bundle_stor_ids, int k) throws BucketException {
+        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
+        all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
+        examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ),k ); // now examine the whole lot.
     }
 
     public static void main(String[] args) throws BucketException {
@@ -229,6 +246,9 @@ public class Explore {
 
         long example_query_stor_id1 = 4377094037612468415l; // this is one of a group 4 true siblings with one link missing.
         long example_query_stor_id2 = 1869999260706456703l; // this one is totally unrelated to the above.
+        long example_query_stor_id3 = 4377094037612468415l; // part of another grroup of 4 with a missing link
+        long example_query_stor_id5 = 8472462191637179711l; // part of a network with possibly extra links.
+        long example_query_stor_id6 = 8951651435219393113l; // this only has two links but should be part of a complex of 10 siblings
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
              BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleBuilder.class.getName())) {
@@ -239,9 +259,22 @@ public class Explore {
 //            System.out.println( "****************** Unrelated ******************");
 //            ex.examineAll(example_query_stor_id1,example_query_stor_id2);
 
-            System.out.println( "****************** Unrelated ******************");
-            ex.examineTriples(example_query_stor_id1,example_query_stor_id2);
+//            System.out.println( "****************** Unrelated ******************");
+//            ex.examineGroupsOfSizeK(example_query_stor_id1,example_query_stor_id2,4);
 
+//            System.out.println( "****************** Related ******************");
+//            ex.examineGroupsOfSizeK(example_query_stor_id3,3);
+//            System.out.println( "****************** Unrelated ******************");
+//            ex.examineGroupsOfSizeK(example_query_stor_id3,example_query_stor_id2,3);
+
+//            System.out.println( "****************** Related ******************");
+//            ex.examineGroupsOfSizeK(example_query_stor_id5,3);
+//
+//            System.out.println( "****************** Unrelated ******************");
+//            ex.examineGroupsOfSizeK(example_query_stor_id5,example_query_stor_id2,3);
+
+            System.out.println( "****************** Related ******************");
+            ex.examineGroupsOfSizeK(example_query_stor_id6,3);  //Super it finds all the sibs in the group with a max of 0.0677 (higher than I had hoped for)
 
         }
     }
