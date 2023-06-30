@@ -107,18 +107,32 @@ public class Explore {
 
     private OrderedList<List<Birth>,Double> examineDivergences(List<Long> sibling_ids) throws BucketException {
         // TreeMap<List<Birth>,Double> all_mseds = new TreeMap<>();
-        OrderedList<List<Birth>,Double> all_mseds = new OrderedList<>(1000); // don't want a limit!
+        OrderedList<List<Birth>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
         List<Birth> bs  = getBirths(sibling_ids);
-        for( int n = 2; n < bs.size() + 1; n++ ) {
+        for( int n = 2; n < bs.size() - 1; n++ ) {
             List<List<Integer>> indices = Binomials.pickAll(sibling_ids.size(), n);
             for (List<Integer> choices : indices) {
                 List<Birth> births = getBirthsFromChoices(bs, choices);
-                double distance = getMSEDForCluser(births);
+                double distance = getMSEDForCluster(births);
                 all_mseds.add(births,distance);
             }
         }
         return all_mseds;
     }
+
+    private OrderedList<List<Birth>,Double> getDivergenceForK(List<Long> sibling_ids, int k) throws BucketException {
+        OrderedList<List<Birth>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
+        List<Birth> bs  = getBirths(sibling_ids);
+
+        List<List<Integer>> indices = Binomials.pickAll(sibling_ids.size(), k);
+        for (List<Integer> choices : indices) {
+            List<Birth> births = getBirthsFromChoices(bs, choices);
+            double distance = getMSEDForCluster(births);
+            all_mseds.add(births,distance);
+        }
+        return all_mseds;
+}
+
 
     private List<Birth> getBirthsFromChoices(List<Birth> bs, List<Integer> choices) {
         List<Birth> births = new ArrayList<>();
@@ -128,7 +142,7 @@ public class Explore {
         return births;
     }
 
-    private double getMSEDForCluser(List<Birth> choices) {
+    private double getMSEDForCluster(List<Birth> choices) {
         /* Calculate the MESD for the cluster represented by the indices choices into bs */
         List<String> fields_from_choices = new ArrayList<>(); // a list of the concatenated linkage fields from the selected choices.
         List<Integer> linkage_fields = recipe.getLinkageFields(); // the linkage field indexes to be used
@@ -155,6 +169,7 @@ public class Explore {
         List<List<Birth>> births = all_msed_dists.getList();
 
         for( int i = 0; i < distances.size(); i++ ) {
+
             System.out.print( distances.get(i) + ":" );
             showBirths( births.get(i));
             System.out.println();
@@ -167,27 +182,67 @@ public class Explore {
         }
     }
 
+    private void showBirthRecords(List<Long> sibling_ids) throws BucketException {
+        for( long stor_id : sibling_ids) {
+            showRecord(stor_id);
+            Stream<LinkPair> xx = getSiblingRelationships(bridge, stor_id);
+            xx.forEach(linkPair -> System.out.println("distance: " + LinkPair.getDistance(linkPair.xy) + linkPair.y.get("FORENAME")));   // note y is a node
+            System.out.println();
+        }
+    }
+
+    private void examineAll(List<Long> sibling_ids) throws BucketException {
+        // showBirthRecords(sibling_ids);
+        OrderedList<List<Birth>, Double> all_msed_dists = examineDivergences(sibling_ids);
+        showMsedDists(all_msed_dists);
+    }
+
+    private void examineAll(long query_from_bundle_stor_ids, long extra_stor_id) throws BucketException {
+        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids);
+        all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
+        all_stor_ids.add(extra_stor_id);                // add the extra member
+        examineAll( all_stor_ids );                     // now examine the whole lot.
+    }
+
+    private void examineAll(long query_from_bundle_stor_ids) throws BucketException {
+        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids);
+        all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
+        examineAll( all_stor_ids );                     // now examine the whole lot.
+    }
+
+    private void examineTriples(List<Long> sibling_ids) throws BucketException {
+        // showBirthRecords(sibling_ids);
+        OrderedList<List<Birth>, Double> all_msed_dists = getDivergenceForK(sibling_ids,4);
+        showMsedDists(all_msed_dists);
+    }
+
+    private void examineTriples(long query_from_bundle_stor_ids, long extra_stor_id) throws BucketException {
+        List<Long> all_stor_ids =getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
+        all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
+        all_stor_ids.add(extra_stor_id);                // add the extra member
+        examineTriples( new ArrayList<>( all_stor_ids ) ); // now examine the whole lot.
+    }
 
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = "umea";
 
-        long example_query_stor_id = 4377094037612468415l;
+        long example_query_stor_id1 = 4377094037612468415l; // this is one of a group 4 true siblings with one link missing.
+        long example_query_stor_id2 = 1869999260706456703l; // this one is totally unrelated to the above.
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-             BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleBuilder.class.getName()) ) {
-             Explore ex = new Explore(bridge, sourceRepo, linkageRecipe); // this class
-             List<Long> sibling_ids = ex.getSiblingStorIds( example_query_stor_id );
-             sibling_ids.add( example_query_stor_id );
-             for( long stor_id : sibling_ids ) {
-                 ex.showRecord(stor_id);
-                 Stream<LinkPair> xx = ex.getSiblingRelationships(bridge, stor_id);
-                 xx.forEach(linkPair -> System.out.println("distance: " + LinkPair.getDistance(linkPair.xy) + linkPair.y.get("FORENAME")));   // note y is a node
-                 System.out.println();
-             }
-             ex.showUnlinked();
-            OrderedList<List<Birth>,Double> all_msed_dists = ex.examineDivergences(sibling_ids);
-            ex.showMsedDists(all_msed_dists);
+             BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleBuilder.class.getName())) {
+
+            Explore ex = new Explore(bridge, sourceRepo, linkageRecipe); // this class
+//            System.out.println( "****************** Related ******************");
+//            ex.examineAll(example_query_stor_id1);
+//            System.out.println( "****************** Unrelated ******************");
+//            ex.examineAll(example_query_stor_id1,example_query_stor_id2);
+
+            System.out.println( "****************** Unrelated ******************");
+            ex.examineTriples(example_query_stor_id1,example_query_stor_id2);
+
+
         }
     }
 }
