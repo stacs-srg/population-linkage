@@ -61,7 +61,7 @@ public class MeasureCosts {
             }
         }
 
-        System.out.println("elapsed for " + measure.getMeasureName() + ": " + Duration.between(start, LocalDateTime.now()));
+        System.out.println("elapsed for " + measure.getMeasureName() + ": " + Duration.between(start, LocalDateTime.now()).toMillis()/1000);
     }
 
     public static void main(String[] args) {
