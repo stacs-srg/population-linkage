@@ -98,7 +98,9 @@ public abstract class ThresholdAnalysis {
     * aggregator
 
 
-    Aggregator: enum with weighted mean, median, max
+    Imputer: record mean/median/max, population mean/median/max
+    Aggregator: weighted mean/median/max
+
 
 
     Experiments:

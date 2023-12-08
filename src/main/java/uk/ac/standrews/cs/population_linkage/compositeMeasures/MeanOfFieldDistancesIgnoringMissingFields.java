@@ -83,10 +83,10 @@ public class MeanOfFieldDistancesIgnoringMissingFields extends LXPMeasure {
         double total_distance = 0.0d;
         int present_count = 0;
 
-        for (int i = 0; i < field_list1.size(); i++) {
+        for (int i = 0; i < field_indices1.size(); i++) {
             try {
-                final int field_index1 = field_list1.get(i);
-                final int field_index2 = field_list2.get(i);
+                final int field_index1 = field_indices1.get(i);
+                final int field_index2 = field_indices2.get(i);
 
                 final String field_value1 = x.getString(field_index1);
                 final String field_value2 = y.getString(field_index2);

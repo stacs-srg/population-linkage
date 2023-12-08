@@ -17,6 +17,8 @@
 package uk.ac.standrews.cs.population_linkage.compositeMeasures;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.population_linkage.groundTruth.Aggregator;
+import uk.ac.standrews.cs.population_linkage.groundTruth.Imputer;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
@@ -27,18 +29,24 @@ import java.util.List;
 
 public abstract class LXPMeasure extends Measure<LXP> {
 
-    protected StringMeasure base_measure;
-    protected List<Integer> field_list1;
-    protected List<Integer> field_list2;
+    public record FieldComparator(StringMeasure base_measure, double cut_off, boolean normalise, Imputer imputer) {}
 
-    public LXPMeasure(final StringMeasure base_measure, final List<Integer> field_list1, final List<Integer> field_list2) {
+    protected List<Integer> field_indices1;
+    protected List<Integer> field_indices2;
 
-        if (field_list1.size() != field_list2.size()) {
-            throw new RuntimeException("Field lists must be the same length");
+    protected List<FieldComparator> field_comparators;
+    protected Aggregator aggregator;
+
+    public LXPMeasure(final List<Integer> field_indices1, final List<Integer> field_indices2, final List<FieldComparator> field_comparators, final Aggregator aggregator) {
+
+        if (field_indices1.size() != field_indices2.size() || field_indices1.size() != field_comparators.size()) {
+            throw new RuntimeException("field index and comparator lists must have the same length");
         }
-        this.base_measure = base_measure;
-        this.field_list1 = field_list1;
-        this.field_list2 = field_list2;
+
+        this.field_indices1 = field_indices1;
+        this.field_indices2 = field_indices2;
+        this.field_comparators = field_comparators;
+        this.aggregator = aggregator;
     }
     
     protected LXPMeasure() {
@@ -48,10 +56,10 @@ public abstract class LXPMeasure extends Measure<LXP> {
 
         double total_distance = 0.0d;
 
-        for (int i = 0; i < field_list1.size(); i++) {
+        for (int i = 0; i < field_indices1.size(); i++) {
             try {
-                final int field_index1 = field_list1.get(i);
-                final int field_index2 = field_list2.get(i);
+                final int field_index1 = field_indices1.get(i);
+                final int field_index2 = field_indices2.get(i);
 
                 final String field_value1 = x.getString(field_index1);
                 final String field_value2 = y.getString(field_index2);
@@ -69,10 +77,10 @@ public abstract class LXPMeasure extends Measure<LXP> {
 
         double total_distance = 0.0d;
 
-        for (int i = 0; i < field_list1.size(); i++) {
+        for (int i = 0; i < field_indices1.size(); i++) {
             try {
-                final int field_index1 = field_list1.get(i);
-                final int field_index2 = field_list2.get(i);
+                final int field_index1 = field_indices1.get(i);
+                final int field_index2 = field_indices2.get(i);
 
                 final String field_value1 = x.getString(field_index1);
                 final String field_value2 = y.getString(field_index2);
@@ -90,11 +98,11 @@ public abstract class LXPMeasure extends Measure<LXP> {
             }
         }
 
-        return total_distance / field_list1.size();
+        return total_distance / field_indices1.size();
     }
 
     protected void throwExceptionWithDebug(LXP x, LXP y, int field_index, Exception e) {
-        throw new RuntimeException("exception comparing fields " + x.getMetaData().getFieldName(field_list1.get(field_index)) + " and " + y.getMetaData().getFieldName(field_list2.get(field_index)) + " in records \n" + x + "\n and \n" + y, e);
+        throw new RuntimeException("exception comparing fields " + x.getMetaData().getFieldName(field_indices1.get(field_index)) + " and " + y.getMetaData().getFieldName(field_indices2.get(field_index)) + " in records \n" + x + "\n and \n" + y, e);
     }
 
     protected static void printExceptionDebug(final LXP a, final LXP b, final int field_index, final int id_field_index) {

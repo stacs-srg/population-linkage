@@ -52,7 +52,7 @@ public class MeanOfFieldDistances extends LXPMeasure {
     @Override
     public double calculateDistance(final LXP x, final LXP y) {
 
-        return sumOfFieldDistances(x, y) / field_list1.size();
+        return sumOfFieldDistances(x, y) / field_indices1.size();
     }
 
     public static void main(String[] args) {

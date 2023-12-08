@@ -36,6 +36,8 @@
     
     <properties>
 
+        <maven.compiler.source>1.17</maven.compiler.source>
+        <maven.compiler.target>1.17</maven.compiler.target>
         <neo4j-ogm-core-version>3.2.20</neo4j-ogm-core-version>
         <neo4j-ogm-bolt-driver-version>3.2.20</neo4j-ogm-bolt-driver-version>
 

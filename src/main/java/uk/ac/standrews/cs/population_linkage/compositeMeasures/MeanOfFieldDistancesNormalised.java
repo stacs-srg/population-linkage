@@ -70,7 +70,7 @@ public class MeanOfFieldDistancesNormalised extends LXPMeasure {
     @Override
     public double calculateDistance(final LXP x, final LXP y) {
 
-        final double mean = sumOfFieldDistances(x, y) / field_list1.size();
+        final double mean = sumOfFieldDistances(x, y) / field_indices1.size();
         return base_measure.maxDistanceIsOne() ? mean : normalise(mean);
     }
 
