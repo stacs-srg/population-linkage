@@ -38,9 +38,6 @@ import java.util.concurrent.CountDownLatch;
  */
 public abstract class ThresholdAnalysis {
 
-    // Global flag can be used to over-ride 1:1 constraint in identity linkage.
-    public static final boolean MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE = true;
-
     protected static final int CHECK_ALL_RECORDS = -1;
     protected static final long SEED = 87626L;
     private static final int NUMBER_OF_DISTANCES_SAMPLED = 101; // 0.01 granularity including 0.0 and 1.0.
@@ -89,6 +86,37 @@ public abstract class ThresholdAnalysis {
 
     protected abstract boolean recordLinkDistances();
 
+    /*
+    Per LXP measure:
+
+    * 2 lists of field indices
+    * list of field comparators
+        * base distance measure
+        * distance cut-off
+        * whether to normalise
+        * imputer
+    * aggregator
+
+
+    Aggregator: enum with weighted mean, median, max
+
+
+    Experiments:
+
+    All combinations of:
+
+    * list of base measures, each used consistently for all fields
+        * list of distance cut-offs where not intrinsically normalised
+    * list of aggregators
+    * list of imputers
+    * allow multiple links yes/no
+    * apply validity check yes/no
+
+    fixed: field weightings=even (null), normalise=true
+
+
+     */
+
     ThresholdAnalysis(final String repo_name, final String linkage_results_file_root, final String distance_results_file_root, final int number_of_records_to_be_checked, final int number_of_runs, final boolean allow_multiple_links) throws IOException {
 
         init(repo_name, linkage_results_file_root, distance_results_file_root, number_of_records_to_be_checked, number_of_runs, "", allow_multiple_links);
@@ -112,7 +140,7 @@ public abstract class ThresholdAnalysis {
         this.number_of_records_to_be_checked = number_of_records_to_be_checked;
         this.number_of_runs = number_of_runs;
         this.output_file_parent_path = output_file_parent_path;
-        this.allow_multiple_links = allow_multiple_links || !MULTIPLE_LINKS_CAN_BE_DISABLED_FOR_IDENTITY_LINKAGE;
+        this.allow_multiple_links = allow_multiple_links;
 
         composite_measures = getCombinedMeasures();
 
