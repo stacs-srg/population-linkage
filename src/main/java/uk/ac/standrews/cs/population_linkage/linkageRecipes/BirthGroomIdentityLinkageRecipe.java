@@ -85,7 +85,7 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
             Iterable<LXP> filtered = filterBySex(super.getBirthRecords(), Birth.SEX, "m");
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, filtered, getLinkageFields());
+            cached_records = RecordFiltering.filter(number_of_births, filtered, getLinkageFields(), getNumberOfLinkageFieldsRequired());
         }
         return cached_records;
     }
@@ -178,13 +178,13 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 }

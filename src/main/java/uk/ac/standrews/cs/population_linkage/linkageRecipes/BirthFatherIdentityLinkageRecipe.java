@@ -151,15 +151,15 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 
     @Override
     public Iterable<LXP> getStoredRecords() {

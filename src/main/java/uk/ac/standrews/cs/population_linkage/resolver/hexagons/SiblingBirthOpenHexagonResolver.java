@@ -43,7 +43,6 @@ public class SiblingBirthOpenHexagonResolver {
     private static final int MAX_AGE_DIFFERENCE = 15; // max age difference of siblings - plausible but conservative
     public static double LOW_DISTANCE_MATCH_THRESHOLD = 0.2;
     public static double HIGH_DISTANCE_REJECT_THRESHOLD = 0.5;
-    private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket births;
 
@@ -64,14 +63,14 @@ public class SiblingBirthOpenHexagonResolver {
 
     public SiblingBirthOpenHexagonResolver(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
-        this.record_repository = new RecordRepository(source_repo_name);
+        RecordRepository record_repository = new RecordRepository(source_repo_name);
         this.births = record_repository.getBucket("birth_records");
         this.base_measure = Constants.JENSEN_SHANNON;
         this.composite_measure = getCompositeMeasure(recipe);
     }
 
     protected LXPMeasure getCompositeMeasure(final LinkageRecipe linkageRecipe) {
-        return new SumOfFieldDistances(base_measure, linkageRecipe.getLinkageFields());
+        return new LXPMeasure(linkageRecipe.getLinkageFields(), linkageRecipe.getQueryMappingFields(), base_measure);
     }
 
     private void resolve() {

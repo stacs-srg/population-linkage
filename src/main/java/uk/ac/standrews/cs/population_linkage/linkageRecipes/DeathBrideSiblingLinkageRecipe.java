@@ -81,7 +81,7 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(number_of_deaths, super.getDeathRecords(), getLinkageFields(), getNumberOfLinkageFieldsRequired());
         }
         return cached_records;
     }
@@ -164,13 +164,13 @@ public class DeathBrideSiblingLinkageRecipe extends LinkageRecipe {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 }

@@ -18,8 +18,14 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.MLCustom;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.groundTruth.AggregatorMean;
+import uk.ac.standrews.cs.population_linkage.groundTruth.Imputer;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Custom measure based on Smac experiments
@@ -50,6 +56,10 @@ public class CustomMeasure extends LXPMeasure {
 
     static final double total_weights = mf_cos_weight + pdom_weight + ppom_weight + pyom_weight + pmom_weight + ff_weight + mf_jacc_weight + mms_weight + fs_weight;
 
+    public CustomMeasure(final List<Integer> field_indices1, final List<Integer> field_indices2, final StringMeasure base_measure) {
+
+        super(field_indices1, field_indices2, base_measure);
+    }
 
     @Override
     public double calculateDistance(final LXP a, final LXP b) {
@@ -72,7 +82,7 @@ public class CustomMeasure extends LXPMeasure {
     }
 
     @Override
-    public String getMeasureName() {
+    public String toString() {
         return "Custom";
     }
 

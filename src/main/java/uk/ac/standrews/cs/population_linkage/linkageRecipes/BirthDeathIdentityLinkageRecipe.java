@@ -95,7 +95,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
             System.out.println("Filtering death records require: " + getNumberOfLinkageFieldsRequired() + " fields");
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getQueryMappingFields());
+            cached_records = filter(number_of_deaths, super.getDeathRecords(), getQueryMappingFields(), getNumberOfLinkageFieldsRequired());
         }
         return cached_records;
     }
@@ -215,13 +215,13 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         return getBirthDeathIdentityGTLinks(bridge, birth_record).size();
     }
 
-    @Override
-    public double getThreshold() {
-        return THRESHOLD;
-    }
+//    @Override
+//    public double getThreshold() {
+//        return THRESHOLD;
+//    }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 }

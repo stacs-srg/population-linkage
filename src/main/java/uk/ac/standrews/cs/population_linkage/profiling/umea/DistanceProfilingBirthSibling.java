@@ -52,9 +52,7 @@ public class DistanceProfilingBirthSibling {
         final List<LXP> birth_records = Utilities.permute(Utilities.getBirthRecords(record_repository)).subList(0, NUMBER_OF_RECORDS_TO_SAMPLE);
 
         for (final StringMeasure measure : Constants.BASE_MEASURES) {
-
-            final double max_field_distance = measure.maxDistanceIsOne() ? 1d : MAX_PLAUSIBLE_NON_NORMALISED_DISTANCE;
-            sampleDistances(birth_records, new MeanOfFieldDistancesIgnoringMissingFields(measure, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, max_field_distance));
+            sampleDistances(birth_records, new LXPMeasure(BirthSiblingLinkageRecipe.LINKAGE_FIELDS, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, measure));
         }
     }
 
@@ -80,7 +78,7 @@ public class DistanceProfilingBirthSibling {
 
         final double mean = sum / count;
 
-        System.out.println(measure.getMeasureName() + ": " + max + ", " + mean);
+        System.out.println(measure + ": " + max + ", " + mean);
     }
 
     public static void main(String[] args) {

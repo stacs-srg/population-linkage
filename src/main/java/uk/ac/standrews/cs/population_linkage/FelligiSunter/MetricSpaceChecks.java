@@ -56,7 +56,7 @@ public class MetricSpaceChecks {
         List<LXPMeasure> result = new ArrayList<>();
 
         for (StringMeasure base_measure : TRUE_METRICS) {
-            result.add(new SumOfFieldDistances(base_measure, BirthSiblingLinkageRecipe.LINKAGE_FIELDS));
+            result.add(new LXPMeasure(BirthSiblingLinkageRecipe.LINKAGE_FIELDS, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, base_measure));
         }
         return result;
     }
@@ -64,50 +64,49 @@ public class MetricSpaceChecks {
     private void checkTriangleInequality() {
 
         Random random = new Random(SEED);
-        RecordRepository record_repository = new RecordRepository(Umea.REPOSITORY_NAME);
+        try (RecordRepository record_repository = new RecordRepository(Umea.REPOSITORY_NAME)) {
 
-        final List<LXP> birth_records = new ArrayList<>();
-        for (Birth birth : record_repository.getBirths()) {
-            birth_records.add(birth);
-        }
+            final List<LXP> birth_records = new ArrayList<>();
+            for (Birth birth : record_repository.getBirths()) {
+                birth_records.add(birth);
+            }
 
-        long counter = 0;
+            long counter = 0;
 
-        //noinspection InfiniteLoopStatement
-        while (true) {
+            //noinspection InfiniteLoopStatement
+            while (true) {
 
-            int size = birth_records.size();
+                int size = birth_records.size();
 
-            LXP b1 = birth_records.get(random.nextInt(size));
-            LXP b2 = birth_records.get(random.nextInt(size));
-            LXP b3 = birth_records.get(random.nextInt(size));
+                LXP b1 = birth_records.get(random.nextInt(size));
+                LXP b2 = birth_records.get(random.nextInt(size));
+                LXP b3 = birth_records.get(random.nextInt(size));
 
-            for (LXPMeasure metric : combined_metrics) {
+                for (LXPMeasure metric : combined_metrics) {
 
-                String metric_name = metric.getMeasureName();
+                    double distance1 = metric.distance(b1, b2);
+                    double distance2 = metric.distance(b1, b3);
+                    double distance3 = metric.distance(b2, b3);
 
-                double distance1 = metric.distance(b1, b2);
-                double distance2 = metric.distance(b1, b3);
-                double distance3 = metric.distance(b2, b3);
+                    if (violatesTriangleInequality(distance1, distance2, distance3)) {
 
-                if (violatesTriangleInequality(distance1, distance2, distance3)) {
-
-                    System.out.println("violation of triangle inequality for " + metric_name);
-                    System.out.println(b1);
-                    System.out.println(b2);
-                    System.out.println(b3);
-                    System.out.println(distance1);
-                    System.out.println(distance2);
-                    System.out.println(distance3);
-                    System.out.println();
+                        System.out.println("violation of triangle inequality for " + metric);
+                        System.out.println(b1);
+                        System.out.println(b2);
+                        System.out.println(b3);
+                        System.out.println(distance1);
+                        System.out.println(distance2);
+                        System.out.println(distance3);
+                        System.out.println();
+                    }
                 }
-            }
 
-            if (counter % DUMP_COUNT_INTERVAL == 0) {
-                System.out.println("checked: " + counter);
-            }
+                if (counter % DUMP_COUNT_INTERVAL == 0) {
+                    System.out.println("checked: " + counter);
+                }
 
-            counter++;
+                counter++;
+            }
         }
     }
 

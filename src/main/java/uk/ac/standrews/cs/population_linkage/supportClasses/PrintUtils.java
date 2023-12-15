@@ -110,11 +110,9 @@ public class PrintUtils {
 
         for (final StringMeasure measure : measures) {
 
-            String name = measure.getMeasureName();
-
             for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++) {
 
-                String label = name + "." + example_record1.getMetaData().getFieldName(field_selector) + "-" +
+                String label = measure + "." + example_record1.getMetaData().getFieldName(field_selector) + "-" +
                         example_record2.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector names;
                 pw.print(label);
                 pw.print(DELIMIT);
@@ -132,10 +130,9 @@ public class PrintUtils {
 
         for (final StringMeasure measure : measures) {
 
-            String name = measure.getMeasureName();
             for (int field_selector : comparison_fields) {
 
-                String label = name + "." + example_record.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector name;
+                String label = measure + "." + example_record.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector name;
                 pw.print(label);
                 pw.print(DELIMIT);
             }

@@ -112,9 +112,7 @@ public class BitBlasterSearchStructure<T> implements SearchStructure<T> {
 
     private void init(final Measure<T> distance_measure, final List<T> data, final List<T> reference_objects) throws Exception {
 
-        boolean fourPoint = distance_measure.getMeasureName().equals(Constants.JENSEN_SHANNON.getMeasureName());
-
-//        System.out.println( "Creating ParallelBitBlaster2: no processors"  + Runtime.getRuntime().availableProcessors() );
+        final boolean fourPoint = distance_measure.toString().equals(Constants.JENSEN_SHANNON.toString());
 
         bit_blaster = new ParallelBitBlaster2<>(distance_measure::distance, reference_objects, data, 2,
                 Runtime.getRuntime().availableProcessors(), fourPoint, true);

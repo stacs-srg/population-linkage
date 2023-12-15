@@ -31,7 +31,7 @@ import java.util.List;
  * A defined maximum distance is returned when all fields are missing. This is constrained to be one
  * where the base measure is intrinsically normalised, but may be sampled from the dataset for non-normalised measures.
  */
-public class MeanOfFieldDistancesIgnoringMissingFields extends LXPMeasure {
+public class MeanOfFieldDistancesIgnoringMissingFields {//extends LXPMeasure {
 
     /*
         Maximum and mean field distances sampled from Umea Birth-Birth linkage:
@@ -53,67 +53,67 @@ public class MeanOfFieldDistancesIgnoringMissingFields extends LXPMeasure {
         NYSIIS-Levenshtein: 6.0, 3.53
      */
 
-    private final double max_field_distance;
-
-    public MeanOfFieldDistancesIgnoringMissingFields(final StringMeasure base_measure, final List<Integer> field_list, final double max_field_distance) {
-
-        this(base_measure, field_list, field_list, max_field_distance);
-    }
-
-    public MeanOfFieldDistancesIgnoringMissingFields(final StringMeasure base_measure, final List<Integer> field_list1, final List<Integer> field_list2, final double max_field_distance) {
-
-        super(base_measure, field_list1, field_list2);
-        if (maxDistanceIsOne() && max_field_distance != 1d) throw new RuntimeException("invalid max distance");
-        this.max_field_distance = max_field_distance;
-    }
-
-    @Override
-    public String getMeasureName() {
-        return "Mean of non-missing field distances using: " + base_measure.getMeasureName();
-    }
-
-    @Override
-    public boolean maxDistanceIsOne() {
-        return base_measure.maxDistanceIsOne();
-    }
-
-    @Override
-    public double calculateDistance(final LXP x, final LXP y) {
-
-        double total_distance = 0.0d;
-        int present_count = 0;
-
-        for (int i = 0; i < field_indices1.size(); i++) {
-            try {
-                final int field_index1 = field_indices1.get(i);
-                final int field_index2 = field_indices2.get(i);
-
-                final String field_value1 = x.getString(field_index1);
-                final String field_value2 = y.getString(field_index2);
-
-                if (!RecordFiltering.isMissing(field_value1) && !RecordFiltering.isMissing(field_value2)) {
-
-                    present_count++;
-                    total_distance += base_measure.distance(field_value1, field_value2);
-                }
-
-            } catch (Exception e) {
-                throwExceptionWithDebug(x, y, i, e);
-            }
-        }
-
-        return present_count > 0 ? total_distance / present_count : max_field_distance;
-    }
-
-    public static void main(String[] args) {
-
-        final MeanOfFieldDistancesIgnoringMissingFields birth_birth_measure1 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.LEVENSHTEIN, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, 100d);
-        final MeanOfFieldDistancesIgnoringMissingFields birth_death_measure1 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.LEVENSHTEIN, BirthDeathIdentityLinkageRecipe.LINKAGE_FIELDS, BirthDeathIdentityLinkageRecipe.SEARCH_FIELDS, 100d);
-
-        final MeanOfFieldDistancesIgnoringMissingFields birth_birth_measure2 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.SED, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, 1d);
-        final MeanOfFieldDistancesIgnoringMissingFields birth_death_measure2 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.SED, BirthDeathIdentityLinkageRecipe.LINKAGE_FIELDS, BirthDeathIdentityLinkageRecipe.SEARCH_FIELDS, 1d);
-
-        printExamples(birth_birth_measure1, birth_death_measure1);
-        printExamples(birth_birth_measure2, birth_death_measure2);
-    }
+//    private final double max_field_distance;
+//
+//    public MeanOfFieldDistancesIgnoringMissingFields(final StringMeasure base_measure, final List<Integer> field_list, final double max_field_distance) {
+//
+//        this(base_measure, field_list, field_list, max_field_distance);
+//    }
+//
+//    public MeanOfFieldDistancesIgnoringMissingFields(final StringMeasure base_measure, final List<Integer> field_list1, final List<Integer> field_list2, final double max_field_distance) {
+//
+//        super(base_measure, field_list1, field_list2);
+//        if (maxDistanceIsOne() && max_field_distance != 1d) throw new RuntimeException("invalid max distance");
+//        this.max_field_distance = max_field_distance;
+//    }
+//
+//    @Override
+//    public String getMeasureName() {
+//        return "Mean of non-missing field distances using: " + base_measure.getMeasureName();
+//    }
+//
+//    @Override
+//    public boolean maxDistanceIsOne() {
+//        return base_measure.maxDistanceIsOne();
+//    }
+//
+//    @Override
+//    public double calculateDistance(final LXP x, final LXP y) {
+//
+//        double total_distance = 0.0d;
+//        int present_count = 0;
+//
+//        for (int i = 0; i < field_indices1.size(); i++) {
+//            try {
+//                final int field_index1 = field_indices1.get(i);
+//                final int field_index2 = field_indices2.get(i);
+//
+//                final String field_value1 = x.getString(field_index1);
+//                final String field_value2 = y.getString(field_index2);
+//
+//                if (!RecordFiltering.isMissing(field_value1) && !RecordFiltering.isMissing(field_value2)) {
+//
+//                    present_count++;
+//                    total_distance += base_measure.distance(field_value1, field_value2);
+//                }
+//
+//            } catch (Exception e) {
+//                throwExceptionWithDebug(x, y, i, e);
+//            }
+//        }
+//
+//        return present_count > 0 ? total_distance / present_count : max_field_distance;
+//    }
+//
+//    public static void main(String[] args) {
+//
+//        final MeanOfFieldDistancesIgnoringMissingFields birth_birth_measure1 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.LEVENSHTEIN, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, 100d);
+//        final MeanOfFieldDistancesIgnoringMissingFields birth_death_measure1 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.LEVENSHTEIN, BirthDeathIdentityLinkageRecipe.LINKAGE_FIELDS, BirthDeathIdentityLinkageRecipe.SEARCH_FIELDS, 100d);
+//
+//        final MeanOfFieldDistancesIgnoringMissingFields birth_birth_measure2 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.SED, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, 1d);
+//        final MeanOfFieldDistancesIgnoringMissingFields birth_death_measure2 = new MeanOfFieldDistancesIgnoringMissingFields(Constants.SED, BirthDeathIdentityLinkageRecipe.LINKAGE_FIELDS, BirthDeathIdentityLinkageRecipe.SEARCH_FIELDS, 1d);
+//
+//        printExamples(birth_birth_measure1, birth_death_measure1);
+//        printExamples(birth_birth_measure2, birth_death_measure2);
+//    }
 }

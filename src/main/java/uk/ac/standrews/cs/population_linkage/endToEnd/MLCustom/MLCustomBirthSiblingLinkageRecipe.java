@@ -48,17 +48,17 @@ public class MLCustomBirthSiblingLinkageRecipe extends BirthSiblingLinkageRecipe
         this.bridge = bridge;
     }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new CustomMeasure();
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new CustomMeasure();
+//    }
 
     public void setNumberLinkageFieldsRequired( int number ) {
         linkage_fields = number;
     }
 
-    @Override
-    public double getThreshold() { return threshold; }
+//    @Override
+//    public double getThreshold() { return threshold; }
 
     /**
      * @return

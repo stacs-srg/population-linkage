@@ -84,6 +84,6 @@ public class NNs {
     }
 
     private static LXPMeasure getCompositeBirthMeasure(StringMeasure base_measure) {
-        return new SumOfFieldDistances(base_measure, BirthDeathIdentityLinkageRecipe.LINKAGE_FIELDS);
+        return new LXPMeasure(BirthDeathIdentityLinkageRecipe.LINKAGE_FIELDS, BirthDeathIdentityLinkageRecipe.SEARCH_FIELDS, base_measure);
     }
 }

@@ -43,10 +43,8 @@ public class SiblingDeathOpenChainResolver {
     private static final int MAX_AGE_DIFFERENCE = 15; // max age difference of siblings - plausible but conservative
     public static double LOW_DISTANCE_MATCH_THRESHOLD = 0.2;
     public static double HIGH_DISTANCE_REJECT_THRESHOLD = 0.5;
-    private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket deaths;
-    private final DeathSiblingLinkageRecipe recipe;
 
     private final StringMeasure base_measure;
     private final LXPMeasure lxpMeasure;
@@ -68,15 +66,14 @@ public class SiblingDeathOpenChainResolver {
 
     public SiblingDeathOpenChainResolver(NeoDbCypherBridge bridge, String source_repo_name, DeathSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
-        this.recipe = recipe;
-        record_repository = new RecordRepository(source_repo_name);
+        RecordRepository record_repository = new RecordRepository(source_repo_name);
         deaths = record_repository.getBucket("death_records");
         base_measure = Constants.JENSEN_SHANNON;
         lxpMeasure = getCompositeMeasure(recipe);
     }
 
     protected LXPMeasure getCompositeMeasure(final LinkageRecipe linkageRecipe) {
-        return new SumOfFieldDistances(base_measure, linkageRecipe.getLinkageFields());
+        return new LXPMeasure(linkageRecipe.getLinkageFields(), linkageRecipe.getQueryMappingFields(), base_measure);
     }
 
     private void resolve() {
@@ -149,7 +146,7 @@ public class SiblingDeathOpenChainResolver {
                 }
             }
         } catch (BucketException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

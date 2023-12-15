@@ -50,10 +50,8 @@ public class SiblingBrideClusterOpenTriangleResolver {
     private final double DEFAULT_LOW_DISTANCE_MATCH_THRESHOLD = 0.1;
     private final double DEFAULT_HIGH_DISTANCE_REJECT_THRESHOLD = 0.6;
 
-    private final RecordRepository record_repository;
     private final NeoDbCypherBridge bridge;
     private final IBucket marriages;
-    private final BrideBrideSiblingLinkageRecipe recipe;
 
     private final StringMeasure base_measure;
     private final LXPMeasure composite_measure;
@@ -76,15 +74,14 @@ public class SiblingBrideClusterOpenTriangleResolver {
 
     public SiblingBrideClusterOpenTriangleResolver(NeoDbCypherBridge bridge, String source_repo_name, BrideBrideSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
-        this.recipe = recipe;
-        this.record_repository = new RecordRepository(source_repo_name);
+        RecordRepository record_repository = new RecordRepository(source_repo_name);
         this.marriages = record_repository.getBucket("marriage_records");
         this.base_measure = Constants.JENSEN_SHANNON;
         this.composite_measure = getCompositeMeasure(recipe);
     }
 
     protected LXPMeasure getCompositeMeasure(final LinkageRecipe linkageRecipe) {
-        return new SumOfFieldDistances(base_measure, linkageRecipe.getLinkageFields());
+        return new LXPMeasure(linkageRecipe.getLinkageFields(), linkageRecipe.getQueryMappingFields(), base_measure);
     }
 
     protected void resolve(int min_cluster_size, double ldmt, double hdrt) {

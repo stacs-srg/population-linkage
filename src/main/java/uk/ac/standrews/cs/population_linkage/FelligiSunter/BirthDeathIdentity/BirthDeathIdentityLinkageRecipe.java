@@ -21,7 +21,7 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistances;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistance;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
@@ -106,7 +106,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
             System.out.println("Filtering death records require: " + getNumberOfLinkageFieldsRequired() + " fields");
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getQueryMappingFields());
+            cached_records = filter(number_of_deaths, super.getDeathRecords(), getQueryMappingFields(), getNumberOfLinkageFieldsRequired());
         }
         return cached_records;
     }
@@ -226,17 +226,17 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
         return getBirthDeathIdentityGTLinks(bridge, birth_record).size();
     }
 
-    @Override
-    public double getThreshold() {
-        return THRESHOLD;
-    }
-
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new FelligiSunterDistances(getBaseMeasure(), getLinkageFields(), SEARCH_FIELDS, m_priors, u_priors, odds_prior);
-    }
+//    @Override
+//    public double getThreshold() {
+//        return THRESHOLD;
+//    }
+//
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new FelligiSunterDistance(getLinkageFields(), SEARCH_FIELDS, getBaseMeasure(), m_priors, u_priors, odds_prior);
+//    }
 
     public LXPMeasure getCompositeMeasure(StringMeasure base_measure) {
-        return new FelligiSunterDistances(base_measure, getLinkageFields(), SEARCH_FIELDS, m_priors, u_priors, odds_prior );
+        return new FelligiSunterDistance(getLinkageFields(), SEARCH_FIELDS, base_measure, m_priors, u_priors, odds_prior );
     }
 }

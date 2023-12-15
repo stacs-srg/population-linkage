@@ -84,7 +84,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     protected Iterable<LXP> getDeathRecords() {
         if (cached_records == null) {
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
+            cached_records = filter(number_of_deaths, super.getDeathRecords(), getLinkageFields(), getNumberOfLinkageFieldsRequired());
         }
         return cached_records;
     }
@@ -181,13 +181,13 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
-
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
+//
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 }

@@ -47,7 +47,8 @@ public class MeasureCosts {
 
         for (StringMeasure measure : Constants.BASE_MEASURES) {
 
-            calculateAllDistances(birth_records, new SumOfFieldDistances(measure, BirthSiblingLinkageRecipe.LINKAGE_FIELDS));
+            LXPMeasure record_distance_measure = new LXPMeasure(BirthSiblingLinkageRecipe.LINKAGE_FIELDS, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, measure);
+            calculateAllDistances(birth_records, record_distance_measure);
         }
     }
 
@@ -61,7 +62,7 @@ public class MeasureCosts {
             }
         }
 
-        System.out.println("elapsed for " + measure.getMeasureName() + ": " + Duration.between(start, LocalDateTime.now()).toMillis()/1000);
+        System.out.println("elapsed for " + measure + ": " + Duration.between(start, LocalDateTime.now()).toMillis()/1000);
     }
 
     public static void main(String[] args) {

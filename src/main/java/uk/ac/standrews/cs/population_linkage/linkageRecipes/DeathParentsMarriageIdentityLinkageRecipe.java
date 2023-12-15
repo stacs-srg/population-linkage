@@ -271,15 +271,15 @@ public class DeathParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
             return s2 + "-" + s1;
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
-
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
+//
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 
     public static LinkStatus trueMatch(LXP death, LXP marriage) {
 

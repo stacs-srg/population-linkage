@@ -120,7 +120,7 @@ public class UmeaBirthSiblingGroundTruthProfiling {
 
         for (List<LinkageRecipe.Pair> alternative : alternatives) {
             for (LinkageRecipe.Pair pair : alternative) {
-                result.add(pair.first);
+                result.add(pair.first());
             }
         }
 

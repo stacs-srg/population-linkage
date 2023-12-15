@@ -140,14 +140,12 @@ public class UmeaBirthDeathHardNegativeML {
 
         for (final StringMeasure measure : Constants.BASE_MEASURES) {
 
-            final String name = measure.getMeasureName();
             for (int field_selector = 0; field_selector < comparison_fields.size(); field_selector++) {
 
-                String label = name + "." + b_source_record.getMetaData().getFieldName(comparison_fields.get(field_selector)) + "-" +
+                String label = measure + "." + b_source_record.getMetaData().getFieldName(comparison_fields.get(field_selector)) + "-" +
                         d_source_record.getMetaData().getFieldName(comparison_fields2.get(field_selector));  // measure name concatenated with the name of the field selectors
                 pw.print(label);
                 pw.print(DELIMIT);
-
             }
         }
 

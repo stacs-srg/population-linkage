@@ -88,7 +88,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-                cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
+                cached_records = RecordFiltering.filter(number_of_births, super.getBirthRecords(), getLinkageFields(), getNumberOfLinkageFieldsRequired());
         }
         return cached_records;
     }
@@ -181,13 +181,13 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
-    @Override
-    public double getThreshold() {
-        return THRESHOLD;
-    }
+//    @Override
+//    public double getThreshold() {
+//        return THRESHOLD;
+//    }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 }

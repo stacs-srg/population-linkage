@@ -18,6 +18,7 @@ package uk.ac.standrews.cs.population_linkage.compositeMeasures;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.groundTruth.Aggregator;
+import uk.ac.standrews.cs.population_linkage.groundTruth.AggregatorMean;
 import uk.ac.standrews.cs.population_linkage.groundTruth.Imputer;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -25,81 +26,160 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.Measure;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public abstract class LXPMeasure extends Measure<LXP> {
+public class LXPMeasure extends Measure<LXP> {
+
+    public static final Imputer DEFAULT_IMPUTER = Imputer.RECORD_MEAN;
+    public static final AggregatorMean DEFAULT_AGGREGATOR = new AggregatorMean();
+    public static final double DEFAULT_CUT_OFF = Double.MAX_VALUE;
 
     public record FieldComparator(StringMeasure base_measure, double cut_off, boolean normalise, Imputer imputer) {}
 
     protected List<Integer> field_indices1;
     protected List<Integer> field_indices2;
+    private int field_count;
 
     protected List<FieldComparator> field_comparators;
     protected Aggregator aggregator;
 
     public LXPMeasure(final List<Integer> field_indices1, final List<Integer> field_indices2, final List<FieldComparator> field_comparators, final Aggregator aggregator) {
 
-        if (field_indices1.size() != field_indices2.size() || field_indices1.size() != field_comparators.size()) {
+        init(field_indices1, field_indices2, field_comparators, aggregator);
+    }
+
+    public LXPMeasure(final List<Integer> field_indices1, final List<Integer> field_indices2, final StringMeasure base_measure) {
+
+        this(field_indices1, field_indices2, base_measure, DEFAULT_IMPUTER);
+    }
+
+    public LXPMeasure(final List<Integer> field_indices1, final List<Integer> field_indices2, final StringMeasure base_measure, final Imputer imputer) {
+
+        this(field_indices1, field_indices2, base_measure, imputer, DEFAULT_AGGREGATOR);
+    }
+
+    public LXPMeasure(final List<Integer> field_indices1, final List<Integer> field_indices2, final StringMeasure base_measure, final Imputer imputer, final Aggregator aggregator) {
+
+        FieldComparator field_comparator = new FieldComparator(base_measure, DEFAULT_CUT_OFF, true, imputer);
+        List<FieldComparator> field_comparators = new ArrayList<>();
+        for (int i = 0; i < field_indices1.size(); i++) field_comparators.add(field_comparator);
+
+        init(field_indices1, field_indices2, field_comparators, aggregator);
+    }
+
+    private void init(List<Integer> field_indices1, List<Integer> field_indices2, List<FieldComparator> field_comparators, Aggregator aggregator) {
+
+        if (field_indices1.size() != field_indices2.size() || field_indices1.size() != field_comparators.size())
             throw new RuntimeException("field index and comparator lists must have the same length");
-        }
 
         this.field_indices1 = field_indices1;
         this.field_indices2 = field_indices2;
+        field_count = field_indices1.size();
+
         this.field_comparators = field_comparators;
         this.aggregator = aggregator;
     }
-    
-    protected LXPMeasure() {
+
+    @Override
+    public boolean maxDistanceIsOne() {
+
+        for (FieldComparator comparator : field_comparators)
+            if (!comparator.base_measure.maxDistanceIsOne()) return false;
+
+        return true;
     }
 
-    protected double sumOfFieldDistances(LXP x, LXP y) {
+    @Override
+    public double calculateDistance(final LXP x, final LXP y) {
 
-        double total_distance = 0.0d;
+        final List<Double> field_distances = new ArrayList<>(field_count);
+        Collections.fill(field_distances, -1d);
 
-        for (int i = 0; i < field_indices1.size(); i++) {
-            try {
-                final int field_index1 = field_indices1.get(i);
-                final int field_index2 = field_indices2.get(i);
+        final List<Double> non_missing_field_distances = new ArrayList<>();
 
-                final String field_value1 = x.getString(field_index1);
-                final String field_value2 = y.getString(field_index2);
+        for (int field = 0; field < field_count; field++) {
 
-                total_distance += base_measure.distance(field_value1, field_value2);
+            final FieldComparator comparator = field_comparators.get(field);
+            final String field_value1 = x.getString(field_indices1.get(field));
+            final String field_value2 = y.getString(field_indices1.get(field));
 
-            } catch (Exception e) {
-                throwExceptionWithDebug(x, y, i, e);
-            }
-        }
-        return total_distance;
-    }
+            if (!RecordFiltering.isMissing(field_value1) && !RecordFiltering.isMissing(field_value2)) {
 
-    protected double calculateMeanDistance(LXP x, LXP y, double distance_for_missing_fields) {
+                double field_distance = comparator.base_measure.distance(field_value1, field_value2);
 
-        double total_distance = 0.0d;
+                field_distance = Math.min(field_distance, comparator.cut_off);
 
-        for (int i = 0; i < field_indices1.size(); i++) {
-            try {
-                final int field_index1 = field_indices1.get(i);
-                final int field_index2 = field_indices2.get(i);
-
-                final String field_value1 = x.getString(field_index1);
-                final String field_value2 = y.getString(field_index2);
-
-                if (!RecordFiltering.isMissing(field_value1) && !RecordFiltering.isMissing(field_value2)) {
-
-                    total_distance += base_measure.distance(field_value1, field_value2);
-                }
-                else {
-                    total_distance += distance_for_missing_fields;
+                if (comparator.normalise && !comparator.base_measure.maxDistanceIsOne()) {
+                    field_distance = field_distance / comparator.cut_off;
                 }
 
-            } catch (Exception e) {
-                throwExceptionWithDebug(x, y, i, e);
+                field_distances.set(field, field_distance);
+                non_missing_field_distances.add(field_distance);
             }
         }
 
-        return total_distance / field_indices1.size();
+        if (non_missing_field_distances.size() < field_count) {
+
+            for (int field = 0; field < field_count; field++) {
+
+                if (field_distances.get(field) < 0)
+                    field_distances.set(field, field_comparators.get(field).imputer.impute(non_missing_field_distances));
+            }
+        }
+
+        return aggregator.aggregate(field_distances);
     }
+
+//    protected double sumOfFieldDistances(LXP x, LXP y) {
+//
+//        double total_distance = 0.0d;
+//
+//        for (int i = 0; i < field_indices1.size(); i++) {
+//            try {
+//                final int field_index1 = field_indices1.get(i);
+//                final int field_index2 = field_indices2.get(i);
+//
+//                final String field_value1 = x.getString(field_index1);
+//                final String field_value2 = y.getString(field_index2);
+//
+//                total_distance += base_measure.distance(field_value1, field_value2);
+//
+//            } catch (Exception e) {
+//                throwExceptionWithDebug(x, y, i, e);
+//            }
+//        }
+//        return total_distance;
+//    }
+//
+//    protected double calculateMeanDistance(LXP x, LXP y, double distance_for_missing_fields) {
+//
+//        double total_distance = 0.0d;
+//
+//        for (int i = 0; i < field_indices1.size(); i++) {
+//            try {
+//                final int field_index1 = field_indices1.get(i);
+//                final int field_index2 = field_indices2.get(i);
+//
+//                final String field_value1 = x.getString(field_index1);
+//                final String field_value2 = y.getString(field_index2);
+//
+//                if (!RecordFiltering.isMissing(field_value1) && !RecordFiltering.isMissing(field_value2)) {
+//
+//                    total_distance += base_measure.distance(field_value1, field_value2);
+//                }
+//                else {
+//                    total_distance += distance_for_missing_fields;
+//                }
+//
+//            } catch (Exception e) {
+//                throwExceptionWithDebug(x, y, i, e);
+//            }
+//        }
+//
+//        return total_distance / field_indices1.size();
+//    }
 
     protected void throwExceptionWithDebug(LXP x, LXP y, int field_index, Exception e) {
         throw new RuntimeException("exception comparing fields " + x.getMetaData().getFieldName(field_indices1.get(field_index)) + " and " + y.getMetaData().getFieldName(field_indices2.get(field_index)) + " in records \n" + x + "\n and \n" + y, e);
@@ -187,7 +267,7 @@ public abstract class LXPMeasure extends Measure<LXP> {
     public static void printExample(LXPMeasure measure, LXP lxp1, LXP lxp2) {
 
         System.out.println();
-        System.out.println(measure.getMeasureName() + ":");
+        System.out.println(measure + ":");
         System.out.println("normalised: " + measure.maxDistanceIsOne());
         System.out.println();
 
@@ -202,17 +282,5 @@ public abstract class LXPMeasure extends Measure<LXP> {
 
         printExample(birth_birth_measure, birth1, birth2);
         printExample(birth_death_measure, birth1, death);
-    }
-
-    public static void main(String[] args) {
-
-        MaximumOfFieldDistances.main(null);
-        MeanOfFieldDistances.main(null);
-        MeanOfFieldDistancesIgnoringMissingFields.main(null);
-        MeanOfFieldDistancesNormalised.main(null);
-        MeanOfFieldDistancesWithMaxForMissingFields.main(null);
-        MeanOfFieldDistancesWithMeanForMissingFields.main(null);
-        MeanOfFieldDistancesWithZeroForMissingFields.main(null);
-        SumOfFieldDistances.main(null);
     }
 }

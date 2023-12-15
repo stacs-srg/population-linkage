@@ -72,7 +72,7 @@ public class SiblingDeathOpenTriangleResolver {
     }
 
     protected LXPMeasure getCompositeMetric(final LinkageRecipe linkageRecipe) {
-        return new SumOfFieldDistances(base_measure, linkageRecipe.getLinkageFields());
+        return new LXPMeasure(linkageRecipe.getLinkageFields(), linkageRecipe.getQueryMappingFields(), base_measure);
     }
 
     private void resolve() {

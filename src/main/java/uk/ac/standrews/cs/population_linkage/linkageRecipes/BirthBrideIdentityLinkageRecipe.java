@@ -140,28 +140,26 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
             Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_births, f, getLinkageFields());
+            cached_records = filter(number_of_births, f, getLinkageFields(), getNumberOfLinkageFieldsRequired());
         }
-        System.out.println("Processing " + cached_records.size() + " birth records");
         return cached_records;
     }
 
     @Override
     protected Collection<LXP> getMarriageRecords() {
-        List<LXP> records = StreamSupport.stream(super.getMarriageRecords().spliterator(), false).collect(Collectors.toList());
-        System.out.println("Processing " + records.size() + " marriage records");
-        return records;
+
+        return StreamSupport.stream(super.getMarriageRecords().spliterator(), false).collect(Collectors.toList());
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 
     @Override
     public List<Integer> getQueryMappingFields() {

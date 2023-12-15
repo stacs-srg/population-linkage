@@ -52,7 +52,6 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
             Birth.MOTHER_MAIDEN_SURNAME,
             Birth.FATHER_FORENAME,
             Birth.FATHER_SURNAME
-        //    Birth.FATHER_OCCUPATION
     );
 
     public static final List<Integer> SEARCH_FIELDS = list(
@@ -60,7 +59,6 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
             Marriage.BRIDE_MOTHER_MAIDEN_SURNAME,
             Marriage.BRIDE_FATHER_FORENAME,
             Marriage.BRIDE_FATHER_SURNAME
-         //   Marriage.BRIDE_FATHER_OCCUPATION
     );
 
     @SuppressWarnings("unchecked")
@@ -69,6 +67,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
                     pair(Birth.FATHER_IDENTITY, Marriage.BRIDE_FATHER_IDENTITY)));
 
     public BirthBrideSiblingLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name, NeoDbCypherBridge bridge) {
+
         super(source_repository_name, links_persistent_name);
         if (number_of_records.equals(EVERYTHING_STRING)) {
             number_of_births = EVERYTHING;
@@ -80,7 +79,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(no_linkage_fields_required, number_of_births, super.getBirthRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(number_of_births, super.getBirthRecords(), getLinkageFields(), no_linkage_fields_required);
         }
         return cached_records;
     }
@@ -165,13 +164,13 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
 
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
-    }
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+//    }
 }

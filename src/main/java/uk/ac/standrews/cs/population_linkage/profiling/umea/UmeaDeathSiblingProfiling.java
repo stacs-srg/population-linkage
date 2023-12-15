@@ -66,7 +66,7 @@ public class UmeaDeathSiblingProfiling {
         final long size = record_list.size();
         System.out.println("size: " + size);
 
-        LXPMeasure measure = new SumOfFieldDistances(base_measure, DeathSiblingLinkageRecipe.getComparisonFields());
+        LXPMeasure measure = new LXPMeasure(DeathSiblingLinkageRecipe.getComparisonFields(), DeathSiblingLinkageRecipe.getComparisonFields(), base_measure);
 
         for (int i = 0; i < OUTER_LOOP_SIZE; i++) {
 

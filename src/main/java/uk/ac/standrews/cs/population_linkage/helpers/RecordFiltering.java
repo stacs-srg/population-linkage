@@ -23,12 +23,12 @@ import java.util.List;
 
 public class RecordFiltering {
 
-    public static List<LXP> filter(long number_of_required_fields, int number_of_records_required, Iterable<LXP> records_to_filter, List<Integer> linkageFields) {
+    public static List<LXP> filter(final int number_of_records_required, final Iterable<LXP> records_to_filter, final List<Integer> field_indices, final int number_of_populated_fields_required) {
 
         List<LXP> filtered_source_records = new ArrayList<>();
 
         for (LXP record : records_to_filter) {
-            if (passesFilter(record, linkageFields, number_of_required_fields)) {
+            if (passesFilter(record, field_indices, number_of_populated_fields_required)) {
                 filtered_source_records.add(record);
             }
             if (filtered_source_records.size() >= number_of_records_required) {
@@ -39,23 +39,24 @@ public class RecordFiltering {
         return filtered_source_records;
     }
 
-    public static boolean passesFilter(LXP record, List<Integer> filterOn, long reqPopulatedFields) {
+    public static boolean passesFilter(final LXP record, final List<Integer> field_indices, final int number_of_populated_fields_required) {
 
-        long numberOfEmptyFieldsPermitted = filterOn.size() - reqPopulatedFields;
+        final long number_of_empty_fields_permitted = field_indices.size() - number_of_populated_fields_required;
 
-        int numberOfEmptyFields = 0;
+        int number_of_empty_fields = 0;
 
-        for (int attribute : filterOn) {
-            String value = record.getString(attribute).toLowerCase().trim();
+        for (final int field_index : field_indices) {
+
+            final String value = record.getString(field_index).toLowerCase().trim();
             if (isMissing(value)) {
-                numberOfEmptyFields++;
+                number_of_empty_fields++;
             }
         }
 
-        return numberOfEmptyFields <= numberOfEmptyFieldsPermitted;
+        return number_of_empty_fields <= number_of_empty_fields_permitted;
     }
 
-    public static boolean isMissing(String value) {
-        return value == null || value.equals("") || value.contains("missing") || value.contains("--");
+    public static boolean isMissing(final String value) {
+        return value == null || value.isEmpty() || value.contains("missing") || value.contains("--");
     }
 }

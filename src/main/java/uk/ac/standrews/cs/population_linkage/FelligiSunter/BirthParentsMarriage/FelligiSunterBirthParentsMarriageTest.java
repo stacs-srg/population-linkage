@@ -18,7 +18,7 @@ package uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthParentsMarriage
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistances;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistance;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
@@ -39,7 +39,7 @@ public class FelligiSunterBirthParentsMarriageTest {
     private List<Double> u_priors = BirthParentsMarriageBuilder.u_priors;
     private double odds_prior = BirthParentsMarriageBuilder.odds_prior;
 
-    LXPMeasure measure = new FelligiSunterDistances(baseMeasure, linkage_fields, search_fields, m_priors, u_priors, odds_prior); // from BirthParentsMarriageIdentityLinkageRecipe
+    LXPMeasure measure = new FelligiSunterDistance(linkage_fields, search_fields, baseMeasure, m_priors, u_priors, odds_prior); // from BirthParentsMarriageIdentityLinkageRecipe
 
     @Before
     public void setup() {

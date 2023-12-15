@@ -22,6 +22,7 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,8 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -64,7 +64,8 @@ public abstract class ThresholdAnalysis {
     /**
      * @return list of comparison fields that will be used for comparing records
      */
-    public abstract List<Integer> getComparisonFields();
+    public abstract List<Integer> getComparisonFieldIndices1();
+    public abstract List<Integer> getComparisonFieldIndices2();
 
     public abstract String getDatasetName();
 
@@ -80,11 +81,19 @@ public abstract class ThresholdAnalysis {
 
     public abstract boolean isViableLink(LXP record1, LXP record2);
 
-    public abstract List<LXPMeasure> getCombinedMeasures();
 
-    protected abstract double getNormalisationCutoff();
 
     protected abstract boolean recordLinkDistances();
+
+
+
+    protected abstract List<StringMeasure> getBaseMeasures();
+
+    protected abstract List<Aggregator> getAggregators();
+
+    protected abstract List<Imputer> getImputers();
+
+    protected abstract Map<StringMeasure, List<Double>> getCutOffs();
 
     /*
     Per LXP measure:
@@ -145,6 +154,29 @@ public abstract class ThresholdAnalysis {
         this.allow_multiple_links = allow_multiple_links;
 
         composite_measures = getCombinedMeasures();
+
+        get
+
+        for (StringMeasure base_measure : getBaseMeasures()) {
+
+            for (Double cut_off : getCutOffs().getOrDefault(base_measure, List.of(Double.MAX_VALUE)) {
+                for (Aggregator aggregator : getAggregators()) {
+                    for (Imputer imputer : getImputers()) {
+                        composite_measures.add(new LXPMeasure())
+                    }
+                }
+            }
+
+        }
+
+        protected abstract List<Aggregator> getAggregators();
+
+        protected abstract List<Imputer> getImputers();
+
+        protected abstract Map<StringMeasure, List<Double>> getCutOffs();
+
+
+
 
         linkage_results_writer = getPrintWriter(getResultsPath(linkage_results_file_root, ".csv"));
         linkage_results_metadata_writer = getPrintWriter(getResultsPath(linkage_results_file_root, ".meta"));
@@ -546,10 +578,10 @@ public abstract class ThresholdAnalysis {
         private void recordSamples() {
 
             for (int threshold_index = 0; threshold_index < NUMBER_OF_THRESHOLDS_SAMPLED; threshold_index++) {
-                recordSample(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, indexToThreshold(threshold_index), samples[threshold_index]);
+                recordSample(run_number, measure.toString(), records_processed, pairs_evaluated, pairs_ignored, indexToThreshold(threshold_index), samples[threshold_index]);
             }
 
-            if (recordLinkDistances()) recordDistances(run_number, measure.getMeasureName(), records_processed, pairs_evaluated, pairs_ignored, non_link_distance_counts, link_distance_counts);
+            if (recordLinkDistances()) recordDistances(run_number, measure.toString(), records_processed, pairs_evaluated, pairs_ignored, non_link_distance_counts, link_distance_counts);
         }
 
         private void updateTrueLinkCounts(final double distance, final boolean is_true_link) {

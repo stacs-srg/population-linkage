@@ -18,7 +18,7 @@ package uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthParentsMarriage
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistances;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistance;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
@@ -98,7 +98,7 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     @Override
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(number_of_births, super.getBirthRecords(), getLinkageFields(), getNumberOfLinkageFieldsRequired());
         }
         return cached_records;
     }
@@ -183,17 +183,17 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
         return getNumberOfGroundTruthLinksAsymmetric();
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
-
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new FelligiSunterDistances(getBaseMeasure(), getLinkageFields(), SEARCH_FIELDS, m_priors, u_priors, odds_prior );
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
+//
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new FelligiSunterDistance(getLinkageFields(), SEARCH_FIELDS, getBaseMeasure(), m_priors, u_priors, odds_prior );
+//    }
 
     public LXPMeasure getCompositeMeasure(StringMeasure base_measure) {
-        return new FelligiSunterDistances(base_measure, getLinkageFields(), SEARCH_FIELDS, m_priors, u_priors, odds_prior );
+        return new FelligiSunterDistance(getLinkageFields(), SEARCH_FIELDS, base_measure, m_priors, u_priors, odds_prior );
     }
 }

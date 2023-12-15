@@ -78,14 +78,13 @@ public abstract class LinkageRecipe implements LinkViabilityChecker, AutoCloseab
     private Integer marriage_records_size;
 
     private int number_of_linkage_fields_required;
-    private StringMeasure base_measure;
+//    private StringMeasure base_measure;
     protected NeoDbCypherBridge bridge;
 
     public LinkageRecipe(String source_repository_name, String links_persistent_name) {
 
         this.source_repository_name = source_repository_name;
         this.links_persistent_name = links_persistent_name;
-        setBaseMeasure(Constants.get("JENSEN_SHANNON"));
 
         this.record_repository = new RecordRepository(source_repository_name);
         bridge = Store.getInstance().getBridge(); // lovely :)
@@ -99,6 +98,34 @@ public abstract class LinkageRecipe implements LinkViabilityChecker, AutoCloseab
         record_repository.close();
         bridge.close();
     }
+
+    public String getLinksPersistentName() {
+        return links_persistent_name;
+    }
+
+    public int getQuerySetSize() {
+        return getSizeByType(getQueryType());
+    }
+
+//    public abstract double getThreshold();
+
+    public void setCacheSizes(int birthCacheSize, int deathCacheSize, int marriageCacheSize) {
+        record_repository.setBirthsCacheSize(birthCacheSize);
+        record_repository.setDeathsCacheSize(deathCacheSize);
+        record_repository.setMarriagesCacheSize(marriageCacheSize);
+    }
+
+//    public StringMeasure getBaseMeasure() {
+//        return base_measure;
+//    }
+//
+//    public void setBaseMeasure(StringMeasure m) {
+//        this.base_measure = m;
+//    }
+
+    //public abstract LXPMeasure getCompositeMeasure();
+
+    public record Pair(int first, int second){}
 
     public int getNumberOfLinkageFieldsRequired() {
         return number_of_linkage_fields_required;
@@ -477,41 +504,5 @@ public abstract class LinkageRecipe implements LinkViabilityChecker, AutoCloseab
                 filteredRecords.add(record);
         });
         return filteredRecords;
-    }
-
-    public String getLinksPersistentName() {
-        return links_persistent_name;
-    }
-
-    public int getQuerySetSize() {
-        return getSizeByType(getQueryType());
-    }
-
-    public abstract double getThreshold();
-
-    public void setCacheSizes(int birthCacheSize, int deathCacheSize, int marriageCacheSize) {
-        record_repository.setBirthsCacheSize(birthCacheSize);
-        record_repository.setDeathsCacheSize(deathCacheSize);
-        record_repository.setMarriagesCacheSize(marriageCacheSize);
-    }
-
-    public StringMeasure getBaseMeasure() {
-        return base_measure;
-    }
-
-    public void setBaseMeasure(StringMeasure m) {
-        this.base_measure = m;
-    }
-
-    public abstract LXPMeasure getCompositeMeasure();
-
-    public static class Pair {
-        public final int first;
-        public final int second;
-
-        public Pair(final int first, final int second) {
-            this.first = first;
-            this.second = second;
-        }
     }
 }

@@ -17,12 +17,15 @@
 package uk.ac.standrews.cs.population_linkage.endToEnd.MLCustom;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 /**
  * This class attempts to perform birth-birth sibling linkage.
@@ -33,12 +36,15 @@ public class MLCustomBirthSiblingBundleBuilder implements MakePersistent {
 
         String sourceRepo = args[0]; // e.g. synthetic-scotland_13k_1_clean
         String resultsRepo = args[1]; // e.g. synth_results
+        StringMeasure base_measure = Constants.get(args[2]);
+        double threshold = Double.parseDouble(args[3]);
 
         try(NeoDbCypherBridge bridge = new NeoDbCypherBridge() ) {
 
             MLCustomBirthSiblingLinkageRecipe linkageRecipe = new MLCustomBirthSiblingLinkageRecipe(sourceRepo, resultsRepo, bridge, MLCustomBirthSiblingBundleBuilder.class.getName());
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            LXPMeasure record_distance_measure = new LXPMeasure(linkageRecipe.getLinkageFields(), linkageRecipe.getQueryMappingFields(), base_measure);
+            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner(record_distance_measure, threshold);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 );

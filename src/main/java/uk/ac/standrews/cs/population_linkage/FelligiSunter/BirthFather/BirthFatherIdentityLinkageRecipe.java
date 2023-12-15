@@ -21,7 +21,7 @@ import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistances;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.FelligiSunterDistance;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkViabilityLogic;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
@@ -37,7 +37,6 @@ import java.util.Map;
  * Links a person appearing as the child on a birth record with the same person appearing as the father on another birth record.
  */
 public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
-
 
     private static final double DISTANCE_THRESHOLD = 0.22; // in file UmeaBirthFatherViabilityPRFByThreshold.csv - looks very low!
 
@@ -162,19 +161,20 @@ public class BirthFatherIdentityLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
-    @Override
-    public double getThreshold() {
-        return DISTANCE_THRESHOLD;
-    }
-
-    @Override
-    public LXPMeasure getCompositeMeasure() {
-        return new FelligiSunterDistances(getBaseMeasure(), getLinkageFields(), SEARCH_FIELDS, m_priors, u_priors, odds_prior);
-    }
+//    @Override
+//    public double getThreshold() {
+//        return DISTANCE_THRESHOLD;
+//    }
+//
+//    @Override
+//    public LXPMeasure getCompositeMeasure() {
+//        return new FelligiSunterDistance(getLinkageFields(), SEARCH_FIELDS, getBaseMeasure(), m_priors, u_priors, odds_prior);
+//    }
 
     public LXPMeasure getCompositeMeasure(StringMeasure base_measure) {
-        return new FelligiSunterDistances(base_measure, getLinkageFields(), SEARCH_FIELDS, m_priors, u_priors, odds_prior );
+        return new FelligiSunterDistance(getLinkageFields(), SEARCH_FIELDS, base_measure, m_priors, u_priors, odds_prior );
     }
+
     @Override
     public Iterable<LXP> getStoredRecords() {
         return filterBySex(super.getStoredRecords(), Birth.SEX, "m");

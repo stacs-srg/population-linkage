@@ -54,7 +54,7 @@ public class MetricSpaceChecks {
         List<LXPMeasure> result = new ArrayList<>();
 
         for (StringMeasure base_measure : TRUE_METRICS) {
-            result.add(new SumOfFieldDistances(base_measure, BirthSiblingLinkageRecipe.LINKAGE_FIELDS));
+            result.add(new LXPMeasure(BirthSiblingLinkageRecipe.LINKAGE_FIELDS, BirthSiblingLinkageRecipe.LINKAGE_FIELDS, base_measure));
         }
         return result;
     }
@@ -82,15 +82,13 @@ public class MetricSpaceChecks {
 
             for (LXPMeasure metric : combined_metrics) {
 
-                String metric_name = metric.getMeasureName();
-
                 double distance1 = metric.distance(b1, b2);
                 double distance2 = metric.distance(b1, b3);
                 double distance3 = metric.distance(b2, b3);
 
                 if (violatesTriangleInequality(distance1, distance2, distance3)) {
 
-                    System.out.println("violation of triangle inequality for " + metric_name);
+                    System.out.println("violation of triangle inequality for " + metric);
                     System.out.println(b1);
                     System.out.println(b2);
                     System.out.println(b3);

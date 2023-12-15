@@ -20,6 +20,7 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
@@ -38,6 +39,11 @@ import static uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthDeathIden
 public class BitBlasterLinkageRunnerAnalyseLinks extends BitBlasterLinkageRunner {
 
     private static final String BIRTH_DEATH_IDENTITY_STD_ID = "MATCH (b:Birth),(d:Death) WHERE b.STANDARDISED_ID = $standard_id RETURN count(d)";
+
+    public BitBlasterLinkageRunnerAnalyseLinks(LXPMeasure record_distance_measure, double threshold) {
+
+        super(record_distance_measure, threshold);
+    }
 
     public boolean doesAGTLinkExist(NeoDbCypherBridge bridge, String standard_id) {
         try( Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
@@ -59,7 +65,7 @@ public class BitBlasterLinkageRunnerAnalyseLinks extends BitBlasterLinkageRunner
         System.out.println( "GT EXISTS\tmatches found\tfound correct\tfound distances" );
         for (List<Link> list_of_links : linker.getListsOfLinks()) {
 
-            if( list_of_links.size() > 0 ) {                    // printout if there is a match in GT
+            if(!list_of_links.isEmpty()) {                    // printout if there is a match in GT
                 Link first_link = list_of_links.get(0);
                 String std_id = first_link.getRecord1().getReferend().getString(Birth.STANDARDISED_ID);
                 System.out.print( doesAGTLinkExist(bridge,std_id) + "\t" );

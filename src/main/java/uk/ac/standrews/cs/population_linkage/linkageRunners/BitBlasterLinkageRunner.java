@@ -41,6 +41,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -56,15 +57,23 @@ import static uk.ac.standrews.cs.population_linkage.supportClasses.DisplayMethod
 
 public class BitBlasterLinkageRunner extends LinkageRunner {
 
+    LXPMeasure record_distance_measure;
+    double threshold;
+
+    public BitBlasterLinkageRunner(LXPMeasure record_distance_measure, double threshold) {
+
+        this.record_distance_measure = record_distance_measure;
+        this.threshold = threshold;
+    }
+
     @Override
     public LinkageRecipe getLinkageRecipe(String links_persistent_name, String source_repository_name, String results_repository_name, RecordRepository record_repository) {
         return linkage_recipe;
     }
 
     public Linker getLinker(LinkageRecipe linkage_recipe) {
-        LXPMeasure composite_measure = linkage_recipe.getCompositeMeasure();
-        System.out.println( composite_measure.getMeasureName() + " : " + composite_measure.hashCode() );
-        return new SimilaritySearchLinker(getSearchFactory(composite_measure), composite_measure, linkage_recipe.getThreshold(), getNumberOfProgressUpdates(),
+
+        return new SimilaritySearchLinker(getSearchFactory(record_distance_measure), record_distance_measure, threshold, getNumberOfProgressUpdates(),
                 linkage_recipe.getLinkageType(), "threshold match at ", linkage_recipe.getStoredRole(), linkage_recipe.getQueryRole(), linkage_recipe);
     }
 
@@ -73,7 +82,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     }
 
     protected List<LXP> getReferencePoints() {
-        List<LXP> candidates = filter(linkage_recipe.getLinkageFields().size(), LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields());
+        List<LXP> candidates = filter(LinkageRecipe.EVERYTHING, linkage_recipe.getStoredRecords(), linkage_recipe.getLinkageFields(), linkage_recipe.getLinkageFields().size());
         return BitBlasterSearchStructure.chooseRandomReferencePoints(candidates, LinkageConfig.NUMBER_OF_REFERENCE_OBJECTS);
     }
 
@@ -103,17 +112,15 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         List<Link> linked_pairs = new ArrayList<>();
 
         for (List<Link> list_of_links : linker.getListsOfLinks()) {
-            if (list_of_links.size() > 0) {
+            if (!list_of_links.isEmpty()) {
                 if (!isIdentityLinkage) {   // for non identity add all of then for now - TODO EXPLORE THIS.
                     linked_pairs.addAll(list_of_links);
                 } else if (list_of_links.size() == 1) { // No choice of links here so add it to the links.
                     Link match = list_of_links.get(0);
                     linked_pairs.add(match);
-//                    print( match );
                 } else {
                     // Only add the closest for now! TODO EXPLORE THIS.
                     addAllEqualToClosest(list_of_links, linked_pairs);
-                    // showAltDistances( list_of_links );
                 }
             }
         }
@@ -126,9 +133,6 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         bridge) throws Exception {
         addRecordsDummy();
 
-        System.out.println("Threshold = " + linkage_recipe.getThreshold());
-//        Iterable<List<Link>> lol = linker.getListsOfLinks();
-//        showlol( lol );
         List<Link> linked_pairs = processListsOfLists(linker.getListsOfLinks(), isIdentityLinkage);
         LinkageResult result = processLinks(make_persistent, true, false, linked_pairs); // params hacked TODO
         investigate(result.getLinks(), bridge);
@@ -140,7 +144,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         System.out.println("Adding records into linker @ " + LocalDateTime.now());
         ((SimilaritySearchLinker) linker).addRecords(linkage_recipe.getStoredRecords(), linkage_recipe.getQueryRecords(), getReferencePoints());
         System.out.println("Constructing lists of lists @ " + LocalDateTime.now());
-        System.out.println("Threshold ** = " + linkage_recipe.getThreshold());
+        System.out.println("Threshold ** = " + threshold);
         List<Link> linked_pairs = processListsOfLists(linker.getListsOfLinks(), isIdentityLinkage);
         System.out.println("processing lists of lists of size " + linked_pairs.size() + " @ " + LocalDateTime.now());
         LinkageResult result = processLinks(make_persistent, true, false, linked_pairs); // params hacked TODO
@@ -184,7 +188,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 long birth_storr_id = b.getId();
                 long death_storr_id = d.getId();
 
-                double distance = linkage_recipe.getCompositeMeasure().distance(b, d);
+                double distance = record_distance_measure.distance(b, d);
                 System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tFN");
             }
         }
@@ -211,7 +215,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 long birth_storr_id = b.getId();
                 long death_storr_id = d.getId();
 
-                double distance = linkage_recipe.getCompositeMeasure().distance(b, d);
+                double distance = record_distance_measure.distance(b, d);
                 System.out.println("No match for pair: " + birth_storr_id + " " + death_storr_id + " distance =" + distance);
                 Birth birth = births.getObjectById(birth_storr_id);
                 Death death = deaths.getObjectById(death_storr_id);
@@ -233,22 +237,6 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         return true;
     }
 
-    private void showlol(Iterable<List<Link>> lol) {
-        System.out.printf("List of lists:");
-        int count = 0;
-        for (List<Link> ll : lol) {
-            if (ll.size() > 0) {
-                System.out.println("entry " + count + " size: " + ll.size());
-                System.out.println("Entries: ");
-                for (Link l : ll) {
-                    print(l);
-                }
-            }
-            count++;
-        }
-        System.out.println("Number of lists   = " + count);
-    }
-
     private List<Link> processListsOfLists(Iterable<List<Link>> lists_of_list_of_links, boolean isIdentityLinkage) throws BucketException, RepositoryException {
 
         // TODO fix isIdentityLinkage if this works! - some code in other linkage linkLists
@@ -261,24 +249,18 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 
         Map<Long, List<Link>> map_of_links = linksListToMap(lists_of_list_of_links);
 
-//        showMap( map_of_links );
-
-        double max_t = linkage_recipe.getThreshold();
         int all_fields = linkage_recipe.getLinkageFields().size();
         final int half_fields = all_fields - (all_fields / 2) + 1;
 
         for (int required_fields = all_fields; required_fields >= half_fields; required_fields--) {
             System.out.println("Fields = " + required_fields);
-            for (double threshold = 0.0; threshold <= max_t; threshold += (max_t / 10)) {
+            for (double t = 0.0; t <= threshold; t += (threshold / 10)) {
                 List<LXP> matched_this_round = new ArrayList<>();
-                System.out.println("Thresh = " + threshold);
                 for (Long key : map_of_links.keySet()) {
                     List<Link> list_of_links = map_of_links.get(key);
-                    System.out.println("Find closest in list of size " + list_of_links.size());
-                    int index = getClosestAcceptable(list_of_links, threshold, required_fields, previously_matched);
-                    //System.out.println( " index = " + index );
+                    int index = getClosestAcceptable(list_of_links, t, required_fields, previously_matched);
                     if (index != -1) {
-                        addAllEqualToClosest(list_of_links, index, linked_pairs, threshold, required_fields, map_of_links, previously_matched, matched_this_round);
+                        addAllEqualToClosest(list_of_links, index, linked_pairs, t, required_fields, map_of_links, previously_matched, matched_this_round);
                     }
                 }
                 previously_matched.addAll(matched_this_round); // All all the new matches we have made this time around
@@ -296,21 +278,14 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
      */
     private Map<Long, List<Link>> linksListToMap(Iterable<List<Link>> lists_of_list_of_links) throws RepositoryException, BucketException {
 
-        try {
-            Map<Long, List<Link>> map_of_links = new HashMap<>();
-            for (List<Link> list_of_links : lists_of_list_of_links) {
-                if (list_of_links.size() != 0) {
-                    long query_id = list_of_links.get(0).getRecord2().getReferend().getId();
-                    map_of_links.put(query_id, list_of_links);
-                }
+        Map<Long, List<Link>> map_of_links = new HashMap<>();
+        for (List<Link> list_of_links : lists_of_list_of_links) {
+            if (!list_of_links.isEmpty()) {
+                long query_id = list_of_links.get(0).getRecord2().getReferend().getId();
+                map_of_links.put(query_id, list_of_links);
             }
-            return map_of_links;
-        } catch (RuntimeException e) {
-            e.printStackTrace(System.out);
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
         }
-        return null;
+        return map_of_links;
     }
 
     private void showMap(Map<Long, List<Link>> map) {
@@ -442,7 +417,6 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         System.out.println(sb);
     }
 
-
     protected LinkageResult processLinks(MakePersistent make_persistent, boolean evaluate_quality, boolean persist_links, List<Link> links) {
 
         System.out.println("Entering persist and evaluate loop @ " + LocalDateTime.now());
@@ -470,7 +444,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
 //                }
 //            }
 
-            tp = links.parallelStream().filter(l -> doesGTSayIsTrue(l)).count(); // This should be much faster since can run in parallel.
+            tp = links.parallelStream().filter(this::doesGTSayIsTrue).count(); // This should be much faster since can run in parallel.
             fp = links.size() - tp;
         }
 

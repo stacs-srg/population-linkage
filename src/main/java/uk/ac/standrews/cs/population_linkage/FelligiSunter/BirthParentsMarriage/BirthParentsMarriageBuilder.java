@@ -18,15 +18,18 @@ package uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthParentsMarriage
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.util.Arrays;
 import java.util.List;
@@ -109,8 +112,8 @@ public class BirthParentsMarriageBuilder implements MakePersistent {
 // m Total = 187554
     private static final double m_prior_yom = 0.89277756;
 
-    public static final List<Double> m_priors = Arrays.asList( new Double[]{ m_prior_bride_mother_first,m_prior_bride_mother_second,m_prior_father_first,m_prior_father_surname,m_prior_pom,m_prior_dom,m_prior_mom,m_prior_yom} );
-    public static final List<Double> u_priors = Arrays.asList( new Double[]{ u_prior_bride_mother_first,u_prior_bride_mother_second,u_prior_father_first,u_prior_father_surname,u_prior_pom,u_prior_dom,u_prior_mom,u_prior_yom } );
+    public static final List<Double> m_priors = Arrays.asList(m_prior_bride_mother_first,m_prior_bride_mother_second,m_prior_father_first,m_prior_father_surname,m_prior_pom,m_prior_dom,m_prior_mom,m_prior_yom);
+    public static final List<Double> u_priors = Arrays.asList(u_prior_bride_mother_first,u_prior_bride_mother_second,u_prior_father_first,u_prior_father_surname,u_prior_pom,u_prior_dom,u_prior_mom,u_prior_yom);
 
     public static BirthParentsMarriageIdentityLinkageRecipe getRecipe(String sourceRepo, String number_of_records) {
         return new BirthParentsMarriageIdentityLinkageRecipe(sourceRepo, number_of_records, m_priors, u_priors, odds_prior, BirthParentsMarriageBuilder.class.getName() );
@@ -120,11 +123,14 @@ public class BirthParentsMarriageBuilder implements MakePersistent {
 
         String sourceRepo = args[0];  // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
+        StringMeasure base_measure = Constants.get(args[2]);
+        double threshold = Double.parseDouble(args[3]);
 
         try (
              BirthParentsMarriageIdentityLinkageRecipe linkageRecipe = getRecipe(sourceRepo,number_of_records); ) {
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            LXPMeasure record_distance_measure = new LXPMeasure(linkageRecipe.getLinkageFields(), linkageRecipe.getQueryMappingFields(), base_measure);
+            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner(record_distance_measure, threshold);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2 );
