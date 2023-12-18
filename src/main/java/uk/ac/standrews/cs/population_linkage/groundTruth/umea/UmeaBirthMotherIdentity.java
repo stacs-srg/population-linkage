@@ -55,19 +55,19 @@ public class UmeaBirthMotherIdentity extends AsymmetricSingleSourceLinkageAnalys
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
+    public List<Integer> getComparisonFieldIndices1() {
         return BirthMotherIdentityLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getComparisonFields2() {
+    public List<Integer> getComparisonFieldIndices2() {
         return BirthMotherIdentityLinkageRecipe.SEARCH_FIELDS;
     }
 
-    @Override
-    protected double getNormalisationCutoff() {
-        return NORMALISATION_CUTOFF;
-    }
+//    @Override
+//    protected double getNormalisationCutoff() {
+//        return NORMALISATION_CUTOFF;
+//    }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {

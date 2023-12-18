@@ -37,7 +37,7 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
 
     // Cutoff record distance for field distance measures that aren't intrinsically normalised;
     // all distances at or above the cutoff will be normalised to 1.0.
-    private static final double NORMALISATION_CUTOFF = 30;
+//    private static final double NORMALISATION_CUTOFF = 30;
 
     UmeaBirthSibling(final String repo_name, final String[] args) throws IOException {
         super(repo_name, args, getLinkageResultsFilename(), getDistanceResultsFilename(), true);
@@ -54,14 +54,19 @@ public class UmeaBirthSibling extends SymmetricSingleSourceLinkageAnalysis {
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
+    public List<Integer> getComparisonFieldIndices1() {
         return BirthSiblingLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override
-    protected double getNormalisationCutoff() {
-        return NORMALISATION_CUTOFF;
+    public List<Integer> getComparisonFieldIndices2() {
+        return BirthSiblingLinkageRecipe.LINKAGE_FIELDS;
     }
+
+//    @Override
+//    protected double getNormalisationCutoff() {
+//        return NORMALISATION_CUTOFF;
+//    }
 
     @Override
     public LinkStatus isTrueMatch(final LXP record1, final LXP record2) {

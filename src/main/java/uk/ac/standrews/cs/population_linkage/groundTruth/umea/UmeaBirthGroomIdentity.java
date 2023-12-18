@@ -55,19 +55,19 @@ public class UmeaBirthGroomIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
+    public List<Integer> getComparisonFieldIndices1() {
         return BirthGroomIdentityLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getComparisonFields2() {
+    public List<Integer> getComparisonFieldIndices2() {
         return BirthGroomIdentityLinkageRecipe.SEARCH_FIELDS;
     }
 
-    @Override
-    protected double getNormalisationCutoff() {
-        return NORMALISATION_CUTOFF;
-    }
+//    @Override
+//    protected double getNormalisationCutoff() {
+//        return NORMALISATION_CUTOFF;
+//    }
 
     @Override
     public LinkStatus isTrueMatch(final LXP record1, final LXP record2) {

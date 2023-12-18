@@ -120,7 +120,9 @@ public abstract class WeightedThresholdAnalysis {
     /**
      * @return list of comparison fields that will be used for comparing records
      */
-    public abstract List<Integer> getComparisonFields();
+    public abstract List<Integer> getComparisonFieldIndices1();
+
+    public abstract List<Integer> getComparisonFieldIndices2();
 
     public abstract int getIdFieldIndex();
 
@@ -335,7 +337,7 @@ public abstract class WeightedThresholdAnalysis {
 
     private void printSamples() {
 
-        String measure_name = getMeasure().getMeasureName();
+        String measure_name = getMeasure().toString();
 
         for (int run_number = 0; run_number < number_of_runs; run_number++) {
             printSample(run_number, measure_name, threshold, sample);
@@ -343,7 +345,6 @@ public abstract class WeightedThresholdAnalysis {
 
         printDistances(run_number, measure_name);
     }
-
 
     private void printDistances(final int run_number, final String measure_name) {
 

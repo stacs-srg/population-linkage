@@ -64,7 +64,7 @@ public class Explore {
     }
 
     protected LXPMeasure getCompositeMeasure() {
-        return new SumOfFieldDistances(baseMeasure, recipe.getLinkageFields());
+        return new LXPMeasure(recipe.getLinkageFields(), recipe.getQueryMappingFields(), baseMeasure);
     }
 
     /**

@@ -20,9 +20,11 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.datasets.Umea;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Aggregator;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.AggregatorMean;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Imputer;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -55,10 +57,19 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
 
     private final LXPMeasure measure;
 
-    UmeaBirthSiblingWeighted(String repo_name, final List<Integer> fields, final List<StringMeasure> measures, final List<Float> weights, final int number_of_records_to_be_checked, final int number_of_runs,
+    UmeaBirthSiblingWeighted(String repo_name, final List<Integer> fields, final List<StringMeasure> measures, final List<Double> weights, final int number_of_records_to_be_checked, final int number_of_runs,
                              double threshold) throws IOException {
         super(repo_name, getLinkageResultsFilename(), getDistanceResultsFilename(), number_of_records_to_be_checked, number_of_runs, true, threshold);
-        measure = new SumOfFieldDistancesWeighted(fields, measures, weights);
+
+        List<LXPMeasure.FieldComparator> field_comparators = new ArrayList<>();
+
+        for (int i = 0; i < fields.size(); i++) {
+            field_comparators.add(new LXPMeasure.FieldComparator(measures.get(i), Double.MAX_VALUE, true, Imputer.RECORD_MEAN));
+        }
+
+        Aggregator aggregator = new AggregatorMean(weights);
+
+        measure = new LXPMeasure(fields, fields, field_comparators, aggregator);
     }
 
     @Override
@@ -67,7 +78,12 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
+    public List<Integer> getComparisonFieldIndices1() {
+        return BirthSiblingLinkageRecipe.LINKAGE_FIELDS;
+    }
+
+    @Override
+    public List<Integer> getComparisonFieldIndices2() {
         return BirthSiblingLinkageRecipe.LINKAGE_FIELDS;
     }
 
@@ -120,7 +136,7 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
      * @param weights - an empty list of the weights to be initialised.
      * @return the threshold for the program
      */
-    public static double processParams(String[] args, List<Integer> fields, List<StringMeasure> measures, List<Float> weights) {
+    public static double processParams(String[] args, List<Integer> fields, List<StringMeasure> measures, List<Double> weights) {
 
         if (args.length < 2) {
             throw new RuntimeException("Error in args: expect list plus threshold like this: Cosine.FATHER_FORENAME=0.3 Damerau-Levenshtein.MOTHER_FORENAME=0.7 0.62");
@@ -141,11 +157,11 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
 
             measures.add(m);
             fields.add(field_index);
-            weights.add(Float.parseFloat(split_front_weight[1]));
+            weights.add(Double.parseDouble(split_front_weight[1]));
         }
 
-        float total_weights = 0;
-        for (float f : weights) {
+        double total_weights = 0;
+        for (double f : weights) {
             total_weights += f;
         }
 
@@ -165,7 +181,7 @@ public class UmeaBirthSiblingWeighted extends SingleSourceWeightedLinkageAnalysi
 
         List<Integer> fields = new ArrayList<>();
         List<StringMeasure> measures = new ArrayList<>();
-        List<Float> weights = new ArrayList<>();
+        List<Double> weights = new ArrayList<>();
 
         double threshold = processParams(args, fields, measures, weights);
 

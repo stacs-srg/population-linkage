@@ -18,13 +18,10 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.MLCustom;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.groundTruth.AggregatorMean;
-import uk.ac.standrews.cs.population_linkage.groundTruth.Imputer;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -87,7 +84,7 @@ public class CustomMeasure extends LXPMeasure {
     }
 
     @Override
-    public boolean maxDistanceIsOne() {
-        return true;
+    public double getMaxDistance() {
+        return 1;
     }
 }

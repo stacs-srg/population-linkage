@@ -50,8 +50,8 @@ public class FelligiSunterDistance extends LXPMeasure {
     }
 
     @Override
-    public boolean maxDistanceIsOne() {
-        return true;
+    public double getMaxDistance() {
+        return 1;
     }
 
     @Override

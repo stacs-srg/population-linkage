@@ -18,17 +18,19 @@ package uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthFather;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.datasets.Umea;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Aggregator;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.AggregatorMean;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Imputer;
 import uk.ac.standrews.cs.population_linkage.groundTruth.TwoSourcesLinkageAnalysis;
-import uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthGroomOwnMarriage.BirthGroomOwnMarriageBuilder;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static uk.ac.standrews.cs.population_linkage.supportClasses.Constants.*;
 
@@ -59,19 +61,19 @@ public class FelligiSunterBirthFatherIdentityAnalysis extends TwoSourcesLinkageA
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
+    public List<Integer> getComparisonFieldIndices1() {
         return BirthFatherIdentityLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getComparisonFields2() {
+    public List<Integer> getComparisonFieldIndices2() {
         return BirthFatherIdentityLinkageRecipe.SEARCH_FIELDS;
     }
 
-    @Override
-    protected double getNormalisationCutoff() {
-        return NORMALISATION_CUTOFF;
-    }
+//    @Override
+//    protected double getNormalisationCutoff() {
+//        return NORMALISATION_CUTOFF;
+//    }
 
     @Override
     public LinkStatus isTrueMatch(final LXP record1, final LXP record2) {
@@ -97,16 +99,36 @@ public class FelligiSunterBirthFatherIdentityAnalysis extends TwoSourcesLinkageA
         return "identity linkage between baby on birth record and father on a birth record";
     }
 
-    private static List<StringMeasure> measures = List.of( COSINE, JACCARD, JENSEN_SHANNON, SED); // true metrics returning between - and 1.
+//    private static List<StringMeasure> measures = List.of( COSINE, JACCARD, JENSEN_SHANNON, SED); // true metrics returning between - and 1.
+//
+//    @Override
+//    public List<LXPMeasure> getCombinedMeasures()  {
+//
+//        final List<LXPMeasure> result = new ArrayList<>();
+//        for( StringMeasure base_measure : measures ) {
+//            result.add(BirthGroomOwnMarriageBuilder.getRecipe(getDatasetName(), String.valueOf(number_of_records_to_be_checked)).getCompositeMeasure(base_measure));
+//        }
+//        return result;
+//    }
 
     @Override
-    public List<LXPMeasure> getCombinedMeasures()  {
+    protected List<StringMeasure> getBaseMeasures() {
+        return List.of(COSINE, JACCARD, JENSEN_SHANNON, SED); // true metrics returning between - and 1.;
+    }
 
-        final List<LXPMeasure> result = new ArrayList<>();
-        for( StringMeasure base_measure : measures ) {
-            result.add(BirthGroomOwnMarriageBuilder.getRecipe(getDatasetName(), String.valueOf(number_of_records_to_be_checked)).getCompositeMeasure(base_measure));
-        }
-        return result;
+    @Override
+    protected List<Aggregator> getAggregators() {
+        return List.of(new AggregatorMean());
+    }
+
+    @Override
+    protected List<Imputer> getImputers() {
+        return List.of(Imputer.RECORD_MEAN);
+    }
+
+    @Override
+    protected Map<StringMeasure, List<Double>> getCutOffs() {
+        return new HashMap<>();
     }
 
     @Override

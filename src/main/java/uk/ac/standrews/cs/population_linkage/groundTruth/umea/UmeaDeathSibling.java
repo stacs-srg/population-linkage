@@ -55,14 +55,19 @@ public class UmeaDeathSibling extends SymmetricSingleSourceLinkageAnalysis {
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
+    public List<Integer> getComparisonFieldIndices1() {
         return DeathSiblingLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override
-    protected double getNormalisationCutoff() {
-        return NORMALISATION_CUTOFF;
+    public List<Integer> getComparisonFieldIndices2() {
+        return DeathSiblingLinkageRecipe.LINKAGE_FIELDS;
     }
+
+//    @Override
+//    protected double getNormalisationCutoff() {
+//        return NORMALISATION_CUTOFF;
+//    }
 
     @Override
     public LinkStatus isTrueMatch(final LXP record1, final LXP record2) {

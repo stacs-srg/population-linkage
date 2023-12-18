@@ -18,7 +18,7 @@ package uk.ac.standrews.cs.population_linkage.missingData.builders;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.groundTruth.Imputer;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Imputer;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;

@@ -35,18 +35,18 @@ public abstract class TwoSourcesLinkageAnalysis extends ThresholdAnalysis {
         super(repo_name, args, linkage_results_filename, distance_results_filename, allow_multiple_links);
     }
 
-    protected abstract List<Integer> getComparisonFields2();
+//    protected abstract List<Integer> getComparisonFields2();
 
-    @Override
-    public List<LXPMeasure> getCombinedMeasures() {
-
-        final List<LXPMeasure> result = new ArrayList<>();
-
-        for (final StringMeasure base_measure : Constants.BASE_MEASURES) {
-            result.add(new MeanOfFieldDistancesNormalised(base_measure, getComparisonFields(), getComparisonFields2(), getNormalisationCutoff()));
-        }
-        return result;
-    }
+//    @Override
+//    public List<LXPMeasure> getCombinedMeasures() {
+//
+//        final List<LXPMeasure> result = new ArrayList<>();
+//
+//        for (final StringMeasure base_measure : Constants.BASE_MEASURES) {
+//            result.add(new MeanOfFieldDistancesNormalised(base_measure, getComparisonFields(), getComparisonFields2(), getNormalisationCutoff()));
+//        }
+//        return result;
+//    }
 
     @Override
     public boolean singleSource() {

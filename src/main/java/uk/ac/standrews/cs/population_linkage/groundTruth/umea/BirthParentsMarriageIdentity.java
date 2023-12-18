@@ -37,7 +37,7 @@ public class BirthParentsMarriageIdentity extends TwoSourcesLinkageAnalysis {
 
     // Cutoff record distance for field distance measures that aren't intrinsically normalised;
     // all distances at or above the cutoff will be normalised to 1.0.
-    private static final double NORMALISATION_CUTOFF = 30;
+//    private static final double NORMALISATION_CUTOFF = 30;
 
     BirthParentsMarriageIdentity(final String repo_name, final String[] args) throws IOException {
         super(repo_name, args, getLinkageResultsFilename(), getDistanceResultsFilename(), false);
@@ -54,19 +54,19 @@ public class BirthParentsMarriageIdentity extends TwoSourcesLinkageAnalysis {
     }
 
     @Override
-    public List<Integer> getComparisonFields() {
+    public List<Integer> getComparisonFieldIndices1() {
         return BirthParentsMarriageIdentityLinkageRecipe.LINKAGE_FIELDS;
     }
 
     @Override
-    public List<Integer> getComparisonFields2() {
+    public List<Integer> getComparisonFieldIndices2() {
         return BirthParentsMarriageIdentityLinkageRecipe.SEARCH_FIELDS;
     }
 
-    @Override
-    protected double getNormalisationCutoff() {
-        return NORMALISATION_CUTOFF;
-    }
+//    @Override
+//    protected double getNormalisationCutoff() {
+//        return NORMALISATION_CUTOFF;
+//    }
 
     @Override
     public LinkStatus isTrueMatch(LXP record1, LXP record2) {

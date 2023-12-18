@@ -35,16 +35,16 @@ public abstract class SymmetricSingleSourceLinkageAnalysis extends ThresholdAnal
         super(repo_name, args, linkage_results_filename, distance_results_filename, allow_multiple_links);
     }
 
-    public List<LXPMeasure> getCombinedMeasures() {
-
-        final List<LXPMeasure> result = new ArrayList<>();
-
-        for (final StringMeasure base_measure : Constants.BASE_MEASURES) {
-            result.add(new MeanOfFieldDistancesNormalised(base_measure, getComparisonFields(), getNormalisationCutoff()));
-
-        }
-        return result;
-    }
+//    public List<LXPMeasure> getCombinedMeasures() {
+//
+//        final List<LXPMeasure> result = new ArrayList<>();
+//
+//        for (final StringMeasure base_measure : Constants.BASE_MEASURES) {
+//            result.add(new MeanOfFieldDistancesNormalised(base_measure, getComparisonFields(), getNormalisationCutoff()));
+//
+//        }
+//        return result;
+//    }
 
     @Override
     public boolean singleSource() {

@@ -14,11 +14,16 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.groundTruth;
+package uk.ac.standrews.cs.population_linkage.compositeMeasures;
+
 
 import java.util.List;
 
-public abstract class Aggregator {
+public class AggregatorMedian extends Aggregator {
 
-    public abstract double aggregate(List<Double> values);
+    @Override
+    public double aggregate(List<Double> values) {
+
+        return values.stream().sorted().toList().get(values.size() / 2);
+    }
 }

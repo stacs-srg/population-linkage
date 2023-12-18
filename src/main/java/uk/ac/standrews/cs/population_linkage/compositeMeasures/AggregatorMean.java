@@ -14,15 +14,36 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.groundTruth;
+package uk.ac.standrews.cs.population_linkage.compositeMeasures;
 
 import java.util.List;
 
-public class AggregatorMax extends Aggregator {
+public class AggregatorMean extends Aggregator {
+
+    List<Double> weights;
+
+    public AggregatorMean() {
+        this(null);
+    }
+
+    public AggregatorMean(List<Double> weights) {
+        this.weights = weights;
+    }
 
     @Override
     public double aggregate(List<Double> values) {
 
-        return values.stream().max(Double::compareTo).orElseThrow();
+        if (weights == null) {
+            return values.stream().mapToDouble(Double::doubleValue).sum() / values.size();
+        }
+        else {
+            if (values.size() != weights.size()) throw new RuntimeException("weighted mean: inconsistent number of weights");
+
+            double result = 0;
+            for (int i = 0; i < values.size(); i++)
+                result += values.get(i) * weights.get(i);
+
+            return result;
+        }
     }
 }

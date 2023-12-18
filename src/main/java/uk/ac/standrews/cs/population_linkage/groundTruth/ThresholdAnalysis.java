@@ -18,6 +18,9 @@ package uk.ac.standrews.cs.population_linkage.groundTruth;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Aggregator;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.AggregatorMean;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Imputer;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Utilities;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -32,6 +35,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+
+import static uk.ac.standrews.cs.population_linkage.supportClasses.Constants.*;
 
 /**
  * Base class for performing linkage analysis from ground truth.
@@ -81,19 +86,24 @@ public abstract class ThresholdAnalysis {
 
     public abstract boolean isViableLink(LXP record1, LXP record2);
 
-
-
     protected abstract boolean recordLinkDistances();
 
 
+    protected List<StringMeasure> getBaseMeasures() {
+        return BASE_MEASURES;
+    }
 
-    protected abstract List<StringMeasure> getBaseMeasures();
+    protected List<Aggregator> getAggregators() {
+        return List.of(new AggregatorMean());
+    }
 
-    protected abstract List<Aggregator> getAggregators();
+    protected List<Imputer> getImputers() {
+        return List.of(Imputer.RECORD_MEAN);
+    }
 
-    protected abstract List<Imputer> getImputers();
-
-    protected abstract Map<StringMeasure, List<Double>> getCutOffs();
+    protected Map<StringMeasure, List<Double>> getCutOffs() {
+        return new HashMap<>();
+    }
 
     /*
     Per LXP measure:
@@ -153,27 +163,17 @@ public abstract class ThresholdAnalysis {
         this.output_file_parent_path = output_file_parent_path;
         this.allow_multiple_links = allow_multiple_links;
 
-        composite_measures = getCombinedMeasures();
-
-        get
+        composite_measures = new ArrayList<>();
 
         for (StringMeasure base_measure : getBaseMeasures()) {
-
-            for (Double cut_off : getCutOffs().getOrDefault(base_measure, List.of(Double.MAX_VALUE)) {
-                for (Aggregator aggregator : getAggregators()) {
-                    for (Imputer imputer : getImputers()) {
-                        composite_measures.add(new LXPMeasure())
+            for (double cut_off : getCutOffs().getOrDefault(base_measure, List.of(Double.MAX_VALUE))) {
+                for (Imputer imputer : getImputers()) {
+                    for (Aggregator aggregator : getAggregators()) {
+                        composite_measures.add(new LXPMeasure(getComparisonFieldIndices1(), getComparisonFieldIndices2(), base_measure, cut_off, true, imputer, aggregator));
                     }
                 }
             }
-
         }
-
-        protected abstract List<Aggregator> getAggregators();
-
-        protected abstract List<Imputer> getImputers();
-
-        protected abstract Map<StringMeasure, List<Double>> getCutOffs();
 
 
 
@@ -208,7 +208,7 @@ public abstract class ThresholdAnalysis {
 
     private static double indexToThreshold(final int index) {
 
-        return (double) index / ( (NUMBER_OF_THRESHOLDS_SAMPLED - 1) /* * 100 */ );  //  (0000)  HACKED BY AL *************** The commented but adjusts range - could be as high as 100000
+        return (double) index / (NUMBER_OF_THRESHOLDS_SAMPLED - 1);
     }
 
     private static String getCallingClassName() {
@@ -516,6 +516,8 @@ public abstract class ThresholdAnalysis {
 
             records_processed += BLOCK_SIZE;
         }
+
+        // apply multiplicity & viability checks
 
         private void processRecordFromFirstSource(final int record_index, final int last_record_index) {
 

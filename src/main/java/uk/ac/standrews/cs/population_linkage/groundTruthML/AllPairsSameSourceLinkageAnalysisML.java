@@ -201,10 +201,9 @@ public abstract class AllPairsSameSourceLinkageAnalysisML extends ThresholdAnaly
 
         for (final StringMeasure measure : measures) {
 
-            String name = measure.getMeasureName();
             for (int field_selector : getComparisonFields()) {
 
-                String label = name + "." + a_source_record.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector name;
+                String label = measure + "." + a_source_record.getMetaData().getFieldName(field_selector);  // measure name concatenated with the field selector name;
                 distance_results_writer.print(label);
                 distance_results_writer.print(DELIMIT);
             }

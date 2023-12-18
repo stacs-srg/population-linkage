@@ -25,8 +25,9 @@ import uk.ac.standrews.cs.neoStorr.impl.StaticLXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.AggregatorSum;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.Imputer;
 import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
@@ -55,7 +56,7 @@ public abstract class LinkageTest {
     final LXP death4 = new DummyLXP("anthony", "aardvark", "8");
     final LXP death5 = new DummyLXP("tony", "armadillo", "9");
 
-    final LXPMeasure measure = new SumOfFieldDistances(Constants.LEVENSHTEIN, Arrays.asList(0, 1));
+    final LXPMeasure measure = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, Double.MAX_VALUE, false, Imputer.RECORD_MEAN, new AggregatorSum());
 
     final List<LXP> birth_records = Arrays.asList(birth1, birth2, birth3, birth4);
     final List<LXP> death_records = Arrays.asList(death1, death2, death3, death4, death5);
@@ -273,13 +274,13 @@ public abstract class LinkageTest {
         return result;
     }
 
-    static class DummyLXP extends StaticLXP {
+    public static class DummyLXP extends StaticLXP {
 
         String rep = "";
         int number_of_fields;
         IStoreReference store_reference = null;
 
-        DummyLXP(String... values) {
+        public DummyLXP(String... values) {
 
             number_of_fields = values.length;
 

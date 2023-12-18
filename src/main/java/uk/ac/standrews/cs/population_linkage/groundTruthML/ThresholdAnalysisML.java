@@ -68,7 +68,7 @@ abstract class ThresholdAnalysisML {
                     samples[j] = new Sample();
                 }
 
-                map.put(measure.getMeasureName(), samples);
+                map.put(measure.toString(), samples);
             }
 
             result.add(map);

@@ -40,13 +40,13 @@ public abstract class SimilaritySearchTest {
         measure = new Measure<>() {
 
             @Override
-            public String getMeasureName() {
+            public String toString() {
                 return "2D Euclidean";
             }
 
             @Override
-            public boolean maxDistanceIsOne() {
-                return false;
+            public double getMaxDistance() {
+                return Double.MAX_VALUE;
             }
 
             @Override

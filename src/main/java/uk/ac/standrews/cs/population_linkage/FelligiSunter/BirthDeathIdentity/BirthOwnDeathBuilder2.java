@@ -18,14 +18,18 @@ package uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthDeathIdentity;
 
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.FelligiSunter.BirthGroomOwnMarriage.BirthGroomOwnMarriageBuilder;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.util.Arrays;
 import java.util.List;
@@ -101,11 +105,15 @@ public class BirthOwnDeathBuilder2 implements MakePersistent {
 
         String sourceRepo = args[0];  // e.g. umea
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
+        StringMeasure base_measure = Constants.get(args[2]);
+        double threshold = Double.parseDouble(args[3]);
 
         try (
              BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, m_priors, u_priors, odds_prior, BirthOwnDeathBuilder2.class.getName() ) ) {
 
-            BitBlasterLinkageRunnerAnalyseLinks runner = new BitBlasterLinkageRunnerAnalyseLinks();
+//            BitBlasterLinkageRunnerAnalyseLinks runner = new BitBlasterLinkageRunnerAnalyseLinks();
+            LXPMeasure record_distance_measure = new LXPMeasure(linkageRecipe.getLinkageFields(), linkageRecipe.getQueryMappingFields(), base_measure);
+            BitBlasterLinkageRunnerAnalyseLinks runner = new BitBlasterLinkageRunnerAnalyseLinks(record_distance_measure, threshold);
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
 
