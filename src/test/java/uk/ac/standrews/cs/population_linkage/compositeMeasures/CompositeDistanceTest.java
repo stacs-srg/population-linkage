@@ -19,26 +19,16 @@ package uk.ac.standrews.cs.population_linkage.compositeMeasures;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.LXPMetaData;
-import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
-import uk.ac.standrews.cs.neoStorr.impl.StaticLXP;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
-import uk.ac.standrews.cs.neoStorr.interfaces.IStoreReference;
 import uk.ac.standrews.cs.population_linkage.LinkageTest;
-import uk.ac.standrews.cs.population_linkage.linkers.Linker;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
-import uk.ac.standrews.cs.population_linkage.supportClasses.RecordPair;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.*;
 
 @SuppressWarnings("WeakerAccess")
-public class DistanceTest {
+public class CompositeDistanceTest {
 
     private static final double DELTA = 0.0000001;
 
@@ -114,5 +104,75 @@ public class DistanceTest {
         assertEquals(4.0/3.0, measure2.distance(death1, death3), DELTA);
         assertEquals(1.2, measure3.distance(death1, death3), DELTA);
         assertEquals(1.0, measure4.distance(death1, death3), DELTA);
+    }
+
+    @Test
+    public void cutOffs() {
+
+        final LXPMeasure measure1 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, Double.MAX_VALUE, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure2 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, 0.1, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure3 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, 1.5, false, Imputer.RECORD_MEAN, new AggregatorSum());
+
+        assertEquals(2.0, measure1.distance(birth2, birth3), DELTA);
+        assertEquals(0.2, measure2.distance(birth2, birth3), DELTA);
+        assertEquals(2.0, measure3.distance(birth2, birth3), DELTA);
+
+    }
+
+    @Test
+    public void normalisation() {
+
+        final LXPMeasure measure1 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, Double.MAX_VALUE, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure2 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, Double.MAX_VALUE, true, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure3 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, Double.MAX_VALUE, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure4 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, Double.MAX_VALUE, true, Imputer.RECORD_MEAN, new AggregatorSum());
+
+        assertEquals(2.0, measure1.distance(birth2, birth3), DELTA);
+        assertEquals(0, measure2.distance(birth2, birth3), DELTA);
+
+        // Jaccard distance "Janet" - "Jane" = (7-4)/7 = 3/7.
+        // Jaccard distance "Smith" - "Smyth" = (8-4)/8 = 1/2.
+
+        assertEquals(3.0/7.0 + 1.0/2.0, measure3.distance(birth2, birth3), DELTA);
+        assertEquals(3.0/7.0 + 1.0/2.0, measure4.distance(birth2, birth3), DELTA);
+    }
+
+    @Test
+    public void combinations() {
+
+        final LXPMeasure measure1 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, Double.MAX_VALUE, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure2 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, 0.1, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure3 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, 1.5, false, Imputer.RECORD_MEAN, new AggregatorSum());
+
+        final LXPMeasure measure4 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, Double.MAX_VALUE, true, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure5 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, 0.1, true, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure6 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.LEVENSHTEIN, 1.5, true, Imputer.RECORD_MEAN, new AggregatorSum());
+
+        final LXPMeasure measure7 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, Double.MAX_VALUE, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure8 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, 0.1, false, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure9 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, 1.5, false, Imputer.RECORD_MEAN, new AggregatorSum());
+
+        final LXPMeasure measure10 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, Double.MAX_VALUE, true, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure11 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, 0.1, true, Imputer.RECORD_MEAN, new AggregatorSum());
+        final LXPMeasure measure12 = new LXPMeasure(Arrays.asList(0, 1), Arrays.asList(0, 1), Constants.JACCARD, 1.5, true, Imputer.RECORD_MEAN, new AggregatorSum());
+
+        assertEquals(2.0, measure1.distance(birth2, birth3), DELTA);
+        assertEquals(0.2, measure2.distance(birth2, birth3), DELTA);
+        assertEquals(2.0, measure3.distance(birth2, birth3), DELTA);
+
+        assertEquals(0, measure4.distance(birth2, birth3), DELTA);
+        assertEquals(2.0, measure5.distance(birth2, birth3), DELTA);
+        assertEquals(4.0/3.0, measure6.distance(birth2, birth3), DELTA);
+
+        // Jaccard distance "Janet" - "Jane" = (7-4)/7 = 3/7.
+        // Jaccard distance "Smith" - "Smyth" = (8-4)/8 = 1/2.
+
+        assertEquals(3.0/7.0 + 1.0/2.0, measure7.distance(birth2, birth3), DELTA);
+        assertEquals(0.2, measure8.distance(birth2, birth3), DELTA);
+        assertEquals(3.0/7.0 + 1.0/2.0, measure9.distance(birth2, birth3), DELTA);
+
+        assertEquals(3.0/7.0 + 1.0/2.0, measure10.distance(birth2, birth3), DELTA);
+        assertEquals(0.2, measure11.distance(birth2, birth3), DELTA);
+        assertEquals(3.0/7.0 + 1.0/2.0, measure12.distance(birth2, birth3), DELTA);
     }
 }
