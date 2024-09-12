@@ -20,7 +20,7 @@ REPO_ROOT=/Users/al/repos/github
 
 # Install Umea data
 
-/bin/bash $REPO_ROOT/data-umea/src/main/scripts/install/setup_umea_in_storr.sh
+/bin/bash "$(dirname $0)"/setup_umea_in_storr.sh
 
 # Install the Ground truth 
 
