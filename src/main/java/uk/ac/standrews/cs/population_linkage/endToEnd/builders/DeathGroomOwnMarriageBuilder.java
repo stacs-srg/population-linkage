@@ -27,6 +27,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 /**
@@ -61,7 +62,7 @@ public class DeathGroomOwnMarriageBuilder implements MakePersistent {
     @Override
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
-            final String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            final String std_id1 = link.getRecord1().getReferend(Death.class).getString(Death.STANDARDISED_ID);
             final String std_id2 = link.getRecord2().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID);
 
             if( ! Query.DMDeathGroomOwnMarriageReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {

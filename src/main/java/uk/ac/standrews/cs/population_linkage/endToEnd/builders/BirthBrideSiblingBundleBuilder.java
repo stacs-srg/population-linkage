@@ -28,6 +28,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 /**
  * This class attempts to perform birth-marriage sibling linkage.
@@ -59,8 +60,8 @@ public class BirthBrideSiblingBundleBuilder implements MakePersistent {
     public void makePersistent(LinkageRecipe recipe, Link link) {
         try {
 
-            String std_id1 = link.getRecord1().getReferend(Death.class).getString(Death.STANDARDISED_ID);
-            String std_id2 = link.getRecord2().getReferend(Birth.class).getString(Birth.STANDARDISED_ID );
+            String std_id1 = link.getRecord1().getReferend(Birth.class).getString(Birth.STANDARDISED_ID);
+            String std_id2 = link.getRecord2().getReferend(Marriage.class).getString(Marriage.STANDARDISED_ID );
 
                 if (!Query.BMBrideSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
                     Query.createBMBrideSiblingReference(
