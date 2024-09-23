@@ -291,7 +291,7 @@ public class CreateGTLinks {
             "MERGE (m1)-[:GT_HALF_SIBLING { actors: \"Bride-Groom\" } ]-(m2)";
 
     private static final String DEATH_DEATH_SIBLING = "MATCH (d1:Death),(d2:Death) WHERE " +
-            "NOT (d1)-[:GT_HALF_SIBLING { actors: \"Deceased-Deceased\" } ]-(d2) AND " +
+            "NOT (d1)-[:GT_SIBLING { actors: \"Deceased-Deceased\" } ]-(d2) AND " +
             "d1.MOTHER_IDENTITY <> \"\" AND " +
             "d1.FATHER_IDENTITY <> \"\" AND " +
             "d2.MOTHER_IDENTITY <> \"\" AND " +
