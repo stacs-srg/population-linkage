@@ -42,11 +42,11 @@ public class BirthBrideOwnMarriageBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try(
-            BirthBrideSiblingLinkageRecipe linkageRecipe = new BirthBrideSiblingLinkageRecipe(sourceRepo, number_of_records, BirthBrideSiblingBundleBuilder.class.getName(), null) ) {
+            BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideSiblingBundleBuilder.class.getName(), null) ) {
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
-            int linkage_fields = BirthBrideIdentityLinkageRecipe.ALL_LINKAGE_FIELDS;
+            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
             int half_fields = linkage_fields - (linkage_fields / 2);
 
             while (linkage_fields >= half_fields) {

@@ -40,7 +40,7 @@ public class BirthDeathSiblingBundleBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try(
-            BirthDeathSiblingLinkageRecipe linkageRecipe = new BirthDeathSiblingLinkageRecipe(sourceRepo, number_of_records, BirthBrideSiblingBundleBuilder.class.getName(), null) ) {
+            BirthDeathSiblingLinkageRecipe linkageRecipe = new BirthDeathSiblingLinkageRecipe(sourceRepo, number_of_records, BirthDeathSiblingBundleBuilder.class.getName(), null) ) {
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 

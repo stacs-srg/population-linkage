@@ -24,6 +24,7 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
 import java.util.List;
@@ -34,14 +35,14 @@ import java.util.Map;
  */
 public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 0.5; // TODO THIS THRESHOLD WAS NOT MEASURED - 0.15 in table
+    private static final double DISTANCE_THRESHOLD = 0.15; // TODO THIS THRESHOLD WAS NOT MEASURED - 0.15 in table
 
     public static final String LINKAGE_TYPE = "birth-bride-sibling";
 
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    private List<LXP> cached_records;
+    private List<LXP> cached_records = null;
 
     private final int number_of_births;
     public static final int ALL_LINKAGE_FIELDS = 4;
@@ -80,7 +81,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
 
     public Iterable<LXP> getBirthRecords() {
         if (cached_records == null) {
-            cached_records = RecordFiltering.filter(no_linkage_fields_required, number_of_births, super.getBirthRecords(), getLinkageFields());
+            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
         }
         return cached_records;
     }

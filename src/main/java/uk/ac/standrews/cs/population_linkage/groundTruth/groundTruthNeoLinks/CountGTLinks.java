@@ -75,37 +75,37 @@ public class CountGTLinks {
 
             System.out.println("Analysing sizes of relationships from GT @ " + LocalDateTime.now());
 
-            doQuery(session, "Father-child identity", FATHER_OWN_BIRTH_IDENTITY);
-            doQuery(session, "Mother-cild identity", MOTHER_OWN_BIRTH_IDENTITY);
             doQuery(session, "Birth-birth sibling", BIRTH_BIRTH_SIBLING);
             doQuery(session, "Birth-birth half sibling", BIRTH_BIRTH_HALF_SIBLING);
             doQuery(session, "Birth-death identity", BIRTH_DEATH_IDENTITY);
-            doQuery(session, "Birth-death sibling", BIRTH_DEATH_SIBLING);
-            doQuery(session, "Birth-death half sibling", BIRTH_DEATH_HALF_SIBLING);
-            doQuery(session, "Birth-groom identity", BIRTH_GROOM_IDENTITY);
             doQuery(session, "Birth-bride identity", BIRTH_BRIDE_IDENTITY);
-            doQuery(session, "Father-groom identity", FATHER_GROOM_IDENTITY);
-            doQuery(session, "Mother-bride identity", MOTHER_BRIDE_IDENTITY);
-            doQuery(session, "Birth-parents marriage identity", BIRTH_PARENTS_MARRIAGE_IDENTITY);
-            doQuery(session, "Death-parents marriage identity", DEATH_PARENTS_MARRIAGE_IDENTITY);
-            doQuery(session, "Birth-groom sibling", BIRTH_GROOM_SIBLING);
-            doQuery(session, "Birth-bride sibling", BIRTH_BRIDE_SIBLING);
+            doQuery(session, "Birth-groom identity", BIRTH_GROOM_IDENTITY);
             doQuery(session, "Death-groom identity", DEATH_GROOM_IDENTITY);
             doQuery(session, "Death-bride identity", DEATH_BRIDE_IDENTITY);
-            doQuery(session, "Death-groom sibling", DEATH_GROOM_SIBLING);
-            doQuery(session, "Death-bride sibling", DEATH_BRIDE_SIBLING);
-            doQuery(session, "Groom-groom identity", GROOM_GROOM_IDENTITY);
-            doQuery(session, "Bride-bride identity", BRIDE_BRIDE_IDENTITY);
-            doQuery(session, "Groom parents marriage", GROOM_PARENTS_MARRIAGE_IDENTITY);
-            doQuery(session, "Bride parents marriage", BRIDE_PARENTS_MARRIAGE_IDENTITY);
+            doQuery(session, "Birth-parents marriage identity", BIRTH_PARENTS_MARRIAGE_IDENTITY);
+            doQuery(session, "Father-child identity", FATHER_OWN_BIRTH_IDENTITY);
+            doQuery(session, "Mother-child identity", MOTHER_OWN_BIRTH_IDENTITY);
             doQuery(session, "Groom-groom sibling", GROOM_GROOM_SIBLING);
-            doQuery(session, "Bride-bride sibling", BRIDE_BRIDE_SIBLING);
-            doQuery(session, "Bride-groom sibling", BRIDE_GROOM_SIBLING);
             doQuery(session, "Groom-groom half sibling", GROOM_GROOM_HALF_SIBLING);
+            doQuery(session, "Bride-bride sibling", BRIDE_BRIDE_SIBLING);
             doQuery(session, "Bride-bride half sibling", BRIDE_BRIDE_HALF_SIBLING);
+            doQuery(session, "Bride-groom sibling", BRIDE_GROOM_SIBLING);
             doQuery(session, "Bride-groom half sibling", BRIDE_GROOM_HALF_SIBLING);
             doQuery(session, "Death-death sibling", DEATH_DEATH_SIBLING);
             doQuery(session, "Death-death half sibling", DEATH_DEATH_HALF_SIBLING);
+            doQuery(session, "Birth-death sibling", BIRTH_DEATH_SIBLING);
+            doQuery(session, "Birth-death half sibling", BIRTH_DEATH_HALF_SIBLING);
+            doQuery(session, "Birth-bride sibling", BIRTH_BRIDE_SIBLING);
+            doQuery(session, "Birth-groom sibling", BIRTH_GROOM_SIBLING);
+            doQuery(session, "Bride-bride identity", BRIDE_BRIDE_IDENTITY);
+            doQuery(session, "Groom-groom identity", GROOM_GROOM_IDENTITY);
+            doQuery(session, "Bride parents marriage", BRIDE_PARENTS_MARRIAGE_IDENTITY);
+            doQuery(session, "Groom parents marriage", GROOM_PARENTS_MARRIAGE_IDENTITY);
+            doQuery(session, "Death-bride sibling", DEATH_BRIDE_SIBLING);
+            doQuery(session, "Death-groom sibling", DEATH_GROOM_SIBLING);
+            doQuery(session, "Father-groom identity", FATHER_GROOM_IDENTITY);
+            doQuery(session, "Mother-bride identity", MOTHER_BRIDE_IDENTITY);
+            doQuery(session, "Death-parents marriage identity", DEATH_PARENTS_MARRIAGE_IDENTITY);
 
             System.out.println("Complete @ " + LocalDateTime.now());
         }

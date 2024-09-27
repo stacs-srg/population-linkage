@@ -24,6 +24,7 @@ import org.neo4j.driver.Value;
 import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,38 +48,60 @@ public class Query {
     // etc. refer to Births Deaths and Marriages NOT babies, mothers etc.
 
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Child\" } ]->(b)";
+    private static final String BB_SIBLING_LINKNUM_QUERY = "MATCH (a:Birth)-[r:SIBLING]->(b:Birth) WHERE r.actors = \"Child-Child\" RETURN COUNT(r) AS link_count";
 
     private static final String BM_FATHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Father\" } ]->(b)";
     private static final String BM_MOTHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Mother\" } ]->(b)";
+    private static final String BM_FATHER_LINKNUM_QUERY = "MATCH (a:Birth)-[r:ID]->(b:Marriage) WHERE r.actors = \"Child-Father\" RETURN COUNT(r) AS link_count";
+    private static final String BM_MOTHER_LINKNUM_QUERY = "MATCH (a:Birth)-[r:ID]->(b:Marriage) WHERE r.actors = \"Child-Mother\" RETURN COUNT(r) AS link_count";
 
     private static final String BM_BIRTH_GROOM_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Groom\"  } ]->(b)";
     private static final String BM_BIRTH_BRIDE_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Bride\"  } ]->(b)";
+    private static final String BM_BIRTH_GROOM_LINKNUM_QUERY = "MATCH (a:Birth)-[r:ID]->(b:Marriage) WHERE r.actors = \"Child-Groom\" RETURN COUNT(r) AS link_count";
+    private static final String BM_BIRTH_BRIDE_LINKNUM_QUERY = "MATCH (a:Birth)-[r:ID]->(b:Marriage) WHERE r.actors = \"Child-Bride\" RETURN COUNT(r) AS link_count";
 
     private static final String DD_SIBLING_QUERY = "MATCH (a:Death), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Deceased\" } ]->(b)";
+    private static final String DD_SIBLING_LINKNUM_QUERY = "MATCH (a:Death)-[r:SIBLING]->(b:Death) WHERE r.actors = \"Deceased-Deceased\" RETURN COUNT(r) AS link_count";
 
     private static final String BD_DEATH_QUERY = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Deceased\" } ]->(b)";
+    private static final String BD_DEATH_LINKNUM_QUERY = "MATCH (a:Birth)-[r:ID]->(b:Death) WHERE r.actors = \"Child-Deceased\" RETURN COUNT(r) AS link_count";
 
     private static final String DM_DEATH_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Groom\" } ]->(b)";
     private static final String DM_DEATH_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Bride\" } ]->(b)";;
+    private static final String DM_DEATH_GROOM_LINKNUM_QUERY = "MATCH (a:Death)-[r:ID]->(b:Marriage) WHERE r.actors = \"Deceased-Groom\" RETURN COUNT(r) AS link_count";
+    private static final String DM_DEATH_BRIDE_LINKNUM_QUERY = "MATCH (a:Death)-[r:ID]->(b:Marriage) WHERE r.actors = \"Deceased-Bride\" RETURN COUNT(r) AS link_count";
 
     private static final String MM_BB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Bride-Bride\" } ]->(b)";
     private static final String MM_GG_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Groom\" } ]->(b)";
     private static final String MM_GB_SIBLING_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Bride\" } ]->(b)";
+    private static final String MM_BB_SIBLING_LINKNUM_QUERY = "MATCH (a:Marriage)-[r:SIBLING]->(b:Marriage) WHERE r.actors = \"Bride-Bride\" RETURN COUNT(r) AS link_count";
+    private static final String MM_GG_SIBLING_LINKNUM_QUERY = "MATCH (a:Marriage)-[r:SIBLING]->(b:Marriage) WHERE r.actors = \"Groom-Groom\" RETURN COUNT(r) AS link_count";
+    private static final String MM_GB_SIBLING_LINKNUM_QUERY = "MATCH (a:Marriage)-[r:SIBLING]->(b:Marriage) WHERE r.actors = \"Groom-Bride\" RETURN COUNT(r) AS link_count";
 
     private static final String DB_SIBLING_QUERY = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Child\" } ]->(b)";
     private static final String DB_SIBLING_QUERY_SIMPLE = "MATCH (a:Death), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, actors: \"Deceased-Child\" } ]->(b)";
+    private static final String DB_SIBLING_LINKNUM_QUERY = "MATCH (a:Death)-[r:SIBLING]->(b:Birth) WHERE r.actors = \"Deceased-Child\" RETURN COUNT(r) AS link_count";
+    private static final String DB_SIBLING_LINKNUM_QUERY_SIMPLE = "MATCH (a:Death)-[r:SIBLING]->(b:Birth) WHERE r.actors = \"Deceased-Child\" RETURN COUNT(r) AS link_count";
 
     private static final String MM_GROOM_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Couple\" } ]->(b)";
     private static final String MM_BRIDE_MARRIAGE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Bride-Couple\" } ]->(b)";
+    private static final String MM_GROOM_MARRIAGE_LINKNUM_QUERY = "MATCH (a:Marriage)-[r:ID]->(b:Marriage) WHERE r.actors = \"Groom-Couple\" RETURN COUNT(r) AS link_count";
+    private static final String MM_BRIDE_MARRIAGE_LINKNUM_QUERY = "MATCH (a:Marriage)-[r:ID]->(b:Marriage) WHERE r.actors = \"Bride-Couple\" RETURN COUNT(r) AS link_count";
 
     private static final String BM_GROOM_SIBLING_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Groom\" } ]->(b)";
     private static final String BM_BRIDE_SIBLING_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Bride\" } ]->(b)";
+    private static final String BM_GROOM_SIBLING_LINKNUM_QUERY = "MATCH (a:Birth)-[r:SIBLING]->(b:Marriage) WHERE r.actors = \"Child-Groom\" RETURN COUNT(r) AS link_count";
+    private static final String BM_BRIDE_SIBLING_LINKNUM_QUERY = "MATCH (a:Birth)-[r:SIBLING]->(b:Marriage) WHERE r.actors = \"Child-Bride\" RETURN COUNT(r) AS link_count";
 
     private static final String MM_BRIDE_BRIDE_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Bride-Bride\" } ]->(b)";
     private static final String MM_GROOM_GROOM_QUERY = "MATCH (a:Marriage), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Groom-Groom\" } ]->(b)";
+    private static final String MM_BRIDE_BRIDE_LINKNUM_QUERY = "MATCH (a:Marriage)-[r:ID]->(b:Marriage) WHERE r.actors = \"Bride-Bride\" RETURN COUNT(r) AS link_count";
+    private static final String MM_GROOM_GROOM_LINKNUM_QUERY = "MATCH (a:Marriage)-[r:ID]->(b:Marriage) WHERE r.actors = \"Groom-Groom\" RETURN COUNT(r) AS link_count";
 
     private static final String DM_DECEASED_BRIDE_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Bride\" } ]->(b)";
     private static final String DM_DECEASED_GROOM_QUERY = "MATCH (a:Death), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Deceased-Groom\" } ]->(b)";
+    private static final String DM_DECEASED_BRIDE_LINKNUM_QUERY = "MATCH (a:Death)-[r:SIBLING]->(b:Marriage) WHERE r.actors = \"Deceased-Bride\" RETURN COUNT(r) AS link_count";
+    private static final String DM_DECEASED_GROOM_LINKNUM_QUERY = "MATCH (a:Death)-[r:SIBLING]->(b:Marriage) WHERE r.actors = \"Deceased-Groom\" RETURN COUNT(r) AS link_count";
 
     // queries for use in predicates - return a relationship if it exists
 
@@ -379,6 +402,58 @@ public class Query {
 
     public static boolean DMGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
         return linkExists( bridge, DM_DECEASED_GROOM_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+    }
+
+    public static List<String> getAllLinkQueries(){
+        return Arrays.asList(
+                BB_SIBLING_LINKNUM_QUERY,
+                BD_DEATH_LINKNUM_QUERY,
+                BM_BIRTH_BRIDE_LINKNUM_QUERY,
+                BM_BIRTH_GROOM_LINKNUM_QUERY,
+                DM_DEATH_GROOM_LINKNUM_QUERY,
+                DM_DEATH_BRIDE_LINKNUM_QUERY,
+                BM_FATHER_LINKNUM_QUERY,
+                BM_MOTHER_LINKNUM_QUERY,
+                DD_SIBLING_LINKNUM_QUERY,
+                MM_GG_SIBLING_LINKNUM_QUERY,
+                MM_BB_SIBLING_LINKNUM_QUERY,
+                MM_GB_SIBLING_LINKNUM_QUERY,
+                DB_SIBLING_LINKNUM_QUERY,
+                BM_BRIDE_SIBLING_LINKNUM_QUERY,
+                BM_GROOM_SIBLING_LINKNUM_QUERY,
+                MM_BRIDE_BRIDE_LINKNUM_QUERY,
+                MM_GROOM_GROOM_LINKNUM_QUERY,
+                MM_BRIDE_MARRIAGE_LINKNUM_QUERY,
+                MM_GROOM_MARRIAGE_LINKNUM_QUERY,
+                DM_DECEASED_BRIDE_LINKNUM_QUERY,
+                DM_DECEASED_GROOM_LINKNUM_QUERY
+        );
+    }
+
+    public static List<String> getAllLinkerNames(){
+        return Arrays.asList(
+                "BB_SIBLING",
+                "BD_DEATH",
+                "BM_BIRTH_BRIDE",
+                "BM_BIRTH_GROOM",
+                "DM_DEATH_GROOM",
+                "DM_DEATH_BRIDE",
+                "BM_FATHER",
+                "BM_MOTHER",
+                "DD_SIBLING",
+                "MM_GG_SIBLING",
+                "MM_BB_SIBLING",
+                "MM_GB_SIBLING",
+                "DB_SIBLING",
+                "BM_BRIDE_SIBLING",
+                "BM_GROOM_SIBLING",
+                "MM_BRIDE_BRIDE",
+                "MM_GROOM_GROOM",
+                "MM_BRIDE_MARRIAGE",
+                "MM_GROOM_MARRIAGE",
+                "DM_DECEASED_BRIDE",
+                "DM_DECEASED_GROOM"
+        );
     }
 
     private static String getRefutedAlreadyQuery(NeoDbCypherBridge bridge, long id) {
