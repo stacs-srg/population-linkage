@@ -132,8 +132,8 @@ public class Query {
     private static final String BM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String BM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String MM_BRIDE_BRIDE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Bride-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_GROOM_GROOM_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Groom-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_BRIDE_BRIDE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:ID { actors: \"Bride-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_GROOM_GROOM_EXISTS_QUERY = "MATCH (a:Marriage)-[r:ID { actors: \"Groom-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
     private static final String DM_DECEASED_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String DM_DECEASED_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
