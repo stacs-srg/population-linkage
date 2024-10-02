@@ -19,7 +19,7 @@
 export MAVEN_OPTS="-Xmx16G"
 
 echo "Creating indices"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.helpers.CreateIndices" -e
+java -cp ~/Documents/GitHub/data-umea-1.0-SNAPSHOT-jar-with-dependencies.jar uk.ac.standrews.cs.data.umea.store.CreateIndices
 
 echo "Loading event records"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.helpers.ImportUmeaRecordsToStore" -e
+java -cp ~/Documents/GitHub/data-umea-1.0-SNAPSHOT-jar-with-dependencies.jar uk.ac.standrews.cs.data.umea.store.ImportUmeaRecordsToStore

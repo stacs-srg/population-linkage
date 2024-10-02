@@ -132,8 +132,8 @@ public class Query {
     private static final String BM_GROOM_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String BM_BRIDE_MARRIAGE_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
-    private static final String MM_BRIDE_BRIDE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Bride-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
-    private static final String MM_GROOM_GROOM_EXISTS_QUERY = "MATCH (a:Marriage)-[r:SIBLING { actors: \"Groom-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_BRIDE_BRIDE_EXISTS_QUERY = "MATCH (a:Marriage)-[r:ID { actors: \"Bride-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String MM_GROOM_GROOM_EXISTS_QUERY = "MATCH (a:Marriage)-[r:ID { actors: \"Groom-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
     private static final String DM_DECEASED_BRIDE_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Bride\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String DM_DECEASED_GROOM_EXISTS_QUERY = "MATCH (a:Death)-[r:SIBLING { actors: \"Deceased-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
@@ -237,7 +237,7 @@ public class Query {
      * See createReference for param details
      */
     public static void createMMBrideGroomSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
-        createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_to, standard_id_from, provenance, fields_populated, distance);
+        createReference(bridge, MM_GB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
     /**
@@ -365,43 +365,43 @@ public class Query {
     }
 
     public static boolean MMBrideGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, MM_GB_SIBLING_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, MM_GB_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean DBSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, DB_SIBLING_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, DB_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean MMGroomMarriageParentsMarriageReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, MM_GROOM_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, MM_GROOM_MARRIAGE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean MMBrideMarriageParentsMarriageReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
-        return linkExists( bridge, MM_BRIDE_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, MM_BRIDE_MARRIAGE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean BMGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ){
-        return linkExists(bridge, BM_GROOM_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance);
+        return linkExists(bridge, BM_GROOM_MARRIAGE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean BMBrideSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
-        return linkExists( bridge, BM_BRIDE_MARRIAGE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, BM_BRIDE_MARRIAGE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean MMBrideBrideIdReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
-        return linkExists( bridge, MM_BRIDE_BRIDE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, MM_BRIDE_BRIDE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean MMGroomGroomIdReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
-        return linkExists( bridge, MM_GROOM_GROOM_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, MM_GROOM_GROOM_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean DMBrideSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
-        return linkExists( bridge, DM_DECEASED_BRIDE_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, DM_DECEASED_BRIDE_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean DMGroomSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance ) {
-        return linkExists( bridge, DM_DECEASED_GROOM_EXISTS_QUERY, standard_id_to, standard_id_from, provenance );
+        return linkExists( bridge, DM_DECEASED_GROOM_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static List<String> getAllLinkQueries(){
