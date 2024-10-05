@@ -31,6 +31,7 @@ public class RecordFiltering {
             if (passesFilter(record, linkageFields, number_of_required_fields)) {
                 filtered_source_records.add(record);
             }
+            //The following code is only to permit less than all the records to be processed (for example when debugging)
             if (filtered_source_records.size() >= number_of_records_required) {
                 break;
             }
@@ -56,6 +57,6 @@ public class RecordFiltering {
     }
 
     public static boolean isMissing(String value) {
-        return value == null || value.equals("") || value.contains("missing") || value.contains("--");
+        return value == null || value.equals("") || value.contains("missing") || value.contains("--") || value.contains("----") || value.contains("¤");
     }
 }

@@ -16,4 +16,4 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-. "$(dirname $0)"/dolinkage_template.sh 10000
+. "$(dirname $0)"/dolinkage_template.sh 1000

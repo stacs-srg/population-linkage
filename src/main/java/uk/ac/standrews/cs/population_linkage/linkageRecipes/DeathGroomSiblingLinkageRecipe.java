@@ -42,7 +42,6 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final int ALL_LINKAGE_FIELDS = 4;
     private final int number_of_deaths;
-    private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Death.MOTHER_FORENAME,
@@ -72,10 +71,7 @@ public class DeathGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
-        }
-        return cached_records;
+        return RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
     }
 
     @SuppressWarnings("unchecked")

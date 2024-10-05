@@ -46,8 +46,6 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ALL_LINKAGE_FIELDS = 8;
     private final int number_of_births;
 
-    private List<LXP> cached_records = null;
-
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.MOTHER_FORENAME,
             Birth.MOTHER_MAIDEN_SURNAME,
@@ -87,10 +85,7 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getBirthRecords() {
-        if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
-        }
-        return cached_records;
+        return RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
     }
 
     @Override

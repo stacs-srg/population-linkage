@@ -46,7 +46,6 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final int ALL_LINKAGE_FIELDS = 4;
     private final int number_of_deaths;
-    private List<LXP> cached_records = null;
 
     public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
@@ -83,10 +82,7 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if (cached_records == null) {
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
-        }
-        return cached_records;
+        return filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getLinkageFields());
     }
 
     @Override

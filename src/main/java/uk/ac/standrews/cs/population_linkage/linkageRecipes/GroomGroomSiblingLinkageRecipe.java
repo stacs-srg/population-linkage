@@ -43,7 +43,6 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final int ALL_LINKAGE_FIELDS = 4;
     private final int number_of_marriages;
-    private List<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Marriage.GROOM_MOTHER_FORENAME,
@@ -77,10 +76,7 @@ public class GroomGroomSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getMarriageRecords() {
-        if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_marriages, super.getMarriageRecords(), getLinkageFields());
-        }
-        return cached_records;
+        return RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_marriages, super.getMarriageRecords(), getLinkageFields());
     }
 
     @Override
