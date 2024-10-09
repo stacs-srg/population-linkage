@@ -39,7 +39,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
-    private static final double THRESHOLD = 0.67;
+    private static final double THRESHOLD = 1.0;
 
     public static final String LINKAGE_TYPE = "birth-birth-sibling";
 

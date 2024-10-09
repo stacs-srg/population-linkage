@@ -18,21 +18,21 @@ package uk.ac.standrews.cs.population_linkage.linkageAccuracy;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
-public class BirthBirthSiblingAccuracy extends AbstractAccuracy {
+public class BirthBirthHalfSiblingAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_BIRTH_SIBLING_TPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE (b1)-[:GT_SIBLING {actors: \"Child-Child\"}]-(b2) AND NOT (b1)-[:DELETED]-(b2) return count(r)";
-    private static final String BIRTH_BIRTH_SIBLING_FPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:GT_SIBLING {actors: \"Child-Child\"}]-(b2) AND NOT (b1)-[:DELETED]-(b2) return count(r)";
-    private static final String BIRTH_BIRTH_SIBLING_FNC = "MATCH (b1:Birth)-[r:GT_SIBLING { actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:SIBLING {actors: \"Child-Child\"}]-(b2) OR (b1)-[:DELETED]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_HALFSIBLING_TPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE (b1)-[:GT_HALF_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_HALFSIBLING_FPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:GT_HALF_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_HALFSIBLING_FNC = "MATCH (b1:Birth)-[r:GT_HALF_SIBLING { actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
 
-    public BirthBirthSiblingAccuracy(NeoDbCypherBridge bridge) {
+    public BirthBirthHalfSiblingAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);
         doqueries();
     }
 
     private void doqueries() {
-        long fpc = doQuery(BIRTH_BIRTH_SIBLING_FPC);
-        long tpc = doQuery(BIRTH_BIRTH_SIBLING_TPC);
-        long fnc = doQuery(BIRTH_BIRTH_SIBLING_FNC);
+        long fpc = doQuery(BIRTH_BIRTH_HALFSIBLING_FPC);
+        long tpc = doQuery(BIRTH_BIRTH_HALFSIBLING_TPC);
+        long fnc = doQuery(BIRTH_BIRTH_HALFSIBLING_FNC);
 
         long birth_count = doQuery( ALL_BIRTHS );
         long all_pair_count = nChoose2( birth_count );
@@ -43,7 +43,7 @@ public class BirthBirthSiblingAccuracy extends AbstractAccuracy {
 
     public static void main(String[] args) {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
-            BirthBirthSiblingAccuracy acc = new BirthBirthSiblingAccuracy(bridge);
+            BirthBirthHalfSiblingAccuracy acc = new BirthBirthHalfSiblingAccuracy(bridge);
             acc.doqueries();
         }
     }
