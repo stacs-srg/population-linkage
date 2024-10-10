@@ -82,7 +82,6 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
             list(pair(Birth.CHILD_IDENTITY, Marriage.BRIDE_IDENTITY)),
             list(pair(Birth.STANDARDISED_ID, Marriage.BRIDE_BIRTH_RECORD_IDENTITY))
     );
-    protected List<LXP> cached_records = null;
 
     public static final int ALL_LINKAGE_FIELDS = LINKAGE_FIELDS.size();
 
@@ -138,12 +137,8 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getBirthRecords() {
-        if (cached_records == null) {
-            Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_births, f, getLinkageFields());
-        }
-        System.out.println("Processing " + cached_records.size() + " birth records");
-        return cached_records;
+        Iterable<LXP> f = filterBySex(super.getBirthRecords(), Birth.SEX, "f");
+        return filter(getNumberOfLinkageFieldsRequired(), number_of_births, f, getLinkageFields());
     }
 
     @Override

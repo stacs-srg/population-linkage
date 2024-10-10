@@ -41,7 +41,6 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
     public static final int ALL_LINKAGE_FIELDS = 4;
-    private List<LXP> cached_records;
     private final int number_of_marriages;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
@@ -75,10 +74,7 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     }
 
     protected Iterable<LXP> getMarriageRecords() {
-        if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_marriages, super.getMarriageRecords(), getLinkageFields());
-        }
-        return cached_records;
+        return RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_marriages, super.getMarriageRecords(), getLinkageFields());
     }
 
 

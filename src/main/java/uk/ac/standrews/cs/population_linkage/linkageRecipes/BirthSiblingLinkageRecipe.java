@@ -39,7 +39,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
-    private static final double THRESHOLD = 0.67;
+    private static final double THRESHOLD = 1.0;
 
     public static final String LINKAGE_TYPE = "birth-birth-sibling";
 
@@ -47,8 +47,6 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     public static final int ALL_LINKAGE_FIELDS = 8;
     private int number_of_births = 0;
-
-    private Iterable<LXP> cached_records = null;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
             Birth.MOTHER_FORENAME,
@@ -87,10 +85,7 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public Iterable<LXP> getBirthRecords() {
-        if (cached_records == null) {
-                cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
-        }
-        return cached_records;
+        return RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
     }
 
     @Override

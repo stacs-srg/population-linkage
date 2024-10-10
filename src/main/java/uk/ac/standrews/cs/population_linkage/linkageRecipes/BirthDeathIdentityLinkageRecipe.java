@@ -50,8 +50,6 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Death.STANDARDISED_ID;
 
-    private List<LXP> cached_records = null;
-
     public int ALL_LINKAGE_FIELDS = 6;
 
     // Don't use father/mother occupation due to likely long duration between birth and death events.
@@ -93,11 +91,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if (cached_records == null) {
-            System.out.println("Filtering death records require: " + getNumberOfLinkageFieldsRequired() + " fields");
-            cached_records = filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getQueryMappingFields());
-        }
-        return cached_records;
+        return filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, super.getDeathRecords(), getQueryMappingFields());
     }
 
     @Override

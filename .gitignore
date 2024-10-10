@@ -10,3 +10,5 @@ application.properties
 src/main/scripts/R/.Rhistory
 !/properties/application.properties
 !/src/main/scripts/R/.RData
+.run
+venv

@@ -70,6 +70,16 @@ public class CreateGTLinks {
             "NOT (b1.MOTHER_IDENTITY = b2.MOTHER_IDENTITY AND b1.FATHER_IDENTITY = b2.FATHER_IDENTITY) " +
             "MERGE (b1)-[:GT_HALF_SIBLING { actors: \"Child-Child\" } ]-(b2)";
 
+    private static final String BIRTH_BIRTH_HALF_SIBLING_DAD = "MATCH (b1:Birth),(b2:Birth)\n" +
+            "WHERE NOT (b1)-[:GT_HALF_SIBLING { actors: \"Child-Child\" } ]-(b2)\n" +
+            "and b1.FATHER_IDENTITY = b2.FATHER_IDENTITY and b1.MOTHER_IDENTITY = \"\" and b2.MOTHER_IDENTITY = \"\" and b1.FATHER_IDENTITY <> \"\" and b2.FATHER_IDENTITY <> \"\" and b1 <> b2\n" +
+            "MERGE (b1)-[:GT_HALF_SIBLING { actors: \"Child-Child\" } ]-(b2)";
+
+    private static final String BIRTH_BIRTH_HALF_SIBLING_MUM = "MATCH (b1:Birth),(b2:Birth)\n" +
+            "WHERE NOT (b1)-[:GT_HALF_SIBLING { actors: \"Child-Child\" } ]-(b2)\n" +
+            "and b1.MOTHER_IDENTITY = b2.MOTHER_IDENTITY and b1.FATHER_IDENTITY = \"\" and b2.FATHER_IDENTITY = \"\" and b1.MOTHER_IDENTITY <> \"\" and b2.MOTHER_IDENTITY <> \"\" and b1 <> b2\n" +
+            "MERGE (b1)-[:GT_HALF_SIBLING { actors: \"Child-Child\" } ]-(b2)";
+
     private static final String BIRTH_DEATH_IDENTITY = "MATCH (b:Birth),(d:Death) WHERE " + "" +
             "b.CHILD_IDENTITY <> \"\" AND " +
             "d.DECEASED_IDENTITY <> \"\" AND " +
@@ -334,6 +344,8 @@ public class CreateGTLinks {
                 FATHER_OWN_BIRTH_IDENTITY, MOTHER_OWN_BIRTH_IDENTITY,
                 BIRTH_BIRTH_SIBLING,
                 BIRTH_BIRTH_HALF_SIBLING,
+                BIRTH_BIRTH_HALF_SIBLING_DAD,
+                BIRTH_BIRTH_HALF_SIBLING_MUM,
 
                 // Birth - Death
                 BIRTH_DEATH_IDENTITY,

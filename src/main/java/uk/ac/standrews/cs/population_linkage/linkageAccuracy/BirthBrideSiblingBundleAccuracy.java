@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthBrideSiblingBundleAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_BRIDE_SIBLING_TPC = "MATCH (b:Birth)-[r:SIBLING {actors:\"Child-Bride\"}]-(m:Marriage) WHERE (b)-[:GT_SIBLING {actors:\"Child-Bride\"}]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_SIBLING_FPC = "MATCH (b:Birth)-[r:SIBLING {actors:\"Child-Bride\"}]-(m:Marriage) WHERE NOT (b)-[:GT_SIBLING {actors:\"Child-Bride\"}]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_SIBLING {actors:\"Child-Bride\"}]-(m:Marriage) WHERE NOT (b)-[:SIBLING {actors:\"Child-Bride\"}]-(m) return count(r)";
+    private static final String BIRTH_BRIDE_SIBLING_TPC = "MATCH (b:Birth)-[r:SIBLING {actors:\"Child-Bride\"}]->(m:Marriage) WHERE (b)-[:GT_SIBLING {actors:\"Child-Bride\"}]-(m) return count(r)";
+    private static final String BIRTH_BRIDE_SIBLING_FPC = "MATCH (b:Birth)-[r:SIBLING {actors:\"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:GT_SIBLING {actors:\"Child-Bride\"}]-(m) return count(r)";
+    private static final String BIRTH_BRIDE_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_SIBLING {actors:\"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:SIBLING {actors:\"Child-Bride\"}]-(m) return count(r)";
 
     public BirthBrideSiblingBundleAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);

@@ -42,8 +42,6 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     public static final int ID_FIELD_INDEX1 = Birth.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
 
-    private List<LXP> cached_records = null;
-
     private final int number_of_births;
     public static final int ALL_LINKAGE_FIELDS = 4;
     public int no_linkage_fields_required;
@@ -80,10 +78,7 @@ public class BirthBrideSiblingLinkageRecipe extends LinkageRecipe {
     }
 
     public Iterable<LXP> getBirthRecords() {
-        if (cached_records == null) {
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
-        }
-        return cached_records;
+        return RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_births, super.getBirthRecords(), getLinkageFields());
     }
 
     @Override

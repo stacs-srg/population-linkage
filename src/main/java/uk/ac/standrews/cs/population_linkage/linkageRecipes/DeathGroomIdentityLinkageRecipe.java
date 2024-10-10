@@ -43,7 +43,6 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     public static final int ALL_LINKAGE_FIELDS = 6; // 6 is all of them but not occupation - FORENAME,SURNAME,FATHER_FORENAME,FATHER_SURNAME,MOTHER_FORENAME,MOTHER_SURNAME
     private final int number_of_deaths;
-    private List<LXP> cached_records = null;
 
     public static final int ID_FIELD_INDEX1 = Death.STANDARDISED_ID;
     public static final int ID_FIELD_INDEX2 = Marriage.STANDARDISED_ID;
@@ -83,11 +82,8 @@ public class DeathGroomIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     protected Iterable<LXP> getDeathRecords() {
-        if (cached_records == null) {
-            Iterable<LXP> filtered = filterBySex(super.getDeathRecords(), Death.SEX, "m");
-            cached_records = RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, filtered, getLinkageFields());
-        }
-        return cached_records;
+        Iterable<LXP> filtered = filterBySex(super.getDeathRecords(), Death.SEX, "m");
+        return RecordFiltering.filter(getNumberOfLinkageFieldsRequired(), number_of_deaths, filtered, getLinkageFields());
     }
 
     @Override
