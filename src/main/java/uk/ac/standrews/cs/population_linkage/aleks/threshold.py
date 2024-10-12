@@ -18,7 +18,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data = pd.read_csv('../../../../../../../../../birthbirthhalfplus.csv')
+data = pd.read_csv('../../../../../../../../../birthbirth8.csv')
 
 fig, ax1 = plt.subplots(figsize=(10, 6))
 
@@ -28,19 +28,19 @@ ax1.plot(data['threshold'], data['precision'], label='Precision', color='g')
 
 ax1.set_xlabel('Threshold')
 ax1.set_ylabel('Metrics', color='black')
-ax1.set_ylim(0, 1.1)
+ax1.set_ylim(0, 1.01)
 
 ax1.legend(loc='upper left')
 
 ax2 = ax1.twinx()
 
-ax2.plot(data['threshold'], data['triangles'], label='Triangles', color='orange')
+ax2.plot(data['threshold'], data['triangles'], label='Open Triangles', color='orange')
 
 ax2.set_ylabel('Triangles')
 
 ax2.legend(loc='upper right')
 
-plt.title('Threshold Analysis Birth-Birth Sibling +1')
+plt.title('Threshold Analysis Birth-Birth Sibling')
 plt.grid(True)
 
 plt.show()

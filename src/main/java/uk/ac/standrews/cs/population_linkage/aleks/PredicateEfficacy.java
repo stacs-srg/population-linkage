@@ -57,7 +57,7 @@ public class PredicateEfficacy {
                 long trueCount = trueMatches.get(0);
                 long totalCount = total.get(0);
 
-                System.out.println(s + " " + trueCount + "/" + totalCount + " " + trueCount / totalCount);
+                System.out.println(s + " " + trueCount + "/" + totalCount + " " + (double) (trueCount / totalCount));
             }
         }
     }

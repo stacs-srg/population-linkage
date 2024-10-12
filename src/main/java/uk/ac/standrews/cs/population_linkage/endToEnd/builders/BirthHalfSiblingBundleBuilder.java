@@ -19,7 +19,7 @@ package uk.ac.standrews.cs.population_linkage.endToEnd.builders;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.RepositoryException;
 import uk.ac.standrews.cs.population_linkage.graph.Query;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthHalfSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.BitBlasterLinkageRunner;
 import uk.ac.standrews.cs.population_linkage.linkageRunners.MakePersistent;
@@ -28,11 +28,7 @@ import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
 import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 
-/**
- * This class attempts to perform birth-birth sibling linkage.
- */
-public class BirthSiblingBundleBuilder implements MakePersistent {
-
+public class BirthHalfSiblingBundleBuilder implements MakePersistent {
     public static void main(String[] args) throws Exception {
 
         String sourceRepo = args[0];  // e.g. umea
@@ -40,22 +36,16 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
 
         int count = 1;
 
-        try(BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleBuilder.class.getName() ) ) {
+        try (BirthHalfSiblingLinkageRecipe linkageRecipe = new BirthHalfSiblingLinkageRecipe(sourceRepo, number_of_records, BirthHalfSiblingBundleBuilder.class.getName())) {
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
             int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 );
-
-            while (linkage_fields >= half_fields) {
-
-                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, true); // TODO Cypher errors if evaluateQuality is tru
-                LinkageQuality quality = lr.getLinkageQuality();
-                quality.print(System.out);
-                linkage_fields--;
-                count++;
-            }
+            linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+            LinkageResult lr = runner.run(linkageRecipe, new BirthHalfSiblingBundleBuilder(), false, true);
+            LinkageQuality quality = lr.getLinkageQuality();
+            quality.print(System.out);
+            count++;
         }
     }
 
@@ -68,8 +58,8 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
 
             if( !std_id1.equals(std_id2 ) ) {
 
-                if (!Query.BBBirthSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
-                    Query.createBBSiblingReference(
+                if (!Query.BBBirthHalfSiblingReferenceExists(recipe.getBridge(), std_id1, std_id2, recipe.getLinksPersistentName())) {
+                    Query.createBBHalfSiblingReference(
                             recipe.getBridge(),
                             std_id1,
                             std_id2,
@@ -82,5 +72,4 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
             throw new RuntimeException(e);
         }
     }
-
 }

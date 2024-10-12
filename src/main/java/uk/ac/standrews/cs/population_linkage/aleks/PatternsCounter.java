@@ -60,24 +60,40 @@ public class PatternsCounter {
         return (int) count;
     }
 
-    //wont work for resolver cuz no deleted
-    public static int countOpenTriangles(NeoDbCypherBridge bridge, String type1, String type2, double threshold) {
-        int count = countOpenTriangles(bridge, type1, type2);
+    //Won't work for resolver as no deleted check
+    public static int countOpenTrianglesCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
+        long count = 0;
         String openTriangleQuery = String.format(
-                "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
-                        "WHERE id(x) < id(z) AND r.distance <= %3$s AND s.distance <= %3$s AND t.distance > %3$s " +
+                "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s) " +
+                        "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s " +
                         "RETURN count(DISTINCT [x, z]) as cluster_count",
-                type1, type2, threshold
+                type1, type2, threshold, fields
         );
 
         Result result = bridge.getNewSession().run(openTriangleQuery);
         List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
+
+        String openTriangleQuery2 = String.format(
+                "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
+                        "WHERE id(x) < id(z) AND r.distance <= %3$s AND s.distance <= %3$s " +
+                        "AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s " +
+                        "AND (t.fields_populated < %4$s OR t.distance > %3$s)" +
+                        "RETURN count(DISTINCT [x, z]) as cluster_count",
+                type1, type2, threshold, fields
+        );
+
+        result = bridge.getNewSession().run(openTriangleQuery2);
+        clusters = result.list(r -> r.get("cluster_count").asLong());
 
         long tCount = 0;
         if (!clusters.isEmpty()) {
             tCount = clusters.get(0);
         }
 
-        return count + (int) tCount;
+        return (int) count + (int) tCount;
     }
 }

@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthBirthHalfSiblingAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_BIRTH_HALFSIBLING_TPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE (b1)-[:GT_HALF_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
-    private static final String BIRTH_BIRTH_HALFSIBLING_FPC = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:GT_HALF_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
-    private static final String BIRTH_BIRTH_HALFSIBLING_FNC = "MATCH (b1:Birth)-[r:GT_HALF_SIBLING { actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_HALFSIBLING_TPC = "MATCH (b1:Birth)-[r:HALF_SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE (b1)-[:GT_HALF_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_HALFSIBLING_FPC = "MATCH (b1:Birth)-[r:HALF_SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:GT_HALF_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
+    private static final String BIRTH_BIRTH_HALFSIBLING_FNC = "MATCH (b1:Birth)-[r:GT_HALF_SIBLING { actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:HALF_SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
 
     public BirthBirthHalfSiblingAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);

@@ -479,6 +479,16 @@ public abstract class LinkageRecipe implements LinkViabilityChecker, AutoCloseab
         return filteredRecords;
     }
 
+    protected Iterable<LXP> filterBySingleParent(Iterable<LXP> records, int parentField) {
+        Collection<LXP> filteredRecords = new HashSet<>();
+
+        records.forEach(record -> {
+            if (record.getString(parentField).equalsIgnoreCase(""))
+                filteredRecords.add(record);
+        });
+        return filteredRecords;
+    }
+
     public String getLinksPersistentName() {
         return links_persistent_name;
     }

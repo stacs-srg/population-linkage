@@ -19,14 +19,19 @@ package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.types.Relationship;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
+import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.characterisation.LinkStatus;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering;
+import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Link;
+import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -143,10 +148,19 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
      * @return true if the link is viable
      */
     public static boolean isViable(final LXP birth_record, final LXP death_record) {
+        final StringMeasure base_measure = Constants.LEVENSHTEIN;;
+        final LXPMeasure composite_measure_bd = getCompositeMeasureBirthDeath(base_measure);
+        RecordRepository record_repository = new RecordRepository("umea");
+
         try {
             String birth_name = CommonLinkViabilityLogic.getPrimaryNameFromBirthRecord(birth_record);
             String death_name = CommonLinkViabilityLogic.getPrimaryNameFromDeathRecord(death_record);
-            if( birth_name.equals(death_name)) {
+//            if( birth_name.equals(death_name)) {
+//                return false; // they are the same person and therefore not siblings
+//            }
+
+            //TODO make this a distance comparison
+            if( getDistance(birth_record, death_record, composite_measure_bd) < 5) {
                 return false; // they are the same person and therefore not siblings
             }
 
@@ -157,6 +171,8 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
         } catch (NumberFormatException e) { // Invalid year.
             return true;
+        } catch (BucketException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -196,5 +212,23 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public LXPMeasure getCompositeMeasure() {
         return new SumOfFieldDistances(getBaseMeasure(), getLinkageFields());
+    }
+
+    protected static LXPMeasure getCompositeMeasureBirthDeath(StringMeasure base_measure) {
+        final List<Integer> LINKAGE_FIELDS_BIRTH = list(
+                Birth.FORENAME,
+                Birth.SURNAME
+        );
+
+        final List<Integer> LINKAGE_FIELDS_DEATH = list(
+                Death.FORENAME,
+                Death.SURNAME
+        );
+
+        return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS_BIRTH, LINKAGE_FIELDS_DEATH);
+    }
+
+    private static double getDistance(LXP id1, LXP id2, LXPMeasure composite_measure) throws BucketException {
+        return composite_measure.distance(id1, id2);
     }
 }
