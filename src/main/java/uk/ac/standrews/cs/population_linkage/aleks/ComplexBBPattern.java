@@ -44,6 +44,7 @@ public class ComplexBBPattern {
 
     final static int NUM_OF_CHILDREN  = 12;
     final static int MAX_AGE_DIFFERENCE  = 20;
+    final static double DATE_THRESHOLD = 0.8;
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
     private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
     private static final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
@@ -58,7 +59,7 @@ public class ComplexBBPattern {
 //    private static int birthplaceCount = 0;
 
     private static String[] creationPredicates = {"match_m_date"};
-    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode"};
+    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date"};
 
     public static void main(String[] args) throws BucketException {
         bridge = Store.getInstance().getBridge();
@@ -89,25 +90,29 @@ public class ComplexBBPattern {
                     triangle.getYearStatistics();
                     boolean hasChanged = false;
 
+                    String toFind = "7106096";
+                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
+                        System.out.println("fsd");
+                    }
+
                     //1. Check age of child not outside of max difference
                     hasChanged = maxRangePredicate(triangle, tempKids, hasChanged, 0);
 
                     //2. check DOB at least 9 months away from rest
                     hasChanged = minBirthIntervalPredicate(triangle, tempKids, hasChanged, 1);
 
-//                    if(Objects.equals(std_id_z, "907863")){
-//                        System.out.println("fsd");
-//                    }
-
                     //3. Get mode of birthplace
                     hasChanged = mostCommonBirthPlacePredicate(triangle, hasChanged, tempKids, 2);
 
-                } else if (getDistance(triangle.x, chain.get(1), composite_measure_date, births) < 1) {
+                } else if (getDistance(triangle.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD) {
                     createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
 //                    newLinks++;
                 }else{
-//                    deleteLink(bridge, std_id_x, std_id_y);
-//                    badMarriageDateCount++;
+                    if(getDistance(triangle.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD){
+                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
+                    } else if (getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD){
+                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
+                    }
                 }
             }
         }
@@ -126,7 +131,7 @@ public class ComplexBBPattern {
 
     private static List<OpenTriangleClusterBB> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge) {
         final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth)\n" +
-                "WHERE NOT (x)-[:SIBLING]-(z)\n" +
+                "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, collect([y, z]) AS openTriangles";
 //        final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth)\n" +
 //                "WHERE NOT (x)-[:SIBLING]-(z)" +
