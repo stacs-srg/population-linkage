@@ -92,8 +92,13 @@ public class OpenTriangleClusterBB {
 
                     birthDays.add(LocalDate.of(year, month, day));
                     yearTotal += year;
+
+                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_ADDRESS), "----")){
+                        birthplaceMap.merge(tempKids[i].getString(Birth.BIRTH_ADDRESS), 1, Integer::sum);
+                    }
+
+                    children.add(tempKids[i]);
                 }
-                children.add(tempKids[i]);
             }
         }
 
