@@ -72,12 +72,22 @@ public class OpenTriangleClusterBB {
 
                     try{
                         year = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_YEAR)));
-                        month = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_MONTH)));
-                        day = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_DAY)));
                     }catch(Exception e){
                         if(!children.isEmpty()){
                             year = (int) Math.round(yearTotal/children.size());
                         }
+                    }
+
+                    try{
+                        month = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_MONTH)));
+                    }catch(Exception e){
+
+                    }
+
+                    try{
+                        day = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_DAY)));
+                    } catch (Exception e) {
+
                     }
 
                     birthDays.add(LocalDate.of(year, month, day));
