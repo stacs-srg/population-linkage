@@ -1,0 +1,147 @@
+Half+1 fields
+Before
+Birth-Birth-Birth triangle: 44704
+BirthBirthSiblingAccuracy
+False positive count	79
+True positive count	257733
+False negative count	265857
+True negative count	36606109241
+
+Precision	1.00
+Recall	0.49
+F1	0.66
+Specificity	1.00
+
+----
+Locating triangles...
+Resolving triangles...
+After
+Bad Marriage Date: 0
+Max Age Difference 0
+9 Months minimum 0
+Birth place 7
+New links 87383
+
+
+Birth-Birth-Birth triangle: 10862
+BirthBirthSiblingAccuracy
+False positive count	84
+True positive count	302418
+False negative count	221172
+True negative count	36606109236
+
+Precision	1.00
+Recall	0.58
+F1	0.73
+Specificity	1.00
+
+------------------------------------------------------------------
+half
+Before
+Birth-Birth-Birth triangle: 124778
+BirthBirthSiblingAccuracy
+False positive count	62776
+True positive count	313169
+False negative count	210524
+True negative count	36606046441
+
+Precision	0.83
+Recall	0.60
+F1	0.70
+Specificity	1.00
+
+----
+Locating triangles...
+Resolving triangles...
+After
+Bad Marriage Date: 0
+Max Age Difference 134268
+9 Months minimum 103723
+Birth place 174997
+New links 174778
+
+
+Created
+match_m_date 89378/89388 1
+
+Deleted
+max_age_range 41560/53006 0.78
+min_b_interval 23230/29578 0.79
+birthplace_mode 57676/90082 0.64
+
+Birth-Birth-Birth triangle: 11474
+BirthBirthSiblingAccuracy
+False positive count	24125
+True positive count	338684
+False negative count	184975
+True negative count	36606085126
+
+Precision	0.93
+Recall	0.65
+F1	0.76
+Specificity	1.00
+
+----------------------------------------------------------
+
+After Dynamic Threshold Changes
+Before
+Birth-Birth-Birth triangle: 524746
+BirthBirthSiblingAccuracy
+False positive count	145896
+True positive count	484888
+False negative count	38702
+True negative count	36605963424
+
+Precision	0.77
+Recall	0.93
+F1	0.84
+Specificity	1.00
+
+----
+Locating triangles...
+Resolving triangles...
+After
+
+Created
+match_m_date 21540/26646 0.8083764917811304
+
+Deleted
+max_age_range 194510/225032 0.8643659568416936
+min_b_interval 119404/134708 0.8863913056388634
+birthplace_mode 130920/171614 0.7628748237323295
+bad_m_date 3322/3322 1.0
+Birth-Birth-Birth triangle: 2389
+BirthBirthSiblingAccuracy
+False positive count	30588
+True positive count	466581
+False negative count	57009
+True negative count	36606078732
+
+Precision	0.94
+Recall	0.89
+F1	0.91
+Specificity	1.00
+
+--------------------------
+Range 18, Interval 360, Birthplace 3
+Created
+match_m_date 21540/26646 0.8083764917811304
+
+Deleted
+max_age_range 198648/230492 0.861843361157871
+min_b_interval 112212/128002 0.8766425524601178
+birthplace_mode 113762/148828 0.764385733867283
+bad_m_date 3322/3322 1.0
+Birth-Birth-Birth triangle: 3385
+BirthBirthSiblingAccuracy
+False positive count	31819
+True positive count	468244
+False negative count	55346
+True negative count	36606077501
+
+Precision	0.94
+Recall	0.89
+F1	0.91
+Specificity	1.00
+
+----
