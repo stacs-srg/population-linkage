@@ -20,16 +20,26 @@ import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(10, 8))
 
-axes = [plt.subplot2grid((3, 2), (0, 0)), plt.subplot2grid((3, 2), (0, 1)),
-        plt.subplot2grid((3, 2), (1, 0)), plt.subplot2grid((3, 2), (1, 1)),
-        plt.subplot2grid((3, 2), (2, 0), colspan=2)]
+MAX_FIELD = 4
+MIN_FIELD = 1
 
-for i, N in enumerate(range(8, 3, -1)):
-    data = pd.read_csv(f'../../../../../../../../../birthbirth{N}.csv')
+# axes = [plt.subplot2grid((3, 2), (0, 0)), plt.subplot2grid((3, 2), (0, 1)),
+#         plt.subplot2grid((3, 2), (1, 0)), plt.subplot2grid((3, 2), (1, 1)),
+#         plt.subplot2grid((3, 2), (2, 0), colspan=2)]
+
+# axes = [plt.subplot2grid((2, 2), (0, 0)), plt.subplot2grid((2, 2), (0, 1)),
+#         plt.subplot2grid((2, 2), (1, 0)), plt.subplot2grid((2, 2), (1, 1))]
+
+axes = [plt.subplot2grid((2, 2), (0, 0)), plt.subplot2grid((2, 2), (0, 1)),
+        plt.subplot2grid((2, 2), (1, 0), colspan=2)]
+
+for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
+    data = pd.read_csv(f'../../../../../../../../../deathdeath{N}.csv')
 
     ax1 = axes[i]
     ax1.plot(data['threshold'], data['recall'], label='Recall', color='b')
     ax1.plot(data['threshold'], data['precision'], label='Precision', color='g')
+    # ax1.plot(data['threshold'], data['fmeasure'], label='fmeasure', color='r')
 
     ax1.set_xlabel('Threshold')
     ax1.set_ylabel('Metrics', color='black')
@@ -42,9 +52,9 @@ for i, N in enumerate(range(8, 3, -1)):
 
     ax2.set_ylabel('Open Triangles')
 
-    ax1.set_title(f'Threshold Analysis Birth-Birth Sibling {N} Fields')
+    ax1.set_title(f'Threshold Analysis Death-Death {N} Fields')
     ax1.grid(True)
 
 plt.tight_layout()
-plt.savefig('threshold_field_analysis.png')
+plt.savefig('threshold_field_analysis_dd.png')
 plt.show()

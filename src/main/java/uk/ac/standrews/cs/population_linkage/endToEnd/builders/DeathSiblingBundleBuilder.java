@@ -48,7 +48,7 @@ public class DeathSiblingBundleBuilder implements MakePersistent {
             int half_fields = linkage_fields - (linkage_fields / 2 );
 
             //too liberal if only half
-            while( linkage_fields >= half_fields + 1 ) {
+            while( linkage_fields >= half_fields) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
                 LinkageResult lr = runner.run(linkageRecipe, new DeathSiblingBundleBuilder(), false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
