@@ -59,8 +59,8 @@ public class ComplexBBPattern {
 //    private static int newLinks = 0;
 //    private static int birthplaceCount = 0;
 
-    private static String[] creationPredicates = {"match_m_date"};
-    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date"};
+    private static String[] creationPredicates = {"match_m_date", "match_strict_name"};
+    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name"};
 
     public static void main(String[] args) throws BucketException {
         bridge = Store.getInstance().getBridge();
@@ -86,35 +86,49 @@ public class ComplexBBPattern {
                 String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
                 String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-                if(Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") ||
-                        Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                    triangle.getYearStatistics();
-                    boolean hasChanged = false;
+                triangle.getYearStatistics();
+                boolean hasChanged = false;
 
-                    String toFind = "7106096";
-                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
-                        System.out.println("fsd");
-                    }
+                String toFind = "7106096";
+//                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
+//                        System.out.println("fsd");
+//                    }
 
-                    //1. Check age of child not outside of max difference
-                    hasChanged = maxRangePredicate(triangle, tempKids, hasChanged, 0);
+                //1. Check age of child not outside of max difference
+                hasChanged = maxRangePredicate(triangle, tempKids, hasChanged, 0);
 
-                    //2. check DOB at least 9 months away from rest
-                    hasChanged = minBirthIntervalPredicate(triangle, tempKids, hasChanged, 1);
+                //2. check DOB at least 9 months away from rest
+                hasChanged = minBirthIntervalPredicate(triangle, tempKids, hasChanged, 1);
 
-                    //3. Get mode of birthplace
-                    hasChanged = mostCommonBirthPlacePredicate(triangle, hasChanged, tempKids, 2);
+                //3. Get mode of birthplace
+                hasChanged = mostCommonBirthPlacePredicate(triangle, hasChanged, tempKids, 2);
 
-                } else if (getDistance(triangle.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD) {
+                //4. If same marriage date and pass other checks, create link
+                if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
+                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
                     createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
-//                    newLinks++;
                 }else{
-                    if(getDistance(triangle.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD){
+                    if(!hasChanged && getDistance(triangle.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
+                            !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
                         deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
-                    } else if (getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD){
+                    } else if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
+                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                            !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
                         deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
                     }
                 }
+
+                int NAME_THRESHOLD = 15;
+                //5. If name of parents widely different, delete
+//                if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_name, births) < NAME_THRESHOLD){
+//                    createLink(bridge, std_id_x, std_id_z, creationPredicates[1]);
+//                }else if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_name, births) > NAME_THRESHOLD){
+//                    deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[4]);
+//                }else if(!hasChanged && getDistance(chain.get(1), chain.get(0), composite_measure_name, births) > NAME_THRESHOLD) {
+//                    deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[4]);
+//                }
             }
         }
 
