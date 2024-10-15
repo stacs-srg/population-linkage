@@ -48,21 +48,19 @@ public class ThresholdTrianglesAnalysisParallel {
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 4;
+        final int MAX_FIELD = 2;
         final int MIN_FIELD = 1; //1 below target
-        final double MAX_THRESHOLD = 1.01; //0.01 above target
+        final double MAX_THRESHOLD = 0.76; //0.01 above target
         final double MIN_THRESHOLD = 0;
 
 
-        ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD); // You can adjust the number of threads
+        ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
         System.out.println("Analysing thresholds...");
 
-        // For each field, create a separate CSV file and run the analysis in parallel
         for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
             final int currentField = fields;
 
-            // Submit the task for each field
             executorService.submit(() -> {
                 try (FileWriter fileWriter = new FileWriter("deathdeath" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
@@ -71,11 +69,9 @@ public class ThresholdTrianglesAnalysisParallel {
 //                    printWriter.println("threshold,precision,recall,fmeasure");
 
                     try (NeoDbCypherBridge localBridge = new NeoDbCypherBridge()) {
-                        // For each threshold, run the queries in parallel
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-                            // Execute queries and write the results
                             long fpc = doQuery(DEATH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
                             long tpc = doQuery(DEATH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
                             long fnc = doQuery(DEATH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)

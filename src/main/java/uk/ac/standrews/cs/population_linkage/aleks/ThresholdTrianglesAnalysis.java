@@ -33,26 +33,32 @@ public class ThresholdTrianglesAnalysis {
     private static final String BIRTH_BIRTH_SIBLING_FNC = "MATCH (b1:Birth)-[r:GT_SIBLING { actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
     private static final String BIRTH_BIRTH_SIBLING_FNC_T = "MATCH (b1:Birth)-[r:GT_SIBLING { actors: \"Child-Child\"}]->(b2:Birth), (b1)-[s:SIBLING]-(b2) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
+    private static final String DEATH_DEATH_SIBLING_TPC = "MATCH (d1:Death)-[r:SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death) WHERE (d1)-[:GT_SIBLING {actors: \"Deceased-Deceased\"}]-(d2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String DEATH_DEATH_SIBLING_FPC = "MATCH (d1:Death)-[r:SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death) WHERE NOT (d1)-[:GT_SIBLING {actors: \"Deceased-Deceased\"}]-(d2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String DEATH_DEATH_SIBLING_FNC = "MATCH (d1:Death)-[r:GT_SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death) WHERE NOT (d1)-[:SIBLING {actors: \"Deceased-Deceased\"}]-(d2) return count(r)";
+    private static final String DEATH_DEATH_SIBLING_FNC_T = "MATCH (d1:Death)-[r:GT_SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death), (d1)-[s:SIBLING]-(d2) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+
+
     public static void main(String[] args) {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 8;
-        final int MIN_FIELD = 4; //1 below target
-        final double MAX_THRESHOLD = 2.01; //0.01 above target
+        final int MAX_FIELD = 2;
+        final int MIN_FIELD = 1; //1 below target
+        final double MAX_THRESHOLD = 0.76; //0.01 above target
         final double MIN_THRESHOLD = 0.0;
 
 
         System.out.println("Analysing thresholds...");
         for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
             System.out.println("Field: " + fields);
-            try (FileWriter fileWriter = new FileWriter("birthbirth" + fields + ".csv");
+            try (FileWriter fileWriter = new FileWriter("deathdeath" + fields + ".csv");
                  PrintWriter printWriter = new PrintWriter(fileWriter)) {
                 printWriter.println("threshold,precision,recall,fmeasure,triangles");
                 for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                     double threshold = Math.round(i * 100.0) / 100.0;
                     System.out.println(threshold);
-                    long fpc = doQuery(BIRTH_BIRTH_SIBLING_FPC, threshold, fields, bridge);
-                    long tpc = doQuery(BIRTH_BIRTH_SIBLING_TPC, threshold, fields, bridge);
-                    long fnc = doQuery(BIRTH_BIRTH_SIBLING_FNC, threshold, fields, bridge) + doQuery(BIRTH_BIRTH_SIBLING_FNC_T, i, fields, bridge);
+                    long fpc = doQuery(DEATH_DEATH_SIBLING_FPC, threshold, fields, bridge);
+                    long tpc = doQuery(DEATH_DEATH_SIBLING_TPC, threshold, fields, bridge);
+                    long fnc = doQuery(DEATH_DEATH_SIBLING_FNC, threshold, fields, bridge) + doQuery(DEATH_DEATH_SIBLING_FNC_T, i, fields, bridge);
 //                long fpc = 1L;
 //                long tpc = 1L;
 //                long fnc = 1L;
