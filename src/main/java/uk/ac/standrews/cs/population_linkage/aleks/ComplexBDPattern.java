@@ -100,7 +100,7 @@ public class ComplexBDPattern {
                 //3. Get mode of birthplace
                 hasChanged = mostCommonBirthPlacePredicate(triangle, hasChanged, tempKids, 2);
 
-                //4. If same marriage date and pass other checks, create link
+                //4. If same marriage date and pass other checks, create link. Match for same birthplace as well?
                 if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
                         !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
                         !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
@@ -110,6 +110,7 @@ public class ComplexBDPattern {
         }
 
         System.out.println("After");
+        new PredicateEfficacy(creationPredicates, deletionPredicates, "Birth", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthDeathSiblingAccuracy(bridge);
@@ -132,13 +133,13 @@ public class ComplexBDPattern {
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
+                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         }
@@ -207,17 +208,17 @@ public class ComplexBDPattern {
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-        if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
-                (Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+        if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
+                (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                         Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < triangle.getAgeRange() / 2)) &&
                 !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE){
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);;
             hasChanged = true;
-        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
-                (Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
+                (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                         Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < triangle.getAgeRange() / 2)) &&
-                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE) {
+                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;

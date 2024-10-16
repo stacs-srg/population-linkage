@@ -257,12 +257,12 @@ public class ComplexBBPattern {
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-        if(!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") &&
+        if(!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") &&
                 !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE ){
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
-        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") &&
+        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") &&
                 !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);

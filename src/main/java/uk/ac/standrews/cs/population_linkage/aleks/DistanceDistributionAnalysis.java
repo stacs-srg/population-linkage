@@ -31,20 +31,60 @@ import java.util.stream.Collectors;
 
 public class DistanceDistributionAnalysis {
 
+//    private static final String BIRTH_SIBLING_TRIANGLE = "MATCH (x:Birth)-[r:SIBLING]-(y:Birth)-[s:SIBLING]-(z:Birth)\n" +
+//            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z)\n" +
+//            "RETURN r.distance + s.distance as cluster_sum, \n" +
+//            "EXISTS((x)-[:GT_SIBLING]-(z)) as has_GT_SIBLING";
+
     private static final String BIRTH_SIBLING_TRIANGLE = "MATCH (x:Birth)-[r:SIBLING]-(y:Birth)-[s:SIBLING]-(z:Birth)\n" +
-            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z)\n" +
-            "RETURN r.distance + s.distance as cluster_sum, \n" +
-            "EXISTS((x)-[:GT_SIBLING]-(z)) as has_GT_SIBLING";
+            "                WHERE NOT (x)-[:SIBLING]-(z)" +
+            "                RETURN collect([r, s]) AS openTriangles, EXISTS((x)-[:GT_SIBLING]-(z)) as has_GT_SIBLING";
 
     public static void main(String[] args) {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
 
-        try (FileWriter fileWriter = new FileWriter("birthbirthtri.csv");
+//        try (FileWriter fileWriter = new FileWriter("birthbirthtri.csv");
+//             PrintWriter printWriter = new PrintWriter(fileWriter)) {
+//            printWriter.println("distance_sum,is_sibling");
+//
+//            Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
+//            result.list(r -> printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean()));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        try (FileWriter fileWriter = new FileWriter("birthbirthtri2.csv");
              PrintWriter printWriter = new PrintWriter(fileWriter)) {
-            printWriter.println("distance_sum,is_sibling");
+            printWriter.println("average_distance,max_distance,has_GT_SIBLING,link_num");
 
             Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
-            result.list(r -> printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean()));
+            result.list(r -> {
+                List<Object> collection = r.get("openTriangles").asList();
+                double maxDis = 0;
+                boolean maxLink = false;
+                double avgDistance = 0;
+                int triCount = 0;
+
+                for (Object c : collection) {
+                    double sumDistances = 0;
+                    List<Object> record = (List<Object>) c;
+                    double rDistance = (double) record.get(0);
+                    double sDistance = (double) record.get(1);
+
+                    sumDistances = rDistance + sDistance;
+                    avgDistance += sumDistances;
+                    triCount++;
+
+                    if(sumDistances > maxDis) {
+                        maxDis = sumDistances;
+                        maxLink = (boolean) record.get(2);
+                    }
+                }
+
+                avgDistance = avgDistance / triCount;
+                printWriter.printf("%.2f,%.2f,%b,%d%n", avgDistance, maxDis, maxLink, triCount);
+                return null;
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
