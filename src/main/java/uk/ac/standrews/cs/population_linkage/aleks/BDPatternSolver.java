@@ -21,21 +21,23 @@ import org.neo4j.driver.Transaction;
 import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
+import uk.ac.standrews.cs.population_linkage.linkageAccuracy.DeathDeathSiblingAccuracy;
 
 public class BDPatternSolver {
     public static void main(String[] args) {
         NeoDbCypherBridge bridge = Store.getInstance().getBridge();
-        String query = "MATCH (b1:Birth)-[:SIBLING]-(d:Death),\n" +
-                "(b2:Birth)-[:SIBLING]-(d),\n" +
-                "(b1:Birth)-[:ID]-(d1:Death),\n" +
-                "(b2:Birth)-[:ID]-(d2:Death),\n" +
+        String query = "MATCH (b1:Death)-[:SIBLING]-(d:Birth),\n" +
+                "(b2:Death)-[:SIBLING]-(d),\n" +
+                "(b1:Death)-[:ID]-(d1:Birth),\n" +
+                "(b2:Death)-[:ID]-(d2:Birth),\n" +
                 "(d)-[:SIBLING]-(d1)-[:SIBLING]-(d2)\n" +
-                "WHERE NOT (b1)-[:SIBLING]-(b2) and not (b1)-[:SIBLING]-(d1) and not (b2)-[:SIBLING]-(d2) and b1.PARENTS_YEAR_OF_MARRIAGE = b2.PARENTS_YEAR_OF_MARRIAGE\n" +
-                "MERGE (b1)-[r:SIBLING { provenance: \"bd_sol\", actors: \"Child-Child\" } ]-(b2)";
+                "WHERE NOT (b1)-[:SIBLING]-(b2) and not (b1)-[:SIBLING]-(d1) and not (b2)-[:SIBLING]-(d2)\n" +
+                "MERGE (b1)-[r:SIBLING { provenance: \"bd_sol\", actors: \"Deceased-Deceased\" } ]-(b2)";
 
         System.out.println("Before");
-        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
-        new BirthBirthSiblingAccuracy(bridge);
+        PatternsCounter.countOpenTrianglesToString(bridge, "Death", "Birth");
+        PatternsCounter.countOpenTrianglesToString(bridge, "Death", "Death");
+        new DeathDeathSiblingAccuracy(bridge);
 
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
             tx.run(query);
@@ -43,8 +45,9 @@ public class BDPatternSolver {
         }
 
         System.out.println("After");
-        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
-        new BirthBirthSiblingAccuracy(bridge);
+        PatternsCounter.countOpenTrianglesToString(bridge, "Death", "Birth");
+        PatternsCounter.countOpenTrianglesToString(bridge, "Death", "Death");
+        new DeathDeathSiblingAccuracy(bridge);
     }
 }
 

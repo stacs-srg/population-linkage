@@ -1,0 +1,23 @@
+False positive count	1292
+True positive count	9258
+False negative count	7310
+True negative count	7904564385
+
+Precision	0.88
+Recall	0.56
+F1	0.68
+Specificity	1.00
+
+Death-Death-Death triangle: 673
+---------------------------------------------
+False positive count	99861
+True positive count	13226
+False negative count	3342
+True negative count	7904465816
+
+Precision	0.12
+Recall	0.80
+F1	0.20
+Specificity	1.00
+
+Death-Death-Death triangle: 241799

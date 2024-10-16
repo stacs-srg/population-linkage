@@ -45,12 +45,20 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe
 public class ComplexBDPattern {
 
     final static int NUM_OF_CHILDREN  = 12;
-    final static int MAX_AGE_DIFFERENCE  = 20;
+    final static int MAX_AGE_DIFFERENCE  = 23;
+    final static double DATE_THRESHOLD = 0.8;
+    final static int BIRTH_INTERVAL = 280;
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: \"bde_sol\", actors: \"Child-Child\" } ]-(b)";
     private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
+    private static final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov } ]-(b)";
+
+    private static NeoDbCypherBridge bridge;
+
+    private static String[] creationPredicates = {"match_m_date", "match_strict_name"};
+    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name"};
 
     public static void main(String[] args) throws BucketException {
-        NeoDbCypherBridge bridge = Store.getInstance().getBridge();
+        bridge = Store.getInstance().getBridge();
         RecordRepository record_repository = new RecordRepository("umea");
         final StringMeasure base_measure = Constants.LEVENSHTEIN;;
         final LXPMeasure composite_measure_name = getCompositeMeasure(base_measure);
@@ -58,28 +66,16 @@ public class ComplexBDPattern {
         final LXPMeasure composite_measure_bd = getCompositeMeasureBirthDeath(base_measure);
         IBucket births = record_repository.getBucket("birth_records");
         IBucket deaths = record_repository.getBucket("death_records");
-//        String query = "MATCH (x:Birth)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Birth)\n" +
-//                "WHERE NOT (x)-[:SIBLING]-(z) " +
-//                "and x.FATHER_FORENAME = z.FATHER_FORENAME and x.FATHER_SURNAME = z.FATHER_SURNAME " +
-//                "and x.MOTHER_FORENAME = z.MOTHER_FORENAME and x.MOTHER_MAIDEN_SURNAME = z.MOTHER_MAIDEN_SURNAME " +
-//                "and x.PARENTS_YEAR_OF_MARRIAGE <> \"\" and z.PARENTS_YEAR_OF_MARRIAGE <> \"\" and x.PARENTS_YEAR_OF_MARRIAGE = z.PARENTS_YEAR_OF_MARRIAGE " +
-//                "and x.PARENTS_MONTH_OF_MARRIAGE = z.PARENTS_MONTH_OF_MARRIAGE and x.PARENTS_DAY_OF_MARRIAGE = x.PARENTS_DAY_OF_MARRIAGE " +
-//                "and x.FATHER_FORENAME <> \"¤\" \n" +
-//                "MERGE (x)-[r:SIBLING { provenance: \"bde_sol\", actors: \"Child-Child\" } ]-(z)";
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
-        new BirthBirthSiblingAccuracy(bridge);
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthDeathSiblingAccuracy(bridge);
+        new BirthBirthSiblingAccuracy(bridge);
 
         System.out.println("Locating triangles...");
         List<OpenTriangleCluster> triangles = findIllegalBirthDeathSiblingTriangles(bridge);
         System.out.println("Resolving triangles...");
-        int maxAgeCount = 0;
-        int nineMonthsCount = 0;
-        int deathPlaceCount = 0;
-        int badMarriageDateCount = 0;
-        int birthplaceCount = 0;
         for (OpenTriangleCluster triangle : triangles) {
             for (List<Long> chain : triangle.getTriangleChain()){
                 LXP[] tempKids = {(LXP) births.getObjectById(triangle.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
@@ -87,120 +83,176 @@ public class ComplexBDPattern {
                 String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
                 String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-                if(Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") ||
-                        Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                    triangle.getYearStatistics();
-                    boolean hasChanged = false;
+                triangle.getYearStatistics();
+                boolean hasChanged = false;
 
-                    //1. Check age of child not outside of max difference
-                    if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
-                        deleteLink(bridge, std_id_x, std_id_y);
-                        maxAgeCount++;
-                        hasChanged = true;
-                    } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
-                        deleteLink(bridge, std_id_z, std_id_y);
-                        maxAgeCount++;
-                        hasChanged = true;
-                    } else if (!Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") && Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE) {
-                        deleteLink(bridge, std_id_z, std_id_y);
-                        deleteLink(bridge, std_id_x, std_id_y);
-                        maxAgeCount++;
-                        hasChanged = true;
-                    }
-
-                    //2. check DOB at least 9 months away from rest
-                    //https://stackoverflow.com/a/67767630
-                    try{
-                        LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY)));
-                        Optional<LocalDate> closestDateX = triangle.getBirthDays().stream().sorted(Comparator.comparingLong(x -> Math.abs(ChronoUnit.DAYS.between(x, dateX))))
-                                .skip(1)
-                                .findFirst();
-                        if(!hasChanged && closestDateX.isPresent() && ChronoUnit.DAYS.between(closestDateX.get(), dateX) < 280 && ChronoUnit.DAYS.between(closestDateX.get(), dateX) > 2){
-                            deleteLink(bridge, std_id_x, std_id_y);
-                            nineMonthsCount++;
-                            hasChanged = true;
-                        }
-                    }catch (Exception e){
-
-                    }
-
-                    try{
-                        LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY)));
-                        Optional<LocalDate> closestDateZ = triangle.getBirthDays().stream().sorted(Comparator.comparingLong(x -> Math.abs(ChronoUnit.DAYS.between(x, dateZ))))
-                                .skip(1)
-                                .findFirst();
-                        if(!hasChanged && closestDateZ.isPresent() && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) < 280 && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) > 2){
-                            deleteLink(bridge, std_id_z, std_id_y);
-                            nineMonthsCount++;
-                            hasChanged = true;
-                        }
-                    } catch (Exception e) {
-
-                    }
-
-                    //3. If place of death for death certificate and died young, assume children live in same area
-                    if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") &&
-                            ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
-                                    (Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                                            Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < triangle.getAgeRange() / 2))){
-                        String potentialFamilyLocation = tempKids[1].getString(Death.PLACE_OF_DEATH);
-                        //probably need to do distance on this one
-                        if(!tempKids[0].getString(Birth.BIRTH_ADDRESS).equals(potentialFamilyLocation)){
-                            deleteLink(bridge, std_id_x, std_id_y);
-                            deathPlaceCount++;
-                            hasChanged = true;
-                        } else if (!tempKids[2].getString(Birth.BIRTH_ADDRESS).equals(potentialFamilyLocation)) {
-                            deleteLink(bridge, std_id_z, std_id_y);
-                            deathPlaceCount++;
-                            hasChanged = true;
-                        }
-                    }
-
-                    //4. Check illegitimacy
-
-//                    if(Objects.equals(std_id_x, "486023")){
+                String toFind = "7106096";
+//                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
 //                        System.out.println("fsd");
 //                    }
 
-                    //5. Get mode of birthplace
-                    if(!hasChanged && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > 3){
-                        deleteLink(bridge, std_id_x, std_id_y);
-                        birthplaceCount++;
-                        hasChanged = true;
-                    } else if (!hasChanged && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > 3) {
-                        deleteLink(bridge, std_id_z, std_id_y);
-                        birthplaceCount++;
-                        hasChanged = true;
-                    }
+                //1. Check age of child not outside of max difference
+                hasChanged = maxRangePredicate(triangle, tempKids, hasChanged, 0);
 
-                } else if (getDistance(triangle.x, chain.get(1), composite_measure_date, births) < 2) {
-                    try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-                        Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z);
-                        tx.run(BB_SIBLING_QUERY, parameters);
-                        tx.commit();
-                    }
-                }else{
-                    deleteLink(bridge, std_id_x, std_id_y);
-                    badMarriageDateCount++;
+                //2. check DOB at least 9 months away from rest
+                hasChanged = minBirthIntervalPredicate(triangle, tempKids, hasChanged, 1);
+
+                //3. Get mode of birthplace
+                hasChanged = mostCommonBirthPlacePredicate(triangle, hasChanged, tempKids, 2);
+
+                //4. If same marriage date and pass other checks, create link
+                if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
+                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+                    createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
                 }
             }
         }
 
         System.out.println("After");
-        System.out.println("Bad Marriage Date: " + badMarriageDateCount);
-        System.out.println("Max Age Difference " + maxAgeCount);
-        System.out.println("9 Months minimum " + nineMonthsCount);
-        System.out.println("Death place " + deathPlaceCount);
-        System.out.println("Birth place " + birthplaceCount);
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
-        new BirthBirthSiblingAccuracy(bridge);
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthDeathSiblingAccuracy(bridge);
+        new BirthBirthSiblingAccuracy(bridge);
+    }
+
+    private static boolean maxRangePredicate(OpenTriangleCluster triangle, LXP[] tempKids, boolean hasChanged, int predNumber) {
+        String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
+        String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
+        String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+
+        if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+//                        deleteLink(bridge, std_id_x, std_id_y);
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+//            maxAgeCount++;
+            hasChanged = true;
+        } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+//                        deleteLink(bridge, std_id_z, std_id_y);
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+//            maxAgeCount++;
+            hasChanged = true;
+        } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
+                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
+//                        deleteLink(bridge, std_id_z, std_id_y);
+//                        deleteLink(bridge, std_id_x, std_id_y);
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+//            maxAgeCount++;
+            hasChanged = true;
+        } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
+                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+            hasChanged = true;
+        }
+
+        return hasChanged;
+    }
+
+    //https://stackoverflow.com/a/67767630
+    private static boolean minBirthIntervalPredicate(OpenTriangleCluster triangle, LXP[] tempKids, boolean hasChanged, int predNumber) {
+        String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
+        String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
+        String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+
+        try{
+            int day = 1;
+            if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
+                day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
+            }
+
+            LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
+            Optional<LocalDate> closestDateX = triangle.getBirthDays().stream().sorted(Comparator.comparingLong(x -> Math.abs(ChronoUnit.DAYS.between(x, dateX))))
+                    .skip(1)
+                    .findFirst();
+            if(!hasChanged && closestDateX.isPresent() && ChronoUnit.DAYS.between(closestDateX.get(), dateX) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateX.get(), dateX) > 2){
+//                            deleteLink(bridge, std_id_x, std_id_y);
+                deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+//                nineMonthsCount++;
+                hasChanged = true;
+                try{
+                    LocalDate dateY = LocalDate.of(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) , Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(3, 5)), Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(0, 2)));
+                    if(dateY.equals(closestDateX.get())){
+                        triangle.removeBirthday(dateX);
+                    }
+                } catch (Exception e) {
+
+                }
+            }
+        }catch (Exception e){
+
+        }
+
+        try{
+            int day = 1;
+            if(!Objects.equals(tempKids[2].getString(Birth.BIRTH_DAY), "--")){
+                day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
+            }
+
+            LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
+            Optional<LocalDate> closestDateZ = triangle.getBirthDays().stream().sorted(Comparator.comparingLong(x -> Math.abs(ChronoUnit.DAYS.between(x, dateZ))))
+                    .skip(1)
+                    .findFirst();
+            if(!hasChanged && closestDateZ.isPresent() && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) > 2){
+//                            deleteLink(bridge, std_id_z, std_id_y);
+                deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+//                nineMonthsCount++;
+                hasChanged = true;
+            }
+        } catch (Exception e) {
+
+        }
+
+        return hasChanged;
+    }
+
+    private static boolean mostCommonBirthPlacePredicate(OpenTriangleCluster triangle, boolean hasChanged, LXP[] tempKids, int predNumber) {
+        int MIN_FAMILY_SIZE = 3;
+        String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
+        String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
+        String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+
+        if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
+                (Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < triangle.getAgeRange() / 2)) &&
+                !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE){
+//                        deleteLink(bridge, std_id_x, std_id_y);
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+//            birthplaceCount++;
+            hasChanged = true;
+        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
+                (Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < triangle.getAgeRange() / 2)) &&
+                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE) {
+//                        deleteLink(bridge, std_id_z, std_id_y);
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+//            birthplaceCount++;
+            hasChanged = true;
+        }
+
+        return hasChanged;
     }
 
     private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y){
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
             Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y);
             tx.run(BB_SIBLING_QUERY_DEL, parameters);
+            tx.commit();
+        }
+    }
+
+    private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y, String prov){
+        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y, prov);
+            tx.run(BB_SIBLING_QUERY_DEL_PROV, parameters);
+            tx.commit();
+        }
+    }
+
+    private static void createLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_z, String prov) {
+        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
+            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z, prov);
+            tx.run(BB_SIBLING_QUERY, parameters);
             tx.commit();
         }
     }
@@ -281,6 +333,14 @@ public class ComplexBDPattern {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
+        return parameters;
+    }
+
+    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String prov) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("standard_id_from", standard_id_from);
+        parameters.put("standard_id_to", standard_id_to);
+        parameters.put("prov", prov);
         return parameters;
     }
 }
