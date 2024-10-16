@@ -52,13 +52,6 @@ public class ComplexBBPattern {
 
     private static NeoDbCypherBridge bridge;
 
-    //counters for predicates
-//    private static int maxAgeCount = 0;
-//    private static int nineMonthsCount = 0;
-//    private static int badMarriageDateCount = 0;
-//    private static int newLinks = 0;
-//    private static int birthplaceCount = 0;
-
     private static String[] creationPredicates = {"match_m_date", "match_strict_name"};
     private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name"};
 
@@ -133,11 +126,6 @@ public class ComplexBBPattern {
         }
 
         System.out.println("After");
-//        System.out.println("Bad Marriage Date: " + badMarriageDateCount);
-//        System.out.println("Max Age Difference " + maxAgeCount);
-//        System.out.println("9 Months minimum " + nineMonthsCount);
-//        System.out.println("Birth place " + birthplaceCount);
-//        System.out.println("New links " + newLinks);
         System.out.println("\n");
         new PredicateEfficacy(creationPredicates, deletionPredicates, "Birth", "Birth");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
@@ -187,20 +175,17 @@ public class ComplexBBPattern {
                 Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
-//            maxAgeCount++;
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
                 Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
 //                        deleteLink(bridge, std_id_z, std_id_y);
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
-//            maxAgeCount++;
             hasChanged = true;
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
                 Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
-//            maxAgeCount++;
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
                 Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
@@ -230,7 +215,6 @@ public class ComplexBBPattern {
             if(!hasChanged && closestDateX.isPresent() && ChronoUnit.DAYS.between(closestDateX.get(), dateX) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateX.get(), dateX) > 2){
 //                            deleteLink(bridge, std_id_x, std_id_y);
                 deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
-//                nineMonthsCount++;
                 hasChanged = true;
                 try{
                     LocalDate dateY = LocalDate.of(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_DAY)));
@@ -258,7 +242,6 @@ public class ComplexBBPattern {
             if(!hasChanged && closestDateZ.isPresent() && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) > 2){
 //                            deleteLink(bridge, std_id_z, std_id_y);
                 deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
-//                nineMonthsCount++;
                 hasChanged = true;
             }
         } catch (Exception e) {
@@ -278,13 +261,11 @@ public class ComplexBBPattern {
                 !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE ){
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
-//            birthplaceCount++;
             hasChanged = true;
         } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") &&
                 !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
-//            birthplaceCount++;
             hasChanged = true;
         }
 

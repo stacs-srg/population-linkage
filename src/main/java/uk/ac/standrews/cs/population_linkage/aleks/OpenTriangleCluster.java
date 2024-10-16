@@ -73,14 +73,29 @@ public class OpenTriangleCluster {
                     int day = 1;
                     if(i != 1){
                         try{
-                            year = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR));
-                            month = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_MONTH));
-                            day = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_DAY));
+                            year = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_YEAR)));
                         }catch(Exception e){
                             if(!children.isEmpty()){
                                 year = (int) Math.round(yearTotal/children.size());
                             }
                         }
+
+                        try{
+                            month = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_MONTH)));
+                        }catch(Exception e){
+                            month = -1;
+                        }
+
+                        try{
+                            day = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_DAY)));
+                        } catch (Exception e) {
+
+                        }
+
+                        if(month != -1){
+                            birthDays.add(LocalDate.of(year, month, day));
+                        }
+                        yearTotal += year;
 
                         if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_ADDRESS), "----")){
                             birthplaceMap.merge(tempKids[i].getString(Birth.BIRTH_ADDRESS), 1, Integer::sum);
@@ -90,16 +105,19 @@ public class OpenTriangleCluster {
                             year = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(6));
                             month = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(3, 5));
                             day = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(0, 2));
+
+                            birthDays.add(LocalDate.of(year, month, day));
                         }catch(Exception e){
                             if(!children.isEmpty()){
                                 year = (int) Math.round(yearTotal/children.size());
                             }
                         }
                     }
-                    birthDays.add(LocalDate.of(year, month, day));
+
                     yearTotal += year;
+
+                    children.add(tempKids[i]);
                 }
-                children.add(tempKids[i]);
             }
         }
 
@@ -112,18 +130,21 @@ public class OpenTriangleCluster {
             }
         }
 
-        Collections.sort(birthDays);
-        ageRange = birthDays.get(birthDays.size() - 1).getYear() - birthDays.get(0).getYear();
         yearAvg = yearTotal / children.size();
-        if ((birthDays.size() % 2) == 0) {
-            yearMedian = ((birthDays.get(birthDays.size() / 2)).getYear() + (birthDays.get(birthDays.size() / 2 - 1)).getYear()) / 2;
-        }else {
-            yearMedian = birthDays.get(birthDays.size() / 2).getYear();
-        }
-    }
 
-    public void removeChain(List<Long> chain) {
-        triangleChain.remove(chain);
+        Collections.sort(birthDays);
+        if(birthDays.size() > 0){
+            ageRange = birthDays.get(birthDays.size() - 1).getYear() - birthDays.get(0).getYear();
+
+            if ((birthDays.size() % 2) == 0) {
+                yearMedian = ((birthDays.get(birthDays.size() / 2)).getYear() + (birthDays.get(birthDays.size() / 2 - 1)).getYear()) / 2;
+            }else {
+                yearMedian = birthDays.get(birthDays.size() / 2).getYear();
+            }
+        }else{
+            ageRange = 0;
+            yearMedian = (int) yearAvg;
+        }
     }
 
     public int getAgeRange() {
@@ -148,5 +169,9 @@ public class OpenTriangleCluster {
 
     public String getMostCommonBirthplace() {
         return mostCommonBirthplace;
+    }
+
+    public void removeBirthday(LocalDate date) {
+        birthDays.remove(date);
     }
 }
