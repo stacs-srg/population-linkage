@@ -26,6 +26,7 @@ public class DeathDeathSiblingAccuracy extends AbstractAccuracy {
 
     public DeathDeathSiblingAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);
+        doqueries();
     }
 
     private void doqueries() {

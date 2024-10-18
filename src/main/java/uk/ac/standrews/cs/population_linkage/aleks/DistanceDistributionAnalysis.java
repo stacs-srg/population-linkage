@@ -17,6 +17,7 @@
 package uk.ac.standrews.cs.population_linkage.aleks;
 
 import org.neo4j.driver.Result;
+import org.neo4j.driver.Value;
 import org.neo4j.driver.types.Node;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
@@ -37,8 +38,8 @@ public class DistanceDistributionAnalysis {
 //            "EXISTS((x)-[:GT_SIBLING]-(z)) as has_GT_SIBLING";
 
     private static final String BIRTH_SIBLING_TRIANGLE = "MATCH (x:Birth)-[r:SIBLING]-(y:Birth)-[s:SIBLING]-(z:Birth)\n" +
-            "                WHERE NOT (x)-[:SIBLING]-(z)" +
-            "                RETURN collect([r, s]) AS openTriangles, EXISTS((x)-[:GT_SIBLING]-(z)) as has_GT_SIBLING";
+            "WHERE NOT (x)-[:SIBLING]-(z)\n" +
+            "RETURN x, collect([r.distance, s.distance, EXISTS((x)-[:GT_SIBLING]-(z))]) AS openTriangles";
 
     public static void main(String[] args) {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
@@ -58,32 +59,37 @@ public class DistanceDistributionAnalysis {
             printWriter.println("average_distance,max_distance,has_GT_SIBLING,link_num");
 
             Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
-            result.list(r -> {
-                List<Object> collection = r.get("openTriangles").asList();
+            result.stream().forEach(r -> {
+                List<List<Object>> collection = (List<List<Object>>) r.asMap().get("openTriangles");
                 double maxDis = 0;
                 boolean maxLink = false;
                 double avgDistance = 0;
                 int triCount = 0;
 
-                for (Object c : collection) {
+                for (List<Object> record : collection) {
                     double sumDistances = 0;
-                    List<Object> record = (List<Object>) c;
-                    double rDistance = (double) record.get(0);
-                    double sDistance = (double) record.get(1);
+                    try{
+                        double rDistance = (double) record.get(0);
+                        double sDistance = (double) record.get(1);
+                        boolean hasLink = (boolean) record.get(2);
 
-                    sumDistances = rDistance + sDistance;
-                    avgDistance += sumDistances;
-                    triCount++;
+                        sumDistances = rDistance + sDistance;
+                        avgDistance += sumDistances;
+                        triCount++;
 
-                    if(sumDistances > maxDis) {
-                        maxDis = sumDistances;
-                        maxLink = (boolean) record.get(2);
+                        if(sumDistances > maxDis) {
+                            maxDis = sumDistances;
+                            maxLink = hasLink;
+                        }
+                    } catch (Exception e) {
+
                     }
                 }
 
-                avgDistance = avgDistance / triCount;
-                printWriter.printf("%.2f,%.2f,%b,%d%n", avgDistance, maxDis, maxLink, triCount);
-                return null;
+                if(triCount > 0){
+                    avgDistance = avgDistance / triCount;
+                    printWriter.printf("%.2f,%.2f,%b,%d%n", avgDistance, maxDis, maxLink, triCount);
+                }
             });
         } catch (Exception e) {
             e.printStackTrace();

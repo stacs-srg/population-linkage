@@ -36,8 +36,8 @@ public class OpenTriangleClusterBB {
     public final long x;
     public List<List<Long>> triangleChain = new ArrayList<>();
     private Set<LXP> children = new HashSet<LXP>();
-    private List<LocalDate> birthDays = new ArrayList<>();
-    Map<String, Integer> birthplaceMap = new HashMap<String, Integer>();
+    private Map<String, LocalDate> birthDays = new HashMap<String, LocalDate>();
+    private Map<String, Integer> birthplaceMap = new HashMap<String, Integer>();
     private double yearTotal = 0;
     private int ageRange;
     private double yearAvg;
@@ -91,7 +91,7 @@ public class OpenTriangleClusterBB {
                     }
 
                     if(month != -1){
-                        birthDays.add(LocalDate.of(year, month, day));
+                        birthDays.put(tempKids[i].getString(Birth.STANDARDISED_ID), LocalDate.of(year, month, day));
                     }
                     yearTotal += year;
 
@@ -115,14 +115,16 @@ public class OpenTriangleClusterBB {
 
         yearAvg = yearTotal / children.size();
 
-        Collections.sort(birthDays);
-        if(birthDays.size() > 0){
-            ageRange = birthDays.get(birthDays.size() - 1).getYear() - birthDays.get(0).getYear();
+        List<LocalDate> sortedBirthDays = new ArrayList<>(birthDays.values());
+        Collections.sort(sortedBirthDays);
 
-            if ((birthDays.size() % 2) == 0) {
-                yearMedian = ((birthDays.get(birthDays.size() / 2)).getYear() + (birthDays.get(birthDays.size() / 2 - 1)).getYear()) / 2;
+        if(!sortedBirthDays.isEmpty()){
+            ageRange = sortedBirthDays.get(sortedBirthDays.size() - 1).getYear() - sortedBirthDays.get(0).getYear();
+
+            if ((sortedBirthDays.size() % 2) == 0) {
+                yearMedian = ((sortedBirthDays.get(sortedBirthDays.size() / 2)).getYear() + (sortedBirthDays.get(sortedBirthDays.size() / 2 - 1)).getYear()) / 2;
             }else {
-                yearMedian = birthDays.get(birthDays.size() / 2).getYear();
+                yearMedian = sortedBirthDays.get(sortedBirthDays.size() / 2).getYear();
             }
         }else{
             ageRange = 0;
@@ -142,7 +144,7 @@ public class OpenTriangleClusterBB {
         return children.size();
     }
 
-    public List<LocalDate> getBirthDays() {
+    public Map<String, LocalDate> getBirthDays() {
         return birthDays;
     }
 

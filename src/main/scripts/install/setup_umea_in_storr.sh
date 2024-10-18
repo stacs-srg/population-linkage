@@ -19,7 +19,7 @@
 export MAVEN_OPTS="-Xmx16G"
 
 echo "Creating indices"
-java -cp ~/Documents/GitHub/data-umea-1.0-SNAPSHOT-jar-with-dependencies.jar uk.ac.standrews.cs.data.umea.store.CreateIndices
+java -cp ~/data-umea-1.0-SNAPSHOT-jar-with-dependencies.jar uk.ac.standrews.cs.data.umea.store.CreateIndices
 
 echo "Loading event records"
-java -cp ~/Documents/GitHub/data-umea-1.0-SNAPSHOT-jar-with-dependencies.jar uk.ac.standrews.cs.data.umea.store.ImportUmeaRecordsToStore
+java -cp ~/data-umea-1.0-SNAPSHOT-jar-with-dependencies.jar uk.ac.standrews.cs.data.umea.store.ImportUmeaRecordsToStore

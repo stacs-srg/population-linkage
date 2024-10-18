@@ -49,11 +49,22 @@ public class ComplexBBPattern {
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
     private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
     private static final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
+    private static final String BB_SIBLING_WITH_PARENTS = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth),\n" +
+            "(x)-[s:ID]-(m:Marriage),\n" +
+            "(y)-[t:ID]-(m)\n" +
+            "WHERE (s.actors = \"Child-Father\" or s.actors = \"Child-Mother\") and (t.actors = \"Child-Father\" or t.actors = \"Child-Mother\") and NOT (x)-[:SIBLING]-(z) and NOT (z)-[:ID]-(m) and z.PARENTS_YEAR_OF_MARRIAGE <> m.MARRIAGE_YEAR and x.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR and y.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR MERGE (y)-[r:DELETED { provenance: \"m_pred\",actors: \"Child-Child\" } ]-(z)";
+    private static final String BB_SHORTEST_PATH = "MATCH\n" +
+            "  (a:Birth {STANDARDISED_ID: $standard_id_from}),\n" +
+            "  (b:Birth {STANDARDISED_ID: $standard_id_to}),\n" +
+            "  p = shortestPath((a)-[:SIBLING*]-(b))\n" +
+            "WHERE all(r IN relationships(p) WHERE r.actors = \"Child-Child\")\n" +
+            "RETURN length(p) as l";
+
 
     private static NeoDbCypherBridge bridge;
 
     private static String[] creationPredicates = {"match_m_date", "match_strict_name"};
-    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name"};
+    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name", "m_pred"};
 
     public static void main(String[] args) throws BucketException {
         bridge = Store.getInstance().getBridge();
@@ -67,9 +78,15 @@ public class ComplexBBPattern {
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthBirthSiblingAccuracy(bridge);
 
+        System.out.println("Running graph predicates...");
+        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+            tx.run(BB_SIBLING_WITH_PARENTS);
+            tx.commit();
+        }
+
         System.out.println("Locating triangles...");
         List<OpenTriangleClusterBB> triangles = findIllegalBirthDeathSiblingTriangles(bridge);
-        System.out.println(triangles.size());
+        System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles...");
         for (OpenTriangleClusterBB triangle : triangles) {
@@ -82,7 +99,7 @@ public class ComplexBBPattern {
                 triangle.getYearStatistics();
                 boolean hasChanged = false;
 
-                String toFind = "7106096";
+//                String toFind = "7106096";
 //                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
 //                        System.out.println("fsd");
 //                    }
@@ -209,10 +226,49 @@ public class ComplexBBPattern {
             }
 
             LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
-            Optional<LocalDate> closestDateX = triangle.getBirthDays().stream().sorted(Comparator.comparingLong(x -> Math.abs(ChronoUnit.DAYS.between(x, dateX))))
+            LocalDate dateY = LocalDate.of(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_DAY)));
+
+            if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, dateX)) > 2){
+                deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+                hasChanged = true;
+            }
+
+        }catch (Exception e){
+
+        }
+
+        try{
+            int day = 1;
+            if(!Objects.equals(tempKids[2].getString(Birth.BIRTH_DAY), "--")){
+                day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
+            }
+
+            LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
+            LocalDate dateY = LocalDate.of(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_DAY)));
+
+            if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, dateZ)) > 2){
+                deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+                hasChanged = true;
+            }
+
+        }catch (Exception e){
+
+        }
+
+        int MIN_PATH = 2;
+
+        try{
+            int day = 1;
+            if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
+                day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
+            }
+
+            LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
+            Optional<Map.Entry<String, LocalDate>> closestDateX = triangle.getBirthDays().entrySet().stream()
+                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
                     .skip(1)
                     .findFirst();
-            if(!hasChanged && closestDateX.isPresent() && ChronoUnit.DAYS.between(closestDateX.get(), dateX) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateX.get(), dateX) > 2){
+            if(!hasChanged && closestDateX.isPresent() && ChronoUnit.DAYS.between(closestDateX.get().getValue(), dateX) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateX.get().getValue(), dateX) > 2 && getShortestPath(bridge, std_id_x, closestDateX.get().getKey()) > MIN_PATH){
 //                            deleteLink(bridge, std_id_x, std_id_y);
                 deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
                 hasChanged = true;
@@ -236,10 +292,11 @@ public class ComplexBBPattern {
             }
 
             LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
-            Optional<LocalDate> closestDateZ = triangle.getBirthDays().stream().sorted(Comparator.comparingLong(x -> Math.abs(ChronoUnit.DAYS.between(x, dateZ))))
+            Optional<Map.Entry<String, LocalDate>> closestDateZ = triangle.getBirthDays().entrySet().stream()
+                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
                     .skip(1)
                     .findFirst();
-            if(!hasChanged && closestDateZ.isPresent() && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateZ.get(), dateZ) > 2){
+            if(!hasChanged && closestDateZ.isPresent() && ChronoUnit.DAYS.between(closestDateZ.get().getValue(), dateZ) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateZ.get().getValue(), dateZ) > 2 && getShortestPath(bridge, std_id_z, closestDateZ.get().getKey()) > MIN_PATH){
 //                            deleteLink(bridge, std_id_z, std_id_y);
                 deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
                 hasChanged = true;
@@ -278,6 +335,18 @@ public class ComplexBBPattern {
             tx.run(BB_SIBLING_QUERY, parameters);
             tx.commit();
         }
+    }
+
+    private static int getShortestPath(NeoDbCypherBridge bridge, String std_id_x, String std_id_z) {
+        Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z);
+        Result result = bridge.getNewSession().run(BB_SHORTEST_PATH, parameters);
+        List<Long> clusters = result.list(r -> r.get("l").asLong());
+        long count = 0;
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
+
+        return (int) count;
     }
 
     private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y){

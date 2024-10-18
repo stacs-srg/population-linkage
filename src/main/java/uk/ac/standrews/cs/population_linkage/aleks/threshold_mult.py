@@ -52,9 +52,9 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
 
     ax2.set_ylabel('Open Triangles')
 
-    ax1.set_title(f'Threshold Analysis Death-Death {N} Fields')
+    ax1.set_title(f'Threshold Analysis Birth-Death ID {N} Fields')
     ax1.grid(True)
 
 plt.tight_layout()
-plt.savefig('threshold_field_analysis_dd.png')
+# plt.savefig('threshold_field_analysis_dd.png')
 plt.show()
