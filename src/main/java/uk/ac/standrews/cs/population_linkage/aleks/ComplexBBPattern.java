@@ -16,10 +16,12 @@
  */
 package uk.ac.standrews.cs.population_linkage.aleks;
 
+import com.google.common.collect.Lists;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Node;
+import org.neo4j.exceptions.Neo4jException;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
@@ -36,6 +38,8 @@ import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
@@ -53,11 +57,18 @@ public class ComplexBBPattern {
             "(x)-[s:ID]-(m:Marriage),\n" +
             "(y)-[t:ID]-(m)\n" +
             "WHERE (s.actors = \"Child-Father\" or s.actors = \"Child-Mother\") and (t.actors = \"Child-Father\" or t.actors = \"Child-Mother\") and NOT (x)-[:SIBLING]-(z) and NOT (z)-[:ID]-(m) and z.PARENTS_YEAR_OF_MARRIAGE <> m.MARRIAGE_YEAR and x.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR and y.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR MERGE (y)-[r:DELETED { provenance: \"m_pred\",actors: \"Child-Child\" } ]-(z)";
-    private static final String BB_SHORTEST_PATH = "MATCH\n" +
-            "  (a:Birth {STANDARDISED_ID: $standard_id_from}),\n" +
-            "  (b:Birth {STANDARDISED_ID: $standard_id_to}),\n" +
-            "  p = shortestPath((a)-[:SIBLING*]-(b))\n" +
-            "WHERE all(r IN relationships(p) WHERE r.actors = \"Child-Child\")\n" +
+//    private static final String BB_SHORTEST_PATH = "MATCH\n" +
+//            "  (a:Birth {STANDARDISED_ID: $standard_id_from}),\n" +
+//            "  (b:Birth {STANDARDISED_ID: $standard_id_to}),\n" +
+//            "  p = shortestPath((a)-[:SIBLING*]-(b))\n" +
+//            "WHERE all(r IN relationships(p) WHERE r.actors = \"Child-Child\")\n" +
+//            "RETURN length(p) as l";
+    private static final String BB_SHORTEST_PATH = "MATCH \n" +
+            "(a:Birth {STANDARDISED_ID: $standard_id_from}),\n" +
+            "(b:Birth {STANDARDISED_ID: $standard_id_mid}),\n" +
+            "(c:Birth {STANDARDISED_ID: $standard_id_to}),\n" +
+            "p = shortestPath((a)-[:SIBLING*]-(c))\n" +
+            "WHERE b IN nodes(p) AND all(r IN relationships(p) WHERE r.actors = \"Child-Child\")\n" +
             "RETURN length(p) as l";
 
 
@@ -69,8 +80,9 @@ public class ComplexBBPattern {
     public static void main(String[] args) throws BucketException {
         bridge = Store.getInstance().getBridge();
         RecordRepository record_repository = new RecordRepository("umea");
-        final StringMeasure base_measure = Constants.LEVENSHTEIN;;
-        final LXPMeasure composite_measure_name = getCompositeMeasure(base_measure);
+        final StringMeasure base_measure = Constants.LEVENSHTEIN;
+        final StringMeasure base_measure_n = Constants.JENSEN_SHANNON;
+        final LXPMeasure composite_measure_name = getCompositeMeasure(base_measure_n);
         final LXPMeasure composite_measure_date = getCompositeMeasureDate(base_measure);
         IBucket births = record_repository.getBucket("birth_records");
 
@@ -130,8 +142,8 @@ public class ComplexBBPattern {
                     }
                 }
 
-                int NAME_THRESHOLD = 15;
-                //5. If name of parents widely different, delete
+                //5. If name of parents the same after fixes, create
+                hasChanged = matchingNamesPredicate(triangle, tempKids, hasChanged, 1, composite_measure_name);
 //                if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_name, births) < NAME_THRESHOLD){
 //                    createLink(bridge, std_id_x, std_id_z, creationPredicates[1]);
 //                }else if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_name, births) > NAME_THRESHOLD){
@@ -162,25 +174,59 @@ public class ComplexBBPattern {
 //                "WHERE NOT triangle[1] IN processedXs AND NOT triangle[0] IN processedXs\n" +
 //                "RETURN x, COLLECT(triangle) AS openTriangles";
         Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE_QUERY);
-        return result.stream().map(r -> {
+        List<OpenTriangleClusterBB> clusters = new ArrayList<>();
+        List<List<Long>> temp = new ArrayList<>();
+
+        result.stream().forEach(r -> {
             long x = ((Node) r.asMap().get("x")).get("STORR_ID").asLong();
             List<List<Node>> openTrianglesNodes = (List<List<Node>>) r.asMap().get("openTriangles");
 
-            List<List<Long>> openTrianglesList = openTrianglesNodes
-                    .stream()
-                    .map(innerList -> innerList.stream()
-                            .map(obj -> {
-                                if (obj instanceof Node) {
-                                    return ((Node) obj).get("STORR_ID").asLong();
-                                } else {
-                                    throw new IllegalArgumentException("Expected a Node but got: " + obj.getClass());
-                                }
-                            })
-                            .collect(Collectors.toList()))
-                    .collect(Collectors.toList());
+            for (List<Node> innerList : openTrianglesNodes) {
+                List<Long> openTriangleList = innerList.stream()
+                        .map(obj -> {
+                            if (obj instanceof Node) {
+                                return ((Node) obj).get("STORR_ID").asLong();
+                            } else {
+                                throw new IllegalArgumentException("Expected a Node but got: " + obj.getClass());
+                            }
+                        })
+                        .collect(Collectors.toList());
 
-            return new OpenTriangleClusterBB(x, openTrianglesList);
-        }).collect(Collectors.toList());
+                temp.add(openTriangleList);
+
+                if (temp.size() == 360) {
+                    clusters.add(new OpenTriangleClusterBB(x, new ArrayList<>(temp)));
+                    temp.clear();
+                }
+            }
+
+            if (!temp.isEmpty()) {
+                clusters.add(new OpenTriangleClusterBB(x, new ArrayList<>(temp)));
+                temp.clear();
+            }
+        });
+
+        return clusters;
+
+//        return result.stream().map(r -> {
+//            long x = ((Node) r.asMap().get("x")).get("STORR_ID").asLong();
+//            List<List<Node>> openTrianglesNodes = (List<List<Node>>) r.asMap().get("openTriangles");
+//
+//            List<List<Long>> openTrianglesList = openTrianglesNodes
+//                    .stream()
+//                    .map(innerList -> innerList.stream()
+//                            .map(obj -> {
+//                                if (obj instanceof Node) {
+//                                    return ((Node) obj).get("STORR_ID").asLong();
+//                                } else {
+//                                    throw new IllegalArgumentException("Expected a Node but got: " + obj.getClass());
+//                                }
+//                            })
+//                            .collect(Collectors.toList()))
+//                    .collect(Collectors.toList());
+//
+//            return new OpenTriangleClusterBB(x, openTrianglesList);
+//        }).collect(Collectors.toList());
     }
 
     private static boolean maxRangePredicate(OpenTriangleClusterBB triangle, LXP[] tempKids, boolean hasChanged, int predNumber) {
@@ -264,24 +310,24 @@ public class ComplexBBPattern {
             }
 
             LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
-            Optional<Map.Entry<String, LocalDate>> closestDateX = triangle.getBirthDays().entrySet().stream()
+            Optional<Map.Entry<String, LocalDate>> closestDateX1 = triangle.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
                     .skip(1)
                     .findFirst();
-            if(!hasChanged && closestDateX.isPresent() && ChronoUnit.DAYS.between(closestDateX.get().getValue(), dateX) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateX.get().getValue(), dateX) > 2 && getShortestPath(bridge, std_id_x, closestDateX.get().getKey()) > MIN_PATH){
+            Optional<Map.Entry<String, LocalDate>> closestDateX2 = triangle.getBirthDays().entrySet().stream()
+                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
+                    .skip(2)
+                    .findFirst();
+            if(!hasChanged && closestDateX1.isPresent() && closestDateX2.isPresent() &&
+                    Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) > 2 &&
+                    Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) > 2){
 //                            deleteLink(bridge, std_id_x, std_id_y);
                 deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
                 hasChanged = true;
-                try{
-                    LocalDate dateY = LocalDate.of(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_DAY)));
-                    if(dateY.equals(closestDateX.get())){
-                        triangle.removeBirthday(dateX);
-                    }
-                } catch (Exception e) {
-
-                }
             }
-        }catch (Exception e){
+        }catch (Neo4jException e){
+            e.printStackTrace();
+        }catch (Exception ignored){
 
         }
 
@@ -292,16 +338,24 @@ public class ComplexBBPattern {
             }
 
             LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
-            Optional<Map.Entry<String, LocalDate>> closestDateZ = triangle.getBirthDays().entrySet().stream()
+            Optional<Map.Entry<String, LocalDate>> closestDateZ1 = triangle.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
                     .skip(1)
                     .findFirst();
-            if(!hasChanged && closestDateZ.isPresent() && ChronoUnit.DAYS.between(closestDateZ.get().getValue(), dateZ) < BIRTH_INTERVAL && ChronoUnit.DAYS.between(closestDateZ.get().getValue(), dateZ) > 2 && getShortestPath(bridge, std_id_z, closestDateZ.get().getKey()) > MIN_PATH){
+            Optional<Map.Entry<String, LocalDate>> closestDateZ2 = triangle.getBirthDays().entrySet().stream()
+                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
+                    .skip(2)
+                    .findFirst();
+            if(!hasChanged && closestDateZ1.isPresent() && closestDateZ2.isPresent() &&
+                    Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) > 2 &&
+                    Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) > 2){
 //                            deleteLink(bridge, std_id_z, std_id_y);
                 deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
                 hasChanged = true;
             }
-        } catch (Exception e) {
+        }catch (Neo4jException e){
+            e.printStackTrace();
+        }catch (Exception ignored){
 
         }
 
@@ -329,6 +383,115 @@ public class ComplexBBPattern {
         return hasChanged;
     }
 
+    private static boolean matchingNamesPredicate(OpenTriangleClusterBB triangle, LXP[] tempKids, boolean hasChanged, int predNumber, LXPMeasure composite_measure_name) {
+        String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
+        String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
+        String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+        double NAME_THRESHOLD = 0.6;
+        boolean fix = false;
+
+        if(hasChanged){
+            return true;
+        }
+
+        //IMPORTANT: All these changes will be saved or no?
+        for (int i = 0; i < tempKids.length; i+=2) {
+            //1. DOTTER/SON
+            String dotterRegex = "D[.:RT](?!.*D[.:RT])";
+            Pattern pattern = Pattern.compile(dotterRegex);
+            Matcher matcher = pattern.matcher(tempKids[i].getString(Birth.MOTHER_MAIDEN_SURNAME));
+            if (matcher.find()) {
+                String newString = tempKids[i].getString(Birth.MOTHER_MAIDEN_SURNAME).substring(0, matcher.start()) + "DOTTER";
+                tempKids[i].put(Birth.MOTHER_MAIDEN_SURNAME, newString);
+                fix = true;
+            }
+
+            String sonRegex = "S[.]";
+            pattern = Pattern.compile(sonRegex);
+            matcher = pattern.matcher(tempKids[i].getString(Birth.FATHER_SURNAME));
+            if (matcher.find()) {
+                String newString = tempKids[i].getString(Birth.FATHER_SURNAME).substring(0, matcher.start()) + "SON";
+                tempKids[i].put(Birth.FATHER_SURNAME, newString);
+                fix = true;
+            }
+
+            //2. Initials
+            String initialRegex = "^[A-Z]\\.$";
+            pattern = Pattern.compile(initialRegex);
+            matcher = pattern.matcher(tempKids[i].getString(Birth.FATHER_FORENAME));
+            if (matcher.find() && i == 0 && tempKids[2].getString(Birth.FATHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.FATHER_FORENAME).substring(0, 1))) {
+                tempKids[2].put(Birth.FATHER_FORENAME, tempKids[2].getString(Birth.FATHER_FORENAME).substring(0, 1));
+                fix = true;
+            } else if (matcher.find() && i == 2 && tempKids[2].getString(Birth.FATHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.FATHER_FORENAME).substring(0, 1))) {
+                tempKids[0].put(Birth.FATHER_FORENAME, tempKids[0].getString(Birth.FATHER_FORENAME).substring(0, 1));
+                fix = true;
+            }
+
+            matcher = pattern.matcher(tempKids[i].getString(Birth.MOTHER_FORENAME));
+            if (matcher.find() && i == 0 && tempKids[2].getString(Birth.MOTHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.MOTHER_FORENAME).substring(0, 1))) {
+                tempKids[2].put(Birth.MOTHER_FORENAME, tempKids[2].getString(Birth.MOTHER_FORENAME).substring(0, 1));
+                fix = true;
+            } else if (matcher.find() && i == 2 && tempKids[2].getString(Birth.MOTHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.MOTHER_FORENAME).substring(0, 1))) {
+                tempKids[0].put(Birth.MOTHER_FORENAME, tempKids[0].getString(Birth.MOTHER_FORENAME).substring(0, 1));
+                fix = true;
+            }
+
+            //3. Middle names
+            if(tempKids[i].getString(Birth.FATHER_FORENAME).contains(" ")){
+                if(i == 0 && !tempKids[2].getString(Birth.FATHER_FORENAME).contains(" ")){
+                    String[] names = tempKids[0].getString(Birth.FATHER_FORENAME).split("\\s+");
+                    for (String name : names) {
+                        if (name.equals(tempKids[2].getString(Birth.FATHER_FORENAME))) {
+                            tempKids[0].put(Birth.FATHER_FORENAME, name);
+                            fix = true;
+                            break;
+                        }
+                    }
+                }else{
+                    String[] names = tempKids[2].getString(Birth.FATHER_FORENAME).split("\\s+");
+                    for (String name : names) {
+                        if (name.equals(tempKids[0].getString(Birth.FATHER_FORENAME))) {
+                            tempKids[2].put(Birth.FATHER_FORENAME, name);
+                            fix = true;
+                            break;
+                        }
+                    }
+                }
+            } else if (tempKids[i].getString(Birth.MOTHER_FORENAME).contains(" ")) {
+                if(i == 0 && !tempKids[2].getString(Birth.MOTHER_FORENAME).contains(" ")){
+                    String[] names = tempKids[0].getString(Birth.MOTHER_FORENAME).split("\\s+");
+                    for (String name : names) {
+                        if (name.equals(tempKids[2].getString(Birth.MOTHER_FORENAME))) {
+                            tempKids[0].put(Birth.MOTHER_FORENAME, name);
+                            fix = true;
+                            break;
+                        }
+                    }
+                }else{
+                    String[] names = tempKids[2].getString(Birth.MOTHER_FORENAME).split("\\s+");
+                    for (String name : names) {
+                        if (name.equals(tempKids[0].getString(Birth.MOTHER_FORENAME))) {
+                            tempKids[2].put(Birth.MOTHER_FORENAME, name);
+                            fix = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        try {
+            if(fix && getDistance(tempKids[0], tempKids[2], composite_measure_name) < NAME_THRESHOLD){
+                createLink(bridge, std_id_x, std_id_z, creationPredicates[predNumber]);
+                hasChanged = true;
+            }
+        } catch (BucketException e) {
+            throw new RuntimeException(e);
+        }
+
+        return hasChanged;
+    }
+
     private static void createLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_z, String prov) {
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
             Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z, prov);
@@ -337,8 +500,8 @@ public class ComplexBBPattern {
         }
     }
 
-    private static int getShortestPath(NeoDbCypherBridge bridge, String std_id_x, String std_id_z) {
-        Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z);
+    private static int getShortestPath(NeoDbCypherBridge bridge, String std_id_x, String std_id_y, String std_id_z) {
+        Map<String, Object> parameters = getCreationParameterMapSTD(std_id_x, std_id_y, std_id_z);
         Result result = bridge.getNewSession().run(BB_SHORTEST_PATH, parameters);
         List<Long> clusters = result.list(r -> r.get("l").asLong());
         long count = 0;
@@ -347,6 +510,14 @@ public class ComplexBBPattern {
         }
 
         return (int) count;
+    }
+
+    private static <T> List<List<T>> partitionList(List<T> list, int size) {
+        List<List<T>> partitions = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += size) {
+            partitions.add(list.subList(i, Math.min(i + size, list.size())));
+        }
+        return partitions;
     }
 
     private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y){
@@ -392,9 +563,21 @@ public class ComplexBBPattern {
         return composite_measure.distance(b1, b2);
     }
 
+    private static double getDistance(LXP b1, LXP b2, LXPMeasure composite_measure) throws BucketException {
+        return composite_measure.distance(b1, b2);
+    }
+
     private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
+        parameters.put("standard_id_to", standard_id_to);
+        return parameters;
+    }
+
+    private static Map<String, Object> getCreationParameterMapSTD(String standard_id_from, String standard_id_mid, String standard_id_to) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("standard_id_from", standard_id_from);
+        parameters.put("standard_id_mid", standard_id_mid);
         parameters.put("standard_id_to", standard_id_to);
         return parameters;
     }
