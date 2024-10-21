@@ -23,9 +23,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import java.util.List;
 
 public class PredicateEfficacy {
-    private String CREATED_LINKS_QUERY_TRUE = "MATCH (x:%1$s)-[r:SIBLING]-(y:%2$s) WHERE r.provenance = \"%3$s\" AND (x:%1$s)-[:GT_SIBLING]-(y:%2$s) RETURN count(r) as cluster_count";
+    private String CREATED_LINKS_QUERY_TRUE = "MATCH (x:%1$s)-[r:SIBLING]-(y:%2$s) WHERE r.provenance = \"%3$s\" AND (x:%1$s)-[:GT_SIBLING]-(y:%2$s) AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
     private String DELETED_LINKS_QUERY_TRUE = "MATCH (x:%1$s)-[r:DELETED]-(y:%2$s) WHERE r.provenance = \"%3$s\" AND NOT (x:%1$s)-[:GT_SIBLING]-(y:%2$s) RETURN count(r) as cluster_count";
-    private String LINKS_QUERY_TOTAL_CREATED = "MATCH (x:%s)-[r:SIBLING]-(y:%s) WHERE r.provenance = \"%s\" RETURN count(r) as cluster_count";
+    private String LINKS_QUERY_TOTAL_CREATED = "MATCH (x:%s)-[r:SIBLING]-(y:%s) WHERE r.provenance = \"%s\" AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
     private String LINKS_QUERY_TOTAL_DELETED = "MATCH (x:%s)-[r:DELETED]-(y:%s) WHERE r.provenance = \"%s\" RETURN count(r) as cluster_count";
 
     public PredicateEfficacy(String[] toCreate, String[] toDelete, String recordType1, String recordType2){

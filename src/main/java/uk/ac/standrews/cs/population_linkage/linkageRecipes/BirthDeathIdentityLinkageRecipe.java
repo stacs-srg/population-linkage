@@ -41,7 +41,7 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  */
 public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
-    protected static double THRESHOLD = 0.38;  // from earlier experiments
+    protected static double THRESHOLD = 1;  // from earlier experiments
 
     public static final String LINKAGE_TYPE = "birth-death-identity";
 
@@ -211,14 +211,14 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        if(getNumberOfLinkageFieldsRequired() == 6 || getNumberOfLinkageFieldsRequired() == 5){
-            return 0.69;
-        } else if (getNumberOfLinkageFieldsRequired() == 4 || getNumberOfLinkageFieldsRequired() == 3) {
-            return 0.6;
-        }else{
-            return THRESHOLD;
-        }
-//        return THRESHOLD;
+//        if(getNumberOfLinkageFieldsRequired() == 6 || getNumberOfLinkageFieldsRequired() == 5){
+//            return 0.69;
+//        } else if (getNumberOfLinkageFieldsRequired() == 4 || getNumberOfLinkageFieldsRequired() == 3) {
+//            return 0.6;
+//        }else{
+//            return THRESHOLD;
+//        }
+        return THRESHOLD;
     }
 
     @Override

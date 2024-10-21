@@ -74,7 +74,7 @@ public class ComplexBBPattern {
 
     private static NeoDbCypherBridge bridge;
 
-    private static String[] creationPredicates = {"match_m_date", "match_strict_name"};
+    private static String[] creationPredicates = {"match_m_date", "match_fixed_name"};
     private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name", "m_pred"};
 
     public static void main(String[] args) throws BucketException {
@@ -415,67 +415,68 @@ public class ComplexBBPattern {
                 fix = true;
             }
 
-            //2. Initials
-            String initialRegex = "^[A-Z]\\.$";
+            //2. Initials or incomplete names
+            String initialRegex = "^[A-Z]*\\.$";
             pattern = Pattern.compile(initialRegex);
             matcher = pattern.matcher(tempKids[i].getString(Birth.FATHER_FORENAME));
-            if (matcher.find() && i == 0 && tempKids[2].getString(Birth.FATHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.FATHER_FORENAME).substring(0, 1))) {
-                tempKids[2].put(Birth.FATHER_FORENAME, tempKids[2].getString(Birth.FATHER_FORENAME).substring(0, 1));
+            if (matcher.find() && i == 0 && tempKids[2].getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 &&
+                    tempKids[2].getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(tempKids[0].getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+                tempKids[2].put(Birth.FATHER_FORENAME, tempKids[2].getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 fix = true;
-            } else if (matcher.find() && i == 2 && tempKids[2].getString(Birth.FATHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.FATHER_FORENAME).substring(0, 1))) {
-                tempKids[0].put(Birth.FATHER_FORENAME, tempKids[0].getString(Birth.FATHER_FORENAME).substring(0, 1));
+            } else if (matcher.find() && i == 2 && tempKids[0].getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 &&
+                    tempKids[2].getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(tempKids[0].getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+                tempKids[0].put(Birth.FATHER_FORENAME, tempKids[0].getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 fix = true;
             }
 
             matcher = pattern.matcher(tempKids[i].getString(Birth.MOTHER_FORENAME));
-            if (matcher.find() && i == 0 && tempKids[2].getString(Birth.MOTHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.MOTHER_FORENAME).substring(0, 1))) {
-                tempKids[2].put(Birth.MOTHER_FORENAME, tempKids[2].getString(Birth.MOTHER_FORENAME).substring(0, 1));
+            if (matcher.find() && i == 0 && tempKids[2].getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
+                    tempKids[2].getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(tempKids[0].getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+                tempKids[2].put(Birth.MOTHER_FORENAME, tempKids[2].getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 fix = true;
-            } else if (matcher.find() && i == 2 && tempKids[2].getString(Birth.MOTHER_FORENAME).substring(0, 1).equals(tempKids[0].getString(Birth.MOTHER_FORENAME).substring(0, 1))) {
-                tempKids[0].put(Birth.MOTHER_FORENAME, tempKids[0].getString(Birth.MOTHER_FORENAME).substring(0, 1));
+            } else if (matcher.find() && i == 2 && tempKids[0].getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
+                    tempKids[2].getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(tempKids[0].getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+                tempKids[0].put(Birth.MOTHER_FORENAME, tempKids[0].getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 fix = true;
             }
 
-            //3. Middle names
-            if(tempKids[i].getString(Birth.FATHER_FORENAME).contains(" ")){
-                if(i == 0 && !tempKids[2].getString(Birth.FATHER_FORENAME).contains(" ")){
-                    String[] names = tempKids[0].getString(Birth.FATHER_FORENAME).split("\\s+");
-                    for (String name : names) {
-                        if (name.equals(tempKids[2].getString(Birth.FATHER_FORENAME))) {
-                            tempKids[0].put(Birth.FATHER_FORENAME, name);
-                            fix = true;
-                            break;
+            int[] fields = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
+
+            //3. Middle names and double barrel surnames
+            for (int field : fields) {
+                if (tempKids[i].getString(field).contains(" ")) {
+                    if (i == 0 && !tempKids[2].getString(field).contains(" ")) {
+                        String[] names = tempKids[0].getString(field).split("\\s+");
+                        for (String name : names) {
+                            if (name.equals(tempKids[2].getString(field))) {
+                                tempKids[0].put(field, name);
+                                fix = true;
+                                break;
+                            }
                         }
-                    }
-                }else{
-                    String[] names = tempKids[2].getString(Birth.FATHER_FORENAME).split("\\s+");
-                    for (String name : names) {
-                        if (name.equals(tempKids[0].getString(Birth.FATHER_FORENAME))) {
-                            tempKids[2].put(Birth.FATHER_FORENAME, name);
-                            fix = true;
-                            break;
+                    } else {
+                        String[] names = tempKids[2].getString(field).split("\\s+");
+                        for (String name : names) {
+                            if (name.equals(tempKids[0].getString(field))) {
+                                tempKids[2].put(field, name);
+                                fix = true;
+                                break;
+                            }
                         }
                     }
                 }
-            } else if (tempKids[i].getString(Birth.MOTHER_FORENAME).contains(" ")) {
-                if(i == 0 && !tempKids[2].getString(Birth.MOTHER_FORENAME).contains(" ")){
-                    String[] names = tempKids[0].getString(Birth.MOTHER_FORENAME).split("\\s+");
-                    for (String name : names) {
-                        if (name.equals(tempKids[2].getString(Birth.MOTHER_FORENAME))) {
-                            tempKids[0].put(Birth.MOTHER_FORENAME, name);
-                            fix = true;
-                            break;
-                        }
-                    }
-                }else{
-                    String[] names = tempKids[2].getString(Birth.MOTHER_FORENAME).split("\\s+");
-                    for (String name : names) {
-                        if (name.equals(tempKids[0].getString(Birth.MOTHER_FORENAME))) {
-                            tempKids[2].put(Birth.MOTHER_FORENAME, name);
-                            fix = true;
-                            break;
-                        }
-                    }
+            }
+
+            //5. Parentheses
+            for (int field : fields) {
+                String parenthesesRegex = "\\(([^)]+)\\)";
+                pattern = Pattern.compile(parenthesesRegex);
+                matcher = pattern.matcher(tempKids[i].getString(field));
+
+                if (matcher.find() && matcher.start() > 0) {
+                    String newString = tempKids[i].getString(field).substring(0, matcher.start()).strip();
+                    tempKids[i].put(field, newString);
+                    fix = true;
                 }
             }
         }

@@ -96,4 +96,39 @@ public class PatternsCounter {
 
         return (int) count + (int) tCount;
     }
+
+    public static int countOpenSquaresCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
+        long count = 0;
+        String openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                "(b1)-[r:ID]-(d1:%2$s),\n" +
+                "(b2)-[s:ID]-(d2:%2$s)\n" +
+                "WHERE NOT (d1)-[:SIBLING]-(d2) AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
+                "RETURN count(*)", type1, type2, threshold, fields);
+
+        Result result = bridge.getNewSession().run(openSquaresQuery);
+        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
+
+//        String openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+//                "(b1)-[r:ID]-(d1:%2$s),\n" +
+//                "(b2)-[s:ID]-(d2:%2$s)\n" +
+//                "(b2)-[s:ID]-(d2:%2$s)\n" +
+//                "WHERE NOT (d1)-[:SIBLING]-(d2) AND r.distance <= %3$s AND s.distance <= %3$s\n" +
+//                "AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
+//                "AND (t.fields_populated < %4$s OR t.distance > %3$s)\n" +
+//                "RETURN count(*)", type1, type2, threshold, fields);
+
+//        result = bridge.getNewSession().run(openTriangleQuery2);
+//        clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        long tCount = 0;
+//        if (!clusters.isEmpty()) {
+//            tCount = clusters.get(0);
+//        }
+
+        return (int) count + (int) tCount;
+    }
 }
