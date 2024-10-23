@@ -46,29 +46,33 @@ public class ThresholdTrianglesAnalysis {
 
     public static void main(String[] args) {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 4;
-        final int MIN_FIELD = 1; //1 below target
-        final double MAX_THRESHOLD = 1.21; //0.01 above target
-        final double MIN_THRESHOLD = 0.89;
+        final int MAX_FIELD = 6;
+        final int MIN_FIELD = 2; //1 below target
+        final double MAX_THRESHOLD = 1.01; //0.01 above target
+        final double MIN_THRESHOLD = 0.0;
 
 
         System.out.println("Analysing thresholds...");
         for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
             System.out.println("Field: " + fields);
-            try (FileWriter fileWriter = new FileWriter("birthdeathv" + fields + ".csv");
+            try (FileWriter fileWriter = new FileWriter("birthdeathIDSquare" + fields + ".csv");
                  PrintWriter printWriter = new PrintWriter(fileWriter)) {
-                printWriter.println("threshold,precision,recall,fmeasure,triangles");
+//                printWriter.println("threshold,precision,recall,fmeasure,triangles");
+                printWriter.println("threshold,squares");
                 for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                     double threshold = Math.round(i * 100.0) / 100.0;
                     System.out.println(threshold);
-                    long fpc = doQuery(BIRTH_DEATH_SIBLING_FPC, threshold, fields, bridge);
-                    long tpc = doQuery(BIRTH_DEATH_SIBLING_TPC, threshold, fields, bridge);
-                    long fnc = doQuery(BIRTH_DEATH_SIBLING_FNC, threshold, fields, bridge) + doQuery(BIRTH_DEATH_SIBLING_FNC_T, i, fields, bridge);
+//                    long fpc = doQuery(BIRTH_DEATH_SIBLING_FPC, threshold, fields, bridge);
+//                    long tpc = doQuery(BIRTH_DEATH_SIBLING_TPC, threshold, fields, bridge);
+//                    long fnc = doQuery(BIRTH_DEATH_SIBLING_FNC, threshold, fields, bridge) + doQuery(BIRTH_DEATH_SIBLING_FNC_T, i, fields, bridge);
 //                long fpc = 1L;
 //                long tpc = 1L;
 //                long fnc = 1L;
 
-                    printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n", threshold, ClassificationMetrics.precision(tpc, fpc), ClassificationMetrics.recall(tpc, fnc), ClassificationMetrics.F1(tpc, fpc, fnc), PatternsCounter.countOpenTrianglesCumulative(bridge, "Birth", "Birth", i, fields));
+//                    printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n", threshold, ClassificationMetrics.precision(tpc, fpc), ClassificationMetrics.recall(tpc, fnc), ClassificationMetrics.F1(tpc, fpc, fnc), PatternsCounter.countOpenTrianglesCumulative(bridge, "Birth", "Birth", i, fields));
+                    printWriter.printf("%.2f,%d%n",
+                            threshold,
+                            PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Death", i, fields));
                 }
             } catch (IOException e) {
                 e.printStackTrace();

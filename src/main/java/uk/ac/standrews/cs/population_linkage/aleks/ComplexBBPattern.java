@@ -111,7 +111,7 @@ public class ComplexBBPattern {
                 triangle.getYearStatistics();
                 boolean hasChanged = false;
 
-//                String toFind = "7106096";
+                String toFind = "417705";
 //                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
 //                        System.out.println("fsd");
 //                    }
@@ -387,7 +387,7 @@ public class ComplexBBPattern {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
-        double NAME_THRESHOLD = 0.6;
+        double NAME_THRESHOLD = 0.25;
         boolean fix = false;
 
         if(hasChanged){
@@ -454,7 +454,7 @@ public class ComplexBBPattern {
                                 break;
                             }
                         }
-                    } else {
+                    } else if(i == 2 && !tempKids[0].getString(field).contains(" ")) {
                         String[] names = tempKids[2].getString(field).split("\\s+");
                         for (String name : names) {
                             if (name.equals(tempKids[0].getString(field))) {
@@ -464,6 +464,20 @@ public class ComplexBBPattern {
                             }
                         }
                     }
+//                    else if(!fix && tempKids[0].getString(field).contains(" ") && tempKids[2].getString(field).contains(" ")){
+//                        String[] namesX = tempKids[0].getString(field).split("\\s+");
+//                        String[] namesZ = tempKids[2].getString(field).split("\\s+");
+//                        for (String nameX : namesX) {
+//                            for (String nameZ : namesZ) {
+//                                if (nameX.equals(nameZ)) {
+//                                    tempKids[0].put(field, nameX);
+//                                    tempKids[2].put(field, nameZ);
+//                                    fix = true;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
 

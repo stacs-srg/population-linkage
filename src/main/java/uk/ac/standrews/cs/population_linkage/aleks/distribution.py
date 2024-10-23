@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with population-linkage. If not, see
 # <http://www.gnu.org/licenses/>.
 #
-
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -25,26 +25,33 @@ non_sibling_data = data[data['is_sibling'] == False]['distance_sum']
 
 fig, ax = plt.subplots(2, 2, figsize=(12, 8))
 
+max_freq = max(
+    max(np.histogram(sibling_data, bins=30)[0]),
+    max(np.histogram(non_sibling_data, bins=30)[0])
+)
+
 # Histogram for siblings
 ax[0, 0].hist(sibling_data, bins=30, color='blue', edgecolor='black', alpha=0.7)
-ax[0, 0].set_title('Histogram of Sum of Distances (Siblings)')
+ax[0, 0].set_title('Histogram of Sum of Distances (False Negatives)')
 ax[0, 0].set_xlabel('Sum of Distances')
 ax[0, 0].set_ylabel('Frequency')
+ax[0, 0].set_ylim(0, max_freq)
 
 # Histogram for non-siblings
 ax[0, 1].hist(non_sibling_data, bins=30, color='orange', edgecolor='black', alpha=0.7)
-ax[0, 1].set_title('Histogram of Sum of Distances (Non-Siblings)')
+ax[0, 1].set_title('Histogram of Sum of Distances (False Positives)')
 ax[0, 1].set_xlabel('Sum of Distances')
 ax[0, 1].set_ylabel('Frequency')
+ax[0, 1].set_ylim(0, max_freq)
 
 # Box plot for siblings
 ax[1, 0].boxplot(sibling_data, vert=False, patch_artist=True, boxprops=dict(facecolor='blue', color='black'))
-ax[1, 0].set_title('Box Plot of Sum of Distances (Siblings)')
+ax[1, 0].set_title('Box Plot of Sum of Distances (False Negatives)')
 ax[1, 0].set_xlabel('Sum of Distances')
 
 # Box plot for non-siblings
 ax[1, 1].boxplot(non_sibling_data, vert=False, patch_artist=True, boxprops=dict(facecolor='orange', color='black'))
-ax[1, 1].set_title('Box Plot of Sum of Distances (Non-Siblings)')
+ax[1, 1].set_title('Box Plot of Sum of Distances (False Positives)')
 ax[1, 1].set_xlabel('Sum of Distances')
 
 plt.tight_layout()

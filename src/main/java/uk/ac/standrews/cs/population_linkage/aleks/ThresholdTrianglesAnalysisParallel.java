@@ -55,7 +55,7 @@ public class ThresholdTrianglesAnalysisParallel {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 4;
         final int MIN_FIELD = 1; //1 below target
-        final double MAX_THRESHOLD = 1.21; //0.01 above target
+        final double MAX_THRESHOLD = 0.9; //0.01 above target
         final double MIN_THRESHOLD = 0;
 
 
@@ -67,21 +67,21 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthdeathIDSquare" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthdeathSibE" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
 //                    printWriter.println("threshold,precision,recall,fmeasure,triangles");
-                    printWriter.println("threshold,squares");
+                    printWriter.println("threshold,triangles");
 //                    printWriter.println("threshold,precision,recall,fmeasure");
 
                     try (NeoDbCypherBridge localBridge = new NeoDbCypherBridge()) {
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-                            long fpc = doQuery(BIRTH_DEATH_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_DEATH_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_DEATH_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_DEATH_ID_FNC_T, i, currentField, localBridge);
+//                            long fpc = doQuery(BIRTH_DEATH_ID_FPC, threshold, currentField, localBridge);
+//                            long tpc = doQuery(BIRTH_DEATH_ID_TPC, threshold, currentField, localBridge);
+//                            long fnc = doQuery(BIRTH_DEATH_ID_FNC, threshold, currentField, localBridge)
+//                                    + doQuery(BIRTH_DEATH_ID_FNC_T, i, currentField, localBridge);
 
 //                        printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
 //                                threshold,
@@ -92,8 +92,7 @@ public class ThresholdTrianglesAnalysisParallel {
 
                             printWriter.printf("%.2f,%d%n",
                                     threshold,
-                                    PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Death", i, currentField));
-
+                                    PatternsCounter.countOpenTrianglesCumulativeDouble(bridge, "Birth", "Death", i, currentField));
 
 //                            printWriter.printf("%.2f,%.5f,%.5f,%.5f%n",
 //                                    threshold,
