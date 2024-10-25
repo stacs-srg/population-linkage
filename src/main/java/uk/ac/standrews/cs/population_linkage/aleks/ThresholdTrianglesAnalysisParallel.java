@@ -51,12 +51,23 @@ public class ThresholdTrianglesAnalysisParallel {
     private static final String BIRTH_DEATH_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_SIBLING {actors: \"Child-Deceased\"}]-(d:Death) WHERE NOT (b)-[:SIBLING {actors: \"Deceased-Child\"}]-(d) return count(r)";
     private static final String BIRTH_DEATH_SIBLING_FNC_T = "MATCH (b:Birth)-[r:GT_SIBLING {actors: \"Child-Deceased\"}]-(d:Death), (b)-[s:SIBLING]-(d) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
+    private static final String BIRTH_MARRIAGE_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Mother\"}]-(m:Marriage), (b)-[s:ID {actors: \"Child-Father\"}]-(m) WHERE (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field AND s.distance <= $threshold AND s.fields_populated >= $field return count(r)";
+    private static final String BIRTH_MARRIAGE_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Mother\"}]-(m:Marriage), (b)-[s:ID {actors: \"Child-Father\"}]-(m) WHERE NOT (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field AND s.distance <= $threshold AND s.fields_populated >= $field return count(r)";
+    private static final String BIRTH_MARRIAGE_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Couple\"}]-(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Mother\"}]-(m) and NOT (b)-[:ID {actors: \"Child-Father\"}]-(m) return count(r)";
+    private static final String BIRTH_MARRIAGE_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Couple\"}]-(m:Marriage), (b)-[s:ID {actors: \"Child-Mother\"}]-(m), (b)-[t:ID {actors: \"Child-Father\"}]-(m) WHERE (s.distance > $threshold OR s.fields_populated < $field) AND (t.distance > $threshold OR t.fields_populated < $field) return count(r)";
+
+    private static final String BIRTH_GROOM_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BIRTH_GROOM_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BIRTH_GROOM_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Groom\"}]-(m) return count(r)";
+    private static final String BIRTH_GROOM_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage), (b)-[s:ID {actors: \"Child-Groom\"}]-(d) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+
+
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 4;
-        final int MIN_FIELD = 1; //1 below target
-        final double MAX_THRESHOLD = 0.9; //0.01 above target
-        final double MIN_THRESHOLD = 0;
+        final int MAX_FIELD = 6;
+        final int MIN_FIELD = 2; //1 below target
+        final double MAX_THRESHOLD = 2.01; //0.01 above target
+        final double MIN_THRESHOLD = 1.75;
 
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
@@ -67,32 +78,32 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthdeathSibE" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("groom2ID" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
-//                    printWriter.println("threshold,precision,recall,fmeasure,triangles");
-                    printWriter.println("threshold,triangles");
+                    printWriter.println("threshold,precision,recall,fmeasure,triangles");
+//                    printWriter.println("threshold,triangles");
 //                    printWriter.println("threshold,precision,recall,fmeasure");
 
                     try (NeoDbCypherBridge localBridge = new NeoDbCypherBridge()) {
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-//                            long fpc = doQuery(BIRTH_DEATH_ID_FPC, threshold, currentField, localBridge);
-//                            long tpc = doQuery(BIRTH_DEATH_ID_TPC, threshold, currentField, localBridge);
-//                            long fnc = doQuery(BIRTH_DEATH_ID_FNC, threshold, currentField, localBridge)
-//                                    + doQuery(BIRTH_DEATH_ID_FNC_T, i, currentField, localBridge);
+                            long fpc = doQuery(BIRTH_GROOM_ID_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(BIRTH_GROOM_ID_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(BIRTH_GROOM_ID_FNC, threshold, currentField, localBridge)
+                                    + doQuery(BIRTH_GROOM_ID_FNC_T, i, currentField, localBridge);
 
-//                        printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
-//                                threshold,
-//                                ClassificationMetrics.precision(tpc, fpc),
-//                                ClassificationMetrics.recall(tpc, fnc),
-//                                ClassificationMetrics.F1(tpc, fpc, fnc),
-//                                PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Death", i, currentField));
+                        printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
+                                threshold,
+                                ClassificationMetrics.precision(tpc, fpc),
+                                ClassificationMetrics.recall(tpc, fnc),
+                                ClassificationMetrics.F1(tpc, fpc, fnc),
+                                PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Marriage", i, currentField));
 
-                            printWriter.printf("%.2f,%d%n",
-                                    threshold,
-                                    PatternsCounter.countOpenTrianglesCumulativeDouble(bridge, "Birth", "Death", i, currentField));
+//                            printWriter.printf("%.2f,%d%n",
+//                                    threshold,
+//                                    PatternsCounter.countOpenTrianglesCumulativeDouble(bridge, "Birth", "Death", i, currentField));
 
 //                            printWriter.printf("%.2f,%.5f,%.5f,%.5f%n",
 //                                    threshold,

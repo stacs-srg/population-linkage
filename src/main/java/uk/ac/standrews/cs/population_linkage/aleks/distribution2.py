@@ -25,21 +25,21 @@ df['distance_diff'] = df['max_distance'] - df['average_distance']
 true_sibling = df[df['has_GT_SIBLING'] == True]['distance_diff']
 false_sibling = df[df['has_GT_SIBLING'] == False]['distance_diff']
 
-fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+plt.figure(figsize=(8, 4))
 
-axs[0].hist(false_sibling, bins=20, alpha=0.5, label='False Sibling', color='orange')
-axs[0].hist(true_sibling, bins=20, alpha=0.5, label='True Sibling', color='blue')
+plt.hist(false_sibling, bins=20, alpha=0.5, label='False Positives', color='orange')
+plt.hist(true_sibling, bins=20, alpha=0.5, label='False Negatives', color='blue')
 
-axs[0].set_xlabel('Distance Difference (max - avg)')
-axs[0].set_ylabel('Frequency')
-axs[0].set_title('Histogram of Distance Difference by Sibling Status')
-axs[0].legend(loc='upper right')
+plt.xlabel('Distance Difference (max - avg)')
+plt.ylabel('Frequency')
+plt.title('Histogram of Distance Difference by Error Type')
+plt.legend(loc='upper right')
 
-axs[1].hist(df['link_num'], bins=20, alpha=0.7, color='green')
-
-axs[1].set_xlabel('Number of links')
-axs[1].set_ylabel('Frequency')
-axs[1].set_title('Histogram for number of links')
+# axs[1].hist(df['link_num'], bins=20, alpha=0.7, color='green')
+#
+# axs[1].set_xlabel('Number of links')
+# axs[1].set_ylabel('Frequency')
+# axs[1].set_title('Histogram for number of links')
 
 plt.tight_layout()
 plt.show()

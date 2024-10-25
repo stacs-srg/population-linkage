@@ -19,6 +19,7 @@ package uk.ac.standrews.cs.population_linkage.resolver.msed;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Relationship;
+import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
@@ -31,10 +32,7 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.utilities.measures.JensenShannon;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,7 +50,7 @@ public class Explore {
     // TODO in the example of example_query_stor_id6 the bundle should be about 10 records
 
     private static final String GET_BIRTH_SIBLINGS = "MATCH (a:Birth)-[r:SIBLING*1..2]-(b:Birth) WHERE a.STORR_ID = $stor_id_from RETURN b";
-    protected static final String SIBLING_QUERY = "MATCH (x:Birth)-[xy:SIBLING]-(y:Birth) WHERE x.STORR_ID = $stor_id_from  return x,xy,y";
+    protected static final String SIBLING_QUERY = "MATCH (x:Birth)-[xy:SIBLING]-(y:Birth) WHERE x.STORR_ID = $stor_id_from and NOT (x)-[:DELETED-(y) return x,xy,y";
     private final BirthSiblingLinkageRecipe recipe;
 
     public Explore(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingLinkageRecipe recipe) {
@@ -101,6 +99,14 @@ public class Explore {
         return siblings;
     }
 
+//    public List<Long> getSiblingStorIds(Set<LXP> children) throws BucketException {
+//        List<Long> siblings = new ArrayList<>();
+//        for (LXP child : children) {
+//            siblings.add(child);
+//        }
+//        return siblings;
+//    }
+
     private void showRecord(long stor_id) throws BucketException {
         Birth b = births.getObjectById(stor_id);
         System.out.println( stor_id + ":" + b.getString(Birth.FORENAME) + " " + b.getString(Birth.SURNAME) );
@@ -118,7 +124,7 @@ public class Explore {
     private OrderedList<List<Birth>,Double> examineDivergences(List<Long> sibling_ids) throws BucketException {
         // TreeMap<List<Birth>,Double> all_mseds = new TreeMap<>();
         OrderedList<List<Birth>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
-        List<Birth> bs  = getBirths(sibling_ids);
+        List<Birth> bs = getBirths(sibling_ids);
         for( int n = 2; n < bs.size() - 1; n++ ) {
             List<List<Integer>> indices = Binomials.pickAll(sibling_ids.size(), n);
             for (List<Integer> choices : indices) {
@@ -228,7 +234,7 @@ public class Explore {
     }
 
     private void examineGroupsOfSizeK(long query_from_bundle_stor_ids, long extra_stor_id, int k) throws BucketException {
-        List<Long> all_stor_ids =getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
+        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
         all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
         all_stor_ids.add(extra_stor_id);                // add the extra member
         examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ), k); // now examine the whole lot.
@@ -240,6 +246,18 @@ public class Explore {
         examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ),k ); // now examine the whole lot.
     }
 
+    public void resolveTriangles(Set<LXP> children, List<List<Long>> triangleChain){
+        List<Set<String>> familySets = new ArrayList<>();
+
+        //Use MSED on children
+        //LOOP through list of results
+            //If result match a triangle
+                //If none of children are in any set, add
+                //If some children are in a set, add the other children to the same set only if below certain threshold
+                //If two children are in set and the third caused increase in threshold, identify as ringer
+    }
+
+
     public static void main(String[] args) throws BucketException {
 
         String sourceRepo = "umea";
@@ -249,13 +267,14 @@ public class Explore {
         long example_query_stor_id3 = 4377094037612468415l; // part of another grroup of 4 with a missing link
         long example_query_stor_id5 = 8472462191637179711l; // part of a network with possibly extra links.
         long example_query_stor_id6 = 8951651435219393113l; // this only has two links but should be part of a complex of 10 siblings
+        long test = 3693888651293933206l; //example of when breaks (STDID - 705146)
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
              BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleBuilder.class.getName())) {
 
             Explore ex = new Explore(bridge, sourceRepo, linkageRecipe); // this class
 //            System.out.println( "****************** Related ******************");
-//            ex.examineAll(example_query_stor_id1);
+//            ex.examineAll(test);
 //            System.out.println( "****************** Unrelated ******************");
 //            ex.examineAll(example_query_stor_id1,example_query_stor_id2);
 
@@ -274,7 +293,7 @@ public class Explore {
 //            ex.examineGroupsOfSizeK(example_query_stor_id5,example_query_stor_id2,3);
 
             System.out.println( "****************** Related ******************");
-            ex.examineGroupsOfSizeK(example_query_stor_id6,3);  //Super it finds all the sibs in the group with a max of 0.0677 (higher than I had hoped for)
+            ex.examineGroupsOfSizeK(test,3);  //Super it finds all the sibs in the group with a max of 0.0677 (higher than I had hoped for)
 
         }
     }

@@ -131,11 +131,47 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
+    public static int countOpenTrianglesCumulativeMarriage(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
+        long count = 0;
+        String openTriangleQuery = String.format(
+                "MATCH (x:%1$s)-[s:SIBLING]-(y:%1$s)-[r:ID]-(z:%2$s) " +
+                        "WHERE NOT (x)-[:ID]-(z) AND id(x) < id(z) AND (r.actors = \"Child-Father\" or r.actors = \"Child-Mother\") AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "RETURN count(DISTINCT [x, z]) as cluster_count",
+                type1, type2, threshold, fields
+        );
+
+        Result result = bridge.getNewSession().run(openTriangleQuery);
+        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
+
+        String openTriangleQuery2 = String.format(
+                "MATCH (x:%1$s)-[s:SIBLING]-(y:%1$s)-[r:ID]-(z:%2$s), (x)-[t:ID]-(z) " +
+                        "WHERE id(x) < id(z) AND (r.actors = \"Child-Father\" or r.actors = \"Child-Mother\") AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "AND (t.fields_populated < %4$s OR t.distance > %3$s ) AND (t.actors = \"Child-Father\" or t.actors = \"Child-Mother\") " +
+                        "RETURN count(DISTINCT [x, z]) as cluster_count",
+                type1, type2, threshold, fields
+        );
+
+        result = bridge.getNewSession().run(openTriangleQuery2);
+        clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        long tCount = 0;
+        if (!clusters.isEmpty()) {
+            tCount = clusters.get(0);
+        }
+
+        return (int) count + (int) tCount;
+    }
+
     public static int countOpenSquaresCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
         long count = 0;
-        String openSquaresQuery = String.format("MATCH (b1:%1$s)-[r:ID]-(d:%2$s), " +
-                "(b2:%1$s)-[s:ID]-(d) " +
-                "WHERE r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s AND id(b1) < id(b2) " +
+        String openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1)\n" +
+                "WHERE NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.FORENAME = d2.GROOM_FORENAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
                 "RETURN count(*) as cluster_count", type1, type2, threshold, fields);
 
         Result result = bridge.getNewSession().run(openSquaresQuery);
@@ -145,23 +181,21 @@ public class PatternsCounter {
             count = clusters.get(0);
         }
 
-        String openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s), " +
-                "(d1:%2$s)-[:SIBLING]-(d2:%2$s), " +
-                "(b1)-[r:ID]-(d1:%2$s), " +
-                "(b2)-[t:ID]-(d2:%2$s), " +
-                "(b1)-[:SIBLING]-(d2), " +
-                "(b2)-[:SIBLING]-(d1) " +
-                "WHERE r.distance <= %3$s AND r.fields_populated >= %4$s " +
-                "AND (t.fields_populated < %4$s OR t.distance > %3$s) " +
+        String openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1),\n" +
+                "(b2)-[s:ID {actors: \"Child-Groom\"}]-(d2)\n" +
+                "WHERE NOT (b2)-[:SIBLING]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                "AND (s.fields_populated < %4$s OR s.distance > %3$s ) " +
                 "RETURN count(*) as cluster_count", type1, type2, threshold, fields);
 
-//        result = bridge.getNewSession().run(openSquaresQuery2);
-//        clusters = result.list(r -> r.get("cluster_count").asLong());
+        result = bridge.getNewSession().run(openSquaresQuery2);
+        clusters = result.list(r -> r.get("cluster_count").asLong());
 
         long tCount = 0;
-//        if (!clusters.isEmpty()) {
-//            tCount = clusters.get(0);
-//        }
+        if (!clusters.isEmpty()) {
+            tCount = clusters.get(0);
+        }
 
         return (int) count + (int) tCount;
     }
