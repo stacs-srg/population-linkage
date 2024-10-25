@@ -99,14 +99,6 @@ public class Explore {
         return siblings;
     }
 
-//    public List<Long> getSiblingStorIds(Set<LXP> children) throws BucketException {
-//        List<Long> siblings = new ArrayList<>();
-//        for (LXP child : children) {
-//            siblings.add(child);
-//        }
-//        return siblings;
-//    }
-
     private void showRecord(long stor_id) throws BucketException {
         Birth b = births.getObjectById(stor_id);
         System.out.println( stor_id + ":" + b.getString(Birth.FORENAME) + " " + b.getString(Birth.SURNAME) );
@@ -246,8 +238,16 @@ public class Explore {
         examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ),k ); // now examine the whole lot.
     }
 
-    public void resolveTriangles(Set<LXP> children, List<List<Long>> triangleChain){
+    public void resolveTrianglesMSED(Set<Long> children, List<List<Long>> triangleChain) throws BucketException {
+        int k = 3;
         List<Set<String>> familySets = new ArrayList<>();
+        List<Long> allStorIDs = new ArrayList<>(children);
+        OrderedList<List<Birth>, Double> allMSEDDist = new OrderedList<>(Integer.MAX_VALUE);
+
+        //LOOP THROUGH CHAINS HERE
+//        double distance = getMSEDForCluster()
+//        all_mseds.add(births,distance);
+
 
         //Use MSED on children
         //LOOP through list of results
