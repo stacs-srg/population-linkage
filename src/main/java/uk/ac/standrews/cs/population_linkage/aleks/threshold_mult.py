@@ -25,7 +25,7 @@ fig = plt.figure(figsize=(14, 8))
 
 MAX_FIELD = 6
 MIN_FIELD = 2 #1 under
-FILE = "birthmarriage"
+FILE = "groomID"
 
 
 if FILE == "birthmarriage":
@@ -111,7 +111,7 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     # l5 = ax2.plot(data['threshold'], fitted_curve, '--', label='Best fit', color='purple')
     # ax2.plot(data['threshold'], open_triangles_gradient, label='Open Triangles Dif', color='purple')
     # ax2.plot(data['threshold'][optimal_threshold], open_triangles_normalized[optimal_threshold], 'o', color='orange', label='Max Open Triangles Gradient')
-    l6 = ax2.axvline(x=data.loc[optimal_threshold, 'threshold'], color='black', linestyle='--', linewidth=2, label='Optimal Threshold')
+    # l6 = ax2.axvline(x=data.loc[optimal_threshold, 'threshold'], color='black', linestyle='--', linewidth=2, label='Optimal Threshold')
     # l7 = ax2.axvline(x=data.loc[optimal_index_begin_growth, 'threshold'], color='black', linestyle='--', label='Start of growth')
     # l8 = ax2.axvline(x=data.loc[optimal_index_sharp, 'threshold'], color='pink', linestyle='--', label='Max growth')
     # ax2.plot(data['threshold'], data['squares'], label='Open Squares', color='orange')
@@ -131,12 +131,12 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     correlation, p_value = spearmanr(data['fmeasure'], data['triangles'])
     print(f"Spearman Correlation {N} fields: {correlation}")
     print(f"P-value {N} fields: {p_value}")
-    print(f"Optimal Threshold for field {N}: {data['threshold'][optimal_threshold]}")
+    # print(f"Optimal Threshold for field {N}: {data['threshold'][optimal_threshold]}")
     print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
 
 # fig.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 fig.legend(handles=all_handles, labels=all_labels, loc='center right', bbox_to_anchor=(1, 0.5))
 
 plt.tight_layout(rect=[0, 0, 0.9, 1])
-# plt.savefig('threshold_field_analysis_groomsq.png')
+# plt.savefig('threshold_field_analysis_groomsq2.png')
 plt.show()
