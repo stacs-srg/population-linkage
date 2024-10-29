@@ -16,7 +16,6 @@
  */
 package uk.ac.standrews.cs.population_linkage.aleks;
 
-import com.google.common.collect.Lists;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
@@ -33,7 +32,6 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundl
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.resolver.msed.Explore;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.MSED;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -50,14 +48,16 @@ import java.util.stream.Collectors;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
-public class ComplexBBPattern {
+public class BirthBirthOpenTriangleResolver {
 
     private static NeoDbCypherBridge bridge;
 
+    //Various constants for predicates
     private static final int MAX_AGE_DIFFERENCE  = 23;
     private static final double DATE_THRESHOLD = 0.8;
     private static final int BIRTH_INTERVAL = 280;
 
+    //Cypher queries used ijn predicates
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
     private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
     private static final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
@@ -66,6 +66,7 @@ public class ComplexBBPattern {
             "(y)-[t:ID]-(m)\n" +
             "WHERE (s.actors = \"Child-Father\" or s.actors = \"Child-Mother\") and (t.actors = \"Child-Father\" or t.actors = \"Child-Mother\") and NOT (x)-[:SIBLING]-(z) and NOT (z)-[:ID]-(m) and z.PARENTS_YEAR_OF_MARRIAGE <> m.MARRIAGE_YEAR and x.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR and y.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR MERGE (y)-[r:DELETED { provenance: \"m_pred\",actors: \"Child-Child\" } ]-(z)";
 
+    //Names of predicates to be used as prov
     private static final String[] creationPredicates = {"match_m_date", "match_fixed_name", "msed"};
     private static final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name", "m_pred", "msed"};
 
@@ -81,17 +82,17 @@ public class ComplexBBPattern {
         boolean MSED = true;
 
         System.out.println("Before");
-        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth"); //get number of triangles before resolution
         new BirthBirthSiblingAccuracy(bridge);
 
         System.out.println("Running graph predicates...");
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            tx.run(BB_SIBLING_WITH_PARENTS);
+            tx.run(BB_SIBLING_WITH_PARENTS); //run birth-marriage graph pattern
             tx.commit();
         }
 
         System.out.println("Locating triangles...");
-        List<OpenTriangleClusterBB> triangles = findIllegalBirthDeathSiblingTriangles(bridge);
+        List<OpenTriangleClusterBB> triangles = findIllegalBirthDeathSiblingTriangles(bridge); //get all open triangles in their clusters
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles...");
@@ -100,37 +101,37 @@ public class ComplexBBPattern {
                 resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 6);
             }
         }else{
-            for (OpenTriangleClusterBB triangle : triangles) {
-                for (List<Long> chain : triangle.getTriangleChain()){
-                    LXP[] tempKids = {(LXP) births.getObjectById(triangle.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
+            for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
+                for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
+                    LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))}; //get node objects
                     String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
                     String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
                     String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-                    triangle.getYearStatistics();
-                    boolean hasChanged = false;
+                    cluster.getYearStatistics(); //get statistics for brith years
+                    boolean hasChanged = false; //prevent resolution if chain has already been resolved
 
-                    String toFind = "417705";
+//                    String toFind = "417705";
 //                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
 //                        System.out.println("fsd");
 //                    }
 
                     //1. Check age of child not outside of max difference
-                    hasChanged = maxRangePredicate(triangle, tempKids, hasChanged, 0);
+                    hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
 
                     //2. check DOB at least 9 months away from rest
-                    hasChanged = minBirthIntervalPredicate(triangle, tempKids, hasChanged, 1);
+                    hasChanged = minBirthIntervalPredicate(cluster, tempKids, hasChanged, 1);
 
                     //3. Get mode of birthplace
-                    hasChanged = mostCommonBirthPlacePredicate(triangle, hasChanged, tempKids, 2);
+                    hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
 
                     //4. If same marriage date and pass other checks, create link
-                    if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
+                    if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
                             !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
                             !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
                         createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
                     }else{
-                        if(!hasChanged && getDistance(triangle.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
+                        if(!hasChanged && getDistance(cluster.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
                                 !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
                                 !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
                             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
@@ -142,27 +143,35 @@ public class ComplexBBPattern {
                     }
 
                     //5. If name of parents the same after fixes, create
-                    hasChanged = matchingNamesPredicate(triangle, tempKids, hasChanged, 1, composite_measure_name);
+                    hasChanged = matchingNamesPredicate(cluster, tempKids, hasChanged, 1, composite_measure_name);
                 }
             }
         }
 
         System.out.println("After");
         System.out.println("\n");
-        new PredicateEfficacy(creationPredicates, deletionPredicates, "Birth", "Birth");
-        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
+        new PredicateEfficacy(creationPredicates, deletionPredicates, "Birth", "Birth"); //get efficacy of each predicate
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth"); //count number of open triangles after resolution
         new BirthBirthSiblingAccuracy(bridge);
     }
 
+    /**
+     * Method to locate all open triangles in the database
+     *
+     * @param bridge Neo4j Bridge
+     * @return List of open triangle clusters
+     */
     private static List<OpenTriangleClusterBB> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge) {
         final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth)\n" +
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, collect([y, z]) AS openTriangles";
 
+        //run query to get all open triangles
         Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE_QUERY);
         List<OpenTriangleClusterBB> clusters = new ArrayList<>();
         List<List<Long>> temp = new ArrayList<>();
 
+        //loop through each cluster
         result.stream().forEach(r -> {
             long x = ((Node) r.asMap().get("x")).get("STORR_ID").asLong();
             List<List<Node>> openTrianglesNodes = (List<List<Node>>) r.asMap().get("openTriangles");
@@ -178,15 +187,15 @@ public class ComplexBBPattern {
                         })
                         .collect(Collectors.toList());
 
-                temp.add(openTriangleList);
+                temp.add(openTriangleList); //add triangles to a temporary list
 
-                if (temp.size() == 360) {
+                if (temp.size() == 360) { //limit number of triangles in cluster
                     clusters.add(new OpenTriangleClusterBB(x, new ArrayList<>(temp)));
                     temp.clear();
                 }
             }
 
-            if (!temp.isEmpty()) {
+            if (!temp.isEmpty()) { //if not reached limit, create a cluster object with whatever is left
                 clusters.add(new OpenTriangleClusterBB(x, new ArrayList<>(temp)));
                 temp.clear();
             }
@@ -195,29 +204,51 @@ public class ComplexBBPattern {
         return clusters;
     }
 
-    private static boolean maxRangePredicate(OpenTriangleClusterBB triangle, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    /**
+     * Predicate to resolve triangles based on the maximum age range two siblings can have
+     * If a record's birthday is more than MAX_AGE_DIFFERENCE away from its link or the median of the cluster
+     * then it is deleted
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
+    private static boolean maxRangePredicate(OpenTriangleClusterBB cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
+        //Check if record x is outside of range
         if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
+
+        //Check if record z is outside of range
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
 //                        deleteLink(bridge, std_id_z, std_id_y);
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
+
+        //Check if record y is outside of range compared to x
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
+                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
+
+        //Check if record y is outside of range compared to z
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         }
@@ -225,14 +256,30 @@ public class ComplexBBPattern {
         return hasChanged;
     }
 
-    //https://stackoverflow.com/a/67767630
-    private static boolean minBirthIntervalPredicate(OpenTriangleClusterBB triangle, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    //
+
+    /**
+     * Predicate to resolve triangles based on a minimum birth interval between two records
+     * Either the interval between two connected records needs to be above BIRTH_INTERVAL
+     * Or the interval between two closest siblings based on the birthday inside the cluster needs to be above BIRTH_INTERVAL
+     *
+     * Code for finding closest date has been amended from https://stackoverflow.com/a/67767630
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
+    private static boolean minBirthIntervalPredicate(OpenTriangleClusterBB cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
+        //Check if the interval between two connected records is above BIRTH_INTERVAL of they are not twins
+        //Check on x against y
+        int day = 1;
         try{
-            int day = 1;
             if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
                 day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
             }
@@ -249,8 +296,8 @@ public class ComplexBBPattern {
 
         }
 
+        //Check on z against y
         try{
-            int day = 1;
             if(!Objects.equals(tempKids[2].getString(Birth.BIRTH_DAY), "--")){
                 day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
             }
@@ -267,18 +314,18 @@ public class ComplexBBPattern {
 
         }
 
+        //Check if the interval between two closest siblings based on the birthday inside the cluster is above BIRTH_INTERVAL
         try{
-            int day = 1;
             if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
                 day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
             }
 
             LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
-            Optional<Map.Entry<String, LocalDate>> closestDateX1 = triangle.getBirthDays().entrySet().stream()
+            Optional<Map.Entry<String, LocalDate>> closestDateX1 = cluster.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
                     .skip(1)
                     .findFirst();
-            Optional<Map.Entry<String, LocalDate>> closestDateX2 = triangle.getBirthDays().entrySet().stream()
+            Optional<Map.Entry<String, LocalDate>> closestDateX2 = cluster.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
                     .skip(2)
                     .findFirst();
@@ -296,17 +343,16 @@ public class ComplexBBPattern {
         }
 
         try{
-            int day = 1;
             if(!Objects.equals(tempKids[2].getString(Birth.BIRTH_DAY), "--")){
                 day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
             }
 
             LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
-            Optional<Map.Entry<String, LocalDate>> closestDateZ1 = triangle.getBirthDays().entrySet().stream()
+            Optional<Map.Entry<String, LocalDate>> closestDateZ1 = cluster.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
                     .skip(1)
                     .findFirst();
-            Optional<Map.Entry<String, LocalDate>> closestDateZ2 = triangle.getBirthDays().entrySet().stream()
+            Optional<Map.Entry<String, LocalDate>> closestDateZ2 = cluster.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
                     .skip(2)
                     .findFirst();
