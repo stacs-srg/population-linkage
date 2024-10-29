@@ -59,15 +59,15 @@ public class ThresholdTrianglesAnalysisParallel {
     private static final String BIRTH_GROOM_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String BIRTH_GROOM_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String BIRTH_GROOM_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Groom\"}]-(m) return count(r)";
-    private static final String BIRTH_GROOM_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage), (b)-[s:ID {actors: \"Child-Groom\"}]-(d) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+    private static final String BIRTH_GROOM_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage), (b)-[s:ID {actors: \"Child-Groom\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
-        final double MAX_THRESHOLD = 2.01; //0.01 above target
-        final double MIN_THRESHOLD = 1.75;
+        final int MIN_FIELD = 5; //1 below target
+        final double MAX_THRESHOLD = 2.51; //0.01 above target
+        final double MIN_THRESHOLD = 0;
 
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
@@ -78,7 +78,7 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("groom2ID" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("groom3ID" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     printWriter.println("threshold,precision,recall,fmeasure,triangles");

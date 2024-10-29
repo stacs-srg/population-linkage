@@ -171,11 +171,13 @@ public class PatternsCounter {
         String openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
                 "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
                 "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1)\n" +
-                "WHERE NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.FORENAME = d2.GROOM_FORENAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                "RETURN count(*) as cluster_count", type1, type2, threshold, fields);
+                "WHERE NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.FORENAME = d2.GROOM_FORENAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) " +
+                "AND b1.FORENAME = d1.GROOM_FORENAME AND b1.BIRTH_YEAR = right(d1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
 
         Result result = bridge.getNewSession().run(openSquaresQuery);
         List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
 
         if (!clusters.isEmpty()) {
             count = clusters.get(0);
@@ -186,8 +188,9 @@ public class PatternsCounter {
                 "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1),\n" +
                 "(b2)-[s:ID {actors: \"Child-Groom\"}]-(d2)\n" +
                 "WHERE NOT (b2)-[:SIBLING]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                "AND (s.fields_populated < %4$s OR s.distance > %3$s ) " +
-                "RETURN count(*) as cluster_count", type1, type2, threshold, fields);
+                "AND b2.FORENAME = d2.GROOM_FORENAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND b1.FORENAME = d1.GROOM_FORENAME AND b1.BIRTH_YEAR = right(d1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) " +
+                "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
+                "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
 
         result = bridge.getNewSession().run(openSquaresQuery2);
         clusters = result.list(r -> r.get("cluster_count").asLong());

@@ -238,25 +238,6 @@ public class Explore {
         examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ),k ); // now examine the whole lot.
     }
 
-    public void resolveTrianglesMSED(Set<Long> children, List<List<Long>> triangleChain) throws BucketException {
-        int k = 3;
-        List<Set<String>> familySets = new ArrayList<>();
-        List<Long> allStorIDs = new ArrayList<>(children);
-        OrderedList<List<Birth>, Double> allMSEDDist = new OrderedList<>(Integer.MAX_VALUE);
-
-        //LOOP THROUGH CHAINS HERE
-//        double distance = getMSEDForCluster()
-//        all_mseds.add(births,distance);
-
-
-        //Use MSED on children
-        //LOOP through list of results
-            //If result match a triangle
-                //If none of children are in any set, add
-                //If some children are in a set, add the other children to the same set only if below certain threshold
-                //If two children are in set and the third caused increase in threshold, identify as ringer
-    }
-
 
     public static void main(String[] args) throws BucketException {
 
