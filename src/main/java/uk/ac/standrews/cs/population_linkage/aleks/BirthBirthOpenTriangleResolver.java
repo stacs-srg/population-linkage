@@ -125,7 +125,10 @@ public class BirthBirthOpenTriangleResolver {
                     //3. Get mode of birthplace
                     hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
 
-                    //4. If same marriage date and pass other checks, create link
+                    //4. If name of parents the same after fixes, create
+                    hasChanged = matchingNamesPredicate(tempKids, hasChanged, 1, composite_measure_name);
+
+                    //5. If same marriage date and pass other checks, create link
                     if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
                             !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
                             !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
@@ -141,9 +144,6 @@ public class BirthBirthOpenTriangleResolver {
                             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
                         }
                     }
-
-                    //5. If name of parents the same after fixes, create
-                    hasChanged = matchingNamesPredicate(cluster, tempKids, hasChanged, 1, composite_measure_name);
                 }
             }
         }
@@ -280,13 +280,16 @@ public class BirthBirthOpenTriangleResolver {
         //Check on x against y
         int day = 1;
         try{
+            //if missing day, set to first of month
             if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
                 day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
             }
 
+            //get dates
             LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
             LocalDate dateY = LocalDate.of(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_DAY)));
 
+            //check if difference between dates is below threshold
             if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, dateX)) > 2){
                 deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
                 hasChanged = true;
@@ -298,13 +301,16 @@ public class BirthBirthOpenTriangleResolver {
 
         //Check on z against y
         try{
+            //if missing day, set to first of month
             if(!Objects.equals(tempKids[2].getString(Birth.BIRTH_DAY), "--")){
                 day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
             }
 
+            //get dates
             LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
             LocalDate dateY = LocalDate.of(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_MONTH)), Integer.parseInt(tempKids[1].getString(Birth.BIRTH_DAY)));
 
+            //check if difference between dates is below threshold
             if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, dateZ)) > 2){
                 deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
                 hasChanged = true;
@@ -316,10 +322,12 @@ public class BirthBirthOpenTriangleResolver {
 
         //Check if the interval between two closest siblings based on the birthday inside the cluster is above BIRTH_INTERVAL
         try{
+            //if missing day, set to first of month
             if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
                 day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
             }
 
+            //get two closest birthdays of x
             LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
             Optional<Map.Entry<String, LocalDate>> closestDateX1 = cluster.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
@@ -329,6 +337,8 @@ public class BirthBirthOpenTriangleResolver {
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
                     .skip(2)
                     .findFirst();
+
+            //check if both birthdays are below interval threshold
             if(!hasChanged && closestDateX1.isPresent() && closestDateX2.isPresent() &&
                     Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) > 2 &&
                     Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) > 2){
@@ -347,6 +357,7 @@ public class BirthBirthOpenTriangleResolver {
                 day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
             }
 
+            //get two closest birthdays of z
             LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
             Optional<Map.Entry<String, LocalDate>> closestDateZ1 = cluster.getBirthDays().entrySet().stream()
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
@@ -356,6 +367,8 @@ public class BirthBirthOpenTriangleResolver {
                     .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
                     .skip(2)
                     .findFirst();
+
+            //check if both birthdays are below interval threshold
             if(!hasChanged && closestDateZ1.isPresent() && closestDateZ2.isPresent() &&
                     Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) > 2 &&
                     Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) > 2){
@@ -372,19 +385,32 @@ public class BirthBirthOpenTriangleResolver {
         return hasChanged;
     }
 
-    private static boolean mostCommonBirthPlacePredicate(OpenTriangleClusterBB triangle, boolean hasChanged, LXP[] tempKids, int predNumber) {
-        int MIN_FAMILY_SIZE = 3;
+    /**
+     * Predicate to resolve triangles based on most common birthplace. If neighbouring node and birthplace mode of cluster don't match
+     * record, then delete link
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
+    private static boolean mostCommonBirthPlacePredicate(OpenTriangleClusterBB cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
+        int MIN_FAMILY_SIZE = 3; //delete link only if cluster contains more children than threshold
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
+        //check on x
         if(!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") &&
-                !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE ){
+                !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE ){
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
+
+        //check on z
         } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") &&
-                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE) {
+                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
@@ -393,7 +419,16 @@ public class BirthBirthOpenTriangleResolver {
         return hasChanged;
     }
 
-    private static boolean matchingNamesPredicate(OpenTriangleClusterBB triangle, LXP[] tempKids, boolean hasChanged, int predNumber, LXPMeasure composite_measure_name) {
+    /**
+     * Predicate to resolve triangles based on issues relating to names
+     *
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @param composite_measure_name for calculating distance between names
+     * @return if triangle has been resolved
+     */
+    private static boolean matchingNamesPredicate(LXP[] tempKids, boolean hasChanged, int predNumber, LXPMeasure composite_measure_name) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
@@ -518,8 +553,6 @@ public class BirthBirthOpenTriangleResolver {
     }
 
     public static void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, RecordRepository record_repository, LinkageRecipe recipe, int cPred, int dPred) throws BucketException {
-        //TODO fix explore class
-        int k = 3;
         double THRESHOLD = 0.07;
         List<Set<Birth>> familySets = new ArrayList<>();
 //        List<Long> allStorIDs = new ArrayList<>(children);
@@ -635,14 +668,6 @@ public class BirthBirthOpenTriangleResolver {
     private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
-        parameters.put("standard_id_to", standard_id_to);
-        return parameters;
-    }
-
-    private static Map<String, Object> getCreationParameterMapSTD(String standard_id_from, String standard_id_mid, String standard_id_to) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("standard_id_from", standard_id_from);
-        parameters.put("standard_id_mid", standard_id_mid);
         parameters.put("standard_id_to", standard_id_to);
         return parameters;
     }
