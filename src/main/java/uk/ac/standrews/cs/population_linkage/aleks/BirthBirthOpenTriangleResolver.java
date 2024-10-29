@@ -610,6 +610,14 @@ public class BirthBirthOpenTriangleResolver {
         }
     }
 
+    /**
+     * Method to create a link between two records
+     *
+     * @param bridge Neo4j bridge
+     * @param std_id_x standardised id of record x
+     * @param std_id_z standardised id of record z
+     * @param prov provenance of resolver
+     */
     private static void createLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_z, String prov) {
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
             Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z, prov);
@@ -618,6 +626,13 @@ public class BirthBirthOpenTriangleResolver {
         }
     }
 
+    /**
+     * Method to permanently delete a link between two records
+     *
+     * @param bridge Neo4j bridge
+     * @param std_id_x standardised id of record x
+     * @param std_id_y standardised id of record y
+     */
     private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y){
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
             Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y);
@@ -626,6 +641,13 @@ public class BirthBirthOpenTriangleResolver {
         }
     }
 
+    /**
+     * Method to create a delete link between two records, used in testing
+     *
+     * @param bridge Neo4j bridge
+     * @param std_id_x standardised id of record x
+     * @param std_id_y standardised id of record y
+     */
     private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y, String prov){
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
             Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y, prov);
@@ -634,6 +656,12 @@ public class BirthBirthOpenTriangleResolver {
         }
     }
 
+    /**
+     * Method to get composite measure for names to calculate distance
+     *
+     * @param base_measure base measure to be used
+     * @return composite measure
+     */
     protected static LXPMeasure getCompositeMeasure(StringMeasure base_measure) {
         final List<Integer> LINKAGE_FIELDS_NAME = list(
                 Birth.MOTHER_FORENAME,
@@ -645,6 +673,12 @@ public class BirthBirthOpenTriangleResolver {
         return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS_NAME);
     }
 
+    /**
+     * Method to get composite measure for dates to calculate distance
+     *
+     * @param base_measure base measure to be used
+     * @return composite measure
+     */
     protected static LXPMeasure getCompositeMeasureDate(StringMeasure base_measure) {
         final List<Integer> LINKAGE_FIELDS = list(
                 Birth.PARENTS_DAY_OF_MARRIAGE,
@@ -655,16 +689,42 @@ public class BirthBirthOpenTriangleResolver {
         return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS);
     }
 
+    /**
+     * Method to get distance between two nodes based on their storr ID
+     *
+     * @param id1 ID of record 1
+     * @param id2 ID of record 2
+     * @param composite_measure measure to be used
+     * @param births births bucket
+     * @return distance between two records
+     * @throws BucketException
+     */
     private static double getDistance(long id1, long id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
         LXP b1 = (LXP) births.getObjectById(id1);
         LXP b2 = (LXP) births.getObjectById(id2);
         return composite_measure.distance(b1, b2);
     }
 
+    /**
+     * Method to get distance between two nodes based on their object
+     *
+     * @param b1 object 1
+     * @param b2 object 2
+     * @param composite_measure measure to be used
+     * @return distance between two records
+     * @throws BucketException
+     */
     private static double getDistance(LXP b1, LXP b2, LXPMeasure composite_measure) throws BucketException {
         return composite_measure.distance(b1, b2);
     }
 
+    /**
+     * Method to get map of parameters to be used in cypher queries
+     *
+     * @param standard_id_from record ID to link from
+     * @param standard_id_to record ID to link to
+     * @return map of parameters
+     */
     private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
@@ -672,6 +732,14 @@ public class BirthBirthOpenTriangleResolver {
         return parameters;
     }
 
+    /**
+     * Method to get map of parameters to be used in cypher queries
+     *
+     * @param standard_id_from record ID to link from
+     * @param standard_id_to record ID to link to
+     * @param prov provenance of resolver
+     * @return map of parameters
+     */
     private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String prov) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
@@ -694,6 +762,14 @@ public class BirthBirthOpenTriangleResolver {
         return MSED.distance(fields_from_choices);
     }
 
+    /**
+     * Method to get birth objects based on storr IDs
+     *
+     * @param sibling_ids ids of records to find
+     * @param record_repository repository of where records stored
+     * @return list of birth objects
+     * @throws BucketException
+     */
     public static List<Birth> getBirths(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException {
         IBucket<Birth> births = record_repository.getBucket("birth_records");
         ArrayList<Birth> bs = new ArrayList();
