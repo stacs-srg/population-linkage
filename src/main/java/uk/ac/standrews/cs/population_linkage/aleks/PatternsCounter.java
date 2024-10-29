@@ -172,7 +172,7 @@ public class PatternsCounter {
         String openSquaresQuery;
         String openSquaresQuery2;
 
-        if (Objects.equals(type2, "death")) {
+        if (Objects.equals(type2, "Death")) {
             openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
                     "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
                     "(b1)-[r:ID]-(d1)\n" +
