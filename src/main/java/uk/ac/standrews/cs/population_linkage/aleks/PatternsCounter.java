@@ -172,7 +172,7 @@ public class PatternsCounter {
         String openSquaresQuery;
         String openSquaresQuery2;
 
-        if (Objects.equals(type2, "Death")) {
+        if (Objects.equals(type2, "Death") && Objects.equals(type1, "Birth")) {
             openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
                     "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
                     "(b1)-[r:ID]-(d1)\n" +
@@ -186,6 +186,22 @@ public class PatternsCounter {
                     "(b2)-[s:ID]-(d2)\n" +
                     "WHERE NOT (b2)-[:SIBLING]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
                     "AND b2.FORENAME = d2.FORENAME AND b2.BIRTH_YEAR = right(d2.DATE_OF_BIRTH, 4) AND b1.FORENAME = d1.FORENAME AND b1.BIRTH_YEAR = right(d1.DATE_OF_BIRTH, 4) " +
+                    "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
+                    "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+        }else if(Objects.equals(type2, "Death") && Objects.equals(type1, "Marriage")){
+            openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                    "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                    "(b1)-[r:ID]-(d1)\n" +
+                    "WHERE NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.GROOM_FORENAME = d2.FORENAME AND right(b2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) = right(d2.DATE_OF_BIRTH, 4) " +
+                    "AND b1.GROOM_FORENAME = d1.FORENAME AND right(b1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) = right(d1.DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                    "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+
+            openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                    "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                    "(b1)-[r:ID]-(d1),\n" +
+                    "(b2)-[s:ID]-(d2)\n" +
+                    "WHERE NOT (b2)-[:SIBLING]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                    "AND b2.GROOM_FORENAME = d2.FORENAME AND right(b2.GROOM_AGE_OR_DATE_OF_BIRTH, 4)= right(d2.DATE_OF_BIRTH, 4) AND b1.GROOM_FORENAME = d1.FORENAME AND right(b1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) = right(d1.DATE_OF_BIRTH, 4) " +
                     "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
                     "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
         }else{
