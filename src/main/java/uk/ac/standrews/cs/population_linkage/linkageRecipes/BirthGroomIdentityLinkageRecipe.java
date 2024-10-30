@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 2.5;
+    private static final double DISTANCE_THRESHOLD = 3;
 
     public static final String LINKAGE_TYPE = "birth-groom-identity";
 
