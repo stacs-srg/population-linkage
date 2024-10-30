@@ -103,51 +103,51 @@ public class BirthBirthOpenTriangleResolver {
 //        triangles = findIllegalBirthDeathSiblingTriangles(bridge);
 
         System.out.println("Resolving triangles with predicates...");
-        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
-            for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
-                LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))}; //get node objects
-                String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-                String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
-                String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
-
-                cluster.getYearStatistics(); //get statistics for brith years
-                boolean hasChanged = false; //prevent resolution if chain has already been resolved
-
-//                    String toFind = "417705";
-//                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
-//                        System.out.println("fsd");
+//        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
+//            for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
+//                LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))}; //get node objects
+//                String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
+//                String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
+//                String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+//
+//                cluster.getYearStatistics(); //get statistics for brith years
+//                boolean hasChanged = false; //prevent resolution if chain has already been resolved
+//
+////                    String toFind = "417705";
+////                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
+////                        System.out.println("fsd");
+////                    }
+//
+//                //1. Check age of child not outside of max difference
+//                hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
+//
+//                //2. check DOB at least 9 months away from rest
+//                hasChanged = minBirthIntervalPredicate(cluster, tempKids, hasChanged, 1);
+//
+//                //3. Get mode of birthplace
+//                hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
+//
+//                //4. If name of parents the same after fixes, create
+////                hasChanged = matchingNamesPredicate(tempKids, hasChanged, 1, composite_measure_name);
+//
+//                //5. If same marriage date and pass other checks, create link
+//                if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
+//                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+//                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+//                    createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
+//                }else{
+//                    if(!hasChanged && getDistance(cluster.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
+//                            !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+//                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+//                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
+//                    } else if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
+//                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+//                            !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+//                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
 //                    }
-
-                //1. Check age of child not outside of max difference
-                hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
-
-                //2. check DOB at least 9 months away from rest
-                hasChanged = minBirthIntervalPredicate(cluster, tempKids, hasChanged, 1);
-
-                //3. Get mode of birthplace
-                hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
-
-                //4. If name of parents the same after fixes, create
-//                hasChanged = matchingNamesPredicate(tempKids, hasChanged, 1, composite_measure_name);
-
-                //5. If same marriage date and pass other checks, create link
-                if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
-                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                    createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
-                }else{
-                    if(!hasChanged && getDistance(cluster.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
-                            !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
-                    } else if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
-                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-                            !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
-                    }
-                }
-            }
-        }
+//                }
+//            }
+//        }
 
         System.out.println("After");
         System.out.println("\n");
@@ -747,6 +747,9 @@ public class BirthBirthOpenTriangleResolver {
                     } else if (kidsIndex.get(0) == 2) {
                         deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
                     }
+                }else if(kidsFound == 0 && kidsIndex.size() == 3) {
+                    deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+                    deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
                 }
             }
         }
