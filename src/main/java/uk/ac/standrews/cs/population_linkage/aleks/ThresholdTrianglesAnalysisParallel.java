@@ -61,6 +61,11 @@ public class ThresholdTrianglesAnalysisParallel {
     private static final String BIRTH_GROOM_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Groom\"}]-(m) return count(r)";
     private static final String BIRTH_GROOM_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage), (b)-[s:ID {actors: \"Child-Groom\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
+    private static final String DEATH_GROOM_ID_TPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE (d)-[:GT_ID {actors: \"Deceased-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String DEATH_GROOM_ID_FPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:GT_ID {actors: \"Deceased-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String DEATH_GROOM_ID_FNC = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:ID {actors: \"Deceased-Groom\"}]-(m) return count(r)";
+    private static final String DEATH_GROOM_ID_FNC_T = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage), (b)-[s:ID {actors: \"Deceased-Groom\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
@@ -89,10 +94,10 @@ public class ThresholdTrianglesAnalysisParallel {
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-                            long fpc = doQuery(BIRTH_GROOM_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_GROOM_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_GROOM_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_GROOM_ID_FNC_T, i, currentField, localBridge);
+                            long fpc = doQuery(DEATH_GROOM_ID_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(DEATH_GROOM_ID_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(DEATH_GROOM_ID_FNC, threshold, currentField, localBridge)
+                                    + doQuery(DEATH_GROOM_ID_FNC_T, i, currentField, localBridge);
 
                         printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
                                 threshold,
