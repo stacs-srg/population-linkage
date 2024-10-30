@@ -78,7 +78,7 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthdeathID" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("groomID" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     printWriter.println("threshold,precision,recall,fmeasure,triangles");
