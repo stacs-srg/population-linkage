@@ -25,7 +25,7 @@ fig = plt.figure(figsize=(14, 8))
 
 MAX_FIELD = 6
 MIN_FIELD = 2 #1 under
-FILE = "groomID"
+FILE = "birthdeathID"
 
 
 if FILE == "birthmarriage":
@@ -57,6 +57,7 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     l1 = ax1.plot(data['threshold'], data['recall'], label='Recall', color='b')
     l2 = ax1.plot(data['threshold'], data['precision'], label='Precision', color='g')
     l3 = ax1.plot(data['threshold'], data['fmeasure'], label='fmeasure', color='r')
+    ax1.set_ylim([0, 1])
 
     if len(all_handles) == 0:
         handles, labels = ax1.get_legend_handles_labels()
@@ -106,6 +107,7 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     optimal_threshold = walker(open_triangles_gradient)
 
     ax2 = ax1.twinx()
+    ax2.set_ylim([0, 1])
     # ax2.plot(data['threshold'], data['squares'], label='Open Triangles', color='orange')
     l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles', color='orange')
     # l5 = ax2.plot(data['threshold'], fitted_curve, '--', label='Best fit', color='purple')

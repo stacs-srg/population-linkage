@@ -127,6 +127,15 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
+    public List<Integer> getLinkageFieldsMSED() {
+        return list(
+                Birth.MOTHER_FORENAME,
+                Birth.MOTHER_MAIDEN_SURNAME,
+                Birth.FATHER_FORENAME,
+                Birth.FATHER_SURNAME
+        );
+    }
+
     public static boolean isViable(final LXP birth_record1, final LXP birth_record2) {
 
         try {
