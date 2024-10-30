@@ -64,7 +64,7 @@ public class ThresholdTrianglesAnalysisParallel {
     private static final String DEATH_GROOM_ID_TPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE (d)-[:GT_ID {actors: \"Deceased-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String DEATH_GROOM_ID_FPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:GT_ID {actors: \"Deceased-Groom\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String DEATH_GROOM_ID_FNC = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:ID {actors: \"Deceased-Groom\"}]-(m) return count(r)";
-    private static final String DEATH_GROOM_ID_FNC_T = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage), (b)-[s:ID {actors: \"Deceased-Groom\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+    private static final String DEATH_GROOM_ID_FNC_T = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage), (d)-[s:ID {actors: \"Deceased-Groom\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
 
     public static void main(String[] args) throws InterruptedException {
