@@ -70,9 +70,9 @@ public class ThresholdTrianglesAnalysisParallel {
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
+        final int MIN_FIELD = 5; //1 below target
         final double MAX_THRESHOLD = 3.01; //0.01 above target
-        final double MIN_THRESHOLD = 0;
+        final double MIN_THRESHOLD = 0.8;
 
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
@@ -83,7 +83,7 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("groomDeathID" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("groomDeath2ID" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     printWriter.println("threshold,precision,recall,fmeasure,triangles");
