@@ -167,6 +167,41 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
+    public static int countOpenTrianglesCumulativeBD(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
+        long count = 0;
+        String openTriangleQuery = String.format(
+                "MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s)-[:SIBLING]-(d:%2$s) " +
+                        "WHERE NOT (b1)-[:ID]-(d) AND NOT (b1)-[:SIBLING]-(d) AND b1.FORENAME = d.FORENAME AND b1.SURNAME = d.SURNAME AND b1.BIRTH_YEAR = right(d.DATE_OF_BIRTH, 4) " +
+                        "RETURN count(DISTINCT [b1, d]) as cluster_count",
+                type1, type2
+        );
+
+        Result result = bridge.getNewSession().run(openTriangleQuery);
+        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
+
+        String openTriangleQuery2 = String.format(
+                "MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s)-[:SIBLING]-(d:%2$s), (b1)-[t:ID]-(d) " +
+                        "WHERE NOT (b1)-[:SIBLING]-(d) AND b1.FORENAME = d.FORENAME AND b1.SURNAME = d.SURNAME AND b1.BIRTH_YEAR = right(d.DATE_OF_BIRTH, 4)\n" +
+                        "AND (t.fields_populated < %4$s OR t.distance > %3$s ) " +
+                        "RETURN count(DISTINCT [x, z]) as cluster_count",
+                type1, type2, threshold, fields
+        );
+
+        result = bridge.getNewSession().run(openTriangleQuery2);
+        clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        long tCount = 0;
+        if (!clusters.isEmpty()) {
+            tCount = clusters.get(0);
+        }
+
+        return (int) count + (int) tCount;
+    }
+
     public static int countOpenSquaresCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
         long count = 0;
         String openSquaresQuery;

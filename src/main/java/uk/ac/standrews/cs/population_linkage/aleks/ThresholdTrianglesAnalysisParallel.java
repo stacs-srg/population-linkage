@@ -70,9 +70,9 @@ public class ThresholdTrianglesAnalysisParallel {
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 6;
-        final int MIN_FIELD = 5; //1 below target
-        final double MAX_THRESHOLD = 3.01; //0.01 above target
-        final double MIN_THRESHOLD = 0.8;
+        final int MIN_FIELD = 2; //1 below target
+        final double MAX_THRESHOLD = 2.01; //0.01 above target
+        final double MIN_THRESHOLD = 0.0;
 
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
@@ -83,7 +83,7 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("groomDeath2ID" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthTriDeath" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     printWriter.println("threshold,precision,recall,fmeasure,triangles");
@@ -99,12 +99,19 @@ public class ThresholdTrianglesAnalysisParallel {
                             long fnc = doQuery(DEATH_GROOM_ID_FNC, threshold, currentField, localBridge)
                                     + doQuery(DEATH_GROOM_ID_FNC_T, i, currentField, localBridge);
 
-                        printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
-                                threshold,
-                                ClassificationMetrics.precision(tpc, fpc),
-                                ClassificationMetrics.recall(tpc, fnc),
-                                ClassificationMetrics.F1(tpc, fpc, fnc),
-                                PatternsCounter.countOpenSquaresCumulative(bridge, "Marriage", "Death", i, currentField));
+//                        printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
+//                                threshold,
+//                                ClassificationMetrics.precision(tpc, fpc),
+//                                ClassificationMetrics.recall(tpc, fnc),
+//                                ClassificationMetrics.F1(tpc, fpc, fnc),
+//                                PatternsCounter.countOpenSquaresCumulative(bridge, "Marriage", "Death", i, currentField));
+
+                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
+                                    threshold,
+                                    ClassificationMetrics.precision(tpc, fpc),
+                                    ClassificationMetrics.recall(tpc, fnc),
+                                    ClassificationMetrics.F1(tpc, fpc, fnc),
+                                    PatternsCounter.countOpenTrianglesCumulativeBD(bridge, "Birth", "Death", i, currentField));
 
 //                            printWriter.printf("%.2f,%d%n",
 //                                    threshold,
