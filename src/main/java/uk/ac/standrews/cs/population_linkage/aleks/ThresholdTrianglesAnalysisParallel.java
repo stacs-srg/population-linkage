@@ -71,7 +71,7 @@ public class ThresholdTrianglesAnalysisParallel {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 6;
         final int MIN_FIELD = 2; //1 below target
-        final double MAX_THRESHOLD = 2.01; //0.01 above target
+        final double MAX_THRESHOLD = 3.01; //0.01 above target
         final double MIN_THRESHOLD = 0;
 
 
