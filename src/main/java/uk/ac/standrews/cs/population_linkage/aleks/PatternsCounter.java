@@ -187,7 +187,7 @@ public class PatternsCounter {
                 "MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s)-[:SIBLING]-(d:%2$s), (b1)-[t:ID]-(d) " +
                         "WHERE NOT (b1)-[:SIBLING]-(d) AND b1.FORENAME = d.FORENAME AND b1.SURNAME = d.SURNAME AND b1.BIRTH_YEAR = right(d.DATE_OF_BIRTH, 4)\n" +
                         "AND (t.fields_populated < %4$s OR t.distance > %3$s ) " +
-                        "RETURN count(DISTINCT [x, z]) as cluster_count",
+                        "RETURN count(DISTINCT [b1, d]) as cluster_count",
                 type1, type2, threshold, fields
         );
 
