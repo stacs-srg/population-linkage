@@ -73,6 +73,7 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
         return None
 
     open_triangles_normalized = (data['triangles'] - data['triangles'].min()) / (data['triangles'].max() - data['triangles'].min())
+    open_squares_normalized = (data['squares'] - data['squares'].min()) / (data['squares'].max() - data['squares'].min())
     open_triangles_smooth = open_triangles_normalized.rolling(window=5, min_periods=1).mean()
     open_triangles_gradient = np.gradient(open_triangles_smooth, data['threshold'])
     # optimal_threshold = walker(open_triangles_gradient)
@@ -110,6 +111,7 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     ax2.set_ylim([0, 1])
     # ax2.plot(data['threshold'], data['squares'], label='Open Triangles', color='orange')
     l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles', color='orange')
+    l5 = ax2.plot(data['threshold'], open_squares_normalized, label='Open Squares', color='purple')
     # l5 = ax2.plot(data['threshold'], fitted_curve, '--', label='Best fit', color='purple')
     # ax2.plot(data['threshold'], open_triangles_gradient, label='Open Triangles Dif', color='purple')
     # ax2.plot(data['threshold'][optimal_threshold], open_triangles_normalized[optimal_threshold], 'o', color='orange', label='Max Open Triangles Gradient')
@@ -124,7 +126,7 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
         all_handles.extend(handles)
         all_labels.extend(labels)
 
-    ax2.set_ylabel('Open Triangles')
+    ax2.set_ylabel('Open Patterns (Normalised)')
 
     # ax2.legend(loc='lower left')
 
@@ -140,5 +142,5 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
 fig.legend(handles=all_handles, labels=all_labels, loc='center right', bbox_to_anchor=(1, 0.5))
 
 plt.tight_layout(rect=[0, 0, 0.9, 1])
-# plt.savefig('threshold_field_analysis_groomsq2.png')
+# plt.savefig('threshold_field_analysis_bd3.png')
 plt.show()

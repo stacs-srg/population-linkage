@@ -94,21 +94,21 @@ public class ThresholdTrianglesAnalysisParallel {
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-//                            long fpc = doQuery(BIRTH_DEATH_ID_FPC, threshold, currentField, localBridge);
-//                            long tpc = doQuery(BIRTH_DEATH_ID_TPC, threshold, currentField, localBridge);
-//                            long fnc = doQuery(BIRTH_DEATH_ID_FNC, threshold, currentField, localBridge)
-//                                    + doQuery(BIRTH_DEATH_ID_FNC_T, i, currentField, localBridge);
+                            long fpc = doQuery(BIRTH_GROOM_ID_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(BIRTH_GROOM_ID_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(BIRTH_GROOM_ID_FNC, threshold, currentField, localBridge)
+                                    + doQuery(BIRTH_GROOM_ID_FNC_T, i, currentField, localBridge);
 
-                            long fpc = 1;
-                            long tpc = 1;
-                            long fnc = 1;
+//                            long fpc = 1;
+//                            long tpc = 1;
+//                            long fnc = 1;
 
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
                                 threshold,
                                 ClassificationMetrics.precision(tpc, fpc),
                                 ClassificationMetrics.recall(tpc, fnc),
                                 ClassificationMetrics.F1(tpc, fpc, fnc),
-                                PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Death", i, currentField));
+                                PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Marriage", i, currentField));
 
 //                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
 //                                    threshold,

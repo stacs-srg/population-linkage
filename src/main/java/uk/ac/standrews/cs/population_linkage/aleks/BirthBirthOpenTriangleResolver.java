@@ -20,7 +20,6 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Node;
-import org.neo4j.exceptions.Neo4jException;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
@@ -31,7 +30,6 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.MSED;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -57,7 +55,7 @@ public class BirthBirthOpenTriangleResolver {
     private static final double DATE_THRESHOLD = 0.8;
     private static final int BIRTH_INTERVAL = 280;
 
-    //Cypher queries used ijn predicates
+    //Cypher queries used in predicates
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
     private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
     private static final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
@@ -92,7 +90,7 @@ public class BirthBirthOpenTriangleResolver {
         }
 
         System.out.println("Locating triangles...");
-        List<OpenTriangleClusterBB> triangles = findIllegalBirthDeathSiblingTriangles(bridge); //get all open triangles in their clusters
+        List<OpenTriangleClusterBB> triangles = findIllegalBirthBirthSiblingTriangles(bridge); //get all open triangles in their clusters
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
@@ -162,7 +160,7 @@ public class BirthBirthOpenTriangleResolver {
      * @param bridge Neo4j Bridge
      * @return List of open triangle clusters
      */
-    private static List<OpenTriangleClusterBB> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge) {
+    private static List<OpenTriangleClusterBB> findIllegalBirthBirthSiblingTriangles(NeoDbCypherBridge bridge) {
         final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth)\n" +
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, collect([y, z]) AS openTriangles";
@@ -322,66 +320,66 @@ public class BirthBirthOpenTriangleResolver {
         }
 
         //Check if the interval between two closest siblings based on the birthday inside the cluster is above BIRTH_INTERVAL
-        try{
-            //if missing day, set to first of month
-            if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
-                day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
-            }
-
-            //get two closest birthdays of x
-            LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
-            Optional<Map.Entry<String, LocalDate>> closestDateX1 = cluster.getBirthDays().entrySet().stream()
-                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
-                    .skip(1)
-                    .findFirst();
-            Optional<Map.Entry<String, LocalDate>> closestDateX2 = cluster.getBirthDays().entrySet().stream()
-                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
-                    .skip(2)
-                    .findFirst();
-
-            //check if both birthdays are below interval threshold
-            if(!hasChanged && closestDateX1.isPresent() && closestDateX2.isPresent() &&
-                    Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) > 2 &&
-                    Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) > 2){
-//                            deleteLink(bridge, std_id_x, std_id_y);
-                deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
-                hasChanged = true;
-            }
-        }catch (Neo4jException e){
-            e.printStackTrace();
-        }catch (Exception ignored){
-
-        }
-
-        try{
-            if(!Objects.equals(tempKids[2].getString(Birth.BIRTH_DAY), "--")){
-                day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
-            }
-
-            //get two closest birthdays of z
-            LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
-            Optional<Map.Entry<String, LocalDate>> closestDateZ1 = cluster.getBirthDays().entrySet().stream()
-                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
-                    .skip(1)
-                    .findFirst();
-            Optional<Map.Entry<String, LocalDate>> closestDateZ2 = cluster.getBirthDays().entrySet().stream()
-                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
-                    .skip(2)
-                    .findFirst();
-
-            //check if both birthdays are below interval threshold
-            if(!hasChanged && closestDateZ1.isPresent() && closestDateZ2.isPresent() &&
-                    Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) > 2 &&
-                    Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) > 2){
-//                            deleteLink(bridge, std_id_z, std_id_y);
-                deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
-                hasChanged = true;
-            }
-        }catch (Neo4jException e){
-            e.printStackTrace();
-        }catch (Exception ignored){
-
-        }
+//        try{
+//            //if missing day, set to first of month
+//            if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_DAY), "--")){
+//                day = Integer.parseInt(tempKids[0].getString(Birth.BIRTH_DAY));
+//            }
+//
+//            //get two closest birthdays of x
+//            LocalDate dateX = LocalDate.of(Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[0].getString(Birth.BIRTH_MONTH)), day);
+//            Optional<Map.Entry<String, LocalDate>> closestDateX1 = cluster.getBirthDays().entrySet().stream()
+//                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
+//                    .skip(1)
+//                    .findFirst();
+//            Optional<Map.Entry<String, LocalDate>> closestDateX2 = cluster.getBirthDays().entrySet().stream()
+//                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateX))))
+//                    .skip(2)
+//                    .findFirst();
+//
+//            //check if both birthdays are below interval threshold
+//            if(!hasChanged && closestDateX1.isPresent() && closestDateX2.isPresent() &&
+//                    Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX1.get().getValue(), dateX)) > 2 &&
+//                    Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateX2.get().getValue(), dateX)) > 2){
+////                            deleteLink(bridge, std_id_x, std_id_y);
+//                deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+//                hasChanged = true;
+//            }
+//        }catch (Neo4jException e){
+//            e.printStackTrace();
+//        }catch (Exception ignored){
+//
+//        }
+//
+//        try{
+//            if(!Objects.equals(tempKids[2].getString(Birth.BIRTH_DAY), "--")){
+//                day = Integer.parseInt(tempKids[2].getString(Birth.BIRTH_DAY));
+//            }
+//
+//            //get two closest birthdays of z
+//            LocalDate dateZ = LocalDate.of(Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR)), Integer.parseInt(tempKids[2].getString(Birth.BIRTH_MONTH)), day);
+//            Optional<Map.Entry<String, LocalDate>> closestDateZ1 = cluster.getBirthDays().entrySet().stream()
+//                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
+//                    .skip(1)
+//                    .findFirst();
+//            Optional<Map.Entry<String, LocalDate>> closestDateZ2 = cluster.getBirthDays().entrySet().stream()
+//                    .sorted(Comparator.comparingLong(entry -> Math.abs(ChronoUnit.DAYS.between(entry.getValue(), dateZ))))
+//                    .skip(2)
+//                    .findFirst();
+//
+//            //check if both birthdays are below interval threshold
+//            if(!hasChanged && closestDateZ1.isPresent() && closestDateZ2.isPresent() &&
+//                    Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ1.get().getValue(), dateZ)) > 2 &&
+//                    Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(closestDateZ2.get().getValue(), dateZ)) > 2){
+////                            deleteLink(bridge, std_id_z, std_id_y);
+//                deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+//                hasChanged = true;
+//            }
+//        }catch (Neo4jException e){
+//            e.printStackTrace();
+//        }catch (Exception ignored){
+//
+//        }
 
         return hasChanged;
     }
@@ -555,6 +553,7 @@ public class BirthBirthOpenTriangleResolver {
 
     public static void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, RecordRepository record_repository, BirthSiblingLinkageRecipe recipe, int cPred, int dPred) throws BucketException {
         double THRESHOLD = 0.02;
+        double TUPLE_THRESHOLD = 0.03;
         List<Set<Birth>> familySets = new ArrayList<>();
         List<List<Birth>> toDelete = new ArrayList<>();
 //        List<Long> allStorIDs = new ArrayList<>(children);
@@ -569,7 +568,7 @@ public class BirthBirthOpenTriangleResolver {
 
             for (int i = 0; i < bs.size(); i++) {
                 //1. DOTTER/SON
-                String dotterRegex = "D[.:RT](?!.*D[.:RT])";
+                String dotterRegex = "D[.:ORT](?!.*D[.:RT])";
                 Pattern pattern = Pattern.compile(dotterRegex);
                 Matcher matcher = pattern.matcher(bs.get(i).getString(Birth.MOTHER_MAIDEN_SURNAME));
                 if (matcher.find()) {
@@ -593,18 +592,21 @@ public class BirthBirthOpenTriangleResolver {
                         bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
                         bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
 
+                    bs.get(0).put(Birth.FATHER_FORENAME, bs.get(0).getString(Birth.FATHER_FORENAME).replace(".", ""));
                     bs.get(1).put(Birth.FATHER_FORENAME, bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                     bs.get(2).put(Birth.FATHER_FORENAME, bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 } else if (matcher.find() && i == 1 && bs.get(0).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 && bs.get(2).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 &&
                         bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
                         bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
 
+                    bs.get(1).put(Birth.FATHER_FORENAME, bs.get(1).getString(Birth.FATHER_FORENAME).replace(".", ""));
                     bs.get(0).put(Birth.FATHER_FORENAME, bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                     bs.get(2).put(Birth.FATHER_FORENAME, bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 } else if (matcher.find() && i == 2 && bs.get(0).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 && bs.get(1).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 &&
                         bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
                         bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
 
+                    bs.get(2).put(Birth.FATHER_FORENAME, bs.get(2).getString(Birth.FATHER_FORENAME).replace(".", ""));
                     bs.get(0).put(Birth.FATHER_FORENAME, bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                     bs.get(1).put(Birth.FATHER_FORENAME, bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 }
@@ -613,16 +615,22 @@ public class BirthBirthOpenTriangleResolver {
                 if (matcher.find() && i == 0 && bs.get(2).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 && bs.get(1).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
                         bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
                         bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+
+                    bs.get(0).put(Birth.MOTHER_FORENAME, bs.get(0).getString(Birth.MOTHER_FORENAME).replace(".", ""));
                     bs.get(1).put(Birth.MOTHER_FORENAME, bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                     bs.get(2).put(Birth.MOTHER_FORENAME, bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 } else if (matcher.find() && i == 1 && bs.get(0).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 && bs.get(2).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
                         bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
                         bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+
+                    bs.get(1).put(Birth.MOTHER_FORENAME, bs.get(1).getString(Birth.MOTHER_FORENAME).replace(".", ""));
                     bs.get(0).put(Birth.MOTHER_FORENAME, bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                     bs.get(2).put(Birth.MOTHER_FORENAME, bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 } else if (matcher.find() && i == 2 && bs.get(0).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 && bs.get(1).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
                         bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
                         bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+
+                    bs.get(2).put(Birth.MOTHER_FORENAME, bs.get(2).getString(Birth.MOTHER_FORENAME).replace(".", ""));
                     bs.get(0).put(Birth.MOTHER_FORENAME, bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                     bs.get(1).put(Birth.MOTHER_FORENAME, bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
                 }
@@ -677,60 +685,43 @@ public class BirthBirthOpenTriangleResolver {
                 }
             }
 
-//            String toFind = "7210569";
-//            if(Objects.equals(bs.get(0).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(1).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(2).getString(Birth.STANDARDISED_ID), toFind)){
+//            String toFind = "244425";
+//            String toFind2 = "235074";
+//            if((Objects.equals(bs.get(0).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(1).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(2).getString(Birth.STANDARDISED_ID), toFind)) && familySets.size() > 0) {
 //                System.out.println("fsd");
 //            }
 
             double distance = getMSEDForCluster(bs, recipe);
+            double distanceXY = getMSEDForCluster(bs.subList(0, 2), recipe);
+            double distanceZY = getMSEDForCluster(bs.subList(1, 3), recipe);
+
+            if(distanceXY < THRESHOLD){
+                addFamilyMSED(familySets, bs.subList(0, 2));
+            } else if (distanceZY < THRESHOLD){
+                addFamilyMSED(familySets, bs.subList(1, 3));
+            }
+
             if(distance < THRESHOLD) {
-                if(familySets.isEmpty()) {
-                    familySets.add(new HashSet<>(bs));
-                }else{
-                    boolean familyFound = false;
-                    for(Set<Birth> fSet : familySets) {
-                        if(familyFound){
-                            break;
-                        }
-                        for (int i = 0; i < bs.size(); i++) {
-                            if(fSet.contains(bs.get(i))) {
-                                if(distance < 0.01){
-//                                    createLink(bridge, bs.get(0).getString(Birth.STANDARDISED_ID), bs.get(2).getString(Birth.STANDARDISED_ID), creationPredicates[cPred]);
-                                }
-                                fSet.addAll(bs);
-                                familyFound = true;
-                                break;
-                            }
-                        }
-                    }
-                    if(!familyFound) {
-                        familySets.add(new HashSet<>(bs));
-                    }
-                }
+//                addFamilyMSED(familySets, bs);
             }else if(distance > THRESHOLD){
                 toDelete.add(bs);
-//                for(Set<Birth> fSet : familySets) {
-//                    int kidsFound = 0;
-//                    List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
-//                    for (int i = 0; i < bs.size(); i++) {
-//                        if(fSet.contains(bs.get(i))) {
-//                            kidsIndex.remove((Integer.valueOf(i)));
-//                            kidsFound++;
-//                        }
-//                    }
-//
-//                    if(kidsFound == 2 && kidsIndex.size() == 1) {
-//                        if(kidsIndex.get(0) == 0){
-//                            deleteLink(bridge, bs.get(0).getString(Birth.STANDARDISED_ID), bs.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
-//                        } else if (kidsIndex.get(0) == 2) {
-//                            deleteLink(bridge, bs.get(2).getString(Birth.STANDARDISED_ID), bs.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
-//                        }
-//                    }
+//                if(distanceXY < TUPLE_THRESHOLD){
+//                    addFamilyMSED(familySets, bs.subList(0, 2));
+//                } else if (distanceZY < TUPLE_THRESHOLD){
+//                    addFamilyMSED(familySets, bs.subList(1, 3));
 //                }
             }
         }
 
         for (List<Birth> triangleToDelete : toDelete) {
+//            String toFind = "244425";
+//            String toFind2 = "235074";
+//            if((Objects.equals(triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), toFind)) && familySets.size() > 0 &&
+//                    (Objects.equals(triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), toFind2))) {
+//                System.out.println("fsd");
+//            }
+
+            boolean found = false;
             for(Set<Birth> fSet : familySets) {
                 int kidsFound = 0;
                 List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
@@ -744,13 +735,53 @@ public class BirthBirthOpenTriangleResolver {
                 if(kidsFound == 2 && kidsIndex.size() == 1) {
                     if(kidsIndex.get(0) == 0){
                         deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+                        found = true;
+                        break;
                     } else if (kidsIndex.get(0) == 2) {
                         deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+                        found = true;
+                        break;
                     }
-                }else if(kidsFound == 0 && kidsIndex.size() == 3) {
-                    deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
-                    deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
                 }
+
+//                else if (kidsFound == 1 && kidsIndex.size() == 2) {
+//                    if(!kidsIndex.contains(0)){
+//                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                    } else if (!kidsIndex.contains(1)) {
+//                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                    } else if (!kidsIndex.contains(2)) {
+//                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                    }
+//                }
+            }
+
+//            if(!found) {
+//                deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//            }
+        }
+    }
+
+    private static void addFamilyMSED(List<Set<Birth>> familySets, List<Birth> bs) {
+        if(familySets.isEmpty()) {
+            familySets.add(new HashSet<>(bs));
+        }else{
+            boolean familyFound = false;
+            for(Set<Birth> fSet : familySets) {
+                if(familyFound){
+                    break;
+                }
+                for (int i = 0; i < bs.size(); i++) {
+                    if(fSet.contains(bs.get(i))) {
+                        fSet.addAll(bs);
+                        familyFound = true;
+                        break;
+                    }
+                }
+            }
+            if(!familyFound) {
+                familySets.add(new HashSet<>(bs));
             }
         }
     }

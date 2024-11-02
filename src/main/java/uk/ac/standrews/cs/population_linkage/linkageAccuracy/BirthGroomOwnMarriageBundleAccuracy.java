@@ -26,9 +26,10 @@ public class BirthGroomOwnMarriageBundleAccuracy extends AbstractAccuracy {
 
     public BirthGroomOwnMarriageBundleAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);
+        doqueries();
     }
 
-    private void doqueries() {
+    public void doqueries() {
         long tpc = doQuery(BIRTH_GROOM_SIBLING_TPC);
         long fpc = doQuery(BIRTH_GROOM_SIBLING_FPC);
         long fnc = doQuery(BIRTH_GROOM_SIBLING_FNC);

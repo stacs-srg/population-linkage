@@ -42,6 +42,11 @@ public class PatternsCounter {
         System.out.println(type1 + "-" + type2 + "-" + type1 + " triangle: " + count);
     }
 
+    public static void countOpenTrianglesToStringID(NeoDbCypherBridge bridge, String type1, String type2) {
+        int count = countOpenTrianglesID(bridge, type1, type2);
+        System.out.println(type1 + "-" + type2 + "-" + type1 + " triangle: " + count);
+    }
+
     public static int countOpenTriangles(NeoDbCypherBridge bridge, String type1, String type2) {
         String openTriangleQuery = String.format(
                 "MATCH (x:%s)-[:SIBLING]-(y:%s)-[:SIBLING]-(z:%s) " +
@@ -60,6 +65,26 @@ public class PatternsCounter {
 
         return (int) count;
     }
+
+    public static int countOpenTrianglesID(NeoDbCypherBridge bridge, String type1, String type2) {
+        String openTriangleQuery = String.format(
+                "MATCH (x:%s)-[:ID]-(y:%s)-[:ID]-(z:%s) " +
+                        "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)" +
+                        "RETURN count(DISTINCT [x, z]) as cluster_count",
+                type1, type2, type1
+        );
+
+        Result result = bridge.getNewSession().run(openTriangleQuery);
+        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        long count = 0;
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
+
+        return (int) count;
+    }
+
 
     //Won't work for resolver as no deleted check
     public static int countOpenTrianglesCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
@@ -243,8 +268,8 @@ public class PatternsCounter {
             openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
                     "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
                     "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1)\n" +
-                    "WHERE NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.FORENAME = d2.GROOM_FORENAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) " +
-                    "AND b1.FORENAME = d1.GROOM_FORENAME AND b1.BIRTH_YEAR = right(d1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                    "WHERE NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.FORENAME = d2.GROOM_FORENAME AND b2.SURNAME = d2.GROOM_SURNAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) " +
+                    "AND b1.FORENAME = d1.GROOM_FORENAME AND b1.SURNAME = d1.GROOM_SURNAME AND b1.BIRTH_YEAR = right(d1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
                     "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
 
             openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
@@ -252,7 +277,7 @@ public class PatternsCounter {
                     "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1),\n" +
                     "(b2)-[s:ID {actors: \"Child-Groom\"}]-(d2)\n" +
                     "WHERE NOT (b2)-[:SIBLING]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                    "AND b2.FORENAME = d2.GROOM_FORENAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND b1.FORENAME = d1.GROOM_FORENAME AND b1.BIRTH_YEAR = right(d1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) " +
+                    "AND b2.FORENAME = d2.GROOM_FORENAME AND b2.SURNAME = d2.GROOM_SURNAME AND b2.BIRTH_YEAR = right(d2.GROOM_AGE_OR_DATE_OF_BIRTH, 4) AND b1.FORENAME = d1.GROOM_FORENAME AND b1.SURNAME = d1.GROOM_SURNAME AND b1.BIRTH_YEAR = right(d1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) " +
                     "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
                     "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
 
