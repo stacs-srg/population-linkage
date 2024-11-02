@@ -79,10 +79,11 @@ public class ThresholdTrianglesAnalysisParallel {
 
         System.out.println("Analysing thresholds...");
         reset(bridge);
+        System.out.println("DONE!!!");
 
         for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
             final int currentField = fields;
-            
+
             executorService.submit(() -> {
                 try (FileWriter fileWriter = new FileWriter("birthSqGroom" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
