@@ -78,10 +78,11 @@ public class ThresholdTrianglesAnalysisParallel {
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
         System.out.println("Analysing thresholds...");
+        reset(bridge);
 
         for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
             final int currentField = fields;
-
+            
             executorService.submit(() -> {
                 try (FileWriter fileWriter = new FileWriter("birthSqGroom" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
@@ -147,6 +148,12 @@ public class ThresholdTrianglesAnalysisParallel {
         parameters.put("threshold", threshold);
         parameters.put("field", fields);
         Result result = bridge.getNewSession().run(query_string, parameters);
+        return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
+    }
+
+    protected static long reset(NeoDbCypherBridge bridge) {
+        String query_string = "MATCH (x:Birth)-[r:ID {actors: \"Child-Groom\"}]-(y:Marriage) where r.distance > 2 delete r";
+        Result result = bridge.getNewSession().run(query_string);
         return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
     }
 
