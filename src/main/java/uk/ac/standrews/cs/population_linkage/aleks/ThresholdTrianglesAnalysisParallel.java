@@ -78,8 +78,8 @@ public class ThresholdTrianglesAnalysisParallel {
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
         System.out.println("Analysing thresholds...");
-        reset(bridge);
-        System.out.println("DONE!!!");
+//        reset(bridge);
+//        System.out.println("DONE!!!");
 
         for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
             final int currentField = fields;
