@@ -149,7 +149,8 @@ public class BirthBirthOpenTriangleResolver {
 
         System.out.println("After");
         System.out.println("\n");
-        new PredicateEfficacy(creationPredicates, deletionPredicates, "Birth", "Birth"); //get efficacy of each predicate
+        PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
+        pef.countSiblingEfficacy(creationPredicates, deletionPredicates, "Birth", "Birth");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth"); //count number of open triangles after resolution
         new BirthBirthSiblingAccuracy(bridge);
     }

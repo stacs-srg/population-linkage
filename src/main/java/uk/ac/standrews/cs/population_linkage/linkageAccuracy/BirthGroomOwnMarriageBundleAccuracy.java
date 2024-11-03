@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthGroomOwnMarriageBundleAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_GROOM_SIBLING_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) return count(r)";
-    private static final String BIRTH_GROOM_SIBLING_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) return count(r)";
-    private static final String BIRTH_GROOM_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Groom\"}]-(m) return count(r)";
+    private static final String BIRTH_GROOM_SIBLING_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_GROOM_SIBLING_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_GROOM_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Groom\"}]-(m) OR (b)-[:DELETED]-(m) return count(r)";
 
     public BirthGroomOwnMarriageBundleAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);

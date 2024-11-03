@@ -38,6 +38,8 @@ import java.util.*;
 public class BirthMarriageIDOpenTriangleResolver {
     private static NeoDbCypherBridge bridge;
 
+    private static final int MIN_MARRIAGE_AGE = 16;
+    private static final int MAX_MARRIAGE_AGE = 50;
 
     //Cypher queries used in predicates
     private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
@@ -45,7 +47,7 @@ public class BirthMarriageIDOpenTriangleResolver {
 
     //Names of predicates to be used as prov
     private static final String[] creationPredicates = {};
-    private static final String[] deletionPredicates = {"diff_birth"};
+    private static final String[] deletionPredicates = {"diff_birth", "born_after", "too_young", "too_old"};
 
     public static void main(String[] args) throws BucketException {
         bridge = Store.getInstance().getBridge();
@@ -66,22 +68,51 @@ public class BirthMarriageIDOpenTriangleResolver {
         System.out.println("Resolving triangles with predicates...");
         for (Long[] triangle : triangles) {
             LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
-            String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-            String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
-            String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+            String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Birth.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
 
             for (int i = 0; i < triangle.length; i+=2) {
-                if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH), "--/--/----")){
-                    if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6))){
-                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[0]);
+                //1. Match birthdays
+                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH), "--/--/----")){
+                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6))){
+                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[0]);
                     }
                 }
+
+                //2. If born after marriage
+                //TODO make this date
+                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
+                    if(Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR))){
+                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[1]);
+                    }
+                }
+
+                //3. If too young to marry
+                //TODO make this date
+                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
+                    if(Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 &&
+                            Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) < MIN_MARRIAGE_AGE){
+                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[2]);
+                    }
+                }
+
+                //4. If born way before marriage
+                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
+                    if(Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 &&
+                            Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > MAX_MARRIAGE_AGE){
+                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[3]);
+                    }
+                }
+
+                //5. Check names
+
+                //6. Birthplace vs Marriage place
             }
         }
 
         System.out.println("After");
         System.out.println("\n");
-        new PredicateEfficacy(creationPredicates, deletionPredicates, "Birth", "Marriage"); //get efficacy of each predicate
+        PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
+        pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", "Child-Groom");
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //count number of open triangles after resolution
         new BirthGroomOwnMarriageBundleAccuracy(bridge);
     }
@@ -119,9 +150,9 @@ public class BirthMarriageIDOpenTriangleResolver {
      * @param std_id_x standardised id of record x
      * @param std_id_y standardised id of record y
      */
-    private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y, String prov){
+    private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y, String actor, String prov){
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y, prov);
+            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y, prov, actor);
             tx.run(BM_ID_QUERY_DEL_PROV, parameters);
             tx.commit();
         }
@@ -135,11 +166,12 @@ public class BirthMarriageIDOpenTriangleResolver {
      * @param prov provenance of resolver
      * @return map of parameters
      */
-    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String prov) {
+    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String prov, String actor) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         parameters.put("standard_id_to", standard_id_to);
         parameters.put("prov", prov);
+        parameters.put("actor", actor);
         return parameters;
     }
 

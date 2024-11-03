@@ -110,7 +110,8 @@ public class ComplexBDPattern {
         }
 
         System.out.println("After");
-        new PredicateEfficacy(creationPredicates, deletionPredicates, "Birth", "Death");
+        PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
+        pef.countSiblingEfficacy(creationPredicates, deletionPredicates, "Birth", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthDeathSiblingAccuracy(bridge);
