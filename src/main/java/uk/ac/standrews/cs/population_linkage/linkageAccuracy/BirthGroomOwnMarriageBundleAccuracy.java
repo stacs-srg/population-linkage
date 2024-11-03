@@ -44,7 +44,6 @@ public class BirthGroomOwnMarriageBundleAccuracy extends AbstractAccuracy {
     public static void main(String[] args) {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             BirthGroomOwnMarriageBundleAccuracy acc = new BirthGroomOwnMarriageBundleAccuracy(bridge);
-            acc.doqueries();
         }
     }
 }

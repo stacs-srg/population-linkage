@@ -50,7 +50,7 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     // TODO Experiment with including father/mother occupation in all relevant linkages.
 
-    private static final double DISTANCE_THRESHOLD = 0.49;
+    private static final double DISTANCE_THRESHOLD = 1.21;
 
     public static final String LINKAGE_TYPE = "birth-bride-identity";
 

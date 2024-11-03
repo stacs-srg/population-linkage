@@ -20,12 +20,13 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthBrideOwnMarriageAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_BRIDE_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[r:ID {actors: \"Child-Bride\"}]-(m) return count(r)";
+    private static final String BIRTH_BRIDE_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_BRIDE_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_BRIDE_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[r:ID {actors: \"Child-Bride\"}]-(m) OR (b)-[:DELETED]-(m) return count(r)";
 
     public BirthBrideOwnMarriageAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);
+        doqueries();
     }
 
     private void doqueries() {
@@ -43,7 +44,6 @@ public class BirthBrideOwnMarriageAccuracy extends AbstractAccuracy {
     public static void main(String[] args) {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             BirthBrideOwnMarriageAccuracy acc = new BirthBrideOwnMarriageAccuracy(bridge);
-            acc.doqueries();
         }
     }
 }

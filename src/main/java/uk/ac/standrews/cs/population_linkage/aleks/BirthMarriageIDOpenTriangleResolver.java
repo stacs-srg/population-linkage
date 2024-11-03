@@ -25,14 +25,20 @@ import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
+import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBrideOwnMarriageAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthGroomOwnMarriageBundleAccuracy;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.util.*;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
 
 public class BirthMarriageIDOpenTriangleResolver {
@@ -40,6 +46,7 @@ public class BirthMarriageIDOpenTriangleResolver {
 
     private static final int MIN_MARRIAGE_AGE = 16;
     private static final int MAX_MARRIAGE_AGE = 50;
+    private static final double NAME_THRESHOLD = 0.5;
 
     //Cypher queries used in predicates
     private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
@@ -47,74 +54,87 @@ public class BirthMarriageIDOpenTriangleResolver {
 
     //Names of predicates to be used as prov
     private static final String[] creationPredicates = {};
-    private static final String[] deletionPredicates = {"diff_birth", "born_after", "too_young", "too_old"};
+    private static final String[] deletionPredicates = {"diff_birth", "born_after", "too_young", "too_old", "bad_name"};
 
     public static void main(String[] args) throws BucketException {
         bridge = Store.getInstance().getBridge();
         RecordRepository record_repository = new RecordRepository("umea");
-        final StringMeasure base_measure = Constants.LEVENSHTEIN;
-        final StringMeasure base_measure_n = Constants.JENSEN_SHANNON;
+        final StringMeasure base_measure = Constants.JENSEN_SHANNON;
+        LXPMeasure composite_measure;
         IBucket births = record_repository.getBucket("birth_records");
         IBucket marriages = record_repository.getBucket("marriage_records");
+        String[] partners = {"Groom", "Bride"};
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //get number of triangles before resolution
         new BirthGroomOwnMarriageBundleAccuracy(bridge);
+        new BirthBrideOwnMarriageAccuracy(bridge);
 
-        System.out.println("Locating triangles...");
-        List<Long[]> triangles = findIllegalBirthMarriageTriangles(bridge, "Groom"); //get all open triangles in their clusters
-        System.out.println("Triangles found: " + triangles.size());
+        for (String partner : partners) {
+            composite_measure = getCompositeMeasureBirthMarriage(base_measure, partner);
+            System.out.println("Resolving " + partner);
+            System.out.println("Locating triangles...");
+            List<Long[]> triangles = findIllegalBirthMarriageTriangles(bridge, partner); //get all open triangles in their clusters
+            System.out.println("Triangles found: " + triangles.size());
 
-        System.out.println("Resolving triangles with predicates...");
-        for (Long[] triangle : triangles) {
-            LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
-            String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Birth.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
+            System.out.println("Resolving triangles with predicates...");
+            for (Long[] triangle : triangles) {
+                boolean isDeleted = false;
+                LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
+                String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Birth.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
 
-            for (int i = 0; i < triangle.length; i+=2) {
-                //1. Match birthdays
-                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH), "--/--/----")){
-                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6))){
-                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[0]);
+                for (int i = 0; i < triangle.length; i += 2) {
+                    //1. Match birthdays
+                    if(partner.equals("Groom")){
+                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH), "--/--/----")) {
+                            if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6))) {
+                                deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0]);
+                                isDeleted = true;
+                            }
+                        }
+                    }else{
+                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH), "--/--/----")) {
+                            if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH).substring(6))) {
+                                deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0]);
+                                isDeleted = true;
+                            }
+                        }
+                    }
+
+                    //TODO make this date
+                    if (!isDeleted && !Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")) { //2. If born after marriage
+                        if (Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR))) {
+                            deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[1]);
+                            isDeleted = true;
+                        } else if (Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 && //3. If too young to marry
+                                Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) < MIN_MARRIAGE_AGE) {
+                            deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[2]);
+                            isDeleted = true;
+                        } else if (Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 && //4. If born way before marriage
+                                Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > MAX_MARRIAGE_AGE) {
+                            deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[3]);
+                            isDeleted = true;
+                        }
+                    }
+
+                    //5. Check names
+                    if (!isDeleted && getDistance(tempKids[i], tempKids[1], composite_measure) > NAME_THRESHOLD) {
+                        deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[4]);
                     }
                 }
-
-                //2. If born after marriage
-                //TODO make this date
-                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
-                    if(Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR))){
-                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[1]);
-                    }
-                }
-
-                //3. If too young to marry
-                //TODO make this date
-                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
-                    if(Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 &&
-                            Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) < MIN_MARRIAGE_AGE){
-                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[2]);
-                    }
-                }
-
-                //4. If born way before marriage
-                if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
-                    if(Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 &&
-                            Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > MAX_MARRIAGE_AGE){
-                        deleteLink(bridge, stds[i], stds[1], "Groom", deletionPredicates[3]);
-                    }
-                }
-
-                //5. Check names
-
-                //6. Birthplace vs Marriage place
             }
         }
 
         System.out.println("After");
         System.out.println("\n");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
-        pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", "Child-Groom");
+        for (String partner : partners) {
+            System.out.println(partner + " efficacy:");
+            pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", "Child-" + partner);
+        }
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //count number of open triangles after resolution
         new BirthGroomOwnMarriageBundleAccuracy(bridge);
+        new BirthBrideOwnMarriageAccuracy(bridge);
     }
 
     /**
@@ -173,6 +193,34 @@ public class BirthMarriageIDOpenTriangleResolver {
         parameters.put("prov", prov);
         parameters.put("actor", actor);
         return parameters;
+    }
+
+    protected static LXPMeasure getCompositeMeasureBirthMarriage(StringMeasure base_measure, String partner) {
+        final List<Integer> LINKAGE_FIELDS_BIRTH = list(
+                Birth.FORENAME,
+                Birth.SURNAME
+        );
+
+        final List<Integer> LINKAGE_FIELDS_MARRIAGE;
+
+        if(Objects.equals(partner, "Groom")){
+            LINKAGE_FIELDS_MARRIAGE = list(
+                    Marriage.GROOM_FORENAME,
+                    Marriage.GROOM_SURNAME
+            );
+        }else{
+            LINKAGE_FIELDS_MARRIAGE = list(
+                    Marriage.BRIDE_FORENAME,
+                    Marriage.BRIDE_SURNAME
+            );
+        }
+
+
+        return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS_BIRTH, LINKAGE_FIELDS_MARRIAGE);
+    }
+
+    private static double getDistance(LXP id1, LXP id2, LXPMeasure composite_measure) throws BucketException {
+        return composite_measure.distance(id1, id2);
     }
 
 }
