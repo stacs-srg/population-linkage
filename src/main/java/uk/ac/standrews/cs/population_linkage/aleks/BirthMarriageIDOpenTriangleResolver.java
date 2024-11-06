@@ -36,6 +36,8 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
@@ -83,17 +85,45 @@ public class BirthMarriageIDOpenTriangleResolver {
                 LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
                 String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Birth.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
 
+                int day = 1;
+                if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_DAY), "--")){
+                    day = Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_DAY));
+                }
+                int month = 1;
+                if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_MONTH), "--")){
+                    month = Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_MONTH));
+                }
+
+                LocalDate dateM = null;
+                if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
+                    dateM = LocalDate.of(Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)), month, day);
+                }
+
                 for (int i = 0; i < triangle.length; i += 2) {
+                    day = 1;
+                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_DAY), "--")){
+                        day = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_DAY));
+                    }
+                    month = 1;
+                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_MONTH), "--")){
+                        month = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_MONTH));
+                    }
+
+                    LocalDate date = null;
+                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----")){
+                        date = LocalDate.of(Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)), month, day);
+                    }
+
                     //1. Match birthdays
                     if(partner.equals("Groom")){
-                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH), "--/--/----")) {
+                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6), "----")) {
                             if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6))) {
                                 deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0]);
                                 isDeleted = true;
                             }
                         }
                     }else{
-                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH), "--/--/----")) {
+                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH).substring(6), "----")) {
                             if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH).substring(6))) {
                                 deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0]);
                                 isDeleted = true;
@@ -101,17 +131,16 @@ public class BirthMarriageIDOpenTriangleResolver {
                         }
                     }
 
-                    //TODO make this date
-                    if (!isDeleted && !Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")) { //2. If born after marriage
-                        if (Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR))) {
+                    if (!isDeleted && date != null && dateM != null) { //2. If born after marriage
+                        if (date.isAfter(dateM)) {
                             deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[1]);
                             isDeleted = true;
-                        } else if (Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 && //3. If too young to marry
-                                Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) < MIN_MARRIAGE_AGE) {
+                        } else if (ChronoUnit.YEARS.between(date, dateM) >= 0 && //3. If too young to marry
+                                ChronoUnit.YEARS.between(date, dateM) < MIN_MARRIAGE_AGE) {
                             deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[2]);
                             isDeleted = true;
-                        } else if (Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) >= 0 && //4. If born way before marriage
-                                Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)) - Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)) > MAX_MARRIAGE_AGE) {
+                        } else if (ChronoUnit.YEARS.between(date, dateM) >= 0 && //4. If born way before marriage
+                                ChronoUnit.YEARS.between(date, dateM)> MAX_MARRIAGE_AGE) {
                             deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[3]);
                             isDeleted = true;
                         }
@@ -129,7 +158,7 @@ public class BirthMarriageIDOpenTriangleResolver {
         System.out.println("\n");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
         for (String partner : partners) {
-            System.out.println(partner + " efficacy:");
+            System.out.println("\n" + partner + " efficacy:");
             pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", "Child-" + partner);
         }
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //count number of open triangles after resolution

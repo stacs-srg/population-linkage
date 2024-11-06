@@ -66,6 +66,11 @@ public class ThresholdTrianglesAnalysisParallel {
     private static final String DEATH_GROOM_ID_FNC = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:ID {actors: \"Deceased-Groom\"}]-(m) return count(r)";
     private static final String DEATH_GROOM_ID_FNC_T = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage), (d)-[s:ID {actors: \"Deceased-Groom\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
+    private static final String PARENTS_GROOM_ID_TPC = "MATCH (d:Death)-[r:ID {actors: \"Groom-Couple\"}]->(m:Marriage) WHERE (d)-[:GT_ID {actors: \"Groom-Couple\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String PARENTS_GROOM_ID_FPC = "MATCH (d:Death)-[r:ID {actors: \"Groom-Couple\"}]->(m:Marriage) WHERE NOT (d)-[:GT_ID {actors: \"Groom-Couple\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String PARENTS_GROOM_ID_FNC = "MATCH (d:Death)-[r:GT_ID {actors: \"Groom-Couple\"}]->(m:Marriage) WHERE NOT (d)-[:ID {actors: \"Groom-Couple\"}]-(m) return count(r)";
+    private static final String PARENTS_GROOM_ID_FNC_T = "MATCH (d:Death)-[r:GT_ID {actors: \"Groom-Couple\"}]->(m:Marriage), (d)-[s:ID {actors: \"Groom-Couple\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
@@ -85,10 +90,10 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthSqGroom" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("groomIDNew" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
-                    printWriter.println("threshold,precision,recall,fmeasure,triangles");
+                    printWriter.println("threshold,precision,recall,fmeasure,trianglesC,trianglesF");
 //                    printWriter.println("threshold,triangles");
 //                    printWriter.println("threshold,precision,recall,fmeasure");
 
@@ -96,16 +101,16 @@ public class ThresholdTrianglesAnalysisParallel {
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-                            long fpc = doQuery(BIRTH_GROOM_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_GROOM_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_GROOM_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_GROOM_ID_FNC_T, i, currentField, localBridge);
+//                            long fpc = doQuery(PARENTS_GROOM_ID_FPC, threshold, currentField, localBridge);
+//                            long tpc = doQuery(PARENTS_GROOM_ID_TPC, threshold, currentField, localBridge);
+//                            long fnc = doQuery(PARENTS_GROOM_ID_FNC, threshold, currentField, localBridge)
+//                                    + doQuery(PARENTS_GROOM_ID_FNC_T, i, currentField, localBridge);
 
-//                            long fpc = 1;
-//                            long tpc = 1;
-//                            long fnc = 1;
+                            long fpc = 1;
+                            long tpc = 1;
+                            long fnc = 1;
 
-                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
+                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%n",
                                 threshold,
                                 ClassificationMetrics.precision(tpc, fpc),
                                 ClassificationMetrics.recall(tpc, fnc),

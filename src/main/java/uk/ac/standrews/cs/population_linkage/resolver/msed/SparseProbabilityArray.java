@@ -31,10 +31,7 @@ package uk.ac.standrews.cs.population_linkage.resolver.msed;/*
  * <http://www.gnu.org/licenses/>.
  */
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -67,7 +64,7 @@ public class SparseProbabilityArray {
      */
     public SparseProbabilityArray(String s) {
         this();
-        Set<String> grams = bigrams(s);
+        List<String> grams = bigrams(s);
         for( String bigram : grams ) {
             addEvent( bigram, 1);
         }
@@ -78,8 +75,8 @@ public class SparseProbabilityArray {
      * @param string - s string from which to construct bigrams
      * @return - a list of bigrams from the string
      */
-    private static Set<String> bigrams(String string) {
-        Set<String> out = new HashSet<>();
+    private static List<String> bigrams(String string) {
+        List<String> out = new ArrayList<String>();
         for (int i = 0; i + 1 < string.length(); i++) {
             out.add(string.substring(i, i + 2));
         }

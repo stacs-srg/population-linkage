@@ -30,6 +30,7 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.resolver.msed.Binomials;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.MSED;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
@@ -52,7 +53,8 @@ public class BirthBirthOpenTriangleResolver {
 
     //Various constants for predicates
     private static final int MAX_AGE_DIFFERENCE  = 23;
-    private static final double DATE_THRESHOLD = 0.8;
+    private static final double DATE_THRESHOLD = 0.5;
+    private static final double NAME_THRESHOLD = 0.5;
     private static final int BIRTH_INTERVAL = 280;
 
     //Cypher queries used in predicates
@@ -100,7 +102,7 @@ public class BirthBirthOpenTriangleResolver {
 
 //        triangles = findIllegalBirthDeathSiblingTriangles(bridge);
 
-        System.out.println("Resolving triangles with predicates...");
+//        System.out.println("Resolving triangles with predicates...");
 //        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
 //            for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
 //                LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))}; //get node objects
@@ -125,10 +127,7 @@ public class BirthBirthOpenTriangleResolver {
 //                //3. Get mode of birthplace
 //                hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
 //
-//                //4. If name of parents the same after fixes, create
-////                hasChanged = matchingNamesPredicate(tempKids, hasChanged, 1, composite_measure_name);
-//
-//                //5. If same marriage date and pass other checks, create link
+//                //4. If same marriage date and pass other checks, create link
 //                if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
 //                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
 //                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
@@ -138,7 +137,9 @@ public class BirthBirthOpenTriangleResolver {
 //                            !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
 //                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
 //                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
-//                    } else if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
+//                    }
+//
+//                    if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
 //                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
 //                            !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
 //                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
@@ -553,8 +554,8 @@ public class BirthBirthOpenTriangleResolver {
     }
 
     public static void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, RecordRepository record_repository, BirthSiblingLinkageRecipe recipe, int cPred, int dPred) throws BucketException {
-        double THRESHOLD = 0.02;
-        double TUPLE_THRESHOLD = 0.03;
+        double THRESHOLD = 0.04;
+        double TUPLE_THRESHOLD = 0.02;
         List<Set<Birth>> familySets = new ArrayList<>();
         List<List<Birth>> toDelete = new ArrayList<>();
 //        List<Long> allStorIDs = new ArrayList<>(children);
@@ -568,6 +569,14 @@ public class BirthBirthOpenTriangleResolver {
             List<Birth> bs = getBirths(listWithX, record_repository);
 
             for (int i = 0; i < bs.size(); i++) {
+//                String toFind = "131095";
+//                String toFind2 = "129065";
+//                if((Objects.equals(bs.get(0).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(1).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(2).getString(Birth.STANDARDISED_ID), toFind)) && familySets.size() > 0 &&
+//                        (Objects.equals(bs.get(0).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(bs.get(1).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(bs.get(2).getString(Birth.STANDARDISED_ID), toFind2))) {
+//                    System.out.println("fsd");
+//                }
+
+
                 //1. DOTTER/SON
                 String dotterRegex = "D[.:ORT](?!.*D[.:RT])";
                 Pattern pattern = Pattern.compile(dotterRegex);
@@ -647,7 +656,7 @@ public class BirthBirthOpenTriangleResolver {
                                     break;
                                 }
                             }
-                        } else if(i == 1 && !bs.get(0).getString(field).contains(" ") && !bs.get(2).getString(field).contains(" ")) {
+                        } else if(i == 1 && (!bs.get(0).getString(field).contains(" ") || !bs.get(2).getString(field).contains(" "))) {
                             String[] names = bs.get(1).getString(field).split("\\s+");
                             for (String name : names) {
                                 if (name.equals(bs.get(0).getString(field))) {
@@ -686,33 +695,118 @@ public class BirthBirthOpenTriangleResolver {
                 }
             }
 
-//            String toFind = "244425";
-//            String toFind2 = "235074";
-//            if((Objects.equals(bs.get(0).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(1).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(bs.get(2).getString(Birth.STANDARDISED_ID), toFind)) && familySets.size() > 0) {
-//                System.out.println("fsd");
-//            }
-
             double distance = getMSEDForCluster(bs, recipe);
             double distanceXY = getMSEDForCluster(bs.subList(0, 2), recipe);
             double distanceZY = getMSEDForCluster(bs.subList(1, 3), recipe);
 
-            if(distanceXY < THRESHOLD){
+            if(distanceXY < TUPLE_THRESHOLD){
                 addFamilyMSED(familySets, bs.subList(0, 2));
-            } else if (distanceZY < THRESHOLD){
+            }
+            if (distanceZY < TUPLE_THRESHOLD){
                 addFamilyMSED(familySets, bs.subList(1, 3));
             }
+//
+//            distanceZY = getMSEDForCluster(bs.subList(1, 3), recipe);
 
             if(distance < THRESHOLD) {
-//                addFamilyMSED(familySets, bs);
+                addFamilyMSED(familySets, bs);
             }else if(distance > THRESHOLD){
                 toDelete.add(bs);
-//                if(distanceXY < TUPLE_THRESHOLD){
-//                    addFamilyMSED(familySets, bs.subList(0, 2));
-//                } else if (distanceZY < TUPLE_THRESHOLD){
-//                    addFamilyMSED(familySets, bs.subList(1, 3));
-//                }
+                if(distanceXY < TUPLE_THRESHOLD){
+                    addFamilyMSED(familySets, bs.subList(0, 2));
+                }
+                if (distanceZY < TUPLE_THRESHOLD){
+                    addFamilyMSED(familySets, bs.subList(1, 3));
+                }
             }
         }
+
+        List<Set<Birth>> setsToRemove = new ArrayList<>();
+        List<Set<Birth>> setsToAdd = new ArrayList<>();
+
+        for (Set<Birth> fSet : familySets) {
+            int k = 3;
+            if (fSet.size() >= k) {
+                OrderedList<List<Birth>,Double> familySetMSED = getMSEDForK(fSet, k, recipe);
+                List<Double> distances = familySetMSED.getComparators();
+                List<List<Birth>> births = familySetMSED.getList();
+                List<Set<Birth>> newSets = new ArrayList<>();
+
+                newSets.add(new HashSet<>(births.get(0)));
+
+                for (int i = 1; i < distances.size(); i++) {
+                    if ((distances.get(i) - distances.get(i - 1)) / distances.get(i - 1) > 0.5 || distances.get(i) > 0.01) {
+                        break;
+                    } else {
+                        boolean familyFound = false;
+                        for (Set<Birth> nSet : newSets) {
+                            if (familyFound) {
+                                break;
+                            }
+                            for (int j = 0; j < births.get(i).size(); j++) {
+                                if (nSet.contains(births.get(i).get(j))) {
+                                    nSet.addAll(births.get(i));
+                                    familyFound = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!familyFound) {
+                            newSets.add(new HashSet<>(births.get(i)));
+                        }
+                    }
+                }
+
+                setsToRemove.add(fSet);
+                setsToAdd.addAll(newSets);
+            }
+        }
+
+        familySets.removeAll(setsToRemove);
+        familySets.addAll(setsToAdd);
+
+//        for (Set<Birth> fSet : familySets) {
+//            int k = 3;
+//            if(fSet.size() < k){
+//                break;
+//            }
+//            OrderedList<List<Birth>,Double> familySetMSED = getMSEDForK(fSet, k, recipe);
+//            List<Double> distances = familySetMSED.getComparators();
+//            List<List<Birth>> births = familySetMSED.getList();
+//            List<Set<Birth>> newSets = new ArrayList<>();
+//            newSets.add(new HashSet<>(births.get(0)));
+//
+//            for(int i = 1; i < distances.size(); i++ ) {
+//                if((distances.get(i) - distances.get(i-1)) / distances.get(i-1) > 0.5){
+//                    System.out.println(i);
+//                    break;
+//                }else{
+//                    boolean familyFound = false;
+//                    for(Set<Birth> nSet : newSets) {
+//                        if(familyFound){
+//                            break;
+//                        }
+//                        for (int j = 0; j < births.get(i).size(); j++) {
+//                            if(nSet.contains(births.get(i).get(j))) {
+//                                nSet.addAll(births.get(i));
+//                                familyFound = true;
+//                                break;
+//                            }
+//                        }
+//                    }
+//
+//                    if(!familyFound) {
+//                        newSets.add(new HashSet<>(births.get(i)));
+//                    }
+//                }
+//            }
+//
+//            if(!newSets.isEmpty()){
+//                fSet.clear();
+//                fSet.addAll(newSets);
+//            }
+//        }
 
         for (List<Birth> triangleToDelete : toDelete) {
 //            String toFind = "244425";
@@ -748,11 +842,17 @@ public class BirthBirthOpenTriangleResolver {
 //                else if (kidsFound == 1 && kidsIndex.size() == 2) {
 //                    if(!kidsIndex.contains(0)){
 //                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                        found = true;
+//                        break;
 //                    } else if (!kidsIndex.contains(1)) {
 //                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
 //                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                        found = true;
+//                        break;
 //                    } else if (!kidsIndex.contains(2)) {
 //                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+//                        found = true;
+//                        break;
 //                    }
 //                }
             }
@@ -937,6 +1037,27 @@ public class BirthBirthOpenTriangleResolver {
             fields_from_choices.add(sb.toString()); // add the linkage fields for this choice to the list being assessed
         }
         return MSED.distance(fields_from_choices);
+    }
+
+    private static OrderedList<List<Birth>,Double> getMSEDForK(Set<Birth> family, int k, BirthSiblingLinkageRecipe recipe) throws BucketException {
+        OrderedList<List<Birth>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
+        List<Birth> bs = new ArrayList<>(family);
+
+        List<List<Integer>> indices = Binomials.pickAll(bs.size(), k);
+        for (List<Integer> choices : indices) {
+            List<Birth> births = getBirthsFromChoices(bs, choices);
+            double distance = getMSEDForCluster(births, recipe);
+            all_mseds.add(births,distance);
+        }
+        return all_mseds;
+    }
+
+    private static List<Birth> getBirthsFromChoices(List<Birth> bs, List<Integer> choices) {
+        List<Birth> births = new ArrayList<>();
+        for (int index : choices) {
+            births.add( bs.get(index) );
+        }
+        return births;
     }
 
     /**

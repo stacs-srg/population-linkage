@@ -62,7 +62,7 @@ public class MSED {
         num_of_vals = strings.size();
 
         this.sparse_reps = stringsToProbs(strings);
-        //Debug.showProbabilites( "sparse_reps:", sparse_reps);
+//        Debug.showProbabilites( "sparse_reps:", sparse_reps);
 
         this.av_data = normalisedColumnSums(sparse_reps);
         //Debug.showDoubles( "av_data:", av_data);
