@@ -72,10 +72,12 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
                 return i
         return None
 
-    open_triangles_normalized = (data['triangles'] - data['triangles'].min()) / (data['triangles'].max() - data['triangles'].min())
+    # open_triangles_normalized = (data['triangles'] - data['triangles'].min()) / (data['triangles'].max() - data['triangles'].min())
+    open_triangles_normalized_c = (data['trianglesC'] - data['trianglesC'].min()) / (data['trianglesC'].max() - data['trianglesC'].min())
+    open_triangles_normalized_f = (data['trianglesF'] - data['trianglesF'].min()) / (data['trianglesF'].max() - data['trianglesF'].min())
     # open_squares_normalized = (data['squares'] - data['squares'].min()) / (data['squares'].max() - data['squares'].min())
-    open_triangles_smooth = open_triangles_normalized.rolling(window=5, min_periods=1).mean()
-    open_triangles_gradient = np.gradient(open_triangles_smooth, data['threshold'])
+    # open_triangles_smooth = open_triangles_normalized.rolling(window=5, min_periods=1).mean()
+    # open_triangles_gradient = np.gradient(open_triangles_smooth, data['threshold'])
     # optimal_threshold = walker(open_triangles_gradient)
 
     # ax1.set_xlabel('Threshold')
@@ -100,17 +102,30 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     # optimal_index_begin_growth = acceleration_start_indices[0] - 1
     # optimal_threshold = data.loc[optimal_index, 'threshold']
 
-    params, _ = curve_fit(exponential_func, data['threshold'], open_triangles_normalized, maxfev=10000)
-    a, b = params
+    # params, _ = curve_fit(exponential_func, data['threshold'], open_triangles_normalized, maxfev=10000)
+    # a, b = params
 
-    fitted_curve = exponential_func(data['threshold'], a, b)
+    # fitted_curve = exponential_func(data['threshold'], a, b)
     # fitted_curve_gradient = np.gradient(fitted_curve, data['threshold'])
-    optimal_threshold = walker(open_triangles_gradient)
+    # optimal_threshold = walker(open_triangles_gradient)
+
+    intersection_index = np.argmin(np.abs(data['trianglesC'] - data['trianglesF']))
+    intersection_threshold = data['threshold'].iloc[intersection_index]
+    intersection_value = data['trianglesC'].iloc[intersection_index]
+    open_triangles_merged = (data['trianglesC'] + data['trianglesF']) / 2
+    # open_triangles_merged = (open_triangles_merged - open_triangles_merged.min()) / (open_triangles_merged.max() - open_triangles_merged.min())
 
     ax2 = ax1.twinx()
-    ax2.set_ylim([0, 1])
+    # ax2.set_ylim([0, 1])
     # ax2.plot(data['threshold'], data['squares'], label='Open Triangles', color='orange')
-    l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles', color='orange')
+    l4 = ax2.plot(data['threshold'], data['trianglesC'], label='Open Triangles C', color='orange')
+    l5 = ax2.plot(data['threshold'], data['trianglesF'], label='Open Triangles F', color='purple')
+
+    # l4 = ax2.plot(data['threshold'], open_triangles_normalized_c, label='Open Triangles C', color='orange')
+    # l5 = ax2.plot(data['threshold'], open_triangles_normalized_f, label='Open Triangles F', color='purple')
+    l6 = ax1.plot(data['threshold'], open_triangles_merged, label='Merged Open Triangles', color='lime')
+
+    l6 = ax2.axvline(x=intersection_threshold, color='gray', linestyle='--', label='Intersection')
     # l5 = ax2.plot(data['threshold'], open_squares_normalized, label='Open Squares', color='purple')
     # l5 = ax2.plot(data['threshold'], fitted_curve, '- -', label='Best fit', color='purple')
     # ax2.plot(data['threshold'], open_triangles_gradient, label='Open Triangles Dif', color='purple')
@@ -132,9 +147,9 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
 
     ax1.set_title(f'Threshold Analysis {FILE} {N} Fields')
     ax1.grid(True)
-    correlation, p_value = spearmanr(data['fmeasure'], data['triangles'])
-    print(f"Spearman Correlation {N} fields: {correlation}")
-    print(f"P-value {N} fields: {p_value}")
+    # correlation, p_value = spearmanr(data['fmeasure'], data['triangles'])
+    # print(f"Spearman Correlation {N} fields: {correlation}")
+    # print(f"P-value {N} fields: {p_value}")
     # print(f"Optimal Threshold for field {N}: {data['threshold'][optimal_threshold]}")
     print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
 
@@ -142,5 +157,5 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
 fig.legend(handles=all_handles, labels=all_labels, loc='center right', bbox_to_anchor=(1, 0.5))
 
 plt.tight_layout(rect=[0, 0, 0.9, 1])
-# plt.savefig('threshold_field_analysis_groomsq3.png')
+# plt.savefig('threshold_field_analysis_groomsq4.png')
 plt.show()

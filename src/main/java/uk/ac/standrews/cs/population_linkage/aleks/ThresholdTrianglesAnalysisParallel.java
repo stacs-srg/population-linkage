@@ -90,10 +90,10 @@ public class ThresholdTrianglesAnalysisParallel {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("groomIDNew" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthDeathIDNew" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
-                    printWriter.println("threshold,precision,recall,fmeasure,trianglesC,trianglesF");
+                    printWriter.println("threshold,precision,recall,fmeasure,triangles");
 //                    printWriter.println("threshold,triangles");
 //                    printWriter.println("threshold,precision,recall,fmeasure");
 
@@ -110,12 +110,12 @@ public class ThresholdTrianglesAnalysisParallel {
                             long tpc = 1;
                             long fnc = 1;
 
-                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%n",
+                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
                                 threshold,
                                 ClassificationMetrics.precision(tpc, fpc),
                                 ClassificationMetrics.recall(tpc, fnc),
                                 ClassificationMetrics.F1(tpc, fpc, fnc),
-                                PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Marriage", i, currentField));
+                                PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Death", i, currentField));
 
 //                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
 //                                    threshold,
