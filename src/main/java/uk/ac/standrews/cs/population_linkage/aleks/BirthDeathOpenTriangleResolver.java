@@ -27,8 +27,10 @@ import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthOwnDeathBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthDeathSiblingAccuracy;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathIdentityLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -42,7 +44,7 @@ import java.util.stream.Collectors;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
-public class ComplexBDPattern {
+public class BirthDeathOpenTriangleResolver {
 
     final static int NUM_OF_CHILDREN  = 12;
     final static int MAX_AGE_DIFFERENCE  = 23;
@@ -54,7 +56,7 @@ public class ComplexBDPattern {
 
     private static NeoDbCypherBridge bridge;
 
-    private static String[] creationPredicates = {"match_m_date", "match_strict_name"};
+    private static String[] creationPredicates = {"match_m_date_bd"};
     private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name"};
 
     public static void main(String[] args) throws BucketException {
@@ -66,6 +68,7 @@ public class ComplexBDPattern {
         final LXPMeasure composite_measure_bd = getCompositeMeasureBirthDeath(base_measure);
         IBucket births = record_repository.getBucket("birth_records");
         IBucket deaths = record_repository.getBucket("death_records");
+        BirthDeathIdentityLinkageRecipe recipe = new BirthDeathIdentityLinkageRecipe("umea", "EVERYTHING", BirthOwnDeathBuilder.class.getName());
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
@@ -75,6 +78,13 @@ public class ComplexBDPattern {
 
         System.out.println("Locating triangles...");
         List<OpenTriangleCluster> triangles = findIllegalBirthDeathSiblingTriangles(bridge);
+        System.out.println("Triangle clusters found: " + triangles.size());
+
+        System.out.println("Resolving triangles with MSED...");
+//        for (OpenTriangleCluster triangle : triangles) {
+//            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 6);
+//        }
+
         System.out.println("Resolving triangles...");
         for (OpenTriangleCluster triangle : triangles) {
             for (List<Long> chain : triangle.getTriangleChain()){
@@ -111,7 +121,8 @@ public class ComplexBDPattern {
 
         System.out.println("After");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
-        pef.countSiblingEfficacy(creationPredicates, deletionPredicates, "Birth", "Death");
+        pef.countSiblingEfficacy(new String[0], deletionPredicates, "Birth", "Death");
+        pef.countSiblingEfficacy(creationPredicates, new String[0], "Birth", "Birth");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthDeathSiblingAccuracy(bridge);
@@ -124,23 +135,27 @@ public class ComplexBDPattern {
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
         if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
 //                        deleteLink(bridge, std_id_z, std_id_y);
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
+                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
 //                        deleteLink(bridge, std_id_x, std_id_y);
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE && Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
             hasChanged = true;
         }
