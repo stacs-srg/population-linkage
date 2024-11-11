@@ -96,7 +96,7 @@ public class BirthBirthOpenTriangleResolver {
 
         System.out.println("Resolving triangles with MSED...");
         for (OpenTriangleClusterBB triangle : triangles) {
-            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 6);
+            resolveTrianglesMSED(triangle, record_repository, recipe, 2, 6);
         }
 
         System.out.println("Resolving triangles with predicates...");
@@ -340,16 +340,17 @@ public class BirthBirthOpenTriangleResolver {
         return hasChanged;
     }
 
-    public static void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, RecordRepository record_repository, BirthSiblingLinkageRecipe recipe, int cPred, int dPred) throws BucketException {
+    public static void resolveTrianglesMSED(OpenTriangleClusterBB triangle, RecordRepository record_repository, BirthSiblingLinkageRecipe recipe, int cPred, int dPred) throws BucketException {
         double THRESHOLD = 0.04;
         double TUPLE_THRESHOLD = 0.02;
 
         List<Set<Birth>> familySets = new ArrayList<>();
         List<List<Birth>> toDelete = new ArrayList<>();
+        Set<Birth> fixedChildren = new HashSet<Birth>();
         int[] fields = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
 
-        for (List<Long> chain : triangleChain){
-            List<Long> listWithX = new ArrayList<>(Arrays.asList(x));
+        for (List<Long> chain : triangle.getTriangleChain()){
+            List<Long> listWithX = new ArrayList<>(Arrays.asList(triangle.x));
             listWithX.addAll(chain);
             List<Birth> bs = getBirths(listWithX, record_repository);
 
@@ -374,52 +375,28 @@ public class BirthBirthOpenTriangleResolver {
                 //2. Initials or incomplete names
                 String initialRegex = "^[A-Z]*\\.$";
                 pattern = Pattern.compile(initialRegex);
-                matcher = pattern.matcher(bs.get(i).getString(Birth.FATHER_FORENAME));
-                if (matcher.find() && i == 0 && bs.get(2).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 && bs.get(1).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 &&
-                        bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
-                        bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+                for (int j = 0; j < fields.length - 3; j++) {
+                    matcher = pattern.matcher(bs.get(i).getString(fields[j]));
 
-                    bs.get(0).put(Birth.FATHER_FORENAME, bs.get(0).getString(Birth.FATHER_FORENAME).replace(".", ""));
-                    bs.get(1).put(Birth.FATHER_FORENAME, bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                    bs.get(2).put(Birth.FATHER_FORENAME, bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                } else if (matcher.find() && i == 1 && bs.get(0).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 && bs.get(2).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 &&
-                        bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
-                        bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
+                    if(matcher.find()) {
+                        String substringX = bs.get(0).getString(fields[j]).length() >= matcher.end() - 1 ? bs.get(0).getString(fields[j]).substring(matcher.start(), matcher.end() - 1) : bs.get(0).getString(j);
+                        String substringY = bs.get(1).getString(fields[j]).length() >= matcher.end() - 1 ? bs.get(1).getString(fields[j]).substring(matcher.start(), matcher.end() - 1) : bs.get(1).getString(j);
+                        String substringZ = bs.get(2).getString(fields[j]).length() >= matcher.end() - 1 ? bs.get(2).getString(fields[j]).substring(matcher.start(), matcher.end() - 1) : bs.get(2).getString(j);
 
-                    bs.get(1).put(Birth.FATHER_FORENAME, bs.get(1).getString(Birth.FATHER_FORENAME).replace(".", ""));
-                    bs.get(0).put(Birth.FATHER_FORENAME, bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                    bs.get(2).put(Birth.FATHER_FORENAME, bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                } else if (matcher.find() && i == 2 && bs.get(0).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 && bs.get(1).getString(Birth.FATHER_FORENAME).length() >= matcher.end() - 1 &&
-                        bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
-                        bs.get(1).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
-
-                    bs.get(2).put(Birth.FATHER_FORENAME, bs.get(2).getString(Birth.FATHER_FORENAME).replace(".", ""));
-                    bs.get(0).put(Birth.FATHER_FORENAME, bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                    bs.get(1).put(Birth.FATHER_FORENAME, bs.get(2).getString(Birth.FATHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                }
-
-                matcher = pattern.matcher(bs.get(i).getString(Birth.MOTHER_FORENAME));
-                if (matcher.find() && i == 0 && bs.get(2).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 && bs.get(1).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
-                        bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
-                        bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
-
-                    bs.get(0).put(Birth.MOTHER_FORENAME, bs.get(0).getString(Birth.MOTHER_FORENAME).replace(".", ""));
-                    bs.get(1).put(Birth.MOTHER_FORENAME, bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                    bs.get(2).put(Birth.MOTHER_FORENAME, bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                } else if (matcher.find() && i == 1 && bs.get(0).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 && bs.get(2).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
-                        bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
-                        bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
-
-                    bs.get(1).put(Birth.MOTHER_FORENAME, bs.get(1).getString(Birth.MOTHER_FORENAME).replace(".", ""));
-                    bs.get(0).put(Birth.MOTHER_FORENAME, bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                    bs.get(2).put(Birth.MOTHER_FORENAME, bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                } else if (matcher.find() && i == 2 && bs.get(0).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 && bs.get(1).getString(Birth.MOTHER_FORENAME).length() >= matcher.end() - 1 &&
-                        bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(0).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1)) &&
-                        bs.get(1).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1).equals(bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1))) {
-
-                    bs.get(2).put(Birth.MOTHER_FORENAME, bs.get(2).getString(Birth.MOTHER_FORENAME).replace(".", ""));
-                    bs.get(0).put(Birth.MOTHER_FORENAME, bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
-                    bs.get(1).put(Birth.MOTHER_FORENAME, bs.get(2).getString(Birth.MOTHER_FORENAME).substring(matcher.start(), matcher.end() - 1));
+                        if (i == 0 && substringX.equals(substringY) && substringX.equals(substringZ)) {
+                            bs.get(0).put(fields[j], bs.get(0).getString(fields[j]).replace(".", ""));
+                            bs.get(1).put(fields[j], bs.get(0).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                            bs.get(2).put(fields[j], bs.get(0).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                        } else if (i == 1 && substringY.equals(substringX) && substringY.equals(substringZ)) {
+                            bs.get(1).put(fields[j], bs.get(1).getString(fields[j]).replace(".", ""));
+                            bs.get(0).put(fields[j], bs.get(1).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                            bs.get(2).put(fields[j], bs.get(1).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                        } else if (i == 2 && substringZ.equals(substringX) && substringZ.equals(substringY)) {
+                            bs.get(2).put(fields[j], bs.get(2).getString(fields[j]).replace(".", ""));
+                            bs.get(0).put(fields[j], bs.get(2).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                            bs.get(1).put(fields[j], bs.get(2).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                        }
+                    }
                 }
 
                 //3. Middle names and double barrel surnames
@@ -472,67 +449,68 @@ public class BirthBirthOpenTriangleResolver {
                 }
             }
 
-            double distance = getMSEDForCluster(bs, recipe);
-            double distanceXY = getMSEDForCluster(bs.subList(0, 2), recipe);
-            double distanceZY = getMSEDForCluster(bs.subList(1, 3), recipe);
+            fixedChildren.addAll(bs);
 
-            if(distance < THRESHOLD) {
-                addFamilyMSED(familySets, bs);
-            }else if(distance > THRESHOLD){
+            double distance = getMSEDForCluster(bs, recipe);
+
+            if(distance > THRESHOLD) {
                 toDelete.add(bs);
-                if(distanceXY < TUPLE_THRESHOLD){
-                    addFamilyMSED(familySets, bs.subList(0, 2));
-                }
-                if (distanceZY < TUPLE_THRESHOLD){
-                    addFamilyMSED(familySets, bs.subList(1, 3));
-                }
             }
+//            double distanceXY = getMSEDForCluster(bs.subList(0, 2), recipe);
+//            double distanceZY = getMSEDForCluster(bs.subList(1, 3), recipe);
+//
+//            if(distance < THRESHOLD) {
+//                addFamilyMSED(familySets, bs);
+//            }else if(distance > THRESHOLD){
+//                toDelete.add(bs);
+//                if(distanceXY < TUPLE_THRESHOLD){
+//                    addFamilyMSED(familySets, bs.subList(0, 2));
+//                }
+//                if (distanceZY < TUPLE_THRESHOLD){
+//                    addFamilyMSED(familySets, bs.subList(1, 3));
+//                }
+//            }
         }
 
-        List<Set<Birth>> setsToRemove = new ArrayList<>();
-        List<Set<Birth>> setsToAdd = new ArrayList<>();
+//        List<Set<Birth>> setsToRemove = new ArrayList<>();
+//        List<Set<Birth>> setsToAdd = new ArrayList<>();
 
-        for (Set<Birth> fSet : familySets) {
-            int k = 3;
-            if (fSet.size() >= k) {
-                OrderedList<List<Birth>,Double> familySetMSED = getMSEDForK(fSet, k, recipe);
-                List<Double> distances = familySetMSED.getComparators();
-                List<List<Birth>> births = familySetMSED.getList();
-                List<Set<Birth>> newSets = new ArrayList<>();
+        int k = 3;
+        OrderedList<List<Birth>,Double> familySetMSED = getMSEDForK(fixedChildren, k, recipe);
+        List<Double> distances = familySetMSED.getComparators();
+        List<List<Birth>> births = familySetMSED.getList();
+//        List<Set<Birth>> newSets = new ArrayList<>();
 
-                newSets.add(new HashSet<>(births.get(0)));
+        familySets.add(new HashSet<>(births.get(0)));
 
-                for (int i = 1; i < distances.size(); i++) {
-                    if ((distances.get(i) - distances.get(i - 1)) / distances.get(i - 1) > 0.5 || distances.get(i) > 0.01) {
+        for (int i = 1; i < distances.size(); i++) {
+            if ((distances.get(i) - distances.get(i - 1)) / distances.get(i - 1) > 0.5 || distances.get(i) > 0.01) {
+                break;
+            } else {
+                boolean familyFound = false;
+                for (Set<Birth> nSet : familySets) {
+                    if (familyFound) {
                         break;
-                    } else {
-                        boolean familyFound = false;
-                        for (Set<Birth> nSet : newSets) {
-                            if (familyFound) {
-                                break;
-                            }
-                            for (int j = 0; j < births.get(i).size(); j++) {
-                                if (nSet.contains(births.get(i).get(j))) {
-                                    nSet.addAll(births.get(i));
-                                    familyFound = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!familyFound) {
-                            newSets.add(new HashSet<>(births.get(i)));
+                    }
+                    for (int j = 0; j < births.get(i).size(); j++) {
+                        if (nSet.contains(births.get(i).get(j))) {
+                            nSet.addAll(births.get(i));
+                            familyFound = true;
+                            break;
                         }
                     }
                 }
 
-                setsToRemove.add(fSet);
-                setsToAdd.addAll(newSets);
+                if (!familyFound) {
+                    familySets.add(new HashSet<>(births.get(i)));
+                }
             }
         }
 
-        familySets.removeAll(setsToRemove);
-        familySets.addAll(setsToAdd);
+//        setsToRemove.add(fSet);
+
+//        familySets.removeAll(setsToRemove);
+//        familySets.addAll(setsToAdd);
 
         for (List<Birth> triangleToDelete : toDelete) {
 //            String toFind = "244425";

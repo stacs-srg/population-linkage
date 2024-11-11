@@ -25,7 +25,7 @@ fig = plt.figure(figsize=(14, 8))
 
 MAX_FIELD = 8
 MIN_FIELD = 3 #1 under
-FILE = "birthBirthNew"
+FILE = "groomID"
 
 
 if FILE == "birthmarriage" or FILE == "birthBirthNew":
@@ -168,5 +168,5 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
 fig.legend(handles=all_handles, labels=all_labels, loc='center right', bbox_to_anchor=(1, 0.5))
 
 plt.tight_layout(rect=[0, 0, 0.9, 1])
-# plt.savefig('threshold_field_analysis_groomsq5.png')
+plt.savefig('threshold_field_analysis_groomsq6_norm.png')
 plt.show()

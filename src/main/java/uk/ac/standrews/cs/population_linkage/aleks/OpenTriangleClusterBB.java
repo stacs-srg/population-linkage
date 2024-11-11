@@ -35,7 +35,7 @@ import java.util.*;
 public class OpenTriangleClusterBB {
     public final long x;
     public List<List<Long>> triangleChain = new ArrayList<>();
-    private Set<Long> children = new HashSet<Long>();
+    private Set<LXP> children = new HashSet<LXP>();
     private Map<String, LocalDate> birthDays = new HashMap<String, LocalDate>();
     private Map<String, Integer> birthplaceMap = new HashMap<String, Integer>();
     private double yearTotal = 0;
@@ -64,7 +64,6 @@ public class OpenTriangleClusterBB {
     public void getYearStatistics() throws BucketException {
         for (List<Long> chain : triangleChain){
             LXP[] tempKids = {(LXP) births.getObjectById(x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
-            long[] kidsStorrIDs = {x, chain.get(0), chain.get(1)};
             for (int i = 0; i < tempKids.length; i++) {
                 if (!children.contains(tempKids[i])) {
                     int year = 1850;
@@ -100,7 +99,7 @@ public class OpenTriangleClusterBB {
                         birthplaceMap.merge(tempKids[i].getString(Birth.BIRTH_ADDRESS), 1, Integer::sum);
                     }
 
-                    children.add(kidsStorrIDs[i]);
+                    children.add(tempKids[i]);
                 }
             }
         }
