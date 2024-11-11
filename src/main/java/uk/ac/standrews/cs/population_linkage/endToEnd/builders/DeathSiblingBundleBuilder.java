@@ -44,10 +44,10 @@ public class DeathSiblingBundleBuilder implements MakePersistent {
 
             BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 );
+            int linkage_fields = 2;
+            int half_fields = 2;
 
-            while( linkage_fields >= half_fields + 1) {
+            while( linkage_fields >= half_fields) {
                 linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
                 LinkageResult lr = runner.run(linkageRecipe, new DeathSiblingBundleBuilder(), false, true);
                 LinkageQuality quality = lr.getLinkageQuality();
