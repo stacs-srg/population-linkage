@@ -295,7 +295,7 @@ public class PatternsCounter {
             openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
                     "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
                     "(b1)-[r:ID]-(d1)\n" +
-                    "WHERE id(b1) < id(b2) AND NOT (b2)-[:ID]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s" +
+                    "WHERE id(b1) < id(b2) AND NOT (b2)-[:ID]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s " +
                     "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
             openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
                     "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
