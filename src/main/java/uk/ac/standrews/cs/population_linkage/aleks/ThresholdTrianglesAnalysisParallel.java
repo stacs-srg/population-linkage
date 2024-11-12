@@ -74,8 +74,8 @@ public class ThresholdTrianglesAnalysisParallel {
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
+        final int MAX_FIELD = 4;
+        final int MIN_FIELD = 1; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.0;
 
