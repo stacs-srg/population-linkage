@@ -83,63 +83,44 @@ public class ThresholdTrianglesAnalysisParallel {
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
         System.out.println("Analysing thresholds...");
-//        reset(bridge);
-//        System.out.println("DONE!!!");
 
         for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
             final int currentField = fields;
 
             int finalFields = fields;
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthDeathTotal" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("deathdeathtotal" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
-                    printWriter.println("threshold,precision,recall,fmeasure,triangles");
-//                    printWriter.println("threshold,triangles");
-//                    printWriter.println("threshold,precision,recall,fmeasure");
-
-
+                    printWriter.println("threshold,precision,recall,fmeasure,triangles,fnots");
 
                     try (NeoDbCypherBridge localBridge = new NeoDbCypherBridge()) {
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-                            if(finalFields == 4 && i > 1){
+                            //FOR TESTING MAKE SURE TO CHANGE!!!!!!!!
+                            if(finalFields == 2 && i > 1){
                                 break;
                             }
 
-//                            long fpc = doQuery(PARENTS_GROOM_ID_FPC, threshold, currentField, localBridge);
-//                            long tpc = doQuery(PARENTS_GROOM_ID_TPC, threshold, currentField, localBridge);
-//                            long fnc = doQuery(PARENTS_GROOM_ID_FNC, threshold, currentField, localBridge)
-//                                    + doQuery(PARENTS_GROOM_ID_FNC_T, i, currentField, localBridge);
+                            long fpc = doQuery(DEATH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(DEATH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(DEATH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)
+                                    + doQuery(DEATH_DEATH_SIBLING_FNC_T, i, currentField, localBridge);
 
-                            long fpc = 1;
-                            long tpc = 1;
-                            long fnc = 1;
+//                            long fpc = 1;
+//                            long tpc = 1;
+//                            long fnc = 1;
 
-                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
+                            //Change printf if different number of columns
+                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
                                 threshold,
                                 ClassificationMetrics.precision(tpc, fpc),
                                 ClassificationMetrics.recall(tpc, fnc),
                                 ClassificationMetrics.F1(tpc, fpc, fnc),
-                                PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Death", i, currentField));
+                                PatternsCounter.countOpenTrianglesCumulative(bridge, "Death", "Death", i, currentField),
+                                PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Death", "Death", i, currentField));
 
-//                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
-//                                    threshold,
-//                                    ClassificationMetrics.precision(tpc, fpc),
-//                                    ClassificationMetrics.recall(tpc, fnc),
-//                                    ClassificationMetrics.F1(tpc, fpc, fnc),
-//                                    PatternsCounter.countOpenTrianglesCumulativeBD(bridge, "Birth", "Death", i, currentField));
-
-//                            printWriter.printf("%.2f,%d%n",
-//                                    threshold,
-//                                    PatternsCounter.countOpenTrianglesCumulativeDouble(bridge, "Birth", "Death", i, currentField));
-
-//                            printWriter.printf("%.2f,%.5f,%.5f,%.5f%n",
-//                                    threshold,
-//                                    ClassificationMetrics.precision(tpc, fpc),
-//                                    ClassificationMetrics.recall(tpc, fnc),
-//                                    ClassificationMetrics.F1(tpc, fpc, fnc));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -161,12 +142,6 @@ public class ThresholdTrianglesAnalysisParallel {
         parameters.put("threshold", threshold);
         parameters.put("field", fields);
         Result result = bridge.getNewSession().run(query_string, parameters);
-        return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
-    }
-
-    protected static long reset(NeoDbCypherBridge bridge) {
-        String query_string = "MATCH (x:Birth)-[r:ID {actors: \"Child-Groom\"}]-(y:Marriage) where r.distance > 2 delete r";
-        Result result = bridge.getNewSession().run(query_string);
         return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
     }
 

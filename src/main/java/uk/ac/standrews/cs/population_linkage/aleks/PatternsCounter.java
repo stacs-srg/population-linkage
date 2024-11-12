@@ -286,6 +286,54 @@ public class PatternsCounter {
         return (int) count;
     }
 
+    public static int countOpenTrianglesIsomorphicSiblings(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
+        long count = 0;
+        String openTriangleQuery = String.format(
+                "MATCH (b1:%1$s))-[:SIBLING]-(b2:%1$s))-[:SIBLING]-(b3:%1$s)),\n" +
+                        "(d1:%2$s)-[r:SIBLING]-(d2:%2$s)-[s:SIBLING]-(d3:%2$s),\n" +
+                        "(b1)-[:ID]-(d1),\n" +
+                        "(b2)-[:ID]-(d2),\n" +
+                        "(b3)-[:ID]-(d3),\n" +
+                        "(b1)-[:SIBLING]-(b3)\n" +
+                        "WHERE NOT (d1)-[:SIBLING]-(d3) AND b1.BIRTH_YEAR = right(d1.DATE_OF_BIRTH, 4) AND b2.BIRTH_YEAR = right(d2.DATE_OF_BIRTH, 4) AND b3.BIRTH_YEAR = right(d3.DATE_OF_BIRTH, 4)\n" +
+                        "AND id(d1) < id(d3) AND r.distance <= %3$s AND r.fields_populated >= %4$s AND s.distance <= %3$s AND s.fields_populated >= %4$s\n" +
+                        "RETURN count(*)",
+                type1, type2, threshold, fields
+        );
+
+        Result result = bridge.getNewSession().run(openTriangleQuery);
+        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
+
+        String openTriangleQuery2 = String.format(
+                "MATCH (b1:%1$s))-[:SIBLING]-(b2:%1$s))-[:SIBLING]-(b3:%1$s)),\n" +
+                        "(d1:%2$s)-[r:SIBLING]-(d2:%2$s)-[s:SIBLING]-(d3:%2$s),\n" +
+                        "(b1)-[:ID]-(d1),\n" +
+                        "(b2)-[:ID]-(d2),\n" +
+                        "(b3)-[:ID]-(d3),\n" +
+                        "(b1)-[:SIBLING]-(b3),\n" +
+                        "(d1)-[t:SIBLING]-(d3)\n" +
+                        "WHERE b1.BIRTH_YEAR = right(d1.DATE_OF_BIRTH, 4) AND b2.BIRTH_YEAR = right(d2.DATE_OF_BIRTH, 4) AND b3.BIRTH_YEAR = right(d3.DATE_OF_BIRTH, 4)\n" +
+                        "AND id(d1) < id(d3) AND r.distance <= %3$s AND r.fields_populated >= %4$s AND s.distance <= %3$s AND s.fields_populated >= %4$s\n" +
+                        "AND (t.fields_populated < %4$s OR t.distance > %3$s)\n" +
+                        "RETURN count(*)",
+                type1, type2, threshold, fields
+        );
+
+        result = bridge.getNewSession().run(openTriangleQuery2);
+        clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        long tCount = 0;
+        if (!clusters.isEmpty()) {
+            tCount = clusters.get(0);
+        }
+
+        return (int) count + (int) tCount;
+    }
+
     public static int countOpenSquaresCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
         long count = 0;
         String openSquaresQuery;
