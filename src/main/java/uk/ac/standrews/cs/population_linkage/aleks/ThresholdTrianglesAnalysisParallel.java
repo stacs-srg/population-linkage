@@ -119,7 +119,7 @@ public class ThresholdTrianglesAnalysisParallel {
                                 ClassificationMetrics.recall(tpc, fnc),
                                 ClassificationMetrics.F1(tpc, fpc, fnc),
                                 PatternsCounter.countOpenTrianglesCumulative(bridge, "Death", "Death", i, currentField),
-                                PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Death", "Death", i, currentField));
+                                PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Birth", "Death", i, currentField));
 
                         }
                     } catch (Exception e) {

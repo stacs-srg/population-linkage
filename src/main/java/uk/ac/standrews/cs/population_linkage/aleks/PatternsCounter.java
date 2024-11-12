@@ -289,7 +289,7 @@ public class PatternsCounter {
     public static int countOpenTrianglesIsomorphicSiblings(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
         long count = 0;
         String openTriangleQuery = String.format(
-                "MATCH (b1:%1$s))-[:SIBLING]-(b2:%1$s))-[:SIBLING]-(b3:%1$s)),\n" +
+                "MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s)-[:SIBLING]-(b3:%1$s),\n" +
                         "(d1:%2$s)-[r:SIBLING]-(d2:%2$s)-[s:SIBLING]-(d3:%2$s),\n" +
                         "(b1)-[:ID]-(d1),\n" +
                         "(b2)-[:ID]-(d2),\n" +
@@ -309,7 +309,7 @@ public class PatternsCounter {
         }
 
         String openTriangleQuery2 = String.format(
-                "MATCH (b1:%1$s))-[:SIBLING]-(b2:%1$s))-[:SIBLING]-(b3:%1$s)),\n" +
+                "MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s)-[:SIBLING]-(b3:%1$s),\n" +
                         "(d1:%2$s)-[r:SIBLING]-(d2:%2$s)-[s:SIBLING]-(d3:%2$s),\n" +
                         "(b1)-[:ID]-(d1),\n" +
                         "(b2)-[:ID]-(d2),\n" +
