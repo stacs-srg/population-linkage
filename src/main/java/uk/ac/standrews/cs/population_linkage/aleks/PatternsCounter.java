@@ -297,7 +297,7 @@ public class PatternsCounter {
                         "(b1)-[:SIBLING]-(b3)\n" +
                         "WHERE NOT (d1)-[:SIBLING]-(d3) AND b1.BIRTH_YEAR = right(d1.DATE_OF_BIRTH, 4) AND b2.BIRTH_YEAR = right(d2.DATE_OF_BIRTH, 4) AND b3.BIRTH_YEAR = right(d3.DATE_OF_BIRTH, 4)\n" +
                         "AND id(d1) < id(d3) AND r.distance <= %3$s AND r.fields_populated >= %4$s AND s.distance <= %3$s AND s.fields_populated >= %4$s\n" +
-                        "RETURN count(*)",
+                        "RETURN count(DISTINCT [d1, d2]) as cluster_count",
                 type1, type2, threshold, fields
         );
 
@@ -319,7 +319,7 @@ public class PatternsCounter {
                         "WHERE b1.BIRTH_YEAR = right(d1.DATE_OF_BIRTH, 4) AND b2.BIRTH_YEAR = right(d2.DATE_OF_BIRTH, 4) AND b3.BIRTH_YEAR = right(d3.DATE_OF_BIRTH, 4)\n" +
                         "AND id(d1) < id(d3) AND r.distance <= %3$s AND r.fields_populated >= %4$s AND s.distance <= %3$s AND s.fields_populated >= %4$s\n" +
                         "AND (t.fields_populated < %4$s OR t.distance > %3$s)\n" +
-                        "RETURN count(*)",
+                        "RETURN count(DISTINCT [d1, d3]) as cluster_count",
                 type1, type2, threshold, fields
         );
 
