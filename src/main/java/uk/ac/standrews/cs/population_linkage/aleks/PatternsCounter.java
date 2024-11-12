@@ -169,7 +169,7 @@ public class PatternsCounter {
 
         String openTriangleQuery2 = String.format(
                 "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
-                        "WHERE id(x) < id(z) AND r.distance <= %3$s AND s.distance <= %3$s " +
+                        "WHERE id(x) < id(z) AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s" +
                         "AND (t.fields_populated < %4$s OR t.distance > %3$s) " +
                         "RETURN count(DISTINCT [x, z]) as cluster_count",
                 type1, type2, threshold, fields
