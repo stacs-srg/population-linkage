@@ -32,36 +32,17 @@ import java.util.*;
  * but xz is not connected.
  * All the ids are storr ids of Nodes.
  */
-public class OpenTriangleClusterBB {
-    public final long x;
-    public List<List<Long>> triangleChain = new ArrayList<>();
-    private Set<LXP> children = new HashSet<LXP>();
-    private Map<String, LocalDate> birthDays = new HashMap<String, LocalDate>();
-    private Map<String, Integer> birthplaceMap = new HashMap<String, Integer>();
-    private double yearTotal = 0;
-    private int ageRange;
-    private double yearAvg;
-    private int yearMedian;
-    private String mostCommonBirthplace = null;
-
+public class OpenTriangleClusterBB extends OpenTriangleCluster {
     IBucket births;
 
-    public OpenTriangleClusterBB(long x, List<List<Long>>  triangleChain) {
-        RecordRepository record_repository = new RecordRepository("umea");
+    public OpenTriangleClusterBB(long x, List<List<Long>>  triangleChain, String recordRepo) {
+        super(x, triangleChain);
+        RecordRepository record_repository = new RecordRepository(recordRepo);
         births = record_repository.getBucket("birth_records");
-        this.x = x;
-        this.triangleChain = triangleChain;
     }
 
-    public String toString() {
-        return "X = " + x;
-    }
-
-    public List<List<Long>> getTriangleChain() {
-        return triangleChain;
-    }
-
-    public void getYearStatistics() throws BucketException {
+    @Override
+    public void getYearStatistics() throws BucketException  {
         for (List<Long> chain : triangleChain){
             LXP[] tempKids = {(LXP) births.getObjectById(x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
             for (int i = 0; i < tempKids.length; i++) {
@@ -130,33 +111,5 @@ public class OpenTriangleClusterBB {
             ageRange = 0;
             yearMedian = (int) yearAvg;
         }
-    }
-
-    public int getAgeRange() {
-        return ageRange;
-    }
-
-    public double getYearAvg() {
-        return yearAvg;
-    }
-
-    public double getNumOfChildren() {
-        return children.size();
-    }
-
-    public Map<String, LocalDate> getBirthDays() {
-        return birthDays;
-    }
-
-    public double getYearMedian() {
-        return yearMedian;
-    }
-
-    public String getMostCommonBirthplace() {
-        return mostCommonBirthplace;
-    }
-
-    public void removeBirthday(LocalDate date) {
-        birthDays.remove(date);
     }
 }

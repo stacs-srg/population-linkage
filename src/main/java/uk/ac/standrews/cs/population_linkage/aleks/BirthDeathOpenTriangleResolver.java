@@ -85,12 +85,15 @@ public class BirthDeathOpenTriangleResolver {
         new BirthBirthSiblingAccuracy(bridge);
 
         System.out.println("Locating triangles...");
-        List<OpenTriangleCluster> triangles = findIllegalBirthDeathSiblingTriangles(bridge);
+        List<OpenTriangleClusterBD> triangles = findIllegalBirthDeathSiblingTriangles(bridge, "umea");
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
-        for (OpenTriangleCluster triangle : triangles) {
+        int count = 0;
+        for (OpenTriangleClusterBD triangle : triangles) {
+            System.out.println(count + ": " + triangle.getTriangleChain().size());
             resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 4);
+            count++;
         }
 
         System.out.println("Resolving triangles...");
@@ -137,7 +140,7 @@ public class BirthDeathOpenTriangleResolver {
         new BirthBirthSiblingAccuracy(bridge);
     }
 
-    private static List<OpenTriangleCluster> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge) {
+    private static List<OpenTriangleClusterBD> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge, String recordRepo) {
         final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Birth)\n"+
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, collect([y, z]) AS openTriangles";
@@ -159,7 +162,7 @@ public class BirthDeathOpenTriangleResolver {
                             .collect(Collectors.toList()))
                     .collect(Collectors.toList());
 
-            return new OpenTriangleCluster(x, openTrianglesList);
+            return new OpenTriangleClusterBD(x, openTrianglesList, recordRepo);
         }).collect(Collectors.toList());
     }
 
@@ -277,7 +280,6 @@ public class BirthDeathOpenTriangleResolver {
 
         List<Set<LXP>> familySets = new ArrayList<>();
         List<List<LXP>> toDelete = new ArrayList<>();
-        Set<LXP> fixedChildren = new HashSet<LXP>();
         int[] fieldsB = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
         int[] fieldsD = {Death.FATHER_FORENAME, Death.MOTHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_MAIDEN_SURNAME};
 

@@ -26,31 +26,19 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import java.time.LocalDate;
 import java.util.*;
 
-/**
- * Used to encode unmatched triangles with nodes x and y and z
- * x and y are xy_distance apart, y and z are yz_distance apart
- * but xz is not connected.
- * All the ids are storr ids of Nodes.
- */
-public class OpenTriangleCluster {
+public abstract class OpenTriangleCluster {
     public final long x;
     public List<List<Long>> triangleChain = new ArrayList<>();
-    private Set<LXP> children = new HashSet<LXP>();
-    Map<String, Integer> birthplaceMap = new HashMap<String, Integer>();
-    private List<LocalDate> birthDays = new ArrayList<>();
-    private double yearTotal = 0;
-    private int ageRange;
-    private double yearAvg;
-    private int yearMedian;
-    private String mostCommonBirthplace = null;
-
-    IBucket births;
-    IBucket deaths;
+    protected Set<LXP> children = new HashSet<LXP>();
+    protected Map<String, LocalDate> birthDays = new HashMap<String, LocalDate>();
+    protected Map<String, Integer> birthplaceMap = new HashMap<String, Integer>();
+    protected double yearTotal = 0;
+    protected int ageRange;
+    protected double yearAvg;
+    protected int yearMedian;
+    protected String mostCommonBirthplace = null;
 
     public OpenTriangleCluster(long x, List<List<Long>>  triangleChain) {
-        RecordRepository record_repository = new RecordRepository("umea");
-        births = record_repository.getBucket("birth_records");
-        deaths = record_repository.getBucket("death_records");
         this.x = x;
         this.triangleChain = triangleChain;
     }
@@ -63,89 +51,7 @@ public class OpenTriangleCluster {
         return triangleChain;
     }
 
-    public void getYearStatistics() throws BucketException {
-        for (List<Long> chain : triangleChain){
-            LXP[] tempKids = {(LXP) births.getObjectById(x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
-            for (int i = 0; i < tempKids.length; i++) {
-                if (!children.contains(tempKids[i])) {
-                    int year = 1850;
-                    int month = 1;
-                    int day = 1;
-                    if(i != 1){
-                        try{
-                            year = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_YEAR)));
-                        }catch(Exception e){
-                            if(!children.isEmpty()){
-                                year = (int) Math.round(yearTotal/children.size());
-                            }
-                        }
-
-                        try{
-                            month = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_MONTH)));
-                        }catch(Exception e){
-                            month = -1;
-                        }
-
-                        try{
-                            day = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_DAY)));
-                        } catch (Exception e) {
-
-                        }
-
-                        if(month != -1){
-                            birthDays.add(LocalDate.of(year, month, day));
-                        }
-                        yearTotal += year;
-
-                        if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_ADDRESS), "----")){
-                            birthplaceMap.merge(tempKids[i].getString(Birth.BIRTH_ADDRESS), 1, Integer::sum);
-                        }
-                    }else{
-                        try{
-                            year = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(6));
-                            month = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(3, 5));
-                            day = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(0, 2));
-
-                            birthDays.add(LocalDate.of(year, month, day));
-                        }catch(Exception e){
-                            if(!children.isEmpty()){
-                                year = (int) Math.round(yearTotal/children.size());
-                            }
-                        }
-                    }
-
-                    yearTotal += year;
-
-                    children.add(tempKids[i]);
-                }
-            }
-        }
-
-        //https://deveshsharmablogs.wordpress.com/2013/07/16/find-most-common-element-in-a-list-in-java/
-        int maxValue = -1;
-        for(Map.Entry<String, Integer> entry: birthplaceMap.entrySet()) {
-            if(entry.getValue() > maxValue) {
-                mostCommonBirthplace = entry.getKey();
-                maxValue = entry.getValue();
-            }
-        }
-
-        yearAvg = yearTotal / children.size();
-
-        Collections.sort(birthDays);
-        if(birthDays.size() > 0){
-            ageRange = birthDays.get(birthDays.size() - 1).getYear() - birthDays.get(0).getYear();
-
-            if ((birthDays.size() % 2) == 0) {
-                yearMedian = ((birthDays.get(birthDays.size() / 2)).getYear() + (birthDays.get(birthDays.size() / 2 - 1)).getYear()) / 2;
-            }else {
-                yearMedian = birthDays.get(birthDays.size() / 2).getYear();
-            }
-        }else{
-            ageRange = 0;
-            yearMedian = (int) yearAvg;
-        }
-    }
+    public abstract void getYearStatistics() throws BucketException;
 
     public int getAgeRange() {
         return ageRange;
@@ -159,7 +65,7 @@ public class OpenTriangleCluster {
         return children.size();
     }
 
-    public List<LocalDate> getBirthDays() {
+    public Map<String, LocalDate> getBirthDays() {
         return birthDays;
     }
 

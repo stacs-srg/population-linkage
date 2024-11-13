@@ -25,16 +25,13 @@ fig = plt.figure(figsize=(14, 8))
 
 MAX_FIELD = 8
 MIN_FIELD = 3 #1 under
-FILE = "groomID"
+FILE = "birthBirthNew"
 
-
-if FILE == "birthmarriage" or FILE == "birthBirthNew":
+if MAX_FIELD - MIN_FIELD == 5:
     axes = [plt.subplot2grid((3, 2), (0, 0)), plt.subplot2grid((3, 2), (0, 1)),
             plt.subplot2grid((3, 2), (1, 0)), plt.subplot2grid((3, 2), (1, 1)),
             plt.subplot2grid((3, 2), (2, 0), colspan=2)]
-elif FILE == "birthdeathID" or FILE == "groomID":
-    MAX_FIELD = 6
-    MIN_FIELD = 2
+elif MAX_FIELD - MIN_FIELD == 4:
     axes = [plt.subplot2grid((2, 2), (0, 0)), plt.subplot2grid((2, 2), (0, 1)),
             plt.subplot2grid((2, 2), (1, 0)), plt.subplot2grid((2, 2), (1, 1))]
 else:
@@ -44,12 +41,6 @@ else:
 all_handles = []
 all_labels = []
 
-def quadratic_func(x, a, b, c):
-    return a * x**2 + b * x + c
-
-def exponential_func(x, a, b):
-    return a * np.exp(b * x)
-
 for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     data = pd.read_csv(f'../../../../../../../../../{FILE}{N}.csv')
 
@@ -57,7 +48,8 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     l1 = ax1.plot(data['threshold'], data['recall'], label='Recall', color='b')
     l2 = ax1.plot(data['threshold'], data['precision'], label='Precision', color='g')
     l3 = ax1.plot(data['threshold'], data['fmeasure'], label='fmeasure', color='r')
-    ax1.set_ylim([0, 1])
+    ax1.set_ylim([0, 1.05])
+    ax1.set_ylabel('Quality Metrics')
 
     if len(all_handles) == 0:
         handles, labels = ax1.get_legend_handles_labels()
@@ -77,44 +69,9 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     triangles_f = data['triangles'] - data['trianglesC']
     open_triangles_normalized_f = (triangles_f - triangles_f.min()) / (triangles_f.max() - triangles_f.min())
 
-    # open_triangles_normalized = data['triangles']
-    # open_triangles_normalized_c = data['trianglesC']
-    # triangles_f = data['triangles'] - data['trianglesC']
-    # open_triangles_normalized_f = triangles_f
-
-
     # open_squares_normalized = (data['squares'] - data['squares'].min()) / (data['squares'].max() - data['squares'].min())
     # open_triangles_smooth = open_triangles_normalized.rolling(window=5, min_periods=1).mean()
     # open_triangles_gradient = np.gradient(open_triangles_smooth, data['threshold'])
-    # optimal_threshold = walker(open_triangles_gradient)
-
-    # ax1.set_xlabel('Threshold')
-    # ax1.set_ylabel('Metrics', color='black')
-    # ax1.set_ylim(0.0, 1.01)
-
-    # ax1.legend(loc='upper left')
-
-    # data['triangle_diff'] = open_triangles_normalized.diff()
-    # average_diff = data['triangle_diff'].mean()
-    # sharp_increase_index = data[data['triangle_diff'] > 2 * average_diff].index
-    # if not sharp_increase_index.empty:
-    #     optimal_index_sharp = sharp_increase_index[0] - 1
-
-    # data['triangle_diff'] = data['triangles_smoothed'].diff()
-
-    # data['triangle_acceleration'] = data['triangle_diff'].diff()
-    # acceleration_start_threshold = data['triangle_acceleration'].mean() * 3.5
-    # acceleration_start_indices = data[data['triangle_acceleration'] > acceleration_start_threshold].index
-    # optimal_index = data['triangle_acceleration'].idxmax()
-    # valid_acceleration_indices = data[data['triangle_acceleration'] < acceleration_threshold].index
-    # optimal_index_begin_growth = acceleration_start_indices[0] - 1
-    # optimal_threshold = data.loc[optimal_index, 'threshold']
-
-    # params, _ = curve_fit(exponential_func, data['threshold'], open_triangles_normalized, maxfev=10000)
-    # a, b = params
-
-    # fitted_curve = exponential_func(data['threshold'], a, b)
-    # fitted_curve_gradient = np.gradient(fitted_curve, data['threshold'])
     # optimal_threshold = walker(open_triangles_gradient)
 
     not_zero = (open_triangles_normalized_c > 0.1) | (open_triangles_normalized_f > 0.1)
@@ -126,26 +83,19 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
     # open_triangles_merged = (open_triangles_merged - open_triangles_merged.min()) / (open_triangles_merged.max() - open_triangles_merged.min())
 
     ax2 = ax1.twinx()
-    # ax2.set_ylim([0, 1])
+    ax2.set_ylim([0, 1.05])
     # ax2.plot(data['threshold'], data['squares'], label='Open Triangles', color='orange')
     l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles Total', color='orange')
-    l5 = ax2.plot(data['threshold'], open_triangles_normalized_c, label='Open Triangles C', color='purple')
-    l6 = ax2.plot(data['threshold'], open_triangles_normalized_f, label='Open Triangles F', color='lime')
+    l5 = ax2.plot(data['threshold'], open_triangles_normalized_c, label='Number of FNOTs', color='purple')
+    l6 = ax2.plot(data['threshold'], open_triangles_normalized_f, label='Number of FPOTs', color='lime')
 
     # l4 = ax2.plot(data['threshold'], open_triangles_normalized_c, label='Open Triangles C', color='orange')
     # l5 = ax2.plot(data['threshold'], open_triangles_normalized_f, label='Open Triangles F', color='purple')
     # l6 = ax1.plot(data['threshold'], open_triangles_merged, label='Merged Open Triangles', color='lime')
 
-    l7 = ax2.axvline(x=intersection_threshold, color='gray', linestyle='--', label='Intersection')
+    l7 = ax2.axvline(x=intersection_threshold, color='black', linestyle='--', label='FPOT-FNOT Intersection')
+    l8 = ax2.axvline(x=data['threshold'][data['fmeasure'].idxmax()], color='black', linestyle='-', label='Peak f-measure')
     # l5 = ax2.plot(data['threshold'], open_squares_normalized, label='Open Squares', color='purple')
-    # l5 = ax2.plot(data['threshold'], fitted_curve, '- -', label='Best fit', color='purple')
-    # ax2.plot(data['threshold'], open_triangles_gradient, label='Open Triangles Dif', color='purple')
-    # ax2.plot(data['threshold'][optimal_threshold], open_triangles_normalized[optimal_threshold], 'o', color='orange', label='Max Open Triangles Gradient')
-    # l6 = ax2.axvline(x=data.loc[optimal_threshold, 'threshold'], color='black', linestyle='--', linewidth=2, label='Optimal Threshold')
-    # l7 = ax2.axvline(x=data.loc[optimal_index_begin_growth, 'threshold'], color='black', linestyle='--', label='Start of growth')
-    # l8 = ax2.axvline(x=data.loc[optimal_index_sharp, 'threshold'], color='pink', linestyle='--', label='Max growth')
-    # ax2.plot(data['threshold'], data['squares'], label='Open Squares', color='orange')
-    # ax2.plot(data['threshold'], data['strict_squares'], label='Open Squares (Strict)', color='purple')
 
     if len(all_handles) == 3:
         handles, labels = ax2.get_legend_handles_labels()
@@ -154,19 +104,21 @@ for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
 
     ax2.set_ylabel('Open Patterns (Normalised)')
 
-    # ax2.legend(loc='lower left')
-
-    ax1.set_title(f'Threshold Analysis {FILE} {N} Fields')
+    ax1.set_title(f'Threshold Analysis Birth-Birth Sibling {N} Fields')
     ax1.grid(True)
     # correlation, p_value = spearmanr(data['fmeasure'], data['triangles'])
     # print(f"Spearman Correlation {N} fields: {correlation}")
     # print(f"P-value {N} fields: {p_value}")
     # print(f"Optimal Threshold for field {N}: {data['threshold'][optimal_threshold]}")
     print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
+    print(f"Opptimal threshold estimate {N}: {intersection_threshold}")
+    print(f"% Difference {N}: {abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()]) / data['threshold'][data['fmeasure'].idxmax()] * 100}%")
+    print(f"Peak F-measure {N}: {data['fmeasure'].max()}")
+    print(f"Opptimal threshold fmeasure {N}: {data['fmeasure'][data['threshold'] == intersection_threshold].values[0]}")
+    print(f"% Difference {N}: {abs(data['fmeasure'].max() - data['fmeasure'][data['threshold'] == intersection_threshold].values[0]) / data['fmeasure'].max() * 100}%")
+    print("")
 
-# fig.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-fig.legend(handles=all_handles, labels=all_labels, loc='center right', bbox_to_anchor=(1, 0.5))
-
-plt.tight_layout(rect=[0, 0, 0.9, 1])
-plt.savefig('threshold_field_analysis_groomsq6_norm.png')
+fig.legend(handles=all_handles, labels=all_labels, loc='upper right', bbox_to_anchor=(1, 1), borderaxespad=1.5)
+plt.tight_layout(rect=[0, 0, 0.85, 1], pad=2)
+# plt.savefig('threshold_field_analysis_bb_norm')
 plt.show()
