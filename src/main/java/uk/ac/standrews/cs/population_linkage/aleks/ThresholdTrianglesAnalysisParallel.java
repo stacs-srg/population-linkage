@@ -77,7 +77,7 @@ public class ThresholdTrianglesAnalysisParallel {
         final int MAX_FIELD = 2;
         final int MIN_FIELD = 1; //1 below target
         final double MAX_THRESHOLD = 1.01; //0.01 above target
-        final double MIN_THRESHOLD = 0.23;
+        final double MIN_THRESHOLD = 0.34;
 
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
