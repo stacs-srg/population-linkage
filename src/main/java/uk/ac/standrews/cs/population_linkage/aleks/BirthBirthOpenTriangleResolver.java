@@ -50,19 +50,9 @@ import java.util.stream.Collectors;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
-public class BirthBirthOpenTriangleResolver {
-
-    private static NeoDbCypherBridge bridge;
-
-    //Various constants for predicates
-    private static final int MAX_AGE_DIFFERENCE  = 24;
-    private static final double DATE_THRESHOLD = 0.5;
-    private static final double NAME_THRESHOLD = 0.5;
-    private static final int BIRTH_INTERVAL = 270;
-
+public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver {
     //Cypher queries used in predicates
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
-    private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
     private static final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
     private static final String BB_SIBLING_WITH_PARENTS = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth),\n" +
             "(x)-[s:ID]-(m:Marriage),\n" +
@@ -73,15 +63,28 @@ public class BirthBirthOpenTriangleResolver {
     private static final String[] creationPredicates = {"match_m_date", "match_fixed_name", "msed"};
     private static final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "bad_strict_name", "m_pred", "msed"};
 
-    public static void main(String[] args) throws BucketException, InterruptedException {
-        bridge = Store.getInstance().getBridge();
-        RecordRepository record_repository = new RecordRepository("umea");
+    public static void main(String[] args){
+        String sourceRepo = args[0]; // e.g. umea
+        String numberOfRecords = args[1]; // e.g. EVERYTHING or 10000 etc.
+
+        if(args.length != 2){
+            throw new IllegalArgumentException("Invalid number of arguments");
+        }
+
+        try {
+            new BirthBirthOpenTriangleResolver(sourceRepo, numberOfRecords);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public BirthBirthOpenTriangleResolver(String sourceRepo, String numberOfRecords) throws BucketException, InterruptedException  {
+        super(sourceRepo);
+
         final StringMeasure base_measure = Constants.LEVENSHTEIN;
-        final StringMeasure base_measure_n = Constants.JENSEN_SHANNON;
-        final LXPMeasure composite_measure_name = getCompositeMeasure(base_measure_n);
         final LXPMeasure composite_measure_date = getCompositeMeasureDate(base_measure);
         IBucket births = record_repository.getBucket("birth_records");
-        BirthSiblingLinkageRecipe recipe = new BirthSiblingLinkageRecipe("umea", "EVERYTHING", BirthSiblingBundleBuilder.class.getName());
+        BirthSiblingLinkageRecipe recipe = new BirthSiblingLinkageRecipe(sourceRepo, numberOfRecords, BirthSiblingBundleBuilder.class.getName());
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth"); //get number of triangles before resolution
@@ -94,7 +97,7 @@ public class BirthBirthOpenTriangleResolver {
         }
 
         System.out.println("Locating triangles...");
-        List<OpenTriangleClusterBB> triangles = findIllegalBirthBirthSiblingTriangles(bridge, "umea"); //get all open triangles in their clusters
+        List<OpenTriangleClusterBB> triangles = findIllegalBirthBirthSiblingTriangles(bridge, sourceRepo); //get all open triangles in their clusters
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
@@ -102,65 +105,71 @@ public class BirthBirthOpenTriangleResolver {
         ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
         for (OpenTriangleClusterBB triangle : triangles) {
-            executorService.submit(() ->
-                    {
-                        try {
-                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 4);
-                        } catch (BucketException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-            );
+//            executorService.submit(() ->
+//                    {
+//                        try {
+//                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 4);
+//                        } catch (BucketException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }
+//            );
+
+            try {
+                resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 6);
+            } catch (BucketException e) {
+                throw new RuntimeException(e);
+            }
         }
 
-        executorService.shutdown();
-        executorService.awaitTermination(12, TimeUnit.HOURS);
+//        executorService.shutdown();
+//        executorService.awaitTermination(12, TimeUnit.HOURS);
 
         System.out.println("Resolving triangles with predicates...");
-//        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
-//            for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
-//                LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))}; //get node objects
-//                String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-//                String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
-//                String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
-//
-//                cluster.getYearStatistics(); //get statistics for brith years
-//                boolean hasChanged = false; //prevent resolution if chain has already been resolved
-//
-////                    String toFind = "417705";
-////                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
-////                        System.out.println("fsd");
-////                    }
-//
-//                //1. Check age of child not outside of max difference
-//                hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
-//
-//                //2. check DOB at least 9 months away from rest
-//                hasChanged = minBirthIntervalPredicate(cluster, tempKids, hasChanged, 1);
-//
-//                //3. Get mode of birthplace
-//                hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
-//
-//                //4. If same marriage date and pass other checks, create link
-//                if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
-//                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-//                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-//                    createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
-//                }else{
-//                    if(!hasChanged && getDistance(cluster.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
-//                            !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-//                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-//                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
+        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
+            for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
+                LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))}; //get node objects
+                String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
+                String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
+                String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+
+                cluster.getYearStatistics(); //get statistics for brith years
+                boolean hasChanged = false; //prevent resolution if chain has already been resolved
+
+//                    String toFind = "417705";
+//                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
+//                        System.out.println("fsd");
 //                    }
-//
-//                    if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
-//                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-//                            !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-//                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
-//                    }
-//                }
-//            }
-//        }
+
+                //1. Check age of child not outside of max difference
+                hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
+
+                //2. check DOB at least 9 months away from rest
+                hasChanged = minBirthIntervalPredicate(cluster, tempKids, hasChanged, 1);
+
+                //3. Get mode of birthplace
+                hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
+
+                //4. If same marriage date and pass other checks, create link
+                if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
+                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+                    createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
+                }else{
+                    if(!hasChanged && getDistance(cluster.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
+                            !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3]);
+                    }
+
+                    if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
+                            !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                            !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3]);
+                    }
+                }
+            }
+        }
 
         System.out.println("After");
         System.out.println("\n");
@@ -594,21 +603,6 @@ public class BirthBirthOpenTriangleResolver {
         try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
             Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z, prov);
             tx.run(BB_SIBLING_QUERY, parameters);
-            tx.commit();
-        }
-    }
-
-    /**
-     * Method to permanently delete a link between two records
-     *
-     * @param bridge Neo4j bridge
-     * @param std_id_x standardised id of record x
-     * @param std_id_y standardised id of record y
-     */
-    private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y){
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y);
-            tx.run(BB_SIBLING_QUERY_DEL, parameters);
             tx.commit();
         }
     }
