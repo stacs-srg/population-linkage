@@ -30,20 +30,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ThresholdTrianglesAnalysisBirthDeathID {
-    private static final String BIRTH_DEATH_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Deceased\"}]->(d:Death) WHERE (b)-[:GT_ID {actors: \"Child-Deceased\"}]-(d) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
-    private static final String BIRTH_DEATH_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Deceased\"}]->(d:Death) WHERE NOT (b)-[:GT_ID {actors: \"Child-Deceased\"}]-(d) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
-    private static final String BIRTH_DEATH_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Deceased\"}]->(d:Death) WHERE NOT (b)-[:ID {actors: \"Child-Deceased\"}]-(d) return count(r)";
-    private static final String BIRTH_DEATH_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Deceased\"}]->(d:Death), (b)-[s:ID]-(d) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
-
-//    private static final String BIRTH_DEATH_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Deceased\"}]->(d:Death) WHERE (b)-[:GT_ID {actors: \"Child-Deceased\"}]-(d) return count(r)";
-//    private static final String BIRTH_DEATH_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Deceased\"}]->(d:Death) WHERE NOT (b)-[:GT_ID {actors: \"Child-Deceased\"}]-(d) return count(r)";
-//    private static final String BIRTH_DEATH_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Deceased\"}]->(d:Death) WHERE NOT (b)-[:ID {actors: \"Child-Deceased\"}]-(d) return count(r)";
+public class ThresholdTrianglesAnalysisBirthDeathSib {
+    private static final String BIRTH_DEATH_SIBLING_TPC = "MATCH (b:Birth)-[r:SIBLING {actors: \"Deceased-Child\"}]-(d:Death) WHERE (b)-[:GT_SIBLING {actors: \"Child-Deceased\"}]-(d) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BIRTH_DEATH_SIBLING_FPC = "MATCH (b:Birth)-[r:SIBLING {actors: \"Deceased-Child\"}]-(d:Death) WHERE NOT (b)-[:GT_SIBLING {actors: \"Child-Deceased\"}]-(d) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BIRTH_DEATH_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_SIBLING {actors: \"Child-Deceased\"}]-(d:Death) WHERE NOT (b)-[:SIBLING {actors: \"Deceased-Child\"}]-(d) return count(r)";
+    private static final String BIRTH_DEATH_SIBLING_FNC_T = "MATCH (b:Birth)-[r:GT_SIBLING {actors: \"Child-Deceased\"}]-(d:Death), (b)-[s:SIBLING]-(d) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
+        final int MAX_FIELD = 4;
+        final int MIN_FIELD = 1; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
@@ -55,7 +51,7 @@ public class ThresholdTrianglesAnalysisBirthDeathID {
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthdeathID" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthdeathsib" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     //write headers
@@ -66,10 +62,10 @@ public class ThresholdTrianglesAnalysisBirthDeathID {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
                             //get quality measurements
-                            long fpc = doQuery(BIRTH_DEATH_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_DEATH_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_DEATH_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_DEATH_ID_FNC_T, i, currentField, localBridge);
+                            long fpc = doQuery(BIRTH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(BIRTH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(BIRTH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)
+                                    + doQuery(BIRTH_DEATH_SIBLING_FNC_T, i, currentField, localBridge);
 
                             //print to csv
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
@@ -77,8 +73,8 @@ public class ThresholdTrianglesAnalysisBirthDeathID {
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Death", i, currentField, true, null),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Death", i, currentField, false, null));
+                                    PatternsCounter.countOpenTrianglesCumulative(bridge, "Birth", "Death", i, currentField),
+                                    PatternsCounter.countOpenTrianglesSibFNOT(bridge, "Birth", "Birth", i, currentField));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

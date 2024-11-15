@@ -22,6 +22,8 @@ import argparse
 
 def main(MAX_FIELD, MIN_FIELD, FILE):
     fig = plt.figure(figsize=(14, 8))
+    threshold_total = 0
+    fmeasure_total = 0
 
     if MAX_FIELD - MIN_FIELD == 5:
         axes = [plt.subplot2grid((3, 2), (0, 0)), plt.subplot2grid((3, 2), (0, 1)),
@@ -108,12 +110,16 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
         # print(f"Optimal Threshold for field {N}: {data['threshold'][optimal_threshold]}")
         print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
         print(f"Opptimal threshold estimate {N}: {intersection_threshold}")
-        print(f"% Difference {N}: {abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()]) / data['threshold'][data['fmeasure'].idxmax()] * 100}%")
+        print(f"Difference {N}: {abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()])}")
+        threshold_total += abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()])
         print(f"Peak F-measure {N}: {data['fmeasure'].max()}")
         print(f"Opptimal threshold fmeasure {N}: {data['fmeasure'][data['threshold'] == intersection_threshold].values[0]}")
-        print(f"% Difference {N}: {abs(data['fmeasure'].max() - data['fmeasure'][data['threshold'] == intersection_threshold].values[0]) / data['fmeasure'].max() * 100}%")
+        print(f"Difference {N}: {abs(data['fmeasure'].max() - data['fmeasure'][data['threshold'] == intersection_threshold].values[0])}")
+        fmeasure_total += abs(data['fmeasure'].max() - data['fmeasure'][data['threshold'] == intersection_threshold].values[0])
         print("")
 
+    print(f"Average threshold error: {threshold_total / (MAX_FIELD - MIN_FIELD)}")
+    print(f"Average fmeasure error: {fmeasure_total / (MAX_FIELD - MIN_FIELD)}")
     fig.legend(handles=all_handles, labels=all_labels, loc='upper right', bbox_to_anchor=(1, 1), borderaxespad=1.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1], pad=2)
     # plt.savefig('threshold_field_analysis_bb_norm')

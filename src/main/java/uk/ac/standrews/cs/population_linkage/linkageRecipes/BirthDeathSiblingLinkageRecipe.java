@@ -45,7 +45,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 0.5;
+    private static final double DISTANCE_THRESHOLD = 2;
 
     public static final String LINKAGE_TYPE = "birth-death-sibling";
 
