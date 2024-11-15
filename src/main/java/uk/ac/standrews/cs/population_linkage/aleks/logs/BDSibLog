@@ -1,0 +1,51 @@
+BirthDeathSiblingAccuracy
+False positive count	3698
+True positive count	42842
+False negative count	89186
+True negative count	34021240574
+
+Precision	0.92
+Recall	0.32
+F1	0.48
+Specificity	1.00
+
+Birth-Death-Birth triangle: 1241
+Death-Birth-Death triangle: 0
+----
+BirthDeathSiblingAccuracy
+False positive count	179100
+True positive count	97271
+False negative count	34757
+True negative count	34021065172
+
+Precision	0.35
+Recall	0.74
+F1	0.48
+Specificity	1.00
+
+Birth-Death-Birth triangle: 577282
+Death-Birth-Death triangle: 672301
+--------------------------
+After
+Created
+match_m_date 0/0 NaN
+match_strict_name 0/0 NaN
+
+Deleted
+max_age_range 47822/47834 0.999749132416273
+min_b_interval 57953/60533 0.9573786199263212
+birthplace_mode 4050/4451 0.9099078858683441
+bad_m_date 0/0 NaN
+bad_strict_name 0/0 NaN
+Birth-Death-Birth triangle: 124993
+Birth-Birth-Birth triangle: 19647
+BirthDeathSiblingAccuracy
+False positive count	80839
+True positive count	94284
+False negative count	37744
+True negative count	34021163433
+
+Precision	0.54
+Recall	0.71
+F1	0.61
+Specificity	1.00

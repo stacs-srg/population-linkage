@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.aleks;
+package uk.ac.standrews.cs.population_linkage.aleks.resolvers;
 
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
@@ -26,59 +26,70 @@ import uk.ac.standrews.cs.population_records.record_types.Death;
 import java.time.LocalDate;
 import java.util.*;
 
-/**
- * Used to encode unmatched triangles with nodes x and y and z
- * x and y are xy_distance apart, y and z are yz_distance apart
- * but xz is not connected.
- * All the ids are storr ids of Nodes.
- */
-public class OpenTriangleClusterBB extends OpenTriangleCluster {
-    IBucket births;
+public class OpenTriangleClusterBD extends OpenTriangleCluster {
+    private IBucket births;
+    private IBucket deaths;
 
-    public OpenTriangleClusterBB(long x, List<List<Long>>  triangleChain, String recordRepo) {
+    public OpenTriangleClusterBD(long x, List<List<Long>> triangleChain, String recordRepo) {
         super(x, triangleChain);
         RecordRepository record_repository = new RecordRepository(recordRepo);
         births = record_repository.getBucket("birth_records");
+        deaths = record_repository.getBucket("death_records");
     }
 
     @Override
-    public void getYearStatistics() throws BucketException  {
+    public void getYearStatistics() throws BucketException {
         for (List<Long> chain : triangleChain){
-            LXP[] tempKids = {(LXP) births.getObjectById(x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
+            LXP[] tempKids = {(LXP) births.getObjectById(x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
             for (int i = 0; i < tempKids.length; i++) {
                 if (!children.contains(tempKids[i])) {
                     int year = 1850;
                     int month = 1;
                     int day = 1;
+                    if(i != 1){
+                        try{
+                            year = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_YEAR)));
+                        }catch(Exception e){
+                            if(!children.isEmpty()){
+                                year = (int) Math.round(yearTotal/children.size());
+                            }
+                        }
 
-                    try{
-                        year = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_YEAR)));
-                    }catch(Exception e){
-                        if(!children.isEmpty()){
-                            year = (int) Math.round(yearTotal/children.size());
+                        try{
+                            month = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_MONTH)));
+                        }catch(Exception e){
+                            month = -1;
+                        }
+
+                        try{
+                            day = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_DAY)));
+                        } catch (Exception e) {
+
+                        }
+
+                        if(month != -1){
+                            birthDays.put(tempKids[i].getString(Birth.STANDARDISED_ID), LocalDate.of(year, month, day));
+                        }
+                        yearTotal += year;
+
+                        if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_ADDRESS), "----")){
+                            birthplaceMap.merge(tempKids[i].getString(Birth.BIRTH_ADDRESS), 1, Integer::sum);
+                        }
+                    }else{
+                        try{
+                            year = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(6));
+                            month = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(3, 5));
+                            day = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(0, 2));
+
+                            birthDays.put(tempKids[i].getString(Death.STANDARDISED_ID), LocalDate.of(year, month, day));
+                        }catch(Exception e){
+                            if(!children.isEmpty()){
+                                year = (int) Math.round(yearTotal/children.size());
+                            }
                         }
                     }
 
-                    try{
-                        month = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_MONTH)));
-                    }catch(Exception e){
-                        month = -1;
-                    }
-
-                    try{
-                        day = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_DAY)));
-                    } catch (Exception e) {
-
-                    }
-
-                    if(month != -1){
-                        birthDays.put(tempKids[i].getString(Birth.STANDARDISED_ID), LocalDate.of(year, month, day));
-                    }
                     yearTotal += year;
-
-                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_ADDRESS), "----")){
-                        birthplaceMap.merge(tempKids[i].getString(Birth.BIRTH_ADDRESS), 1, Integer::sum);
-                    }
 
                     children.add(tempKids[i]);
                 }

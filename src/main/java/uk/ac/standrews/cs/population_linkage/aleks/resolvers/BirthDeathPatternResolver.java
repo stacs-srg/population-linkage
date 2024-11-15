@@ -14,12 +14,13 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.aleks;
+package uk.ac.standrews.cs.population_linkage.aleks.resolvers;
 
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.aleks.PatternsCounter;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.DeathDeathSiblingAccuracy;
 
 public class BirthDeathPatternResolver {

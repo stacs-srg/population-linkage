@@ -1,0 +1,115 @@
+Birth-Marriage-Birth triangle: 271167
+BirthGroomOwnMarriageBundleAccuracy
+False positive count	11698
+True positive count	13501
+False negative count	19286
+True negative count	13682374375
+
+Precision	0.54
+Recall	0.41
+F1	0.47
+Specificity	1.00
+
+----
+BirthBrideOwnMarriageAccuracy
+False positive count	7327
+True positive count	12655
+False negative count	36057
+True negative count	13682362821
+
+Precision	0.63
+Recall	0.26
+F1	0.37
+Specificity	1.00
+
+----
+Resolving Groom
+Locating triangles...
+Triangles found: 51943
+Resolving triangles with predicates...
+Resolving Bride
+Locating triangles...
+Triangles found: 23616
+Resolving triangles with predicates...
+After
+
+
+Groom efficacy:
+Deleted
+diff_birth 4417/4428 0.9975158084914183
+born_after 2442/2442 1.0
+too_young 1901/1901 1.0
+too_old 1972/2012 0.9801192842942346
+bad_name 3231/3442 0.9386984311446833
+Bride efficacy:
+Deleted
+diff_birth 4416/4428 0.997289972899729
+born_after 2442/2442 1.0
+too_young 1900/1901 0.9994739610731194
+too_old 1999/2012 0.9935387673956262
+bad_name 3097/3442 0.899767576990122
+Birth-Marriage-Birth triangle: 163371
+BirthGroomOwnMarriageBundleAccuracy
+False positive count	3489
+True positive count	13239
+False negative count	19548
+True negative count	13682382584
+
+Precision	0.79
+Recall	0.40
+F1	0.53
+Specificity	1.00
+
+----
+BirthBrideOwnMarriageAccuracy
+False positive count	1944
+True positive count	12284
+False negative count	36057
+True negative count	13682368575
+
+Precision	0.86
+Recall	0.25
+F1	0.39
+Specificity	1.00
+------------------------------------------------
+Groom efficacy:
+Deleted
+diff_birth 4417/4428 0.9975158084914183
+born_after 2472/2472 1.0
+too_young 1924/1924 1.0
+too_old 1950/1987 0.9813789632611978
+bad_name 3199/3412 0.9375732708089097
+
+Bride efficacy:
+Deleted
+diff_birth 4416/4428 0.997289972899729
+born_after 2472/2472 1.0
+too_young 1922/1924 0.998960498960499
+too_old 1974/1987 0.9934574735782586
+bad_name 3068/3412 0.8991793669402111
+Birth-Marriage-Birth triangle: 163336
+BirthGroomOwnMarriageBundleAccuracy
+False positive count	3487
+True positive count	13240
+False negative count	19547
+True negative count	13682382586
+
+Precision	0.79
+Recall	0.40
+F1	0.53
+Specificity	1.00
+
+----
+BirthBrideOwnMarriageAccuracy
+False positive count	1947
+True positive count	12284
+False negative count	36057
+True negative count	13682368572
+
+Precision	0.86
+Recall	0.25
+F1	0.39
+Specificity	1.00
+
+Triangles found: 5586
+Triangles found: 1511
