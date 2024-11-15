@@ -18,7 +18,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data = pd.read_csv('../../../../../../../../../birthbirth8.csv')
+data = pd.read_csv('../../../../../../../../../../birthbirth8.csv')
 
 fig, ax1 = plt.subplots(figsize=(10, 6))
 
