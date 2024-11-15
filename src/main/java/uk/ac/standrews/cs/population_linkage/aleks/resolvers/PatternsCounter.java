@@ -233,34 +233,55 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
-    public static int countOpenTrianglesCumulativeBD(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields, boolean isCorrect) {
+    public static int countOpenTrianglesCumulativeAdditionalLinkage(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields, boolean isTotal) {
         long count = 0;
-        String openTriangleQuery = String.format(
-                "MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s)-[:ID]-(d:%2$s), (b1)-[t:ID]-(d) " +
-                        "WHERE NOT (b1)-[:SIBLING]-(d) AND b1.FORENAME = d.FORENAME AND b1.SURNAME = d.SURNAME AND b1.BIRTH_YEAR = right(d.DATE_OF_BIRTH, 4)\n" +
-                        "AND (t.fields_populated < %4$s OR t.distance > %3$s ) " +
-                        "RETURN count(DISTINCT [b1, d]) as cluster_count",
-                type1, type2, threshold, fields
-        );
+        String openSquaresQuery = "";
+        String openSquaresQuery2 = "";
 
-        if(!isCorrect) {
-            openTriangleQuery = String.format(
-                    "MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s)-[:ID]-(d:%2$s), (b1)-[t:ID]-(d) " +
-                            "WHERE NOT (b1)-[:SIBLING]-(d) AND b1.FORENAME <> d.FORENAME AND b1.SURNAME <> d.SURNAME AND b1.BIRTH_YEAR <> right(d.DATE_OF_BIRTH, 4)\n" +
-                            "AND (t.fields_populated < %4$s OR t.distance > %3$s ) " +
-                            "RETURN count(DISTINCT [b1, d]) as cluster_count",
+        if(isTotal){
+            openSquaresQuery = String.format(
+                    "MATCH (x:%1$s)-[:SIBLING]-(y:%1$s)-[r:SIBLING]-(z:%2$s) " +
+                            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND r.distance <= %3$s AND r.fields_populated >= %4$s " +
+                            "RETURN count(DISTINCT [x, z]) as cluster_count",
                     type1, type2, threshold, fields
             );
+
+            openSquaresQuery2 = String.format(
+                    "MATCH (x:%1$s)-[:SIBLING]-(y:%1$s)-[r:SIBLING]-(z:%2$s), (x)-[t:SIBLING]-(z)  " +
+                            "WHERE id(x) < id(z) AND r.distance <= %3$s AND r.fields_populated >= %4$s " +
+                            "AND (t.fields_populated < %4$s OR t.distance > %3$s) " +
+                            "RETURN count(DISTINCT [x, z]) as cluster_count",
+                    type1, type2, threshold, fields
+            );
+        }else{
+            openSquaresQuery = String.format("MATCH (b1:Birth)-[:SIBLING]-(b2:Birth), (b1)-[:SIBLING]-(b:Birth), (b2)-[:SIBLING]-(b), (b2)-[r:SIBLING]-(d:Death), (d)-[:ID]-(b), (b)-[:ID]-(m:Marriage), (b1)-[:ID]-(m), (b2)-[:ID]-(m) \n" +
+                    "WHERE id(b1) < id(b2) AND NOT (b1)-[:SIBLING]-(d) AND NOT (d)-[:SIBLING]-(b) AND NOT (b1)-[:ID]-(d) AND b1.BIRTH_YEAR <> right(d.DATE_OF_BIRTH, 4) AND b1.BIRTH_YEAR <> \"----\" \n" +
+                    "AND r.distance <= %1$s AND r.fields_populated >= %2$s\n" +
+                    "return count(DISTINCT [b1, b2]) as cluster_count", threshold, fields);
+
+            openSquaresQuery2 = String.format("MATCH (b1:Birth)-[:SIBLING]-(b2:Birth), (b1)-[:SIBLING]-(b:Birth), (b2)-[:SIBLING]-(b), (b2)-[r:SIBLING]-(d:Death), (d)-[:ID]-(b), (b)-[:ID]-(m:Marriage), (b1)-[:ID]-(m), (b2)-[:ID]-(m), (b1)-[t:SIBLING]-(d)\n" +
+                    "WHERE id(b1) < id(b2) AND NOT (d)-[:SIBLING]-(b) AND b1.BIRTH_YEAR <> right(d.DATE_OF_BIRTH, 4) AND b1.BIRTH_YEAR <> \"----\" \n" +
+                    "AND r.distance <= %1$s AND r.fields_populated >= %2$s\n" +
+                    "AND (t.fields_populated < %2$s OR t.distance > %1$s)\n" +
+                    "return count(DISTINCT [b1, b2]) as cluster_count", threshold, fields);
         }
 
-        Result result = bridge.getNewSession().run(openTriangleQuery);
+        Result result = bridge.getNewSession().run(openSquaresQuery);
         List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
 
         if (!clusters.isEmpty()) {
             count = clusters.get(0);
         }
 
-        return (int) count;
+        result = bridge.getNewSession().run(openSquaresQuery2);
+        clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        long tCount = 0;
+        if (!clusters.isEmpty()) {
+            tCount = clusters.get(0);
+        }
+
+        return (int) count + (int) tCount;
     }
 
     public static int countOpenTrianglesIsomorphicSiblings(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {

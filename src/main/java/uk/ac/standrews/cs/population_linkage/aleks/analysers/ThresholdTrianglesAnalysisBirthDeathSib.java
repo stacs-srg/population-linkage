@@ -73,8 +73,8 @@ public class ThresholdTrianglesAnalysisBirthDeathSib {
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenTrianglesCumulative(bridge, "Birth", "Death", i, currentField),
-                                    PatternsCounter.countOpenTrianglesSibFNOT(bridge, "Birth", "Birth", i, currentField));
+                                    PatternsCounter.countOpenTrianglesCumulativeAdditionalLinkage(bridge, "Birth", "Death", i, currentField, true),
+                                    PatternsCounter.countOpenTrianglesCumulativeAdditionalLinkage(bridge, "Birth", "Birth", i, currentField, false));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
