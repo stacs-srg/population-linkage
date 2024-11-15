@@ -55,7 +55,7 @@ public class ThresholdTrianglesAnalysisBirthDeathID {
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     //write headers
-                    printWriter.println("threshold,precision,recall,fmeasure,triangles,fnots");
+                    printWriter.println("threshold,precision,recall,fmeasure,total,fnots");
 
                     try (NeoDbCypherBridge localBridge = new NeoDbCypherBridge()) {
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
