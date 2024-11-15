@@ -121,7 +121,7 @@ public class ThresholdTrianglesAnalysisParallel {
 //                                PatternsCounter.countOpenTrianglesCumulative(bridge, "Death", "Death", i, currentField),
 //                                PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Birth", "Death", i, currentField));
 
-                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
+                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d%n",
                                     threshold,
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
