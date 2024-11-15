@@ -121,13 +121,21 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
 //            }
         }
 
+        System.out.println("Resolving triangles with predicates...");
+        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
+            executorService.submit(() ->
+                    {
+                        try {
+                            resolveTrianglesPredicates(cluster, births, composite_measure_date);
+                        } catch (BucketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+        }
+
         executorService.shutdown();
         executorService.awaitTermination(12, TimeUnit.HOURS);
-
-//        System.out.println("Resolving triangles with predicates...");
-//        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
-//            resolveTrianglesPredicates(cluster, births, composite_measure_date);
-//        }
 
         System.out.println("After");
         System.out.println("\n");
