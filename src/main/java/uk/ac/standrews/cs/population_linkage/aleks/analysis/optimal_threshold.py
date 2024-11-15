@@ -61,29 +61,29 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
             return None
 
         open_triangles_normalized = (data['triangles'] - data['triangles'].min()) / (data['triangles'].max() - data['triangles'].min())
-        open_triangles_normalized_c = (data['trianglesC'] - data['trianglesC'].min()) / (data['trianglesC'].max() - data['trianglesC'].min())
-        triangles_f = data['triangles'] - data['trianglesC']
-        open_triangles_normalized_f = (triangles_f - triangles_f.min()) / (triangles_f.max() - triangles_f.min())
+        fnot_norm = (data['fnot'] - data['fnot'].min()) / (data['fnot'].max() - data['fnot'].min())
+        fpots = data['triangles'] - data['fnot']
+        fpot_norm = (fpots - fpots.min()) / (fpots.max() - fpots.min())
 
         # open_squares_normalized = (data['squares'] - data['squares'].min()) / (data['squares'].max() - data['squares'].min())
         # open_triangles_smooth = open_triangles_normalized.rolling(window=5, min_periods=1).mean()
         # open_triangles_gradient = np.gradient(open_triangles_smooth, data['threshold'])
         # optimal_threshold = walker(open_triangles_gradient)
 
-        not_zero = (open_triangles_normalized_c > 0.1) | (open_triangles_normalized_f > 0.1)
+        not_zero = (fnot_norm > 0.1) | (fpot_norm > 0.1)
         valid_indices = np.where(not_zero)[0]
-        intersection_index = valid_indices[np.argmin(np.abs(open_triangles_normalized_c[valid_indices] - open_triangles_normalized_f[valid_indices]))]
+        intersection_index = valid_indices[np.argmin(np.abs(fnot_norm[valid_indices] - fpot_norm[valid_indices]))]
         intersection_threshold = data['threshold'].iloc[intersection_index]
-        intersection_value = open_triangles_normalized_c.iloc[intersection_index]
-        # open_triangles_merged = (data['trianglesC'] + data['trianglesF']) / 2
+        intersection_value = fnot_norm.iloc[intersection_index]
+        # open_triangles_merged = (data['fnot'] + data['trianglesF']) / 2
         # open_triangles_merged = (open_triangles_merged - open_triangles_merged.min()) / (open_triangles_merged.max() - open_triangles_merged.min())
 
         ax2 = ax1.twinx()
         ax2.set_ylim([0, 1.05])
         # ax2.plot(data['threshold'], data['squares'], label='Open Triangles', color='orange')
         l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles Total', color='orange')
-        l5 = ax2.plot(data['threshold'], open_triangles_normalized_c, label='Number of FNOTs', color='purple')
-        l6 = ax2.plot(data['threshold'], open_triangles_normalized_f, label='Number of FPOTs', color='lime')
+        l5 = ax2.plot(data['threshold'], fnot_norm, label='Number of FNOTs', color='purple')
+        l6 = ax2.plot(data['threshold'], fpot_norm, label='Number of FPOTs', color='lime')
 
         # l4 = ax2.plot(data['threshold'], open_triangles_normalized_c, label='Open Triangles C', color='orange')
         # l5 = ax2.plot(data['threshold'], open_triangles_normalized_f, label='Open Triangles F', color='purple')
