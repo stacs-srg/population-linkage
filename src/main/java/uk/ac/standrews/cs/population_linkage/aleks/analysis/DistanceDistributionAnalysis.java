@@ -27,33 +27,33 @@ import java.util.Map;
 
 public class DistanceDistributionAnalysis {
 
-//    private static final String BIRTH_SIBLING_TRIANGLE = "MATCH (x:Birth)-[r:SIBLING]-(y:Birth)-[s:SIBLING]-(z:Birth)\n" +
-//            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z)\n" +
-//            "RETURN r.distance + s.distance as cluster_sum, \n" +
-//            "EXISTS((x)-[:GT_SIBLING]-(z)) as has_GT_SIBLING";
-
     private static final String BIRTH_SIBLING_TRIANGLE = "MATCH (x:Birth)-[r:SIBLING]-(y:Birth)-[s:SIBLING]-(z:Birth)\n" +
+            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z)\n" +
+            "RETURN r.distance + s.distance as cluster_sum, \n" +
+            "EXISTS((x)-[:GT_SIBLING]-(z)) as has_GT_SIBLING";
+
+    private static final String BIRTH_SIBLING_TRIANGLE_2 = "MATCH (x:Birth)-[r:SIBLING]-(y:Birth)-[s:SIBLING]-(z:Birth)\n" +
             "WHERE NOT (x)-[:SIBLING]-(z)\n" +
             "RETURN x, collect([r.distance, s.distance, EXISTS((x)-[:GT_SIBLING]-(z))]) AS openTriangles";
 
     public static void main(String[] args) {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
 
-//        try (FileWriter fileWriter = new FileWriter("birthbirthtri.csv");
-//             PrintWriter printWriter = new PrintWriter(fileWriter)) {
-//            printWriter.println("distance_sum,is_sibling");
-//
-//            Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
-//            result.list(r -> printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean()));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try (FileWriter fileWriter = new FileWriter("birthbirthtri.csv");
+             PrintWriter printWriter = new PrintWriter(fileWriter)) {
+            printWriter.println("distance_sum,is_sibling");
+
+            Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
+            result.list(r -> printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         try (FileWriter fileWriter = new FileWriter("birthbirthtri2.csv");
              PrintWriter printWriter = new PrintWriter(fileWriter)) {
             printWriter.println("average_distance,max_distance,has_GT_SIBLING,link_num");
 
-            Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
+            Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE_2);
             result.stream().forEach(r -> {
                 List<List<Object>> collection = (List<List<Object>>) r.asMap().get("openTriangles");
                 double maxDis = 0;

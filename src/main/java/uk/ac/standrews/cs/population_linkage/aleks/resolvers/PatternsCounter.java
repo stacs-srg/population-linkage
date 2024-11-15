@@ -66,70 +66,6 @@ public class PatternsCounter {
         return (int) count;
     }
 
-    public static int countOpenTrianglesTwoTypes(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields, boolean isCorrect) {
-        long count = 0;
-
-        String openTriangleQuery;
-
-        if(isCorrect){
-            openTriangleQuery = String.format(
-                    "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s) " +
-                            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND x.PARENTS_DAY_OF_MARRIAGE = z.PARENTS_DAY_OF_MARRIAGE AND x.PARENTS_MONTH_OF_MARRIAGE = z.PARENTS_MONTH_OF_MARRIAGE AND x.PARENTS_YEAR_OF_MARRIAGE = z.PARENTS_YEAR_OF_MARRIAGE and x.PARENTS_YEAR_OF_MARRIAGE <> \"----\" AND z.PARENTS_YEAR_OF_MARRIAGE <> \"----\"\n" +
-                            "AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
-                            "RETURN count(DISTINCT [x, z]) as cluster_count",
-                    type1, type2, threshold, fields
-            );
-        }else{
-            openTriangleQuery = String.format(
-                    "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s) " +
-                            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND (x.PARENTS_DAY_OF_MARRIAGE <> z.PARENTS_DAY_OF_MARRIAGE OR x.PARENTS_MONTH_OF_MARRIAGE <> z.PARENTS_MONTH_OF_MARRIAGE OR x.PARENTS_YEAR_OF_MARRIAGE <> z.PARENTS_YEAR_OF_MARRIAGE)\n" +
-                            "AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
-                            "RETURN count(DISTINCT [x, z]) as cluster_count",
-                    type1, type2, threshold, fields
-            );
-        }
-
-
-        Result result = bridge.getNewSession().run(openTriangleQuery);
-        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
-
-        if (!clusters.isEmpty()) {
-            count = clusters.get(0);
-        }
-
-        String openTriangleQuery2;
-
-        if(isCorrect){
-            openTriangleQuery2 = String.format(
-                    "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
-                            "WHERE id(x) < id(z) AND x.PARENTS_DAY_OF_MARRIAGE = z.PARENTS_DAY_OF_MARRIAGE AND x.PARENTS_MONTH_OF_MARRIAGE = z.PARENTS_MONTH_OF_MARRIAGE AND x.PARENTS_YEAR_OF_MARRIAGE = z.PARENTS_YEAR_OF_MARRIAGE and x.PARENTS_YEAR_OF_MARRIAGE <> \"----\" AND z.PARENTS_YEAR_OF_MARRIAGE <> \"----\"\n" +
-                            "AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
-                            "AND (t.fields_populated < %4$s OR t.distance > %3$s)\n" +
-                            "RETURN count(DISTINCT [x, z]) as cluster_count",
-                    type1, type2, threshold, fields
-            );
-        }else{
-            openTriangleQuery2 = String.format(
-                    "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
-                            "WHERE id(x) < id(z) AND (x.PARENTS_DAY_OF_MARRIAGE <> z.PARENTS_DAY_OF_MARRIAGE OR x.PARENTS_MONTH_OF_MARRIAGE <> z.PARENTS_MONTH_OF_MARRIAGE OR x.PARENTS_YEAR_OF_MARRIAGE <> z.PARENTS_YEAR_OF_MARRIAGE)\n" +
-                            "AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
-                            "AND (t.fields_populated < %4$s OR t.distance > %3$s)\n" +
-                            "RETURN count(DISTINCT [x, z]) as cluster_count",
-                    type1, type2, threshold, fields
-            );
-        }
-
-        result = bridge.getNewSession().run(openTriangleQuery2);
-        clusters = result.list(r -> r.get("cluster_count").asLong());
-
-        long tCount = 0;
-        if (!clusters.isEmpty()) {
-            tCount = clusters.get(0);
-        }
-
-        return (int) count + (int) tCount;
-    }
-
     public static int countOpenTrianglesID(NeoDbCypherBridge bridge, String type1, String type2) {
         String openTriangleQuery = String.format(
                 "MATCH (x:%s)-[:ID]-(y:%s)-[:ID]-(z:%s) " +
@@ -148,7 +84,6 @@ public class PatternsCounter {
 
         return (int) count;
     }
-
 
     //Won't work for resolver as no deleted check
     public static int countOpenTrianglesCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
@@ -174,6 +109,48 @@ public class PatternsCounter {
                         "RETURN count(DISTINCT [x, z]) as cluster_count",
                 type1, type2, threshold, fields
         );
+
+        result = bridge.getNewSession().run(openTriangleQuery2);
+        clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        long tCount = 0;
+        if (!clusters.isEmpty()) {
+            tCount = clusters.get(0);
+        }
+
+        return (int) count + (int) tCount;
+    }
+
+    public static int countOpenTrianglesSibFNOT(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
+        long count = 0;
+        String openTriangleQuery = "";
+        String openTriangleQuery2 = "";
+
+        if(Objects.equals(type1, "Birth") && Objects.equals(type2, "Birth")){
+            openTriangleQuery = String.format(
+                    "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s) " +
+                            "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND x.PARENTS_DAY_OF_MARRIAGE = z.PARENTS_DAY_OF_MARRIAGE AND x.PARENTS_MONTH_OF_MARRIAGE = z.PARENTS_MONTH_OF_MARRIAGE AND x.PARENTS_YEAR_OF_MARRIAGE = z.PARENTS_YEAR_OF_MARRIAGE and x.PARENTS_YEAR_OF_MARRIAGE <> \"----\" AND z.PARENTS_YEAR_OF_MARRIAGE <> \"----\"\n" +
+                            "AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
+                            "RETURN count(DISTINCT [x, z]) as cluster_count",
+                    type1, type2, threshold, fields
+            );
+
+            openTriangleQuery2 = String.format(
+                    "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
+                            "WHERE id(x) < id(z) AND x.PARENTS_DAY_OF_MARRIAGE = z.PARENTS_DAY_OF_MARRIAGE AND x.PARENTS_MONTH_OF_MARRIAGE = z.PARENTS_MONTH_OF_MARRIAGE AND x.PARENTS_YEAR_OF_MARRIAGE = z.PARENTS_YEAR_OF_MARRIAGE and x.PARENTS_YEAR_OF_MARRIAGE <> \"----\" AND z.PARENTS_YEAR_OF_MARRIAGE <> \"----\"\n" +
+                            "AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s\n" +
+                            "AND (t.fields_populated < %4$s OR t.distance > %3$s)\n" +
+                            "RETURN count(DISTINCT [x, z]) as cluster_count",
+                    type1, type2, threshold, fields
+            );
+        }
+
+        Result result = bridge.getNewSession().run(openTriangleQuery);
+        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
+
+        if (!clusters.isEmpty()) {
+            count = clusters.get(0);
+        }
 
         result = bridge.getNewSession().run(openTriangleQuery2);
         clusters = result.list(r -> r.get("cluster_count").asLong());
@@ -334,25 +311,43 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
-    public static int countOpenSquaresCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
+    public static int countOpenSquaresCumulativeID(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields, boolean isTotal, String partner) {
         long count = 0;
-        String openSquaresQuery;
-        String openSquaresQuery2;
+        String openSquaresQuery = "";
+        String openSquaresQuery2 = "";
 
-        if (Objects.equals(type2, "Death") && Objects.equals(type1, "Birth")) {
-            openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
-                    "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
-                    "(b1)-[r:ID]-(d1)\n" +
-                    "WHERE id(b1) < id(b2) AND NOT (b2)-[:ID]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s " +
-                    "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
-            openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
-                    "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
-                    "(b1)-[r:ID]-(d1),\n" +
-                    "(b2)-[s:ID]-(d2)\n" +
-                    "WHERE id(b1) < id(b2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                    "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
-                    "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
-        }else if(Objects.equals(type2, "Death") && Objects.equals(type1, "Marriage")){
+        if (Objects.equals(type1, "Birth") && Objects.equals(type2, "Death")) {
+            if(isTotal){
+                openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID]-(d1)\n" +
+                        "WHERE id(b1) < id(b2) AND NOT (b2)-[:ID]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s " +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+                openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID]-(d1),\n" +
+                        "(b2)-[s:ID]-(d2)\n" +
+                        "WHERE id(b1) < id(b2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+            }else{
+                openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID]-(d1)\n" +
+                        "WHERE NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.FORENAME = d2.FORENAME AND b2.SURNAME = d2.SURNAME AND b2.BIRTH_YEAR = right(d2.DATE_OF_BIRTH, 4) " +
+                        "AND b1.FORENAME = d1.FORENAME AND b1.SURNAME = d1.SURNAME AND b1.BIRTH_YEAR = right(d1.DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+
+                openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID]-(d1),\n" +
+                        "(b2)-[s:ID]-(d2)\n" +
+                        "WHERE NOT (b2)-[:SIBLING]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "AND b2.FORENAME = d2.FORENAME AND b2.SURNAME = d2.SURNAME AND b2.BIRTH_YEAR = right(d2.DATE_OF_BIRTH, 4) AND b1.FORENAME = d1.FORENAME AND b1.SURNAME = d1.SURNAME AND b1.BIRTH_YEAR = right(d1.DATE_OF_BIRTH, 4) " +
+                        "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+            }
+        }else if(Objects.equals(type1, "Marriage") && Objects.equals(type2, "Death")){
             openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
                     "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
                     "(b1)-[r:ID]-(d1)\n" +
@@ -368,32 +363,49 @@ public class PatternsCounter {
                     "AND b2.GROOM_FORENAME = d2.FORENAME AND right(b2.GROOM_AGE_OR_DATE_OF_BIRTH, 4)= right(d2.DATE_OF_BIRTH, 4) AND b1.GROOM_FORENAME = d1.FORENAME AND right(b1.GROOM_AGE_OR_DATE_OF_BIRTH, 4) = right(d1.DATE_OF_BIRTH, 4) " +
                     "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
                     "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
-        }else{
-            openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
-                    "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
-                    "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1)\n" +
-                    "WHERE id(b1) < id(b2) AND NOT (b2)-[:ID]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                    "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+        }else if(Objects.equals(type1, "Birth") && Objects.equals(type2, "Marriage")){
+            if(isTotal){
+                openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID {actors: \"Child-%5$s\"}]-(d1)\n" +
+                        "WHERE id(b1) < id(b2) AND NOT (b2)-[:ID]-(d2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields, partner);
 
-            openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
-                    "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
-                    "(b1)-[r:ID {actors: \"Child-Groom\"}]-(d1),\n" +
-                    "(b2)-[s:ID {actors: \"Child-Groom\"}]-(d2)\n" +
-                    "WHERE id(b1) < id(b2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                    "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
-                    "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields);
+                openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID {actors: \"Child-%5$s\"}]-(d1),\n" +
+                        "(b2)-[s:ID {actors: \"Child-%5$s\"}]-(d2)\n" +
+                        "WHERE id(b1) < id(b2) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "AND (s.fields_populated < %4$s OR s.distance > %3$s) " +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields, partner);
+            }else{
+                String partnerCapitalised = partner.toUpperCase();
+                openSquaresQuery = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID {actors: \"Child-%5$s\"}]-(d1)\n" +
+                        "WHERE id(b1) < id(b2) AND NOT (b2)-[:ID]-(d2) AND NOT (b2)-[:SIBLING]-(d2) AND b2.FORENAME = d2.%6$s_FORENAME AND b2.SURNAME = d2.%6$s_SURNAME AND b2.BIRTH_YEAR = right(d2.%6$s_AGE_OR_DATE_OF_BIRTH, 4)\n" +
+                        "AND b1.FORENAME = d1.%6$s_FORENAME AND b1.SURNAME = d1.%6$s_SURNAME AND b1.BIRTH_YEAR = right(d1.%6$s_AGE_OR_DATE_OF_BIRTH, 4)\n" +
+                        "AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields, partner, partnerCapitalised);
 
+                openSquaresQuery2 = String.format("MATCH (b1:%1$s)-[:SIBLING]-(b2:%1$s),\n" +
+                        "(d1:%2$s)-[:SIBLING]-(d2:%2$s),\n" +
+                        "(b1)-[r:ID {actors: \"Child-%5$s\"}]-(d1),\n" +
+                        "(b2)-[s:ID {actors: \"Child-%5$s\"}]-(d2)\n" +
+                        "WHERE id(b1) < id(b2) AND b2.FORENAME = d2.%6$s_FORENAME AND b2.SURNAME = d2.%6$s_SURNAME AND b2.BIRTH_YEAR = right(d2.%6$s_AGE_OR_DATE_OF_BIRTH, 4)\n" +
+                        "AND b1.FORENAME = d1.%6$s_FORENAME AND b1.SURNAME = d1.%6$s_SURNAME AND b1.BIRTH_YEAR = right(d1.%6$s_AGE_OR_DATE_OF_BIRTH, 4)\n" +
+                        "AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
+                        "AND (s.fields_populated < %4$s OR s.distance > %3$s)\n" +
+                        "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields, partner, partnerCapitalised);
+            }
         }
-
 
         Result result = bridge.getNewSession().run(openSquaresQuery);
         List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
 
-
         if (!clusters.isEmpty()) {
             count = clusters.get(0);
         }
-
 
         result = bridge.getNewSession().run(openSquaresQuery2);
         clusters = result.list(r -> r.get("cluster_count").asLong());

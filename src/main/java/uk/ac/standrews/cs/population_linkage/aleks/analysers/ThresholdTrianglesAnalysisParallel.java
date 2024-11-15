@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.aleks.analysis;
+package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 
 import org.neo4j.driver.Result;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
@@ -127,7 +127,7 @@ public class ThresholdTrianglesAnalysisParallel {
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenSquaresCumulative(bridge, "Birth", "Death", i, currentField));
+                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Death", i, currentField, true, null));
 
                         }
                     } catch (Exception e) {
@@ -140,9 +140,7 @@ public class ThresholdTrianglesAnalysisParallel {
         }
 
         executorService.shutdown();
-        executorService.awaitTermination(2, TimeUnit.HOURS);
-
-        System.out.println("Done!");
+        executorService.awaitTermination(12, TimeUnit.HOURS);
     }
 
     protected static long doQuery(String query_string, double threshold, int fields, NeoDbCypherBridge bridge) {
