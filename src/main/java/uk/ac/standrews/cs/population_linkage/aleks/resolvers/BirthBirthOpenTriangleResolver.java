@@ -42,6 +42,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -103,30 +104,30 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
         for (OpenTriangleClusterBB triangle : triangles) {
-//            executorService.submit(() ->
-//                    {
-//                        try {
-//                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 4);
-//                        } catch (BucketException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    }
-//            );
+            executorService.submit(() ->
+                    {
+                        try {
+                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
+                        } catch (BucketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
 
-            try {
-                resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
-            } catch (BucketException e) {
-                throw new RuntimeException(e);
-            }
+//            try {
+//                resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
+//            } catch (BucketException e) {
+//                throw new RuntimeException(e);
+//            }
         }
 
-//        executorService.shutdown();
-//        executorService.awaitTermination(12, TimeUnit.HOURS);
+        executorService.shutdown();
+        executorService.awaitTermination(12, TimeUnit.HOURS);
 
-        System.out.println("Resolving triangles with predicates...");
-        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
-            resolveTrianglesPredicates(cluster, births, composite_measure_date);
-        }
+//        System.out.println("Resolving triangles with predicates...");
+//        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
+//            resolveTrianglesPredicates(cluster, births, composite_measure_date);
+//        }
 
         System.out.println("After");
         System.out.println("\n");
