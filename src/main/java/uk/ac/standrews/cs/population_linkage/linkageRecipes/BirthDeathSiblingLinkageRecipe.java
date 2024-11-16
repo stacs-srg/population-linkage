@@ -206,13 +206,15 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        if(getNumberOfLinkageFieldsRequired() == 4 || getNumberOfLinkageFieldsRequired() == 3){
-            return 1;
-        } else if (getNumberOfLinkageFieldsRequired() == 2) {
-            return 0.5;
-        }else{
-            return DISTANCE_THRESHOLD;
-        }
+//        if(getNumberOfLinkageFieldsRequired() == 4 || getNumberOfLinkageFieldsRequired() == 3){
+//            return 1;
+//        } else if (getNumberOfLinkageFieldsRequired() == 2) {
+//            return 0.5;
+//        }else{
+//            return DISTANCE_THRESHOLD;
+//        }
+
+        return DISTANCE_THRESHOLD;
     }
 
     @Override

@@ -47,7 +47,8 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
         l2 = ax1.plot(data['threshold'], data['precision'], label='Precision', color='g')
         l3 = ax1.plot(data['threshold'], data['fmeasure'], label='fmeasure', color='r')
         ax1.set_ylim([0, 1.05])
-        ax1.set_ylabel('Quality Metrics')
+        ax1.set_ylabel('Quality Metrics & Open Patterns (Normalised)')
+        ax1.set_xlabel('Threshold')
 
         if len(all_handles) == 0:
             handles, labels = ax1.get_legend_handles_labels()
@@ -62,17 +63,12 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
                     return i
             return None
 
-        open_triangles_normalized = (data['triangles'] - data['triangles'].min()) / (data['triangles'].max() - data['triangles'].min())
-        fnot_norm = (data['fnot'] - data['fnot'].min()) / (data['fnot'].max() - data['fnot'].min())
-        fpots = data['triangles'] - data['fnot']
+        open_triangles_normalized = (data['total'] - data['total'].min()) / (data['total'].max() - data['total'].min())
+        fnot_norm = (data['fnots'] - data['fnots'].min()) / (data['fnots'].max() - data['fnots'].min())
+        fpots = data['total'] - data['fnots']
         fpot_norm = (fpots - fpots.min()) / (fpots.max() - fpots.min())
 
-        # open_squares_normalized = (data['squares'] - data['squares'].min()) / (data['squares'].max() - data['squares'].min())
-        # open_triangles_smooth = open_triangles_normalized.rolling(window=5, min_periods=1).mean()
-        # open_triangles_gradient = np.gradient(open_triangles_smooth, data['threshold'])
-        # optimal_threshold = walker(open_triangles_gradient)
-
-        not_zero = (fnot_norm > 0.1) | (fpot_norm > 0.1)
+        not_zero = (fnot_norm > 0.05) | (fpot_norm > 0.05)
         valid_indices = np.where(not_zero)[0]
         intersection_index = valid_indices[np.argmin(np.abs(fnot_norm[valid_indices] - fpot_norm[valid_indices]))]
         intersection_threshold = data['threshold'].iloc[intersection_index]
@@ -81,37 +77,28 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
         # open_triangles_merged = (open_triangles_merged - open_triangles_merged.min()) / (open_triangles_merged.max() - open_triangles_merged.min())
 
         ax2 = ax1.twinx()
+        ax2.yaxis.set_visible(False)
         ax2.set_ylim([0, 1.05])
-        # ax2.plot(data['threshold'], data['squares'], label='Open Triangles', color='orange')
         l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles Total', color='orange')
         l5 = ax2.plot(data['threshold'], fnot_norm, label='Number of FNOTs', color='purple')
         l6 = ax2.plot(data['threshold'], fpot_norm, label='Number of FPOTs', color='lime')
 
-        # l4 = ax2.plot(data['threshold'], open_triangles_normalized_c, label='Open Triangles C', color='orange')
-        # l5 = ax2.plot(data['threshold'], open_triangles_normalized_f, label='Open Triangles F', color='purple')
-        # l6 = ax1.plot(data['threshold'], open_triangles_merged, label='Merged Open Triangles', color='lime')
-
         l7 = ax2.axvline(x=intersection_threshold, color='black', linestyle='--', label='FPOT-FNOT Intersection')
         l8 = ax2.axvline(x=data['threshold'][data['fmeasure'].idxmax()], color='black', linestyle='-', label='Peak f-measure')
-        # l5 = ax2.plot(data['threshold'], open_squares_normalized, label='Open Squares', color='purple')
 
         if len(all_handles) == 3:
             handles, labels = ax2.get_legend_handles_labels()
             all_handles.extend(handles)
             all_labels.extend(labels)
 
-        ax2.set_ylabel('Open Patterns (Normalised)')
-
-        ax1.set_title(f'Threshold Analysis Birth-Birth Sibling {N} Fields')
+        ax1.set_title(f'Threshold Analysis {FILE} {N} Fields')
         ax1.grid(True)
-        # correlation, p_value = spearmanr(data['fmeasure'], data['triangles'])
-        # print(f"Spearman Correlation {N} fields: {correlation}")
-        # print(f"P-value {N} fields: {p_value}")
-        # print(f"Optimal Threshold for field {N}: {data['threshold'][optimal_threshold]}")
+
         print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
         print(f"Opptimal threshold estimate {N}: {intersection_threshold}")
         print(f"Difference {N}: {abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()])}")
         threshold_total += abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()])
+
         print(f"Peak F-measure {N}: {data['fmeasure'].max()}")
         print(f"Opptimal threshold fmeasure {N}: {data['fmeasure'][data['threshold'] == intersection_threshold].values[0]}")
         print(f"Difference {N}: {abs(data['fmeasure'].max() - data['fmeasure'][data['threshold'] == intersection_threshold].values[0])}")
@@ -122,7 +109,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
     print(f"Average fmeasure error: {fmeasure_total / (MAX_FIELD - MIN_FIELD)}")
     fig.legend(handles=all_handles, labels=all_labels, loc='upper right', bbox_to_anchor=(1, 1), borderaxespad=1.5)
     plt.tight_layout(rect=[0, 0, 0.85, 1], pad=2)
-    # plt.savefig('threshold_field_analysis_bb_norm')
+    # plt.savefig('threshold_field_analysis_bd_dynamic')
     plt.show()
 
 if __name__ == "__main__":
@@ -132,4 +119,4 @@ if __name__ == "__main__":
     parser.add_argument('--file', type=str, required=True, help="csv file name")
     args = parser.parse_args()
 
-    main(args.max, args.min, args.file)
+    main(args.max, args.min - 1, args.file)

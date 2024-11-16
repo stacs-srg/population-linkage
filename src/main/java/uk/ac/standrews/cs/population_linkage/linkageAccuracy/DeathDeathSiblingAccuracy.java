@@ -44,7 +44,6 @@ public class DeathDeathSiblingAccuracy extends AbstractAccuracy {
     public static void main(String[] args) {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             DeathDeathSiblingAccuracy acc = new DeathDeathSiblingAccuracy(bridge);
-            acc.doqueries();
         }
     }
 }
