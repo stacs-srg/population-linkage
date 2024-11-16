@@ -47,7 +47,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
         l2 = ax1.plot(data['threshold'], data['precision'], label='Precision', color='g')
         l3 = ax1.plot(data['threshold'], data['fmeasure'], label='fmeasure', color='r')
         ax1.set_ylim([0, 1.05])
-        ax1.set_ylabel('Quality Metrics & Open Patterns (Normalised)')
+        ax1.set_ylabel('Quality Metrics\n& Open Patterns (Normalised)')
         ax1.set_xlabel('Threshold')
 
         if len(all_handles) == 0:
@@ -108,7 +108,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
     print(f"Average threshold error: {threshold_total / (MAX_FIELD - MIN_FIELD)}")
     print(f"Average fmeasure error: {fmeasure_total / (MAX_FIELD - MIN_FIELD)}")
     fig.legend(handles=all_handles, labels=all_labels, loc='upper right', bbox_to_anchor=(1, 1), borderaxespad=1.5)
-    plt.tight_layout(rect=[0, 0, 0.85, 1], pad=2)
+    plt.tight_layout(rect=[0, 0, 0.84, 1], pad=2)
     # plt.savefig('threshold_field_analysis_bd_dynamic')
     plt.show()
 
