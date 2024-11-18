@@ -38,8 +38,8 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 8;
-        final int MIN_FIELD = 4; //1 below target
+        final int MAX_FIELD = 4;
+        final int MIN_FIELD = 3; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
