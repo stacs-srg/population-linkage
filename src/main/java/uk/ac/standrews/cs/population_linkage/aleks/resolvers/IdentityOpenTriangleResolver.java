@@ -28,11 +28,11 @@ import uk.ac.standrews.cs.population_records.RecordRepository;
 import java.util.*;
 
 public abstract class IdentityOpenTriangleResolver {
-    protected static NeoDbCypherBridge bridge;
-    protected static RecordRepository record_repository;
+    protected NeoDbCypherBridge bridge;
+    protected RecordRepository record_repository;
 
-    private static final int MIN_MARRIAGE_AGE = 15;
-    private static final int MAX_MARRIAGE_AGE = 60;
+    protected final int MIN_MARRIAGE_AGE = 15;
+    protected final int MAX_MARRIAGE_AGE = 60;
 
     public IdentityOpenTriangleResolver(String sourceRepo) {
         bridge = Store.getInstance().getBridge();
