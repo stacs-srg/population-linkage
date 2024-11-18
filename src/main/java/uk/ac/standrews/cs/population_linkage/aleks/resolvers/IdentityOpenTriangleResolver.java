@@ -64,8 +64,10 @@ public abstract class IdentityOpenTriangleResolver {
      */
     protected Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String prov, String actor) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("standard_id_from", standard_id_from);
-        parameters.put("standard_id_to", standard_id_to);
+        if(standard_id_from != null && standard_id_to != null) {
+            parameters.put("standard_id_from", standard_id_from);
+            parameters.put("standard_id_to", standard_id_to);
+        }
         parameters.put("prov", prov);
         parameters.put("actor", actor);
         return parameters;

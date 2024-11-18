@@ -43,9 +43,6 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe
 
 
 public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleResolver {
-    private static NeoDbCypherBridge bridge;
-
-
     private static final double NAME_THRESHOLD = 0.5;
 
     //Cypher queries used in predicates

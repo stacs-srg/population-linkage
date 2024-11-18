@@ -68,10 +68,10 @@ public class PatternsCounter {
 
     public static int countOpenTrianglesID(NeoDbCypherBridge bridge, String type1, String type2) {
         String openTriangleQuery = String.format(
-                "MATCH (x:%s)-[:ID]-(y:%s)-[:ID]-(z:%s) " +
-                        "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)" +
+                "MATCH (x:%s)-[:SIBLING]-(y:%s)-[:ID]-(z:%s) " +
+                        "WHERE NOT (x)-[:ID]-(z) AND id(x) < id(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)" +
                         "RETURN count(DISTINCT [x, z]) as cluster_count",
-                type1, type2, type1
+                type1, type1, type2
         );
 
         Result result = bridge.getNewSession().run(openTriangleQuery);
