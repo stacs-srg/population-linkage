@@ -55,14 +55,6 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
             all_handles.extend(handles)
             all_labels.extend(labels)
 
-        GRADIENT = 0
-
-        def walker(gradient):
-            for i in range(int(len(gradient) / 2), len(gradient) - 1):
-                if round(gradient[i],3) < GRADIENT + 0.1 and round(gradient[i + 1],3) >= GRADIENT - 0.1:
-                    return i
-            return None
-
         open_triangles_normalized = (data['total'] - data['total'].min()) / (data['total'].max() - data['total'].min())
         fnot_norm = (data['fnots'] - data['fnots'].min()) / (data['fnots'].max() - data['fnots'].min())
         fpots = data['total'] - data['fnots']

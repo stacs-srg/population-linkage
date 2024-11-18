@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ThresholdTrianglesAnalysisDeathDeathSib {
+public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesAnalysis {
     private static final String DEATH_DEATH_SIBLING_TPC = "MATCH (d1:Death)-[r:SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death) WHERE (d1)-[:GT_SIBLING {actors: \"Deceased-Deceased\"}]-(d2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String DEATH_DEATH_SIBLING_FPC = "MATCH (d1:Death)-[r:SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death) WHERE NOT (d1)-[:GT_SIBLING {actors: \"Deceased-Deceased\"}]-(d2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String DEATH_DEATH_SIBLING_FNC = "MATCH (d1:Death)-[r:GT_SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death) WHERE NOT (d1)-[:SIBLING {actors: \"Deceased-Deceased\"}]-(d2) return count(r)";
@@ -89,20 +89,4 @@ public class ThresholdTrianglesAnalysisDeathDeathSib {
         executorService.awaitTermination(12, TimeUnit.HOURS);
     }
 
-    /**
-     * Method to query the database for quality measurements
-     *
-     * @param query_string Cypher query
-     * @param threshold current threshold being analysed
-     * @param fields current field being analysed
-     * @param bridge Neo4j bridge
-     * @return results of query
-     */
-    private static long doQuery(String query_string, double threshold, int fields, NeoDbCypherBridge bridge) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("threshold", threshold);
-        parameters.put("field", fields);
-        Result result = bridge.getNewSession().run(query_string, parameters);
-        return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
-    }
 }

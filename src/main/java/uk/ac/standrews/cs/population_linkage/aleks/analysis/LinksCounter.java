@@ -32,6 +32,12 @@ public class LinksCounter {
         calculateBasicStats(numLinks);
     }
 
+    /**
+     * Method to get the number of links for each linkage algorithm
+     *
+     * @param bridge Neo4j bride
+     * @return array of number of links
+     */
     private static long[] countLinks(NeoDbCypherBridge bridge) {
         List <String> queries = Query.getAllLinkQueries();
         List <String> algorithms = Query.getAllLinkerNames();
@@ -50,6 +56,10 @@ public class LinksCounter {
         return numLinks;
     }
 
+    /**
+     * Method to calculate some overall statistics on the linkage algorithms
+     * @param numLinks number of links made per each algorithm
+     */
     private static void calculateBasicStats(long[] numLinks) {
         List <String> algorithms = Query.getAllLinkerNames();
         long lowestNum = 999999999;

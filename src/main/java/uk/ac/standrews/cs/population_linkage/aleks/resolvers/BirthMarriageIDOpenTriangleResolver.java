@@ -42,15 +42,13 @@ import java.util.*;
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
 
-public class BirthMarriageIDOpenTriangleResolver {
+public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleResolver {
     private static NeoDbCypherBridge bridge;
 
-    private static final int MIN_MARRIAGE_AGE = 16;
-    private static final int MAX_MARRIAGE_AGE = 50;
+
     private static final double NAME_THRESHOLD = 0.5;
 
     //Cypher queries used in predicates
-    private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
     private static final String BM_ID_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: $actor } ]-(b)";
 
     //Names of predicates to be used as prov
@@ -58,8 +56,22 @@ public class BirthMarriageIDOpenTriangleResolver {
     private static final String[] deletionPredicates = {"diff_birth", "born_after", "too_young", "too_old", "bad_name"};
 
     public static void main(String[] args) throws BucketException {
-        bridge = Store.getInstance().getBridge();
-        RecordRepository record_repository = new RecordRepository("umea");
+        String sourceRepo = args[0]; // e.g. umea
+
+        if(args.length != 1){
+            throw new IllegalArgumentException("Invalid number of arguments");
+        }
+
+        try {
+            new BirthMarriageIDOpenTriangleResolver(sourceRepo);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public BirthMarriageIDOpenTriangleResolver(String sourceRepo) throws BucketException {
+        super(sourceRepo);
+
         final StringMeasure base_measure = Constants.JENSEN_SHANNON;
         LXPMeasure composite_measure;
         IBucket births = record_repository.getBucket("birth_records");
@@ -80,76 +92,7 @@ public class BirthMarriageIDOpenTriangleResolver {
 
             System.out.println("Resolving triangles with predicates...");
             for (Long[] triangle : triangles) {
-                boolean isDeleted = false;
-                LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
-                String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Birth.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
-
-                int day = 1;
-                if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_DAY), "--")){
-                    day = Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_DAY));
-                }
-                int month = 1;
-                if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_MONTH), "--")){
-                    month = Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_MONTH));
-                }
-
-                LocalDate dateM = null;
-                if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
-                    dateM = LocalDate.of(Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)), month, day);
-                }
-
-                for (int i = 0; i < triangle.length; i += 2) {
-                    day = 1;
-                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_DAY), "--")){
-                        day = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_DAY));
-                    }
-                    month = 1;
-                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_MONTH), "--")){
-                        month = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_MONTH));
-                    }
-
-                    LocalDate date = null;
-                    if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----")){
-                        date = LocalDate.of(Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)), month, day);
-                    }
-
-                    //1. Match birthdays
-                    if(partner.equals("Groom")){
-                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6), "----")) {
-                            if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6))) {
-                                deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0]);
-                                isDeleted = true;
-                            }
-                        }
-                    }else{
-                        if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH).substring(6), "----")) {
-                            if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH).substring(6))) {
-                                deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0]);
-                                isDeleted = true;
-                            }
-                        }
-                    }
-
-                    if (!isDeleted && date != null && dateM != null) { //2. If born after marriage
-                        if (date.isAfter(dateM)) {
-                            deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[1]);
-                            isDeleted = true;
-                        } else if (ChronoUnit.YEARS.between(date, dateM) >= 0 && //3. If too young to marry
-                                ChronoUnit.YEARS.between(date, dateM) < MIN_MARRIAGE_AGE) {
-                            deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[2]);
-                            isDeleted = true;
-                        } else if (ChronoUnit.YEARS.between(date, dateM) >= 0 && //4. If born way before marriage
-                                ChronoUnit.YEARS.between(date, dateM)> MAX_MARRIAGE_AGE) {
-                            deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[3]);
-                            isDeleted = true;
-                        }
-                    }
-
-                    //5. Check names
-                    if (!isDeleted && getDistance(tempKids[i], tempKids[1], composite_measure) > NAME_THRESHOLD) {
-                        deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[4]);
-                    }
-                }
+                resolveTriangle(partner, triangle, births, marriages, composite_measure);
             }
         }
 
@@ -165,13 +108,86 @@ public class BirthMarriageIDOpenTriangleResolver {
         new BirthBrideOwnMarriageAccuracy(bridge);
     }
 
+    private void resolveTriangle(String partner, Long[] triangle, IBucket births, IBucket marriages, LXPMeasure composite_measure) throws BucketException {
+        boolean isDeleted = false;
+        LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
+        String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Birth.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
+
+        int day = 1;
+        if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_DAY), "--")){
+            day = Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_DAY));
+        }
+        int month = 1;
+        if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_MONTH), "--")){
+            month = Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_MONTH));
+        }
+
+        LocalDate dateM = null;
+        if(!Objects.equals(tempKids[1].getString(Marriage.MARRIAGE_YEAR), "----")){
+            dateM = LocalDate.of(Integer.parseInt(tempKids[1].getString(Marriage.MARRIAGE_YEAR)), month, day);
+        }
+
+        for (int i = 0; i < triangle.length; i += 2) {
+            day = 1;
+            if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_DAY), "--")){
+                day = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_DAY));
+            }
+            month = 1;
+            if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_MONTH), "--")){
+                month = Integer.parseInt(tempKids[i].getString(Birth.BIRTH_MONTH));
+            }
+
+            LocalDate date = null;
+            if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----")){
+                date = LocalDate.of(Integer.parseInt(tempKids[i].getString(Birth.BIRTH_YEAR)), month, day);
+            }
+
+            //1. Match birthdays
+            if(partner.equals("Groom")){
+                if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6), "----")) {
+                    if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.GROOM_AGE_OR_DATE_OF_BIRTH).substring(6))) {
+                        deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0], BM_ID_QUERY_DEL_PROV);
+                        isDeleted = true;
+                    }
+                }
+            }else{
+                if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH).substring(6), "----")) {
+                    if (!Objects.equals(tempKids[i].getString(Birth.BIRTH_YEAR), tempKids[1].getString(Marriage.BRIDE_AGE_OR_DATE_OF_BIRTH).substring(6))) {
+                        deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[0], BM_ID_QUERY_DEL_PROV);
+                        isDeleted = true;
+                    }
+                }
+            }
+
+            if (!isDeleted && date != null && dateM != null) { //2. If born after marriage
+                if (date.isAfter(dateM)) {
+                    deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[1], BM_ID_QUERY_DEL_PROV);
+                    isDeleted = true;
+                } else if (ChronoUnit.YEARS.between(date, dateM) >= 0 && //3. If too young to marry
+                        ChronoUnit.YEARS.between(date, dateM) < MIN_MARRIAGE_AGE) {
+                    deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[2], BM_ID_QUERY_DEL_PROV);
+                    isDeleted = true;
+                } else if (ChronoUnit.YEARS.between(date, dateM) >= 0 && //4. If born way before marriage
+                        ChronoUnit.YEARS.between(date, dateM)> MAX_MARRIAGE_AGE) {
+                    deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[3], BM_ID_QUERY_DEL_PROV);
+                    isDeleted = true;
+                }
+            }
+
+            //5. Check names
+            if (!isDeleted && getDistance(tempKids[i], tempKids[1], composite_measure) > NAME_THRESHOLD) {
+                deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[4], BM_ID_QUERY_DEL_PROV);
+            }
+        }
+    }
+
     /**
      * Method to locate all open triangles in the database
      *
      * @param bridge Neo4j Bridge
      * @return List of open triangle clusters
      */
-    private static List<Long[]> findIllegalBirthMarriageTriangles(NeoDbCypherBridge bridge, String partner) {
+    private List<Long[]> findIllegalBirthMarriageTriangles(NeoDbCypherBridge bridge, String partner) {
         final String BIRTH_MARRIAGE_TRIANGLE_QUERY = String.format("MATCH (x:Birth)-[:ID {actors: \"Child-%1$s\"}]-(y:Marriage)-[:ID {actors: \"Child-%1$s\"}]-(z:Birth)\n" +
                 "WHERE id(x) < id(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, y, z", partner);
@@ -191,39 +207,7 @@ public class BirthMarriageIDOpenTriangleResolver {
         return triangles;
     }
 
-    /**
-     * Method to create a delete link between two records, used in testing
-     *
-     * @param bridge Neo4j bridge
-     * @param std_id_x standardised id of record x
-     * @param std_id_y standardised id of record y
-     */
-    private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y, String actor, String prov){
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y, prov, actor);
-            tx.run(BM_ID_QUERY_DEL_PROV, parameters);
-            tx.commit();
-        }
-    }
-
-    /**
-     * Method to get map of parameters to be used in cypher queries
-     *
-     * @param standard_id_from record ID to link from
-     * @param standard_id_to record ID to link to
-     * @param prov provenance of resolver
-     * @return map of parameters
-     */
-    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String prov, String actor) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("standard_id_from", standard_id_from);
-        parameters.put("standard_id_to", standard_id_to);
-        parameters.put("prov", prov);
-        parameters.put("actor", actor);
-        return parameters;
-    }
-
-    protected static LXPMeasure getCompositeMeasureBirthMarriage(StringMeasure base_measure, String partner) {
+    protected LXPMeasure getCompositeMeasureBirthMarriage(StringMeasure base_measure, String partner) {
         final List<Integer> LINKAGE_FIELDS_BIRTH = list(
                 Birth.FORENAME,
                 Birth.SURNAME
@@ -246,9 +230,4 @@ public class BirthMarriageIDOpenTriangleResolver {
 
         return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS_BIRTH, LINKAGE_FIELDS_MARRIAGE);
     }
-
-    private static double getDistance(LXP id1, LXP id2, LXPMeasure composite_measure) throws BucketException {
-        return composite_measure.distance(id1, id2);
-    }
-
 }
