@@ -114,12 +114,6 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
                         }
                     }
             );
-
-//            try {
-//                resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
-//            } catch (BucketException e) {
-//                throw new RuntimeException(e);
-//            }
         }
 
         System.out.println("Resolving triangles with predicates...");

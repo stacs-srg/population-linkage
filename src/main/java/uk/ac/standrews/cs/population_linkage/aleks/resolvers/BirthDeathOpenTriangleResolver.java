@@ -44,6 +44,8 @@ import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -93,13 +95,32 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
+
         for (OpenTriangleClusterBD cluster : triangles) {
-            resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 2, 4);
+            executorService.submit(() ->
+                    {
+                        try {
+                            resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 2, 4);
+                        } catch (BucketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
         }
 
         System.out.println("Resolving triangles...");
         for (OpenTriangleCluster cluster : triangles) {
-            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
+            executorService.submit(() ->
+                    {
+                        try {
+                            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
+                        } catch (BucketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
         }
 
         System.out.println("After");
