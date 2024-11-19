@@ -46,6 +46,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -76,7 +77,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
     }
 
-    public BirthDeathOpenTriangleResolver(String sourceRepo, String numberOfRecords) throws BucketException {
+    public BirthDeathOpenTriangleResolver(String sourceRepo, String numberOfRecords) throws BucketException, InterruptedException {
         super(sourceRepo);
         final StringMeasure base_measure = Constants.LEVENSHTEIN;;
         final LXPMeasure composite_measure_date = getCompositeMeasureDate(base_measure);
@@ -123,10 +124,15 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
             );
         }
 
+        executorService.shutdown();
+        executorService.awaitTermination(12, TimeUnit.HOURS);
+
         System.out.println("After");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
+        System.out.println("Birth-Death");
         pef.countSiblingEfficacy(new String[0], deletionPredicates, "Birth", "Death");
         pef.countSiblingEfficacy(creationPredicates, new String[0], "Birth", "Birth");
+        System.out.println("Birth-Birth");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthDeathSiblingAccuracy(bridge);
