@@ -178,7 +178,8 @@ public class PatternsCounter {
 
             openSquaresQuery2 = String.format(
                     "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[r:ID]-(z:Marriage), (x)-[t:ID]-(z) " +
-                            "WHERE id(x) < id(z) AND (r.actors = \"Child-Father\" OR r.actors = \"Child-Mother\") AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
+                            "WHERE id(x) < id(z) AND (r.actors = \"Child-Father\" OR r.actors = \"Child-Mother\") AND (t.actors = \"Child-Father\" OR t.actors = \"Child-Mother\") " +
+                            "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
                             "AND (t.fields_populated < %2$s OR t.distance > %1$s) " +
                             "RETURN count(DISTINCT [x, z]) as cluster_count",
                     threshold, fields
@@ -195,7 +196,8 @@ public class PatternsCounter {
 
             openSquaresQuery2 = String.format(
                     "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[r:ID]-(z:Marriage), (x)-[t:ID]-(z) " +
-                            "WHERE id(x) < id(z) AND (r.actors = \"Child-Father\" OR r.actors = \"Child-Mother\") AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
+                            "WHERE id(x) < id(z) AND (r.actors = \"Child-Father\" OR r.actors = \"Child-Mother\") AND (t.actors = \"Child-Father\" OR t.actors = \"Child-Mother\") " +
+                            "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
                             "AND (t.fields_populated < %2$s OR t.distance > %1$s) " +
                             "AND x.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR " +
                             "AND y.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR " +

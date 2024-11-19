@@ -73,6 +73,8 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
         IBucket births = record_repository.getBucket("birth_records");
         IBucket marriages = record_repository.getBucket("marriage_records");
         String[] partners = {"Father", "Mother"};
+        String[] partnersGT = {"Father-Groom", "Mother-Bride"};
+
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //get number of triangles before resolution
@@ -92,9 +94,9 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
         System.out.println("After");
         System.out.println("\n");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
-        for (String partner : partners) {
+        for (String partner : partnersGT) {
             System.out.println("\n" + partner + " efficacy:");
-            pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", "Child-" + partner);
+            pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", partner);
         }
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //get number of triangles before resolution
         new BirthParentsMarriageAccuracy(bridge);
