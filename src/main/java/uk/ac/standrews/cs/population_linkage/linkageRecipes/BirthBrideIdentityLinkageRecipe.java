@@ -150,7 +150,11 @@ public class BirthBrideIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THRESHOLD;
+        if(getNumberOfLinkageFieldsRequired() == 6 || getNumberOfLinkageFieldsRequired() == 5){
+            return 1.51;
+        } else{
+            return 1.43;
+        }
     }
 
     @Override

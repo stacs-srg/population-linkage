@@ -31,6 +31,7 @@ import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthDeathSibling
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthDeathSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.Binomials;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.MSED;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
@@ -49,31 +50,37 @@ import java.util.stream.Collectors;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
-public class BirthDeathOpenTriangleResolver {
+public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver {
+    //Cypher queries used in predicates
+    private final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
+    private final String BD_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov } ]-(b)";
 
-    final static int NUM_OF_CHILDREN  = 12;
-    final static int MAX_AGE_DIFFERENCE  = 23;
-    final static double DATE_THRESHOLD = 0.8;
-    final static int BIRTH_INTERVAL = 280;
-    private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
-    private static final String BB_SIBLING_QUERY_DEL = "MATCH (a:Birth)-[r:SIBLING]-(b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to DELETE r";
-    private static final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov } ]-(b)";
-
-    private static NeoDbCypherBridge bridge;
-
-    private static String[] creationPredicates = {"match_m_date_bd"};
-    private static String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed"};
+    private final String[] creationPredicates = {"match_m_date_bd"};
+    private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed"};
 
     public static void main(String[] args) throws BucketException {
-        bridge = Store.getInstance().getBridge();
-        RecordRepository record_repository = new RecordRepository("umea");
+        String sourceRepo = args[0]; // e.g. umea
+        String numberOfRecords = args[1]; // e.g. EVERYTHING or 10000 etc.
+
+        if(args.length != 2){
+            throw new IllegalArgumentException("Invalid number of arguments");
+        }
+
+        try {
+            new BirthDeathOpenTriangleResolver(sourceRepo, numberOfRecords);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public BirthDeathOpenTriangleResolver(String sourceRepo, String numberOfRecords) throws BucketException {
+        super(sourceRepo);
         final StringMeasure base_measure = Constants.LEVENSHTEIN;;
-        final LXPMeasure composite_measure_name = getCompositeMeasure(base_measure);
         final LXPMeasure composite_measure_date = getCompositeMeasureDate(base_measure);
-        final LXPMeasure composite_measure_bd = getCompositeMeasureBirthDeath(base_measure);
         IBucket births = record_repository.getBucket("birth_records");
         IBucket deaths = record_repository.getBucket("death_records");
-        BirthDeathSiblingLinkageRecipe recipe = new BirthDeathSiblingLinkageRecipe("umea", "EVERYTHING", BirthDeathSiblingBundleBuilder.class.getName(), null);
+        BirthDeathSiblingLinkageRecipe recipe = new BirthDeathSiblingLinkageRecipe(sourceRepo, numberOfRecords, BirthDeathSiblingBundleBuilder.class.getName(), null);
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
@@ -82,49 +89,17 @@ public class BirthDeathOpenTriangleResolver {
         new BirthBirthSiblingAccuracy(bridge);
 
         System.out.println("Locating triangles...");
-        List<OpenTriangleClusterBD> triangles = findIllegalBirthDeathSiblingTriangles(bridge, "umea");
+        List<OpenTriangleClusterBD> triangles = findIllegalBirthDeathSiblingTriangles(bridge, sourceRepo);
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
-        int count = 0;
-        for (OpenTriangleClusterBD triangle : triangles) {
-            System.out.println(count + ": " + triangle.getTriangleChain().size());
-            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, record_repository, recipe, 2, 4);
-            count++;
+        for (OpenTriangleClusterBD cluster : triangles) {
+            resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 2, 4);
         }
 
         System.out.println("Resolving triangles...");
-        for (OpenTriangleCluster triangle : triangles) {
-            for (List<Long> chain : triangle.getTriangleChain()){
-                LXP[] tempKids = {(LXP) births.getObjectById(triangle.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
-                String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-                String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
-                String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
-
-                triangle.getYearStatistics();
-                boolean hasChanged = false;
-
-                String toFind = "7106096";
-//                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
-//                        System.out.println("fsd");
-//                    }
-
-                //1. Check age of child not outside of max difference
-                hasChanged = maxRangePredicate(triangle, tempKids, hasChanged, 0);
-
-                //2. check DOB at least 9 months away from rest
-                hasChanged = minBirthIntervalPredicate(triangle, tempKids, hasChanged, 1);
-
-                //3. Get mode of birthplace
-                hasChanged = mostCommonBirthPlacePredicate(triangle, hasChanged, tempKids, 2);
-
-                //4. If same marriage date and pass other checks, create link. Match for same birthplace as well?
-                if(!hasChanged && getDistance(triangle.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
-                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                    createLink(bridge, std_id_x, std_id_z, creationPredicates[0]);
-                }
-            }
+        for (OpenTriangleCluster cluster : triangles) {
+            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
         }
 
         System.out.println("After");
@@ -137,7 +112,40 @@ public class BirthDeathOpenTriangleResolver {
         new BirthBirthSiblingAccuracy(bridge);
     }
 
-    private static List<OpenTriangleClusterBD> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge, String recordRepo) {
+    private void resolveTrianglesPredicates(OpenTriangleCluster cluster, IBucket births, IBucket deaths, LXPMeasure composite_measure_date) throws BucketException {
+        for (List<Long> chain : cluster.getTriangleChain()){
+            LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
+            String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
+            String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
+            String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
+
+            cluster.getYearStatistics();
+            boolean hasChanged = false;
+
+            String toFind = "7106096";
+//                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
+//                        System.out.println("fsd");
+//                    }
+
+            //1. Check age of child not outside of max difference
+            hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
+
+            //2. check DOB at least 9 months away from rest
+            hasChanged = minBirthIntervalPredicate(cluster, tempKids, hasChanged, 1);
+
+            //3. Get mode of birthplace
+            hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
+
+            //4. If same marriage date and pass other checks, create link. Match for same birthplace as well?
+            if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
+                    !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
+                    !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
+                createLink(bridge, std_id_x, std_id_z, creationPredicates[0], BB_SIBLING_QUERY);
+            }
+        }
+    }
+
+    private List<OpenTriangleClusterBD> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge, String recordRepo) {
         final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Birth)\n"+
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, collect([y, z]) AS openTriangles";
@@ -163,34 +171,30 @@ public class BirthDeathOpenTriangleResolver {
         }).collect(Collectors.toList());
     }
 
-    private static boolean maxRangePredicate(OpenTriangleCluster triangle, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    public boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
         if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
-//                        deleteLink(bridge, std_id_x, std_id_y);
-            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
-//                        deleteLink(bridge, std_id_z, std_id_y);
-            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
-//                        deleteLink(bridge, std_id_z, std_id_y);
-//                        deleteLink(bridge, std_id_x, std_id_y);
-            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(triangle.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
+                Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
-            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         }
 
@@ -198,7 +202,7 @@ public class BirthDeathOpenTriangleResolver {
     }
 
     //https://stackoverflow.com/a/67767630
-    private static boolean minBirthIntervalPredicate(OpenTriangleCluster triangle, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    public boolean minBirthIntervalPredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
@@ -209,9 +213,9 @@ public class BirthDeathOpenTriangleResolver {
                 LocalDate dateY = getBirthdayAsDate(tempKids[1], true);
                 if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) > 2){
                     if(i == 0){
-                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);
+                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
                     }else{
-                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
                     }
                     hasChanged = true;
                 }
@@ -223,7 +227,7 @@ public class BirthDeathOpenTriangleResolver {
         return hasChanged;
     }
 
-    private static LocalDate getBirthdayAsDate(LXP child, boolean isDead){
+    private LocalDate getBirthdayAsDate(LXP child, boolean isDead){
         int day = 1;
 
         if(isDead){
@@ -246,32 +250,32 @@ public class BirthDeathOpenTriangleResolver {
 
     }
 
-    private static boolean mostCommonBirthPlacePredicate(OpenTriangleCluster triangle, boolean hasChanged, LXP[] tempKids, int predNumber) {
+    public boolean mostCommonBirthPlacePredicate(OpenTriangleCluster cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
         int MIN_FAMILY_SIZE = 3;
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-        if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
+        if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < cluster.getAgeRange() / 2) ||
                 (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < triangle.getAgeRange() / 2)) &&
-                !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE){
+                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < cluster.getAgeRange() / 2)) &&
+                !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE){
 //                        deleteLink(bridge, std_id_x, std_id_y);
-            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber]);;
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
-        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < triangle.getAgeRange() / 2) ||
+        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < cluster.getAgeRange() / 2) ||
                 (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < triangle.getAgeRange() / 2)) &&
-                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), triangle.getMostCommonBirthplace()) && triangle.getNumOfChildren() > MIN_FAMILY_SIZE) {
+                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < cluster.getAgeRange() / 2)) &&
+                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE) {
 //                        deleteLink(bridge, std_id_z, std_id_y);
-            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber]);
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         }
 
         return hasChanged;
     }
 
-    public static void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, RecordRepository record_repository, BirthDeathSiblingLinkageRecipe recipe, int cPred, int dPred) throws BucketException {
+    public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int cPred, int dPred) throws BucketException {
         double THRESHOLD = 0.04;
         double TUPLE_THRESHOLD = 0.02;
 
@@ -475,10 +479,10 @@ public class BirthDeathOpenTriangleResolver {
 
                 if(kidsFound == 2 && kidsIndex.size() == 1) {
                     if(kidsIndex.get(0) == 0){
-                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
                         break;
                     } else if (kidsIndex.get(0) == 2) {
-                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred]);
+                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
                         break;
                     }
                 }
@@ -486,65 +490,7 @@ public class BirthDeathOpenTriangleResolver {
         }
     }
 
-    private static void addFamilyMSED(List<Set<LXP>> familySets, List<LXP> bs) {
-        if(familySets.isEmpty()) {
-            familySets.add(new HashSet<>(bs));
-        }else{
-            boolean familyFound = false;
-            for(Set<LXP> fSet : familySets) {
-                if(familyFound){
-                    break;
-                }
-                for (int i = 0; i < bs.size(); i++) {
-                    if(fSet.contains(bs.get(i))) {
-                        fSet.addAll(bs);
-                        familyFound = true;
-                        break;
-                    }
-                }
-            }
-            if(!familyFound) {
-                familySets.add(new HashSet<>(bs));
-            }
-        }
-    }
-
-    private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y){
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y);
-            tx.run(BB_SIBLING_QUERY_DEL, parameters);
-            tx.commit();
-        }
-    }
-
-    private static void deleteLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_y, String prov){
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_y, prov);
-            tx.run(BB_SIBLING_QUERY_DEL_PROV, parameters);
-            tx.commit();
-        }
-    }
-
-    private static void createLink(NeoDbCypherBridge bridge, String std_id_x, String std_id_z, String prov) {
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
-            Map<String, Object> parameters = getCreationParameterMap(std_id_x, std_id_z, prov);
-            tx.run(BB_SIBLING_QUERY, parameters);
-            tx.commit();
-        }
-    }
-
-    protected static LXPMeasure getCompositeMeasure(StringMeasure base_measure) {
-        final List<Integer> LINKAGE_FIELDS_NAME = list(
-                Birth.MOTHER_FORENAME,
-                Birth.MOTHER_MAIDEN_SURNAME,
-                Birth.FATHER_FORENAME,
-                Birth.FATHER_SURNAME
-        );
-
-        return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS_NAME);
-    }
-
-    protected static LXPMeasure getCompositeMeasureDate(StringMeasure base_measure) {
+    private LXPMeasure getCompositeMeasureDate(StringMeasure base_measure) {
         final List<Integer> LINKAGE_FIELDS = list(
                 Birth.PARENTS_DAY_OF_MARRIAGE,
                 Birth.PARENTS_MONTH_OF_MARRIAGE,
@@ -554,78 +500,10 @@ public class BirthDeathOpenTriangleResolver {
         return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS);
     }
 
-    protected static LXPMeasure getCompositeMeasureBirthDeath(StringMeasure base_measure) {
-        final List<Integer> LINKAGE_FIELDS_BIRTH = list(
-                Birth.MOTHER_FORENAME,
-                Birth.MOTHER_MAIDEN_SURNAME,
-                Birth.FATHER_FORENAME,
-                Birth.FATHER_SURNAME
-        );
-
-        final List<Integer> LINKAGE_FIELDS_DEATH = list(
-                Death.MOTHER_FORENAME,
-                Death.MOTHER_MAIDEN_SURNAME,
-                Death.FATHER_FORENAME,
-                Death.FATHER_SURNAME
-        );
-
-        return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS_BIRTH, LINKAGE_FIELDS_DEATH);
-    }
-
-    private static double getDistance(long id1, long id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
+    private double getDistance(long id1, long id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
         LXP b1 = (LXP) births.getObjectById(id1);
         LXP b2 = (LXP) births.getObjectById(id2);
         return composite_measure.distance(b1, b2);
-    }
-
-    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("standard_id_from", standard_id_from);
-        parameters.put("standard_id_to", standard_id_to);
-        return parameters;
-    }
-
-    private static Map<String, Object> getCreationParameterMap(String standard_id_from, String standard_id_to, String prov) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("standard_id_from", standard_id_from);
-        parameters.put("standard_id_to", standard_id_to);
-        parameters.put("prov", prov);
-        return parameters;
-    }
-
-    public static double getMSEDForCluster(List<LXP> choices, BirthDeathSiblingLinkageRecipe recipe) {
-        /* Calculate the MESD for the cluster represented by the indices choices into bs */
-        List<String> fields_from_choices = new ArrayList<>(); // a list of the concatenated linkage fields from the selected choices.
-        List<Integer> linkage_fields = recipe.getLinkageFields(); // the linkage field indexes to be used
-        for (LXP record : choices) {
-            StringBuilder sb = new StringBuilder();              // make a string of values for this record drawn from the recipe linkage fields
-            for (int field_selector : linkage_fields) {
-                sb.append(record.get(field_selector) + "/");
-            }
-            fields_from_choices.add(sb.toString()); // add the linkage fields for this choice to the list being assessed
-        }
-        return MSED.distance(fields_from_choices);
-    }
-
-    private static OrderedList<List<LXP>,Double> getMSEDForK(Set<LXP> family, int k, BirthDeathSiblingLinkageRecipe recipe) throws BucketException {
-        OrderedList<List<LXP>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
-        List<LXP> bs = new ArrayList<>(family);
-
-        List<List<Integer>> indices = Binomials.pickAll(bs.size(), k);
-        for (List<Integer> choices : indices) {
-            List<LXP> records = getBirthsFromChoices(bs, choices);
-            double distance = getMSEDForCluster(records, recipe);
-            all_mseds.add(records,distance);
-        }
-        return all_mseds;
-    }
-
-    private static List<LXP> getBirthsFromChoices(List<LXP> bs, List<Integer> choices) {
-        List<LXP> records = new ArrayList<>();
-        for (int index : choices) {
-            records.add( bs.get(index) );
-        }
-        return records;
     }
 
     /**
@@ -636,7 +514,7 @@ public class BirthDeathOpenTriangleResolver {
      * @return list of birth/death objects
      * @throws BucketException
      */
-    public static List<LXP> getRecords(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException {
+    public List<LXP> getRecords(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException {
         IBucket<Birth> births = record_repository.getBucket("birth_records");
         IBucket<Death> deaths = record_repository.getBucket("death_records");
         ArrayList<LXP> bs = new ArrayList();

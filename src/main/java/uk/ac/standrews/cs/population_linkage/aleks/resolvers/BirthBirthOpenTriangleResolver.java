@@ -29,6 +29,7 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.Binomials;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.MSED;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
@@ -250,8 +251,7 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param predNumber index of predicate name
      * @return if triangle has been resolved
      */
-    @Override
-    public boolean maxRangePredicate(OpenTriangleClusterBB cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    public boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
@@ -302,8 +302,7 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param predNumber index of predicate name
      * @return if triangle has been resolved
      */
-    @Override
-    public boolean minBirthIntervalPredicate(OpenTriangleClusterBB cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    public boolean minBirthIntervalPredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
@@ -350,8 +349,7 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param predNumber index of predicate name
      * @return if triangle has been resolved
      */
-    @Override
-    public boolean mostCommonBirthPlacePredicate(OpenTriangleClusterBB cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
+    public boolean mostCommonBirthPlacePredicate(OpenTriangleCluster cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
         int MIN_FAMILY_SIZE = 3; //delete link only if cluster contains more children than threshold
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
@@ -373,8 +371,7 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return hasChanged;
     }
 
-    @Override
-    public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, BirthSiblingLinkageRecipe recipe, int cPred, int dPred) throws BucketException {
+    public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int cPred, int dPred) throws BucketException {
         double THRESHOLD = 0.04;
         double TUPLE_THRESHOLD = 0.02;
 
