@@ -20,25 +20,15 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Node;
-import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
-import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBrideOwnMarriageAccuracy;
-import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthGroomOwnMarriageBundleAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthParentsMarriageAccuracy;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_records.record_types.Birth;
-import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-
-import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
 
 public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTriangleResolver {
@@ -46,10 +36,13 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
             "(a)-[:ID {actors: $actor}]-(m1:Marriage)-[:ID {actors: $actor}]-(b)\n" +
             "WHERE NOT (a)-[:ID {actors: $actor}]-(m) AND a <> b AND m <> m1 AND NOT (m)-[:ID]-(m1)\n" +
             "MERGE (b)-[:DELETED { provenance: $prov, actors: $actor } ]-(m)";
+    private final String BMP_DOUBLE_RECORD = "MATCH (m1:Marriage)-[r:ID]-(b:Birth)-[s:ID]-(m2:Marriage)\n" +
+            "WHERE m1.GROOM_SURNAME <> m2.GROOM_SURNAME and m1.BRIDE_SURNAME <> m2.BRIDE_SURNAME and m1 <> m2 AND (r.actors = \"Child-Father\" OR r.actors = \"Child-Mother\") AND (s.actors = \"Child-Father\" OR s.actors = \"Child-Mother\") and s.distance > r.distance and not (m2)-[:ID]-(m1)\n" +
+            "MERGE (b)-[:DELETED { provenance: $prov, actors: $actor } ]-(m2)";
 
     //Names of predicates to be used as prov
     private static final String[] creationPredicates = {"match_m_date"};
-    private static final String[] deletionPredicates = {"supported_triangle"};
+    private static final String[] deletionPredicates = {"supported_triangle", "double_record"};
 
     public static void main(String[] args) throws BucketException {
         String sourceRepo = args[0]; // e.g. umea
@@ -81,13 +74,16 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
         new BirthParentsMarriageAccuracy(bridge);
 
         System.out.println("Running graph predicates...");
+        String[] graphPredicates = {BMP_SUPPORTED_TRIANGLE, BMP_DOUBLE_RECORD};
         for (String partner : partners) {
-            try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-                Map<String, Object> parameters = getCreationParameterMap(null, null, deletionPredicates[0], "Child-" + partner);
-                tx.run(BMP_SUPPORTED_TRIANGLE, parameters);
-                tx.commit();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            for (int i = 0; i < graphPredicates.length; i++) {
+                try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+                    Map<String, Object> parameters = getCreationParameterMap(null, null, deletionPredicates[i], "Child-" + partner);
+                    tx.run(graphPredicates[i], parameters);
+                    tx.commit();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
