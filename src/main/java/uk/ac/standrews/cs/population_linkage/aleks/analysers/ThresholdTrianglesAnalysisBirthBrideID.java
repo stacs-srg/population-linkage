@@ -51,7 +51,7 @@ public class ThresholdTrianglesAnalysisBirthBrideID extends ThresholdTrianglesAn
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthgroomID" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthbrideID" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     //write headers

@@ -38,7 +38,7 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 4;
+        final int MAX_FIELD = 8;
         final int MIN_FIELD = 3; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
@@ -51,7 +51,7 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthparentsIDV" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthparentsIDD" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     //write headers
@@ -62,10 +62,14 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
                             double threshold = Math.round(i * 100.0) / 100.0;
 
                             //get quality measurements
-                            long fpc = doQuery(BIRTH_MARRIAGE_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_MARRIAGE_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_MARRIAGE_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_MARRIAGE_ID_FNC_T, i, currentField, localBridge);
+//                            long fpc = doQuery(BIRTH_MARRIAGE_ID_FPC, threshold, currentField, localBridge);
+//                            long tpc = doQuery(BIRTH_MARRIAGE_ID_TPC, threshold, currentField, localBridge);
+//                            long fnc = doQuery(BIRTH_MARRIAGE_ID_FNC, threshold, currentField, localBridge)
+//                                    + doQuery(BIRTH_MARRIAGE_ID_FNC_T, i, currentField, localBridge);
+
+                            long fpc = 1;
+                            long tpc = 1;
+                            long fnc = 1;
 
                             //print to csv
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
@@ -73,7 +77,7 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenTrianglesParentsMarriage(bridge, i, currentField, true),
+                                    0,
                                     PatternsCounter.countOpenTrianglesParentsMarriage(bridge, i, currentField, false));
                         }
                     } catch (Exception e) {

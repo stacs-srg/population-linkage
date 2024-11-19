@@ -20,7 +20,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 
-def main(MAX_FIELD, MIN_FIELD, FILE):
+def main(MAX_FIELD, MIN_FIELD, FILE, save):
     fig = plt.figure(figsize=(14, 8))
     threshold_total = 0
     fmeasure_total = 0
@@ -101,7 +101,8 @@ def main(MAX_FIELD, MIN_FIELD, FILE):
     print(f"Average fmeasure error: {fmeasure_total / (MAX_FIELD - MIN_FIELD)}")
     fig.legend(handles=all_handles, labels=all_labels, loc='upper right', bbox_to_anchor=(1, 1), borderaxespad=1.5)
     plt.tight_layout(rect=[0, 0, 0.84, 1], pad=2)
-    # plt.savefig('threshold_field_analysis_bd_dynamic')
+    if save:
+        plt.savefig('threshold_field_analysis_' + FILE)
     plt.show()
 
 if __name__ == "__main__":
@@ -109,6 +110,7 @@ if __name__ == "__main__":
     parser.add_argument('--max', type=int, required=True, help="Maximum threshold field")
     parser.add_argument('--min', type=int, required=True, help="Minimum threshold field (1 below target)")
     parser.add_argument('--file', type=str, required=True, help="csv file name")
+    parser.add_argument('--save', type=bool, required=True, help="save file")
     args = parser.parse_args()
 
-    main(args.max, args.min - 1, args.file)
+    main(args.max, args.min - 1, args.file, args.save)

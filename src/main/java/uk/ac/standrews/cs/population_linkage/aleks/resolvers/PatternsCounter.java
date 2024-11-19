@@ -187,8 +187,8 @@ public class PatternsCounter {
             openSquaresQuery = String.format(
                     "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[r:ID]-(z:Marriage) " +
                             "WHERE NOT (x)-[:ID]-(z) AND id(x) < id(z) AND (r.actors = \"Child-Father\" OR r.actors = \"Child-Mother\") AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
-                            "AND x.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR AND x.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH AND x.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH " +
-                            "AND y.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR AND y.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH AND y.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH " +
+                            "AND x.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR " +
+                            "AND y.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR " +
                             "RETURN count(DISTINCT [x, z]) as cluster_count",
                     threshold, fields
             );
@@ -197,8 +197,8 @@ public class PatternsCounter {
                     "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[r:ID]-(z:Marriage), (x)-[t:ID]-(z) " +
                             "WHERE id(x) < id(z) AND (r.actors = \"Child-Father\" OR r.actors = \"Child-Mother\") AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
                             "AND (t.fields_populated < %2$s OR t.distance > %1$s) " +
-                            "AND x.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR AND x.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH AND x.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH " +
-                            "AND y.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR AND y.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH AND y.PARENTS_MONTH_OF_MARRIAGE = z.MARRIAGE_MONTH " +
+                            "AND x.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR " +
+                            "AND y.PARENTS_YEAR_OF_MARRIAGE = z.MARRIAGE_YEAR " +
                             "RETURN count(DISTINCT [x, z]) as cluster_count",
                     threshold, fields
             );
