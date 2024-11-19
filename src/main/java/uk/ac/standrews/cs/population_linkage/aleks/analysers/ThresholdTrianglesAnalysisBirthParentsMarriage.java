@@ -51,7 +51,7 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthparentsIDD" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthparentsIDS" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     //write headers
@@ -77,7 +77,7 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    0,
+                                    PatternsCounter.countOpenTrianglesParentsMarriage(bridge, i, currentField, true),
                                     PatternsCounter.countOpenTrianglesParentsMarriage(bridge, i, currentField, false));
                         }
                     } catch (Exception e) {

@@ -111,7 +111,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
             );
         }
 
-        System.out.println("Resolving triangles...");
+        System.out.println("Resolving triangles with predicates...");
         for (OpenTriangleCluster cluster : triangles) {
             executorService.submit(() ->
                     {
