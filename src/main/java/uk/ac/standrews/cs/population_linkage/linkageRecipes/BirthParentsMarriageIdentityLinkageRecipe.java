@@ -174,10 +174,8 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
             return 1.78;
         } else if (getNumberOfLinkageFieldsRequired() == 7 || getNumberOfLinkageFieldsRequired() == 6) {
             return 1.43;
-        }else if (getNumberOfLinkageFieldsRequired() == 5) {
-            return 1.4;
         } else {
-            return 0.93;
+            return 1.4;
         }
     }
 
