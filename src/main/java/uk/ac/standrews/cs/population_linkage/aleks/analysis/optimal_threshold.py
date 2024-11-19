@@ -40,7 +40,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
     all_labels = []
 
     for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
-        data = pd.read_csv(f'../../../../../../../../../{FILE}{N}.csv')
+        data = pd.read_csv(f'../../../../../../../../../../{FILE}{N}.csv')
 
         ax1 = axes[i]
         l1 = ax1.plot(data['threshold'], data['recall'], label='Recall', color='b')

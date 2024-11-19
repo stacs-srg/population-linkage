@@ -170,14 +170,15 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-//        if(getNumberOfLinkageFieldsRequired() == 8){
-//            return 2;
-//        } else if (getNumberOfLinkageFieldsRequired() == 7 || getNumberOfLinkageFieldsRequired() == 6 || getNumberOfLinkageFieldsRequired() == 5) {
-//            return 1.73;
-//        }else{
-//            return 0.92;
-//        }
-        return DISTANCE_THRESHOLD;
+        if (getNumberOfLinkageFieldsRequired() == 8) {
+            return 1.78;
+        } else if (getNumberOfLinkageFieldsRequired() == 7 || getNumberOfLinkageFieldsRequired() == 6) {
+            return 1.43;
+        }else if (getNumberOfLinkageFieldsRequired() == 5) {
+            return 1.4;
+        } else {
+            return 0.93;
+        }
     }
 
     @Override
