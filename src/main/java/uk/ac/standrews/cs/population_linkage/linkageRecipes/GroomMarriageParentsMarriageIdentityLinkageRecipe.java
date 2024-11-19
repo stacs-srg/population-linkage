@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 1;
+    private static final double DISTANCE_THRESHOLD = 0.6;
 
     public static final String LINKAGE_TYPE = "groom-parents-marriage-identity";
 
@@ -44,23 +44,23 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
     private final int number_of_marriages;
 
     public static final List<Integer> LINKAGE_FIELDS = list(
-            Marriage.GROOM_MOTHER_FORENAME,
-            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
-            Marriage.GROOM_FATHER_FORENAME,
-            Marriage.GROOM_FATHER_SURNAME
-    );
-
-    public static final List<Integer> SEARCH_FIELDS = list(
             Marriage.BRIDE_FORENAME,
             Marriage.BRIDE_SURNAME,
             Marriage.GROOM_FORENAME,
             Marriage.GROOM_SURNAME
     );
 
+    public static final List<Integer> SEARCH_FIELDS = list(
+            Marriage.GROOM_MOTHER_FORENAME,
+            Marriage.GROOM_MOTHER_MAIDEN_SURNAME,
+            Marriage.GROOM_FATHER_FORENAME,
+            Marriage.GROOM_FATHER_SURNAME
+    );
+
     @SuppressWarnings("unchecked")
     public static final List<List<Pair>> TRUE_MATCH_ALTERNATIVES = list(
-            list(pair(Marriage.GROOM_FATHER_IDENTITY, Marriage.GROOM_IDENTITY)),
-            list(pair(Marriage.GROOM_MOTHER_IDENTITY, Marriage.BRIDE_IDENTITY))
+            list(pair(Marriage.BRIDE_IDENTITY, Marriage.GROOM_MOTHER_IDENTITY)),
+            list(pair(Marriage.GROOM_IDENTITY, Marriage.GROOM_FATHER_IDENTITY))
     );
 
     public GroomMarriageParentsMarriageIdentityLinkageRecipe(String source_repository_name, String number_of_records, String links_persistent_name) {
@@ -79,12 +79,12 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
 
     @Override
-    public LinkStatus isTrueMatch(LXP birth, LXP marriage) {
-        return trueMatch(birth, marriage);
+    public LinkStatus isTrueMatch(LXP marriage1, LXP marriage2) {
+        return trueMatch(marriage1, marriage2);
     }
 
-    public static LinkStatus trueMatch(LXP birth, LXP marriage) {
-        return trueMatch(birth, marriage, TRUE_MATCH_ALTERNATIVES);
+    public static LinkStatus trueMatch(LXP marriage1, LXP marriage2) {
+        return trueMatch(marriage1, marriage2, TRUE_MATCH_ALTERNATIVES);
     }
 
     @Override
@@ -104,12 +104,12 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     @Override
     public String getStoredRole() {
-        return Marriage.ROLE_GROOMS_PARENTS;
+        return Marriage.ROLE_SPOUSES;
     }
 
     @Override
     public String getQueryRole() {
-        return Marriage.ROLE_SPOUSES;  // bride and groom
+        return Marriage.ROLE_GROOMS_PARENTS;  // bride and groom
     }
 
     @Override
