@@ -80,7 +80,7 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
                                     0,
-                                    PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Death", "Death", i, currentField));
+                                    PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Birth", "Death", i, currentField));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
