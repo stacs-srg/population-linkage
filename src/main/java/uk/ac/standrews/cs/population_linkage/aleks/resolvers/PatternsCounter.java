@@ -484,7 +484,43 @@ public class PatternsCounter {
                         "AND (s.fields_populated < %4$s OR s.distance > %3$s)\n" +
                         "RETURN count(DISTINCT [b1, b2]) as cluster_count", type1, type2, threshold, fields, partner, partnerCapitalised);
             }
+        }else if(Objects.equals(type1, "Marriage") && Objects.equals(type2, "Marriage")){
+            if(isTotal){
+                openSquaresQuery = String.format("MATCH (m:Marriage)-[:ID {actors: \"%3$s-Couple\"}]->(m2:Marriage)-[:SIBLING]-(m1:Marriage)\n" +
+                        "WHERE NOT (m1)-[:ID]-(m) AND id(m) < id(m1)" +
+                        "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
+                        "RETURN count(DISTINCT [m, m2]) as cluster_count", threshold, fields, partner);
+
+                openSquaresQuery2 = String.format("MATCH (m:Marriage)-[:ID {actors: \"%3$s-Couple\"}]->(m2:Marriage)-[:SIBLING]-(m1:Marriage),\n" +
+                        "(m1)-[s:ID]-(m) " +
+                        "WHERE id(m) < id(m1)" +
+                        "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
+                        "AND (s.fields_populated < %2$s OR s.distance > %1$s)\n" +
+                        "RETURN count(DISTINCT [m, m2]) as cluster_count", threshold, fields, partner);
+            }else{
+                openSquaresQuery = String.format("MATCH (m:Marriage)-[r:ID {actors: \"Groom-Couple\"}]->(m1:Marriage)-[:ID]-(b1:Birth)-[:SIBLING]-(b2:Birth)-[:ID]-(m2:Marriage)\n" +
+                        "WHERE (m1)-[:SIBLING]-(m2)\n" +
+                        "AND NOT (b1)-[:SIBLING]-(m1) AND NOT (b2)-[:SIBLING]-(m2) AND NOT (b1)-[:ID]-(m2) AND NOT (b2)-[:ID]-(m1)\n" +
+                        "AND (b1)-[:ID]-(m) AND (b2)-[:ID]-(m)\n" +
+                        "AND NOT (m2)-[:ID]-(m)\n" +
+                        "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
+                        "AND id(m1) < id(m2)\n" +
+                        "AND b1.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR AND b2.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR \n" +
+                        "RETURN count(DISTINCT [m, m2]) as cluster_count", threshold, fields, partner);
+
+                openSquaresQuery2 = String.format("MATCH (m:Marriage)-[r:ID {actors: \"%3$s-Couple\"}]->(m1:Marriage)-[:ID]-(b1:Birth)-[:SIBLING]-(b2:Birth)-[:ID]-(m2:Marriage),\n" +
+                        "(m2)-[t:ID]-(m)\n" +
+                        "WHERE (m1)-[:SIBLING]-(m2)\n" +
+                        "AND NOT (b1)-[:SIBLING]-(m1) AND NOT (b2)-[:SIBLING]-(m2) AND NOT (b1)-[:ID]-(m2) AND NOT (b2)-[:ID]-(m1)\n" +
+                        "AND (b1)-[:ID]-(m) AND (b2)-[:ID]-(m)\n" +
+                        "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
+                        "AND (s.fields_populated < %2$s OR s.distance > %1$s)\n" +
+                        "AND id(m1) < id(m2)\n" +
+                        "AND b1.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR AND b2.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR " +
+                        "RETURN count(DISTINCT [m, m2]) as cluster_count", threshold, fields, partner);
+            }
         }
+
 
         Result result = bridge.getNewSession().run(openSquaresQuery);
         List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
