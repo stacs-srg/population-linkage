@@ -62,14 +62,10 @@ public class ThresholdTrianglesAnalysisBirthParentsMarriage extends ThresholdTri
                             double threshold = Math.round(i * 100.0) / 100.0;
 
                             //get quality measurements
-//                            long fpc = doQuery(BIRTH_MARRIAGE_ID_FPC, threshold, currentField, localBridge);
-//                            long tpc = doQuery(BIRTH_MARRIAGE_ID_TPC, threshold, currentField, localBridge);
-//                            long fnc = doQuery(BIRTH_MARRIAGE_ID_FNC, threshold, currentField, localBridge)
-//                                    + doQuery(BIRTH_MARRIAGE_ID_FNC_T, i, currentField, localBridge);
-
-                            long fpc = 1;
-                            long tpc = 1;
-                            long fnc = 1;
+                            long fpc = doQuery(BIRTH_MARRIAGE_ID_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(BIRTH_MARRIAGE_ID_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(BIRTH_MARRIAGE_ID_FNC, threshold, currentField, localBridge)
+                                    + doQuery(BIRTH_MARRIAGE_ID_FNC_T, i, currentField, localBridge);
 
                             //print to csv
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",

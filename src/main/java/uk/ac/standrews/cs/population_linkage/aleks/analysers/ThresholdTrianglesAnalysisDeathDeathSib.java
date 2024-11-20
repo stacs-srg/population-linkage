@@ -39,7 +39,7 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 4;
-        final int MIN_FIELD = 1; //1 below target
+        final int MIN_FIELD = 2; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
@@ -62,10 +62,16 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
                             double threshold = Math.round(i * 100.0) / 100.0;
 
                             //get quality measurements
-                            long fpc = doQuery(DEATH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(DEATH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(DEATH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)
-                                    + doQuery(DEATH_DEATH_SIBLING_FNC_T, i, currentField, localBridge);
+//                            long fpc = doQuery(DEATH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
+//                            long tpc = doQuery(DEATH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
+//                            long fnc = doQuery(DEATH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)
+//                                    + doQuery(DEATH_DEATH_SIBLING_FNC_T, i, currentField, localBridge);
+
+                            long fpc = 1;
+                            long tpc = 1;
+                            long fnc = 1;
+
+                            //PatternsCounter.countOpenTrianglesCumulative(bridge, "Death", "Death", i, currentField)
 
                             //print to csv
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
@@ -73,7 +79,7 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenTrianglesCumulative(bridge, "Death", "Death", i, currentField),
+                                    0,
                                     PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Death", "Death", i, currentField));
                         }
                     } catch (Exception e) {
