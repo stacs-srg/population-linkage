@@ -39,9 +39,9 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 4;
-        final int MIN_FIELD = 3; //1 below target
-        final double MAX_THRESHOLD = 0.41; //0.01 above target
-        final double MIN_THRESHOLD = 0.4;
+        final int MIN_FIELD = 2; //1 below target
+        final double MAX_THRESHOLD = 2.01; //0.01 above target
+        final double MIN_THRESHOLD = 0.0;
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
