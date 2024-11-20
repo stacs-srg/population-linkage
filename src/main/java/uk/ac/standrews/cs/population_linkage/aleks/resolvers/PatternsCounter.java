@@ -486,14 +486,14 @@ public class PatternsCounter {
             }
         }else if(Objects.equals(type1, "Marriage") && Objects.equals(type2, "Marriage")){
             if(isTotal){
-                openSquaresQuery = String.format("MATCH (m:Marriage)-[:ID {actors: \"%3$s-Couple\"}]->(m2:Marriage)-[:SIBLING]-(m1:Marriage)\n" +
-                        "WHERE NOT (m1)-[:ID]-(m) AND id(m) < id(m1)" +
+                openSquaresQuery = String.format("MATCH (m:Marriage)-[r:ID {actors: \"%3$s-Couple\"}]->(m2:Marriage)-[:SIBLING]-(m1:Marriage)\n" +
+                        "WHERE NOT (m1)-[:ID]-(m) AND id(m) < id(m1) " +
                         "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
                         "RETURN count(DISTINCT [m, m2]) as cluster_count", threshold, fields, partner);
 
-                openSquaresQuery2 = String.format("MATCH (m:Marriage)-[:ID {actors: \"%3$s-Couple\"}]->(m2:Marriage)-[:SIBLING]-(m1:Marriage),\n" +
+                openSquaresQuery2 = String.format("MATCH (m:Marriage)-[r:ID {actors: \"%3$s-Couple\"}]->(m2:Marriage)-[:SIBLING]-(m1:Marriage),\n" +
                         "(m1)-[s:ID]-(m) " +
-                        "WHERE id(m) < id(m1)" +
+                        "WHERE id(m) < id(m1) " +
                         "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
                         "AND (s.fields_populated < %2$s OR s.distance > %1$s)\n" +
                         "RETURN count(DISTINCT [m, m2]) as cluster_count", threshold, fields, partner);

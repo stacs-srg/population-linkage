@@ -97,33 +97,4 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //get number of triangles before resolution
         new BirthParentsMarriageAccuracy(bridge);
     }
-
-    private void resolveTriangle(String partner, Long[] triangle, IBucket births, IBucket marriages, LXPMeasure composite_measure) throws BucketException {
-    }
-
-    /**
-     * Method to locate all open triangles in the database
-     *
-     * @param bridge Neo4j Bridge
-     * @return List of open triangle clusters
-     */
-    private List<Long[]> findIllegalBirthMarriageTriangles(NeoDbCypherBridge bridge, String partner) {
-        final String BIRTH_MARRIAGE_TRIANGLE_QUERY = String.format("MATCH (x:Birth)-[:ID {actors: \"Child-%1$s\"}]-(y:Marriage)-[:ID {actors: \"Child-%1$s\"}]-(z:Birth)\n" +
-                "WHERE id(x) < id(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
-                "RETURN x, y, z", partner);
-
-        //run query to get all open triangles
-        Result result = bridge.getNewSession().run(BIRTH_MARRIAGE_TRIANGLE_QUERY);
-        List<Long[]> triangles = new ArrayList<>();
-        result.stream().forEach(r -> {
-            long x = ((Node) r.asMap().get("x")).get("STORR_ID").asLong();
-            long y = ((Node) r.asMap().get("y")).get("STORR_ID").asLong();
-            long z = ((Node) r.asMap().get("z")).get("STORR_ID").asLong();
-
-            Long[] tempList = {x, y, z};
-            triangles.add(tempList);
-        });
-
-        return triangles;
-    }
 }
