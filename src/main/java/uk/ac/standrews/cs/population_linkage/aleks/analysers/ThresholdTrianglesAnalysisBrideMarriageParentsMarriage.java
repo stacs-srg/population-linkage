@@ -28,15 +28,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class ThresholdTrianglesAnalysisBrideMarriageParentsMarriage extends ThresholdTrianglesAnalysis {
-    private static final String BIRTH_BRIDE_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
-    private static final String BIRTH_BRIDE_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
-    private static final String BIRTH_BRIDE_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Bride\"}]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Bride\"}]->(m:Marriage), (b)-[s:ID {actors: \"Child-Bride\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
-
+    private static final String BRIDE_PARENTS_MARRIAGE_TPC = "MATCH (m1:Marriage)-[r:ID {actors: \"Bride-Couple\"}]->(m2:Marriage) WHERE (m1)-[:GT_ID {actors: \"Bride-Couple\"}]-(m2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BRIDE_PARENTS_MARRIAGE_FPC = "MATCH (m1:Marriage)-[r:ID {actors: \"Bride-Couple\"}]->(m2:Marriage) WHERE NOT (m1)-[:GT_ID {actors: \"Bride-Couple\"}]-(m2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BRIDE_PARENTS_MARRIAGE_FNC = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Bride-Couple\"}]->(m2:Marriage) WHERE NOT (m1)-[:ID {actors: \"Bride-Couple\"}]-(m2) return count(r)";
+    private static final String BRIDE_PARENTS_MARRIAGE_FNC_T = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Bride-Couple\"}]->(m2:Marriage), (m)-[s:ID {actors: \"Bride-Couple\"}]-(m1) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+    
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
+        final int MAX_FIELD = 4;
+        final int MIN_FIELD = 1; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
@@ -59,10 +59,10 @@ public class ThresholdTrianglesAnalysisBrideMarriageParentsMarriage extends Thre
                             double threshold = Math.round(i * 100.0) / 100.0;
 
                             //get quality measurements
-                            long fpc = doQuery(BIRTH_BRIDE_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_BRIDE_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_BRIDE_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_BRIDE_ID_FNC_T, i, currentField, localBridge);
+                            long fpc = doQuery(BRIDE_PARENTS_MARRIAGE_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(BRIDE_PARENTS_MARRIAGE_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(BRIDE_PARENTS_MARRIAGE_FNC, threshold, currentField, localBridge)
+                                    + doQuery(BRIDE_PARENTS_MARRIAGE_FNC_T, i, currentField, localBridge);
 
                             //print to csv
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
@@ -70,8 +70,8 @@ public class ThresholdTrianglesAnalysisBrideMarriageParentsMarriage extends Thre
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, true, "Bride"),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, false, "Bride"));
+                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Marriage", "Marriage", i, currentField, true, "Bride"),
+                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Marriage", "Marriage", i, currentField, false, "Bride"));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

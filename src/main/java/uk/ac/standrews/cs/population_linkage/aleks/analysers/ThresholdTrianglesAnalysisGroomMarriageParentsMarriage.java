@@ -35,8 +35,8 @@ public class ThresholdTrianglesAnalysisGroomMarriageParentsMarriage extends Thre
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
+        final int MAX_FIELD = 4;
+        final int MIN_FIELD = 1; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
@@ -70,8 +70,8 @@ public class ThresholdTrianglesAnalysisGroomMarriageParentsMarriage extends Thre
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Marriage", "Marriage", i, currentField, true, "Bride"),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, false, "Bride"));
+                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Marriage", "Marriage", i, currentField, true, "Groom"),
+                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, false, "Groom"));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
