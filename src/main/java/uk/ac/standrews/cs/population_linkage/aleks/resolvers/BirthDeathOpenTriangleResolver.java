@@ -200,7 +200,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
                 temp.add(openTriangleList); //add triangles to a temporary list
 
-                if (temp.size() == 650) { //limit number of triangles in cluster
+                if (temp.size() == 600) { //limit number of triangles in cluster
                     clusters.add(new OpenTriangleClusterBD(x, new ArrayList<>(temp), recordRepo));
                     temp.clear();
                 }
