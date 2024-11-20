@@ -176,26 +176,43 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Birth)\n"+
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, collect([y, z]) AS openTriangles";
+
+        //run query to get all open triangles
         Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE_QUERY);
-        return result.stream().map(r -> {
+        List<OpenTriangleClusterBD> clusters = new ArrayList<>();
+        List<List<Long>> temp = new ArrayList<>();
+
+        //loop through each cluster
+        result.stream().forEach(r -> {
             long x = ((Node) r.asMap().get("x")).get("STORR_ID").asLong();
             List<List<Node>> openTrianglesNodes = (List<List<Node>>) r.asMap().get("openTriangles");
 
-            List<List<Long>> openTrianglesList = openTrianglesNodes
-                    .stream()
-                    .map(innerList -> innerList.stream()
-                            .map(obj -> {
-                                if (obj instanceof Node) {
-                                    return ((Node) obj).get("STORR_ID").asLong();
-                                } else {
-                                    throw new IllegalArgumentException("Expected a Node but got: " + obj.getClass());
-                                }
-                            })
-                            .collect(Collectors.toList()))
-                    .collect(Collectors.toList());
+            for (List<Node> innerList : openTrianglesNodes) {
+                List<Long> openTriangleList = innerList.stream()
+                        .map(obj -> {
+                            if (obj instanceof Node) {
+                                return ((Node) obj).get("STORR_ID").asLong();
+                            } else {
+                                throw new IllegalArgumentException("Expected a Node but got: " + obj.getClass());
+                            }
+                        })
+                        .collect(Collectors.toList());
 
-            return new OpenTriangleClusterBD(x, openTrianglesList, recordRepo);
-        }).collect(Collectors.toList());
+                temp.add(openTriangleList); //add triangles to a temporary list
+
+                if (temp.size() == 360) { //limit number of triangles in cluster
+                    clusters.add(new OpenTriangleClusterBD(x, new ArrayList<>(temp), recordRepo));
+                    temp.clear();
+                }
+            }
+
+            if (!temp.isEmpty()) { //if not reached limit, create a cluster object with whatever is left
+                clusters.add(new OpenTriangleClusterBD(x, new ArrayList<>(temp), recordRepo));
+                temp.clear();
+            }
+        });
+
+        return clusters;
     }
 
     public boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
