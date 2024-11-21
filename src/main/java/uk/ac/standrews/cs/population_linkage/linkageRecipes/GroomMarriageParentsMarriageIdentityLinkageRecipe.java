@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 2;
+    private static final double DISTANCE_THRESHOLD = 1;
 
     public static final String LINKAGE_TYPE = "groom-parents-marriage-identity";
 
