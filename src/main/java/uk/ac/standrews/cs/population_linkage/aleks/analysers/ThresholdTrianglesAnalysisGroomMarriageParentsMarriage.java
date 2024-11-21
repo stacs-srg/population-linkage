@@ -31,7 +31,7 @@ public class ThresholdTrianglesAnalysisGroomMarriageParentsMarriage extends Thre
     private static final String GROOM_PARENTS_MARRIAGE_TPC = "MATCH (m1:Marriage)-[r:ID {actors: \"Groom-Couple\"}]->(m2:Marriage) WHERE (m1)-[:GT_ID {actors: \"Groom-Couple\"}]-(m2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String GROOM_PARENTS_MARRIAGE_FPC = "MATCH (m1:Marriage)-[r:ID {actors: \"Groom-Couple\"}]->(m2:Marriage) WHERE NOT (m1)-[:GT_ID {actors: \"Groom-Couple\"}]-(m2) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
     private static final String GROOM_PARENTS_MARRIAGE_FNC = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Groom-Couple\"}]->(m2:Marriage) WHERE NOT (m1)-[:ID {actors: \"Groom-Couple\"}]-(m2) return count(r)";
-    private static final String GROOM_PARENTS_MARRIAGE_FNC_T = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Groom-Couple\"}]->(m2:Marriage), (m)-[s:ID {actors: \"Groom-Couple\"}]-(m1) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+    private static final String GROOM_PARENTS_MARRIAGE_FNC_T = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Groom-Couple\"}]->(m2:Marriage), (m1)-[s:ID {actors: \"Groom-Couple\"}]-(m2) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
     public static void main(String[] args) throws InterruptedException {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();

@@ -20,6 +20,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 
+from pandas.core.computation.expr import intersection
+
+
 def main(MAX_FIELD, MIN_FIELD, FILE, save):
     fig = plt.figure(figsize=(14, 8))
     threshold_total = 0
@@ -60,13 +63,12 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
         fpots = data['total'] - data['fnots']
         fpot_norm = (fpots - fpots.min()) / (fpots.max() - fpots.min())
 
-        not_zero = (fnot_norm > 0.05) | (fpot_norm > 0.05)
+        not_zero = ((fnot_norm > 0.05) & (fnot_norm != 1)) | ((fpot_norm > 0.05) & (fpot_norm != 1))
         valid_indices = np.where(not_zero)[0]
-        intersection_index = valid_indices[np.argmin(np.abs(fnot_norm[valid_indices] - fpot_norm[valid_indices]))]
+        positive_indices = valid_indices[fnot_norm[valid_indices] - fpot_norm[valid_indices] > -0.001]
+        intersection_index = positive_indices[np.argmin(fnot_norm[positive_indices] - fpot_norm[positive_indices])]
+        test = fnot_norm[positive_indices] - fpot_norm[positive_indices]
         intersection_threshold = data['threshold'].iloc[intersection_index]
-        intersection_value = fnot_norm.iloc[intersection_index]
-        # open_triangles_merged = (data['fnot'] + data['trianglesF']) / 2
-        # open_triangles_merged = (open_triangles_merged - open_triangles_merged.min()) / (open_triangles_merged.max() - open_triangles_merged.min())
 
         ax2 = ax1.twinx()
         ax2.yaxis.set_visible(False)
@@ -110,7 +112,7 @@ if __name__ == "__main__":
     parser.add_argument('--max', type=int, required=True, help="Maximum threshold field")
     parser.add_argument('--min', type=int, required=True, help="Minimum threshold field (1 below target)")
     parser.add_argument('--file', type=str, required=True, help="csv file name")
-    parser.add_argument('--save', type=bool, required=True, help="save file")
+    parser.add_argument('--save', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     main(args.max, args.min - 1, args.file, args.save)
