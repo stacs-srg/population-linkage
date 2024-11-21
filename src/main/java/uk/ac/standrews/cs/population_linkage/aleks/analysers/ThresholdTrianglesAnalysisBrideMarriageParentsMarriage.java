@@ -37,7 +37,7 @@ public class ThresholdTrianglesAnalysisBrideMarriageParentsMarriage extends Thre
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 4;
         final int MIN_FIELD = 1; //1 below target
-        final double MAX_THRESHOLD = 2.01; //0.01 above target
+        final double MAX_THRESHOLD = 1.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
