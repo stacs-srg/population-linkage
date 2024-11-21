@@ -514,7 +514,7 @@ public class PatternsCounter {
                         "AND NOT (b1)-[:SIBLING]-(m1) AND NOT (b2)-[:SIBLING]-(m2) AND NOT (b1)-[:ID]-(m2) AND NOT (b2)-[:ID]-(m1)\n" +
                         "AND (b1)-[:ID]-(m) AND (b2)-[:ID]-(m)\n" +
                         "AND r.distance <= %1$s AND r.fields_populated >= %2$s " +
-                        "AND (s.fields_populated < %2$s OR s.distance > %1$s)\n" +
+                        "AND (t.fields_populated < %2$s OR t.distance > %1$s)\n" +
                         "AND id(m1) < id(m2)\n" +
                         "AND b1.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR AND b2.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR " +
                         "RETURN count(DISTINCT [m, m2]) as cluster_count", threshold, fields, partner);
