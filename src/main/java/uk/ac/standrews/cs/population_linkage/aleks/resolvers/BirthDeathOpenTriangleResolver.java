@@ -125,7 +125,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
 
         executorService.shutdown();
-        executorService.awaitTermination(12, TimeUnit.HOURS);
+        executorService.awaitTermination(48, TimeUnit.HOURS);
 
         System.out.println("After");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
