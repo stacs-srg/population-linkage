@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 1;
+    private static final double DISTANCE_THRESHOLD = 0.6;
 
     public static final String LINKAGE_TYPE = "groom-parents-marriage-identity";
 
@@ -149,12 +149,14 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     @Override
     public double getThreshold() {
-        if(getNumberOfLinkageFieldsRequired() == 4){
-            return 0.82;
-        } else if (getNumberOfLinkageFieldsRequired() == 2 || getNumberOfLinkageFieldsRequired() == 3) {
-            return 0.85;
-        }else{
-            return DISTANCE_THRESHOLD;
+        switch (getNumberOfLinkageFieldsRequired()){
+            case 4:
+                return 0.82;
+            case 3:
+            case 2:
+                return 0.85;
+            default:
+                return DISTANCE_THRESHOLD;
         }
     }
 

@@ -187,14 +187,18 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        if (getNumberOfLinkageFieldsRequired() == 8) {
-            return 1.81;
-        } else if (getNumberOfLinkageFieldsRequired() == 7 || getNumberOfLinkageFieldsRequired() == 6 || getNumberOfLinkageFieldsRequired() == 5) {
-            return 1.78;
-        } else {
-            return 0.98;
+        switch (getNumberOfLinkageFieldsRequired()){
+            case 8:
+                return 1.81;
+            case 7:
+            case 6:
+            case 5:
+                return 1.78;
+            case 4:
+                return 0.98;
+            default:
+                return THRESHOLD;
         }
-//        return THRESHOLD;
     }
 
     @Override

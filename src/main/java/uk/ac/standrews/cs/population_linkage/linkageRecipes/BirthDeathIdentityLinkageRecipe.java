@@ -211,14 +211,16 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        if(getNumberOfLinkageFieldsRequired() == 6 || getNumberOfLinkageFieldsRequired() == 5){
-            return 0.69;
-        } else if (getNumberOfLinkageFieldsRequired() == 4 || getNumberOfLinkageFieldsRequired() == 3) {
-            return 0.6;
-        }else{
-            return THRESHOLD;
+        switch (getNumberOfLinkageFieldsRequired()){
+            case 6:
+            case 5:
+                return 0.69;
+            case 4:
+            case 3:
+                return 0.6;
+            default:
+                return THRESHOLD;
         }
-//        return THRESHOLD;
     }
 
     @Override

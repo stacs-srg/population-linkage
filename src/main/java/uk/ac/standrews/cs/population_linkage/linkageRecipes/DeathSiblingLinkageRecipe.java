@@ -179,15 +179,16 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-//        if(getNumberOfLinkageFieldsRequired() == 4 || getNumberOfLinkageFieldsRequired() == 3){
-//            return 1;
-//        } else if (getNumberOfLinkageFieldsRequired() == 2) {
-//            return 0.35;
-//        }else{
-//            return DISTANCE_THRESHOLD;
-//        }
-
-        return DISTANCE_THRESHOLD;
+        switch (getNumberOfLinkageFieldsRequired()){
+            case 4:
+                return 0.85;
+            case 3:
+                return 0.86;
+            case 2:
+                return 0.28;
+            default:
+                return DISTANCE_THRESHOLD;
+        }
     }
 
     @Override

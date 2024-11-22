@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 2;
+    private static final double DISTANCE_THRESHOLD = 0.4;
 
     public static final String LINKAGE_TYPE = "birth-parents-marriage-identity";
 
@@ -170,12 +170,17 @@ public class BirthParentsMarriageIdentityLinkageRecipe extends LinkageRecipe {
 
     @Override
     public double getThreshold() {
-        if (getNumberOfLinkageFieldsRequired() == 8) {
-            return 1.78;
-        } else if (getNumberOfLinkageFieldsRequired() == 7 || getNumberOfLinkageFieldsRequired() == 6) {
-            return 1.43;
-        } else {
-            return 1.4;
+        switch (getNumberOfLinkageFieldsRequired()){
+            case 8:
+                return 1.78;
+            case 7:
+            case 6:
+                return 1.43;
+            case 5:
+            case 4:
+                return 1.4;
+            default:
+                return DISTANCE_THRESHOLD;
         }
     }
 
