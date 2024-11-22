@@ -149,7 +149,13 @@ public class GroomMarriageParentsMarriageIdentityLinkageRecipe extends LinkageRe
 
     @Override
     public double getThreshold() {
-        return DISTANCE_THRESHOLD;
+        if(getNumberOfLinkageFieldsRequired() == 4){
+            return 0.82;
+        } else if (getNumberOfLinkageFieldsRequired() == 2 || getNumberOfLinkageFieldsRequired() == 3) {
+            return 0.85;
+        }else{
+            return DISTANCE_THRESHOLD;
+        }
     }
 
     @Override

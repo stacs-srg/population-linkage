@@ -65,8 +65,9 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
 
         not_zero = ((fnot_norm > 0.05) & (fnot_norm != 1)) | ((fpot_norm > 0.05) & (fpot_norm != 1))
         valid_indices = np.where(not_zero)[0]
-        positive_indices = valid_indices[fnot_norm[valid_indices] - fpot_norm[valid_indices] > -0.001]
+        positive_indices = valid_indices[fnot_norm[valid_indices] - fpot_norm[valid_indices] > -0.001] - 1
         intersection_index = positive_indices[np.argmin(fnot_norm[positive_indices] - fpot_norm[positive_indices])]
+        # intersection_index = valid_indices[np.argmin(fnot_norm[valid_indices] - fpot_norm[valid_indices])]
         test = fnot_norm[positive_indices] - fpot_norm[positive_indices]
         intersection_threshold = data['threshold'].iloc[intersection_index]
 
