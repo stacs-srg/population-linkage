@@ -104,17 +104,17 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
-//        for (OpenTriangleClusterBB triangle : triangles) {
-//            executorService.submit(() ->
-//                    {
-//                        try {
-//                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
-//                        } catch (BucketException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    }
-//            );
-//        }
+        for (OpenTriangleClusterBB triangle : triangles) {
+            executorService.submit(() ->
+                    {
+                        try {
+                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
+                        } catch (BucketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+        }
 
         System.out.println("Resolving triangles with predicates...");
         for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
