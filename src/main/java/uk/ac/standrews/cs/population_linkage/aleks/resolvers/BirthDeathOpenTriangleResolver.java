@@ -462,7 +462,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         List<Set<LXP>> setsToRemove = new ArrayList<>();
         List<Set<LXP>> setsToAdd = new ArrayList<>();
 
-        long startTime = System.nanoTime();
+//        long startTime = System.nanoTime();
         for (Set<LXP> fSet : familySets) {
             int k = 3;
             if (fSet.size() >= k) {
@@ -505,11 +505,11 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
             }
         }
 
-        long endTime = System.nanoTime();
-        long elapsedTimeMs = (endTime - startTime) / 1_000_000;
-        System.out.println("Execution time: " + elapsedTimeMs + " ms\n" +
-                "Starting size: " + familySets.get(0).size() + "\n" +
-                "End size: " + setsToAdd.get(0).size());
+//        long endTime = System.nanoTime();
+//        long elapsedTimeMs = (endTime - startTime) / 1_000_000;
+//        System.out.println("Execution time: " + elapsedTimeMs + " ms\n" +
+//                "Starting size: " + familySets.get(0).size() + "\n" +
+//                "End size: " + setsToAdd.get(0).size());
 
         familySets.removeAll(setsToRemove);
         familySets.addAll(setsToAdd);
