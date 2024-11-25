@@ -463,6 +463,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
         System.out.println("family: " + familySets.size());
         for (Set<LXP> fSet : familySets) {
+            System.out.println("fsetSize: " + fSet.size());
             int k = 3;
             if (fSet.size() >= k) {
                 OrderedList<List<LXP>,Double> familySetMSED = getMSEDForK(fSet, k, recipe);
@@ -514,7 +515,6 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 //            }
 
             for(Set<LXP> fSet : familySets) {
-                System.out.println("fsetSize: " + fSet.size());
                 if(fSet.size() > 1){
                     int kidsFound = 0;
                     List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
