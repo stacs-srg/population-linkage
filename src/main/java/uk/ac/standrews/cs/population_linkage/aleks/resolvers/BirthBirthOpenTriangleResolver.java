@@ -61,7 +61,7 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
     //Names of predicates to be used as prov
     private final String[] creationPredicates = {"match_m_date", "match_fixed_name", "msed"};
-    private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed"};
+    private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed" , "m_pred"};
 
     public static void main(String[] args){
         String sourceRepo = args[0]; // e.g. umea

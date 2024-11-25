@@ -28,7 +28,10 @@ import uk.ac.standrews.cs.population_linkage.resolver.msed.Binomials;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.MSED;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
 import uk.ac.standrews.cs.population_records.RecordRepository;
+import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public abstract class SiblingOpenTriangleResolver {
@@ -91,6 +94,29 @@ public abstract class SiblingOpenTriangleResolver {
             fields_from_choices.add(sb.toString()); // add the linkage fields for this choice to the list being assessed
         }
         return MSED.distance(fields_from_choices);
+    }
+
+    protected LocalDate getBirthdayAsDate(LXP child, boolean isDead){
+        int day = 1;
+
+        if(isDead){
+            //if missing day, set to first of month
+            if(!Objects.equals(child.getString(Death.DATE_OF_BIRTH).substring(0, 2), "--")){
+                day = Integer.parseInt(child.getString(Death.DATE_OF_BIRTH).substring(0, 2));
+            }
+
+            //get date
+            return LocalDate.of(Integer.parseInt(child.getString(Death.DATE_OF_BIRTH).substring(6)), Integer.parseInt(child.getString(Death.DATE_OF_BIRTH).substring(3, 5)), day);
+        }else{
+            //if missing day, set to first of month
+            if(!Objects.equals(child.getString(Birth.BIRTH_DAY), "--")){
+                day = Integer.parseInt(child.getString(Birth.BIRTH_DAY));
+            }
+
+            //get date
+            return LocalDate.of(Integer.parseInt(child.getString(Birth.BIRTH_YEAR)), Integer.parseInt(child.getString(Birth.BIRTH_MONTH)), day);
+        }
+
     }
 
     /**
