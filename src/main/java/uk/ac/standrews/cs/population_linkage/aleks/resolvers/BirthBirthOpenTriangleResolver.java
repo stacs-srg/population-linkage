@@ -509,15 +509,10 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
                     } else {
                         boolean familyFound = false;
                         for (Set<LXP> nSet : newSets) {
-                            if (familyFound) {
+                            if (!Collections.disjoint(nSet, births.get(i))) {
+                                nSet.addAll(births.get(i));
+                                familyFound = true;
                                 break;
-                            }
-                            for (int j = 0; j < births.get(i).size(); j++) {
-                                if (nSet.contains(births.get(i).get(j))) {
-                                    nSet.addAll(births.get(i));
-                                    familyFound = true;
-                                    break;
-                                }
                             }
                         }
 
