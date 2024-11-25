@@ -321,8 +321,8 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
     }
 
     public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int cPred, int dPred) throws BucketException {
-        double THRESHOLD = 0.04;
-        double TUPLE_THRESHOLD = 0.02;
+        double THRESHOLD = 0.03;
+        double TUPLE_THRESHOLD = 0.01;
 
         List<Set<LXP>> familySets = new ArrayList<>();
         List<List<LXP>> toDelete = new ArrayList<>();
@@ -479,16 +479,19 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
                     } else {
                         boolean familyFound = false;
                         for (Set<LXP> nSet : newSets) {
-                            if (familyFound) {
+                            if (!Collections.disjoint(nSet, records.get(i))) { // Efficient intersection check
+                                nSet.addAll(records.get(i));
+                                familyFound = true;
                                 break;
                             }
-                            for (int j = 0; j < records.get(i).size(); j++) {
-                                if (nSet.contains(records.get(i).get(j))) {
-                                    nSet.addAll(records.get(i));
-                                    familyFound = true;
-                                    break;
-                                }
-                            }
+
+//                            for (int j = 0; j < records.get(i).size(); j++) {
+//                                if (nSet.contains(records.get(i).get(j))) {
+//                                    nSet.addAll(records.get(i));
+//                                    familyFound = true;
+//                                    break;
+//                                }
+//                            }
                         }
 
                         if (!familyFound) {
