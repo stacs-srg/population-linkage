@@ -112,17 +112,17 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
 
         System.out.println("Resolving triangles with predicates...");
-        for (OpenTriangleCluster cluster : triangles) {
-            executorService.submit(() ->
-                    {
-                        try {
-                            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
-                        } catch (BucketException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-            );
-        }
+//        for (OpenTriangleCluster cluster : triangles) {
+//            executorService.submit(() ->
+//                    {
+//                        try {
+//                            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
+//                        } catch (BucketException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }
+//            );
+//        }
 
         executorService.shutdown();
         executorService.awaitTermination(48, TimeUnit.HOURS);
@@ -474,7 +474,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
                 newSets.add(new HashSet<>(records.get(0)));
 
                 for (int i = 1; i < distances.size(); i++) {
-                    if ((distances.get(i) - distances.get(i - 1)) / distances.get(i - 1) > 0.5 || distances.get(i) > 0.01 || newSets.get(0).size() > 24) {
+                    if ((distances.get(i) - distances.get(i - 1)) / distances.get(i - 1) > 0.5 || distances.get(i) > 0.01) {
                         break;
                     } else {
                         boolean familyFound = false;
