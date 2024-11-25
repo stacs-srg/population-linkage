@@ -104,17 +104,17 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
-        for (OpenTriangleClusterBB triangle : triangles) {
-            executorService.submit(() ->
-                    {
-                        try {
-                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
-                        } catch (BucketException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-            );
-        }
+//        for (OpenTriangleClusterBB triangle : triangles) {
+//            executorService.submit(() ->
+//                    {
+//                        try {
+//                            resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 2, 4);
+//                        } catch (BucketException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }
+//            );
+//        }
 
         System.out.println("Resolving triangles with predicates...");
         for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
@@ -253,29 +253,29 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         //TODO, maybe make it an or instead?
         //Check if record x is outside of range
         if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
 
         //Check if record z is outside of range
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
 
         //Check if record y is outside of range compared to x
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)) {
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
 
         //Check if record y is outside of range compared to z
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         }
