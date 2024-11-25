@@ -502,12 +502,14 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
             }
         }
 
-        familySets.removeAll(setsToRemove);
-        familySets.addAll(setsToAdd);
-
         long endTime = System.nanoTime();
         long elapsedTimeMs = (endTime - startTime) / 1_000_000;
-        System.out.println("Execution time: " + elapsedTimeMs + " ms");
+        System.out.println("Execution time: " + elapsedTimeMs + " ms\n" +
+                "Starting size: " + familySets.get(0).size() + "\n" +
+                "End size: " + setsToAdd.get(0).size());
+
+        familySets.removeAll(setsToRemove);
+        familySets.addAll(setsToAdd);
 
         for (List<LXP> triangleToDelete : toDelete) {
 //            String toFind = "244425";
