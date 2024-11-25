@@ -112,17 +112,17 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
 
         System.out.println("Resolving triangles with predicates...");
-//        for (OpenTriangleCluster cluster : triangles) {
-//            executorService.submit(() ->
-//                    {
-//                        try {
-//                            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
-//                        } catch (BucketException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    }
-//            );
-//        }
+        for (OpenTriangleCluster cluster : triangles) {
+            executorService.submit(() ->
+                    {
+                        try {
+                            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
+                        } catch (BucketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+        }
 
         executorService.shutdown();
         executorService.awaitTermination(48, TimeUnit.HOURS);
@@ -131,8 +131,8 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
         System.out.println("Birth-Death");
         pef.countSiblingEfficacy(new String[0], deletionPredicates, "Birth", "Death");
-        pef.countSiblingEfficacy(creationPredicates, new String[0], "Birth", "Birth");
         System.out.println("Birth-Birth");
+        pef.countSiblingEfficacy(creationPredicates, new String[0], "Birth", "Birth");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
         new BirthDeathSiblingAccuracy(bridge);
