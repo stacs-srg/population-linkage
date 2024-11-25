@@ -221,23 +221,23 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
         if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE) {
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)) {
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
-                Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE &&
-                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE){
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         }
@@ -320,7 +320,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
     }
 
     public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int cPred, int dPred) throws BucketException {
-        double THRESHOLD = 0.03;
+        double THRESHOLD = 0.04;
         double TUPLE_THRESHOLD = 0.02;
 
         List<Set<LXP>> familySets = new ArrayList<>();
@@ -461,6 +461,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         List<Set<LXP>> setsToRemove = new ArrayList<>();
         List<Set<LXP>> setsToAdd = new ArrayList<>();
 
+        System.out.println("family: " + familySets.size());
         for (Set<LXP> fSet : familySets) {
             int k = 3;
             if (fSet.size() >= k) {
@@ -503,6 +504,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         familySets.removeAll(setsToRemove);
         familySets.addAll(setsToAdd);
 
+        System.out.println("delete: " + toDelete.size());
         for (List<LXP> triangleToDelete : toDelete) {
 //            String toFind = "244425";
 //            String toFind2 = "235074";
@@ -512,22 +514,25 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 //            }
 
             for(Set<LXP> fSet : familySets) {
-                int kidsFound = 0;
-                List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
-                for (int i = 0; i < triangleToDelete.size(); i++) {
-                    if(fSet.contains(triangleToDelete.get(i))) {
-                        kidsIndex.remove((Integer.valueOf(i)));
-                        kidsFound++;
+                System.out.println("fsetSize: " + fSet.size());
+                if(fSet.size() > 1){
+                    int kidsFound = 0;
+                    List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
+                    for (int i = 0; i < triangleToDelete.size(); i++) {
+                        if(fSet.contains(triangleToDelete.get(i))) {
+                            kidsIndex.remove((Integer.valueOf(i)));
+                            kidsFound++;
+                        }
                     }
-                }
 
-                if(kidsFound == 2 && kidsIndex.size() == 1) {
-                    if(kidsIndex.get(0) == 0){
-                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
-                        break;
-                    } else if (kidsIndex.get(0) == 2) {
-                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
-                        break;
+                    if(kidsFound == 2 && kidsIndex.size() == 1) {
+                        if(kidsIndex.get(0) == 0){
+                            deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
+                            break;
+                        } else if (kidsIndex.get(0) == 2) {
+                            deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
+                            break;
+                        }
                     }
                 }
             }
