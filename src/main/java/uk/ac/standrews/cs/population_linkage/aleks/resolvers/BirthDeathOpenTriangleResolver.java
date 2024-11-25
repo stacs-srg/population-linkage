@@ -479,7 +479,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
                     } else {
                         boolean familyFound = false;
                         for (Set<LXP> nSet : newSets) {
-                            if (!Collections.disjoint(nSet, records.get(i))) { // Efficient intersection check
+                            if (!Collections.disjoint(nSet, records.get(i))) {
                                 nSet.addAll(records.get(i));
                                 familyFound = true;
                                 break;

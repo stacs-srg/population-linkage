@@ -52,11 +52,8 @@ public abstract class SiblingOpenTriangleResolver {
         }else{
             boolean familyFound = false;
             for(Set<LXP> fSet : familySets) {
-                if(familyFound){
-                    break;
-                }
                 for (int i = 0; i < bs.size(); i++) {
-                    if(fSet.contains(bs.get(i))) {
+                    if (!Collections.disjoint(fSet, bs) && fSet.size() < 20) {
                         fSet.addAll(bs);
                         familyFound = true;
                         break;
