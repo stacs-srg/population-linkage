@@ -140,7 +140,6 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
     }
 
     private void resolveTrianglesPredicates(OpenTriangleCluster cluster, IBucket births, IBucket deaths, LXPMeasure composite_measure_date) throws BucketException {
-        System.out.println("hi!");
         for (List<Long> chain : cluster.getTriangleChain()){
             LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
             String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
