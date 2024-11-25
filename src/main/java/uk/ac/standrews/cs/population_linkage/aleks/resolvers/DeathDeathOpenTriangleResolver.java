@@ -17,6 +17,8 @@
 package uk.ac.standrews.cs.population_linkage.aleks.resolvers;
 
 import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Node;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
@@ -43,8 +45,16 @@ import java.util.stream.Collectors;
 public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver {
     //Cypher queries used in predicates
     private final String BD_SIBLING_QUERY_DEL_PROV = "MATCH (a:Death), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov } ]-(b)";
+    private final String DD_ISO = "MATCH (b1:Birth)-[:SIBLING]-(b2:Birth)-[:SIBLING]-(b3:Birth),\n" +
+            "(d1:Death)-[:SIBLING]-(d2:Death)-[:SIBLING]-(d3:Death),\n" +
+            "(b1)-[:SIBLING]-(b3),\n" +
+            "(b1)-[:ID]-(d1),\n" +
+            "(b2)-[:ID]-(d2),\n" +
+            "(b3)-[:ID]-(d3)\n" +
+            "WHERE NOT (d1)-[:SIBLING]-(d3)\n" +
+            "MERGE (d1)-[r:DELETED { provenance: \"dd_iso\",actors: \"Deceased-Deceased\" } ]-(d3)";
 
-    private final String[] creationPredicates = {"match_m_date_bd"};
+    private final String[] creationPredicates = {"dd_iso"};
     private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed"};
 
     public static void main(String[] args) throws BucketException {
@@ -71,6 +81,12 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToString(bridge, "Death", "Death");
         new DeathDeathSiblingAccuracy(bridge);
+
+        System.out.println("Running graph predicates...");
+        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+            tx.run(DD_ISO); //run birth-marriage graph pattern
+            tx.commit();
+        }
 
         System.out.println("Locating triangles...");
         List<OpenTriangleClusterDD> triangles = findIllegalDeathDeathSiblingTriangles(bridge, sourceRepo);
@@ -111,7 +127,7 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         System.out.println("After");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
         System.out.println("Death-Death");
-        pef.countSiblingEfficacy(new String[0], deletionPredicates, "Death", "Death");
+        pef.countSiblingEfficacy(creationPredicates, deletionPredicates, "Death", "Death");
         PatternsCounter.countOpenTrianglesToString(bridge, "Death", "Death");
         new DeathDeathSiblingAccuracy(bridge);
     }
