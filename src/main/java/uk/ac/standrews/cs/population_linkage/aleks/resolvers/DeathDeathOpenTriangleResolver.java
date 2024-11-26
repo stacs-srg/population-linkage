@@ -52,9 +52,16 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
             "(b2)-[:ID]-(d2),\n" +
             "(b3)-[:ID]-(d3)\n" +
             "WHERE NOT (d1)-[:SIBLING]-(d3)\n" +
-            "MERGE (d1)-[r:DELETED { provenance: \"dd_iso\",actors: \"Deceased-Deceased\" } ]-(d3)";
+            "MERGE (d1)-[r:SIBLING { provenance: \"dd_iso\",actors: \"Deceased-Deceased\" } ]-(d3)";
+    private final String DD_SIB_ISO = "MATCH (b1:Death)-[:SIBLING]-(d:Birth),\n" +
+            "(b2:Death)-[:SIBLING]-(d),\n" +
+            "(b1:Death)-[:ID]-(d1:Birth),\n" +
+            "(b2:Death)-[:ID]-(d2:Birth),\n" +
+            "(d)-[:SIBLING]-(d1)-[:SIBLING]-(d2)\n" +
+            "WHERE NOT (b1)-[:SIBLING]-(b2) and not (b1)-[:SIBLING]-(d1) and not (b2)-[:SIBLING]-(d2)\n" +
+            "MERGE (b1)-[r:SIBLING { provenance: \"dd_sib_iso\", actors: \"Deceased-Deceased\" } ]-(b2)";
 
-    private final String[] creationPredicates = {"dd_iso"};
+    private final String[] creationPredicates = {"dd_iso", "dd_sib_iso"};
     private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed"};
 
     public static void main(String[] args) throws BucketException {
@@ -83,9 +90,14 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         new DeathDeathSiblingAccuracy(bridge);
 
         System.out.println("Running graph predicates...");
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            tx.run(DD_ISO); //run birth-marriage graph pattern
-            tx.commit();
+        String[] graphPredicates = {DD_ISO, DD_SIB_ISO};
+        for (int i = 0; i < graphPredicates.length; i++) {
+            try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+                tx.run(graphPredicates[i]);
+                tx.commit();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         System.out.println("Locating triangles...");
