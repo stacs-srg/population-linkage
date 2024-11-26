@@ -38,6 +38,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTriangleResolver {
@@ -71,7 +74,7 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
         }
     }
 
-    public BirthDeathIDPredicateOpenTriangleResolver(String sourceRepo) throws BucketException {
+    public BirthDeathIDPredicateOpenTriangleResolver(String sourceRepo) throws BucketException, InterruptedException {
         super(sourceRepo);
 
         IBucket births = record_repository.getBucket("birth_records");
@@ -86,12 +89,29 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
         System.out.println("Triangles found: " + triangles.size());
 
         System.out.println("Running graph predicates...");
-        String[] graphPredicates = {BD_SIBLING};
-        for (int i = 0; i < graphPredicates.length; i++) {
-            for (Long[] triangle : triangles) {
-                resolveTriangle(triangle, births, deaths);
-            }
+        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
+            tx.run(BD_SIBLING); //run birth-marriage graph pattern
+            tx.commit();
         }
+
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
+
+        System.out.println("Resolving triangles with predicates...");
+        for (Long[] triangle : triangles) {
+            executorService.submit(() ->
+                    {
+                        try {
+                            resolveTriangle(triangle, births, deaths);
+                        } catch (BucketException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+        }
+
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.HOURS);
 
         System.out.println("After");
         System.out.println("\n");
