@@ -52,7 +52,7 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
     private final String BD_SIBLING = "MATCH (a:Birth)-[:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
             "WHERE NOT (a)-[:SIBLING]-(d) and (b)-[:SIBLING]-(d)\n" +
-            "MERGE (b)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
+            "MERGE (b)-[:DELETED { provenance: \"sibling\", actors: \"Child-Deceased\" } ]-(d)";
 
     private static final String BM_ID_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: $actor } ]-(b)";
 
