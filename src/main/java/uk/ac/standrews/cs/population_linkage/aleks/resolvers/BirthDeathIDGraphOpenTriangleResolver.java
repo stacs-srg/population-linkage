@@ -24,7 +24,7 @@ import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthOwnDeathAccura
 import java.util.Map;
 
 
-public class BirthDeathIDOpenTriangleResolver extends IdentityOpenTriangleResolver {
+public class BirthDeathIDGraphOpenTriangleResolver extends IdentityOpenTriangleResolver {
     private final String BD_BAD_DATE = "MATCH (a:Birth)-[r:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
             "WHERE a.BIRTH_YEAR <> right(d.DATE_OF_BIRTH, 4)\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
@@ -46,13 +46,13 @@ public class BirthDeathIDOpenTriangleResolver extends IdentityOpenTriangleResolv
         }
 
         try {
-            new BirthDeathIDOpenTriangleResolver(sourceRepo);
+            new BirthDeathIDGraphOpenTriangleResolver(sourceRepo);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public BirthDeathIDOpenTriangleResolver(String sourceRepo) throws BucketException {
+    public BirthDeathIDGraphOpenTriangleResolver(String sourceRepo) throws BucketException {
         super(sourceRepo);
 
         System.out.println("Before");
