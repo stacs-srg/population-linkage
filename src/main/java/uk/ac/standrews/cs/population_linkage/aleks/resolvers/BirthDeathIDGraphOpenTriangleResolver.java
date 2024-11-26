@@ -39,7 +39,7 @@ public class BirthDeathIDGraphOpenTriangleResolver extends IdentityOpenTriangleR
             "MERGE (b)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
 
     //Names of predicates to be used as prov
-    private static final String[] deletionPredicates = {"bad_b_date", "born_after_death", "sibling"};
+    private static final String[] deletionPredicates = {"bad_b_date", "born_after_death", "born_way_before_death", "sibling"};
 
     public static void main(String[] args) throws BucketException {
         String sourceRepo = args[0]; // e.g. umea
