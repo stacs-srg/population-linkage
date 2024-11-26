@@ -31,6 +31,9 @@ public class BirthDeathIDGraphOpenTriangleResolver extends IdentityOpenTriangleR
     private final String BD_BORN_AFER = "MATCH (a:Birth)-[r:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
             "WHERE toInteger(a.BIRTH_YEAR) > toInteger(d.DEATH_YEAR)\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
+    private final String BD_BORN_BEFORE = "MATCH (a:Birth)-[r:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
+            "WHERE toInteger(d.DEATH_YEAR) - toInteger(a.BIRTH_YEAR) > 105\n" +
+            "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
     private final String BD_SIBLING = "MATCH (a:Birth)-[:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
             "WHERE NOT (a)-[:SIBLING]-(d) and (b)-[:SIBLING]-(d)\n" +
             "MERGE (b)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
@@ -60,7 +63,7 @@ public class BirthDeathIDGraphOpenTriangleResolver extends IdentityOpenTriangleR
         new BirthOwnDeathAccuracy(bridge);
 
         System.out.println("Running graph predicates...");
-        String[] graphPredicates = {BD_BAD_DATE, BD_BORN_AFER, BD_SIBLING};
+        String[] graphPredicates = {BD_BAD_DATE, BD_BORN_AFER, BD_BORN_BEFORE, BD_SIBLING};
         for (int i = 0; i < graphPredicates.length; i++) {
             try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
                 Map<String, Object> parameters = getCreationParameterMap(null, null, deletionPredicates[i], "Child-Deceased");
