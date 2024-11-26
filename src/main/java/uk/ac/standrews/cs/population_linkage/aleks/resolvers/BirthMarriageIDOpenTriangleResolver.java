@@ -48,19 +48,19 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
     //Cypher queries used in predicates
     private static final String BM_ID_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: $actor } ]-(b)";
 
-    private final String BM_BAD_DATE = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[r:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
+    private final String BM_BAD_DATE = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[s:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
             "WHERE a.BIRTH_YEAR <> right(d.%1$s_AGE_OR_DATE_OF_BIRTH, 4)\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
-    private final String BM_BORN_AFER = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[r:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
+    private final String BM_BORN_AFER = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[s:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
             "WHERE toInteger(a.BIRTH_YEAR) > toInteger(d.MARRIAGE_YEAR)\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
-    private final String BM_BORN_BEFORE = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[r:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
+    private final String BM_BORN_BEFORE = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[s:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
             "WHERE toInteger(d.MARRIAGE_YEAR) - toInteger(a.BIRTH_YEAR) < 16\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
-    private final String BM_BORN_OLD = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[r:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
+    private final String BM_BORN_OLD = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[s:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
             "WHERE toInteger(d.MARRIAGE_YEAR) - toInteger(a.BIRTH_YEAR) > 60\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
-    private final String BM_SIBLING = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[r:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
+    private final String BM_SIBLING = "MATCH (a:Birth)-[r:ID {actors: \"Child-$actor\"}]-(d:Marriage)-[s:ID {actors: \"Child-$actor\"}]-(b:Birth) \n" +
             "WHERE NOT (a)-[:SIBLING]-(d) and (b)-[:SIBLING]-(d)\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
 
