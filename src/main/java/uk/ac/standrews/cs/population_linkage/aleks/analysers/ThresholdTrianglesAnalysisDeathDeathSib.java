@@ -61,17 +61,10 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
                         for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
                             double threshold = Math.round(i * 100.0) / 100.0;
 
-                            //get quality measurements
-//                            long fpc = doQuery(DEATH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
-//                            long tpc = doQuery(DEATH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
-//                            long fnc = doQuery(DEATH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)
-//                                    + doQuery(DEATH_DEATH_SIBLING_FNC_T, i, currentField, localBridge);
-
-                            long fpc = 1;
-                            long tpc = 1;
-                            long fnc = 1;
-
-                            //PatternsCounter.countOpenTrianglesCumulative(bridge, "Death", "Death", i, currentField)
+                            long fpc = doQuery(DEATH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(DEATH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(DEATH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)
+                                    + doQuery(DEATH_DEATH_SIBLING_FNC_T, i, currentField, localBridge);
 
                             //print to csv
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
@@ -79,7 +72,7 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    0,
+                                    PatternsCounter.countOpenTrianglesCumulative(bridge, "Death", "Death", i, currentField),
                                     PatternsCounter.countOpenTrianglesIsomorphicSiblings(bridge, "Birth", "Death", i, currentField));
                         }
                     } catch (Exception e) {
