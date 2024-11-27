@@ -72,7 +72,7 @@ public class PredicateEfficacy {
     }
 
     public void countIDEfficacyDel(String[] toDelete, String recordType1, String recordType2, String actors){
-        System.out.println("Deleted");
+        System.out.println("Created");
         for (String s : toDelete) {
             List<Long> trueMatches;
             List<Long> total;

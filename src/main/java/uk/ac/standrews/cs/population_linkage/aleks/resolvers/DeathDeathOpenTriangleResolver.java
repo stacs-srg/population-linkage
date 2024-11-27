@@ -110,13 +110,13 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
         for (OpenTriangleClusterDD cluster : triangles) {
             executorService.submit(() ->
-                    {
-                        try {
-                            resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 2, 4);
-                        } catch (BucketException e) {
-                            throw new RuntimeException(e);
-                        }
+                {
+                    try {
+                        resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 2, 4);
+                    } catch (BucketException e) {
+                        throw new RuntimeException(e);
                     }
+                }
             );
         }
 
@@ -304,8 +304,8 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
     }
 
     public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int cPred, int dPred) throws BucketException {
-        double THRESHOLD = 0.03;
-        double TUPLE_THRESHOLD = 0.01;
+        double THRESHOLD = 0.04;
+        double TUPLE_THRESHOLD = 0.02;
 
         List<Set<LXP>> familySets = new ArrayList<>();
         List<List<LXP>> toDelete = new ArrayList<>();
