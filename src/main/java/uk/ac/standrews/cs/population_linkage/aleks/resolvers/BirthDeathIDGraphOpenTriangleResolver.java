@@ -77,7 +77,7 @@ public class BirthDeathIDGraphOpenTriangleResolver extends IdentityOpenTriangleR
         System.out.println("After");
         System.out.println("\n");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
-        pef.countIDEfficacy(deletionPredicates, "Birth", "Death", "Child-Deceased");
+        pef.countIDEfficacyDel(deletionPredicates, "Birth", "Death", "Child-Deceased");
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Death"); //get number of triangles before resolution
         new BirthOwnDeathAccuracy(bridge);
     }

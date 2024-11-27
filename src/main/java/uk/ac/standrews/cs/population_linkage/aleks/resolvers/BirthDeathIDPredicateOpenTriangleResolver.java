@@ -24,19 +24,13 @@ import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthOwnDeathAccuracy;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
-import uk.ac.standrews.cs.population_records.record_types.Marriage;
-import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -116,7 +110,7 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
         System.out.println("After");
         System.out.println("\n");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
-        pef.countIDEfficacy(deletionPredicates, "Birth", "Death", "Child-Deceased");
+        pef.countIDEfficacyDel(deletionPredicates, "Birth", "Death", "Child-Deceased");
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Death"); //get number of triangles before resolution
         new BirthOwnDeathAccuracy(bridge);
     }

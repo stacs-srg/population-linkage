@@ -21,7 +21,6 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Node;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
@@ -30,13 +29,10 @@ import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistanc
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBrideOwnMarriageAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthGroomOwnMarriageBundleAccuracy;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
@@ -130,7 +126,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
         for (String partner : partners) {
             System.out.println("\n" + partner + " efficacy:");
-            pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", "Child-" + partner);
+            pef.countIDEfficacyDel(deletionPredicates, "Birth", "Marriage", "Child-" + partner);
         }
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //count number of open triangles after resolution
         new BirthGroomOwnMarriageBundleAccuracy(bridge);

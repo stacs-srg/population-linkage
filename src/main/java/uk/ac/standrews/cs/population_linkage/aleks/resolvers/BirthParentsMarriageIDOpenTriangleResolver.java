@@ -16,20 +16,12 @@
  */
 package uk.ac.standrews.cs.population_linkage.aleks.resolvers;
 
-import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
-import org.neo4j.driver.types.Node;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
-import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
-import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthParentsMarriageAccuracy;
-import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
-import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.util.*;
-
 
 public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTriangleResolver {
     private final String BMP_SUPPORTED_TRIANGLE = "MATCH (a:Birth)-[:SIBLING]-(b:Birth)-[r:ID {actors: $actor}]-(m:Marriage),\n" +
@@ -61,13 +53,8 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
     public BirthParentsMarriageIDOpenTriangleResolver(String sourceRepo) throws BucketException {
         super(sourceRepo);
 
-        final StringMeasure base_measure = Constants.JENSEN_SHANNON;
-        LXPMeasure composite_measure;
-        IBucket births = record_repository.getBucket("birth_records");
-        IBucket marriages = record_repository.getBucket("marriage_records");
         String[] partners = {"Father", "Mother"};
         String[] partnersGT = {"Father-Groom", "Mother-Bride"};
-
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //get number of triangles before resolution
@@ -92,7 +79,7 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
         for (String partner : partnersGT) {
             System.out.println("\n" + partner + " efficacy:");
-            pef.countIDEfficacy(deletionPredicates, "Birth", "Marriage", partner);
+            pef.countIDEfficacyDel(deletionPredicates, "Birth", "Marriage", partner);
         }
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //get number of triangles before resolution
         new BirthParentsMarriageAccuracy(bridge);
