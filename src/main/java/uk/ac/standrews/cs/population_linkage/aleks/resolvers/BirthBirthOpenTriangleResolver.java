@@ -58,9 +58,17 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
             "(x)-[s:ID]-(m:Marriage),\n" +
             "(y)-[t:ID]-(m)\n" +
             "WHERE (s.actors = \"Child-Father\" or s.actors = \"Child-Mother\") and (t.actors = \"Child-Father\" or t.actors = \"Child-Mother\") and NOT (x)-[:SIBLING]-(z) and NOT (z)-[:ID]-(m) and z.PARENTS_YEAR_OF_MARRIAGE <> m.MARRIAGE_YEAR and x.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR and y.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR MERGE (y)-[r:DELETED { provenance: \"m_pred\",actors: \"Child-Child\" } ]-(z)";
+    private final String BB_ISO = "MATCH (b1:Birth)-[:SIBLING]-(b2:Birth)-[:SIBLING]-(b3:Birth),\n" +
+            "(d1:Death)-[:SIBLING]-(d2:Death)-[:SIBLING]-(d3:Death),\n" +
+            "(d1)-[:SIBLING]-(d3),\n" +
+            "(b1)-[:ID]-(d1),\n" +
+            "(b2)-[:ID]-(d2),\n" +
+            "(b3)-[:ID]-(d3)\n" +
+            "WHERE NOT (b1)-[:SIBLING]-(b3)\n" +
+            "MERGE (b1)-[r:SIBLING { provenance: \"bb_iso\",actors: \"Child-Child\" } ]-(b3)";
 
     //Names of predicates to be used as prov
-    private final String[] creationPredicates = {"match_m_date", "match_fixed_name", "msed"};
+    private final String[] creationPredicates = {"match_m_date", "bb_iso"};
     private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed" , "m_pred"};
 
     public static void main(String[] args){
@@ -91,9 +99,14 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         new BirthBirthSiblingAccuracy(bridge);
 
         System.out.println("Running graph predicates...");
-        try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction();) {
-            tx.run(BB_SIBLING_WITH_PARENTS); //run birth-marriage graph pattern
-            tx.commit();
+        String[] graphPredicates = {BB_SIBLING_WITH_PARENTS, BB_ISO};
+        for (String graphPredicate : graphPredicates) {
+            try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
+                tx.run(graphPredicate);
+                tx.commit();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         System.out.println("Locating triangles...");
