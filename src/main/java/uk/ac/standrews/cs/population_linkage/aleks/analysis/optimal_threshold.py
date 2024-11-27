@@ -90,12 +90,12 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
         ax1.grid(True)
 
         print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
-        print(f"Opptimal threshold estimate {N}: {intersection_threshold}")
+        print(f"Optimal threshold estimate {N}: {intersection_threshold}")
         print(f"Difference {N}: {abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()])}")
         threshold_total += abs(intersection_threshold - data['threshold'][data['fmeasure'].idxmax()])
 
         print(f"Peak F-measure {N}: {data['fmeasure'].max()}")
-        print(f"Opptimal threshold fmeasure {N}: {data['fmeasure'][data['threshold'] == intersection_threshold].values[0]}")
+        print(f"Optimal threshold fmeasure {N}: {data['fmeasure'][data['threshold'] == intersection_threshold].values[0]}")
         print(f"Difference {N}: {abs(data['fmeasure'].max() - data['fmeasure'][data['threshold'] == intersection_threshold].values[0])}")
         fmeasure_total += abs(data['fmeasure'].max() - data['fmeasure'][data['threshold'] == intersection_threshold].values[0])
         print("")
