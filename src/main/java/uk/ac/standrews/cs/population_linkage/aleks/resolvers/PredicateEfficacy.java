@@ -76,6 +76,11 @@ public class PredicateEfficacy {
         for (String s : toDelete) {
             Result result = bridge.getNewSession().run(String.format(DELETED_LINKS_QUERY_TRUE_ID, recordType1, recordType2, s, actors));
             List<Long> trueMatches = result.list(r -> r.get("cluster_count").asLong());
+            if(actors.equals("Father-Groom")){
+                actors = "Child-Father";
+            } else if (actors.equals("Mother-Bride")) {
+                actors = "Child-Mother";
+            }
             result = bridge.getNewSession().run(String.format(LINKS_QUERY_TOTAL_DELETED_ID, recordType1, recordType2, s, actors));
             List<Long> total = result.list(r -> r.get("cluster_count").asLong());
 
