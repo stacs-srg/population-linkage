@@ -29,9 +29,9 @@ public class PredicateEfficacy {
     private String LINKS_QUERY_TOTAL_DELETED = "MATCH (x:%s)-[r:DELETED]-(y:%s) WHERE r.provenance = \"%s\" RETURN count(r) as cluster_count";
 
     private String DELETED_LINKS_QUERY_TRUE_ID = "MATCH (x:%1$s)-[r:DELETED]-(y:%2$s) WHERE r.provenance = \"%3$s\" AND NOT (x:%1$s)-[:GT_ID {actors: \"%4$s\"}]-(y:%2$s) RETURN count(r) as cluster_count";
-    private String LINKS_QUERY_TOTAL_DELETED_ID = "MATCH (x:%s)-[r:DELETED]-(y:%s) WHERE r.provenance = \"%s\" and r.actors = \"$s\" RETURN count(r) as cluster_count";
+    private String LINKS_QUERY_TOTAL_DELETED_ID = "MATCH (x:%s)-[r:DELETED]-(y:%s) WHERE r.provenance = \"%s\" and r.actors = \"%s\" RETURN count(r) as cluster_count";
     private String CREATED_LINKS_QUERY_TRUE_ID = "MATCH (x:%1$s)-[r:ID]-(y:%2$s) WHERE r.provenance = \"%3$s\" and r.actors = \"%4$s\" AND (x:%1$s)-[:GT_ID]-(y:%2$s) AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
-    private String LINKS_QUERY_TOTAL_CREATED_ID = "MATCH (x:%s)-[r:ID]-(y:%s) WHERE r.provenance = \"%s\" and r.actors = \"$s\" AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
+    private String LINKS_QUERY_TOTAL_CREATED_ID = "MATCH (x:%s)-[r:ID]-(y:%s) WHERE r.provenance = \"%s\" and r.actors = \"%s\" AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
 
     NeoDbCypherBridge bridge;
 
