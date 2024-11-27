@@ -46,19 +46,19 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
 
     private final String BM_BAD_DATE = "MATCH (a:Birth)-[r:ID {actors: \"Child-%1$s\"}]-(d:Marriage)-[s:ID {actors: \"Child-%1$s\"}]-(b:Birth) \n" +
             "WHERE a.BIRTH_YEAR <> right(d.%2$s_AGE_OR_DATE_OF_BIRTH, 4)\n" +
-            "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
+            "MERGE (a)-[:DELETED { provenance: $prov, actors: $actor } ]-(d)";
     private final String BM_BORN_AFER = "MATCH (a:Birth)-[r:ID {actors: \"Child-%1$s\"}]-(d:Marriage)-[s:ID {actors: \"Child-%1$s\"}]-(b:Birth) \n" +
             "WHERE toInteger(a.BIRTH_YEAR) > toInteger(d.MARRIAGE_YEAR)\n" +
-            "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
+            "MERGE (a)-[:DELETED { provenance: $prov, actors: $actor } ]-(d)";
     private final String BM_BORN_BEFORE = "MATCH (a:Birth)-[r:ID {actors: \"Child-%1$s\"}]-(d:Marriage)-[s:ID {actors: \"Child-%1$s\"}]-(b:Birth) \n" +
             "WHERE toInteger(d.MARRIAGE_YEAR) - toInteger(a.BIRTH_YEAR) < 16\n" +
-            "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
+            "MERGE (a)-[:DELETED { provenance: $prov, actors: $actor } ]-(d)";
     private final String BM_BORN_OLD = "MATCH (a:Birth)-[r:ID {actors: \"Child-%1$s\"}]-(d:Marriage)-[s:ID {actors: \"Child-%1$s\"}]-(b:Birth) \n" +
             "WHERE toInteger(d.MARRIAGE_YEAR) - toInteger(a.BIRTH_YEAR) > 60\n" +
-            "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
+            "MERGE (a)-[:DELETED { provenance: $prov, actors: $actor } ]-(d)";
     private final String BM_SIBLING = "MATCH (a:Birth)-[r:ID {actors: \"Child-%1$s\"}]-(d:Marriage)-[s:ID {actors: \"Child-%1$s\"}]-(b:Birth) \n" +
             "WHERE NOT (a)-[:SIBLING]-(d) and (b)-[:SIBLING]-(d)\n" +
-            "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-$actor\" } ]-(d)";
+            "MERGE (a)-[:DELETED { provenance: $prov, actors: $actor } ]-(d)";
 
     //Names of predicates to be used as prov
     private static final String[] creationPredicates = {};
@@ -103,7 +103,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
             String[] graphPredicates = {BM_BAD_DATE, BM_BORN_AFER, BM_BORN_BEFORE, BM_BORN_OLD, BM_SIBLING};
             for (int i = 0; i < graphPredicates.length; i++) {
                 try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
-                    Map<String, Object> parameters = getCreationParameterMap(null, null, deletionPredicates[i], partner);
+                    Map<String, Object> parameters = getCreationParameterMap(null, null, deletionPredicates[i], "Child-" + partner);
                     if(i == 0){
                         tx.run(String.format(graphPredicates[i], partner, partner.toUpperCase()), parameters);
                     }else{
@@ -141,7 +141,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
         for (int i = 0; i < triangle.length; i += 2) {
             //5. Check names
             if (!isDeleted && getDistance(tempKids[i], tempKids[1], composite_measure) > NAME_THRESHOLD) {
-                deleteLink(bridge, stds[i], stds[1], partner, deletionPredicates[5], BM_ID_QUERY_DEL_PROV);
+                deleteLink(bridge, stds[i], stds[1], "Child-" + partner, deletionPredicates[5], BM_ID_QUERY_DEL_PROV);
             }
         }
     }
