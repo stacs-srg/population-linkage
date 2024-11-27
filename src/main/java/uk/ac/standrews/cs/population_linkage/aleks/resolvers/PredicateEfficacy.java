@@ -28,7 +28,7 @@ public class PredicateEfficacy {
     private String LINKS_QUERY_TOTAL_CREATED = "MATCH (x:%s)-[r:SIBLING]-(y:%s) WHERE r.provenance = \"%s\" AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
     private String LINKS_QUERY_TOTAL_DELETED = "MATCH (x:%s)-[r:DELETED]-(y:%s) WHERE r.provenance = \"%s\" RETURN count(r) as cluster_count";
 
-    private String DELETED_LINKS_QUERY_TRUE_ID = "MATCH (x:%1$s)-[r:DELETED]-(y:%2$s) WHERE r.provenance = \"%3$s\" AND NOT (x:%1$s)-[:GT_ID {actors: \"%4$s\"}]-(y:%2$s) RETURN count(r) as cluster_count";
+    private String DELETED_LINKS_QUERY_TRUE_ID = "MATCH (x:%1$s)-[r:DELETED]-(y:%2$s) WHERE r.provenance = \"%3$s\" and r.actors = \"%4$s\" AND NOT (x:%1$s)-[:GT_ID {actors: \"%5$s\"}]-(y:%2$s) RETURN count(r) as cluster_count";
     private String LINKS_QUERY_TOTAL_DELETED_ID = "MATCH (x:%s)-[r:DELETED]-(y:%s) WHERE r.provenance = \"%s\" and r.actors = \"%s\" RETURN count(r) as cluster_count";
     private String CREATED_LINKS_QUERY_TRUE_ID = "MATCH (x:%1$s)-[r:ID]-(y:%2$s) WHERE r.provenance = \"%3$s\" and r.actors = \"%4$s\" AND (x:%1$s)-[:GT_ID]-(y:%2$s) AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
     private String LINKS_QUERY_TOTAL_CREATED_ID = "MATCH (x:%s)-[r:ID]-(y:%s) WHERE r.provenance = \"%s\" and r.actors = \"%s\" AND NOT (x)-[:DELETED]-(y) RETURN count(r) as cluster_count";
@@ -74,15 +74,24 @@ public class PredicateEfficacy {
     public void countIDEfficacyDel(String[] toDelete, String recordType1, String recordType2, String actors){
         System.out.println("Deleted");
         for (String s : toDelete) {
-            Result result = bridge.getNewSession().run(String.format(DELETED_LINKS_QUERY_TRUE_ID, recordType1, recordType2, s, actors));
-            List<Long> trueMatches = result.list(r -> r.get("cluster_count").asLong());
+            List<Long> trueMatches;
+            List<Long> total;
             if(actors.equals("Father-Groom")){
-                actors = "Child-Father";
+                Result result = bridge.getNewSession().run(String.format(DELETED_LINKS_QUERY_TRUE_ID, recordType1, recordType2, s, "Child-Father", actors));
+                trueMatches = result.list(r -> r.get("cluster_count").asLong());
+                result = bridge.getNewSession().run(String.format(LINKS_QUERY_TOTAL_DELETED_ID, recordType1, recordType2, s, "Child-Father"));
+                total = result.list(r -> r.get("cluster_count").asLong());
             } else if (actors.equals("Mother-Bride")) {
-                actors = "Child-Mother";
+                Result result = bridge.getNewSession().run(String.format(DELETED_LINKS_QUERY_TRUE_ID, recordType1, recordType2, s, "Child-Mother", actors));
+                trueMatches = result.list(r -> r.get("cluster_count").asLong());
+                result = bridge.getNewSession().run(String.format(LINKS_QUERY_TOTAL_DELETED_ID, recordType1, recordType2, s, "Child-Mother"));
+                total = result.list(r -> r.get("cluster_count").asLong());
+            }else{
+                Result result = bridge.getNewSession().run(String.format(DELETED_LINKS_QUERY_TRUE_ID, recordType1, recordType2, s, actors, actors));
+                trueMatches = result.list(r -> r.get("cluster_count").asLong());
+                result = bridge.getNewSession().run(String.format(LINKS_QUERY_TOTAL_DELETED_ID, recordType1, recordType2, s, actors));
+                total = result.list(r -> r.get("cluster_count").asLong());
             }
-            result = bridge.getNewSession().run(String.format(LINKS_QUERY_TOTAL_DELETED_ID, recordType1, recordType2, s, actors));
-            List<Long> total = result.list(r -> r.get("cluster_count").asLong());
 
             if (!trueMatches.isEmpty() && !total.isEmpty()) {
                 long trueCount = trueMatches.get(0);
