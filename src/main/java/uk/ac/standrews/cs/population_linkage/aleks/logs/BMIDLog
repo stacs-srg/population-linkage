@@ -113,3 +113,130 @@ Specificity	1.00
 
 Triangles found: 5586
 Triangles found: 1511
+----------------------------------
+Before
+Birth-Marriage-Birth triangle: 335945
+BirthGroomOwnMarriageBundleAccuracy
+False positive count	25521
+True positive count	16291
+False negative count	16496
+True negative count	13682360552
+
+Precision	0.39
+Recall	0.50
+F1	0.44
+Specificity	1.00
+
+----
+BirthBrideOwnMarriageAccuracy
+False positive count	21786
+True positive count	18682
+False negative count	36057
+True negative count	13682342335
+
+Precision	0.46
+Recall	0.34
+F1	0.39
+Specificity	1.00
+
+----
+Resolving Groom
+Locating triangles...
+Triangles found: 211699
+Running graph predicates...
+Resolving triangles with predicates...
+Resolving Bride
+Locating triangles...
+Triangles found: 144693
+Running graph predicates...
+Resolving triangles with predicates...
+After
+
+
+
+Groom efficacy:
+Deleted
+diff_birth 46210/48282 0.9570854562777018
+born_after 7914/7915 0.9998736576121289
+too_young 13535/13536 0.9999261229314421
+too_old 3867/3900 0.9915384615384616
+siblings 16515/18773 0.8797208757257764
+bad_name 25928/26484 0.9790061924180637
+
+Bride efficacy:
+Deleted
+diff_birth 46050/48282 0.9537715918976016
+born_after 7915/7915 1.0
+too_young 13533/13536 0.9997783687943262
+too_old 3896/3900 0.9989743589743589
+siblings 17720/18773 0.9439088051989559
+bad_name 25156/26484 0.9498565171424256
+Birth-Marriage-Birth triangle: 162236
+BirthGroomOwnMarriageBundleAccuracy
+False positive count	1384
+True positive count	12633
+False negative count	20154
+True negative count	13682384689
+
+Precision	0.90
+Recall	0.39
+F1	0.54
+Specificity	1.00
+
+----
+BirthBrideOwnMarriageAccuracy
+False positive count	1754
+True positive count	15353
+False negative count	36057
+True negative count	13682365696
+
+Precision	0.90
+Recall	0.30
+F1	0.45
+Specificity	1.00
+-----------------------------
+After
+
+
+
+Groom efficacy:
+Deleted
+diff_birth 24047/26119 0.9206707760634021
+born_after 5017/5018 0.9998007174172977
+too_young 8204/8205 0.9998781230956734
+too_old 2610/2643 0.9875141884222475
+siblings 10433/12691 0.822078638405169
+bad_name 9101/9657 0.9424251838044941
+
+Bride efficacy:
+Deleted
+diff_birth 19931/22163 0.8992916121463701
+born_after 2897/2897 1.0
+too_young 5328/5331 0.9994372537985369
+too_old 1253/1257 0.9968178202068417
+siblings 5029/6082 0.8268661624465636
+bad_name 15499/16827 0.9210792179235752
+Birth-Marriage-Birth triangle: 195358
+BirthGroomOwnMarriageBundleAccuracy
+False positive count	1384
+True positive count	12633
+False negative count	20154
+True negative count	13682384689
+
+Precision	0.90
+Recall	0.39
+F1	0.54
+Specificity	1.00
+
+----
+BirthBrideOwnMarriageAccuracy
+False positive count	1754
+True positive count	15353
+False negative count	36057
+True negative count	13682365696
+
+Precision	0.90
+Recall	0.30
+F1	0.45
+Specificity	1.00
+
