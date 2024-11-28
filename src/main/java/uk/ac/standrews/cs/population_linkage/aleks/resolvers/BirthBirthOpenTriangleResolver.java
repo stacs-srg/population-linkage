@@ -263,7 +263,6 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-        //TODO, maybe make it an or instead?
         //Check if record x is outside of range
         if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
@@ -544,13 +543,6 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         familySets.addAll(setsToAdd);
 
         for (List<LXP> triangleToDelete : toDelete) {
-//            String toFind = "244425";
-//            String toFind2 = "235074";
-//            if((Objects.equals(triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), toFind)) && familySets.size() > 0 &&
-//                    (Objects.equals(triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), toFind2))) {
-//                System.out.println("fsd");
-//            }
-
             for(Set<LXP> fSet : familySets) {
                 int kidsFound = 0;
                 List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
@@ -604,33 +596,6 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         LXP b1 = (LXP) births.getObjectById(id1);
         LXP b2 = (LXP) births.getObjectById(id2);
         return composite_measure.distance(b1, b2);
-    }
-
-    public double getMSEDForCluster(List<LXP> choices, BirthSiblingLinkageRecipe recipe) {
-        /* Calculate the MESD for the cluster represented by the indices choices into bs */
-        List<String> fields_from_choices = new ArrayList<>(); // a list of the concatenated linkage fields from the selected choices.
-        List<Integer> linkage_fields = recipe.getLinkageFieldsMSED(); // the linkage field indexes to be used
-        for (LXP a_birth : choices) {
-            StringBuilder sb = new StringBuilder();              // make a string of values for this record drawn from the recipe linkage fields
-            for (int field_selector : linkage_fields) {
-                sb.append(a_birth.get(field_selector) + "/");
-            }
-            fields_from_choices.add(sb.toString()); // add the linkage fields for this choice to the list being assessed
-        }
-        return MSED.distance(fields_from_choices);
-    }
-
-    protected OrderedList<List<LXP>,Double> getMSEDForK(Set<LXP> family, int k, BirthSiblingLinkageRecipe recipe) throws BucketException {
-        OrderedList<List<LXP>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
-        List<LXP> bs = new ArrayList<>(family);
-
-        List<List<Integer>> indices = Binomials.pickAll(bs.size(), k);
-        for (List<Integer> choices : indices) {
-            List<LXP> births = getRecordsFromChoices(bs, choices);
-            double distance = getMSEDForCluster(births, recipe);
-            all_mseds.add(births,distance);
-        }
-        return all_mseds;
     }
 
     /**
