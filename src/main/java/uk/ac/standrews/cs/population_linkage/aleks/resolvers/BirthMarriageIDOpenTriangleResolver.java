@@ -136,7 +136,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
     private void resolveTriangle(String partner, Long[] triangle, IBucket births, IBucket marriages, LXPMeasure composite_measure) throws BucketException {
         boolean isDeleted = false;
         LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
-        String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Birth.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
+        String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Marriage.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
 
         for (int i = 0; i < triangle.length; i += 2) {
             //5. Check names

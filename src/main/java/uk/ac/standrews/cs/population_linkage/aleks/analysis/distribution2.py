@@ -35,11 +35,15 @@ plt.ylabel('Frequency')
 plt.title('Histogram of Distance Difference by Error Type')
 plt.legend(loc='upper right')
 
-# axs[1].hist(df['link_num'], bins=20, alpha=0.7, color='green')
-#
-# axs[1].set_xlabel('Number of links')
-# axs[1].set_ylabel('Frequency')
-# axs[1].set_title('Histogram for number of links')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(8, 4))
+plt.hist(df['link_num'], bins=100, alpha=0.7, edgecolor='black', color='blue')
+
+plt.xlabel('Number of open triangles')
+plt.ylabel('Frequency')
+plt.title('Number of Open Triangles per Cluster')
 
 plt.tight_layout()
 plt.show()
