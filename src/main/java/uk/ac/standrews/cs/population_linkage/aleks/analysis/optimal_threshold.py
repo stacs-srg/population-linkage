@@ -42,6 +42,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
     all_handles = []
     all_labels = []
 
+    ascii_char = 97
     for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
         data = pd.read_csv(f'../../../../../../../../../../{FILE}{N}.csv')
 
@@ -65,7 +66,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
 
         not_zero = ((fnot_norm > 0.05) & (fnot_norm != 1)) | ((fpot_norm > 0.05) & (fpot_norm != 1))
         valid_indices = np.where(not_zero)[0]
-        positive_indices = valid_indices[fnot_norm[valid_indices] - fpot_norm[valid_indices] > -0.001] - 1
+        positive_indices = valid_indices[fnot_norm[valid_indices] - fpot_norm[valid_indices] > -0.001]
         intersection_index = positive_indices[np.argmin(fnot_norm[positive_indices] - fpot_norm[positive_indices])]
         # intersection_index = valid_indices[np.argmin(fnot_norm[valid_indices] - fpot_norm[valid_indices])]
         test = fnot_norm[positive_indices] - fpot_norm[positive_indices]
@@ -75,19 +76,20 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
         ax2.yaxis.set_visible(False)
         ax2.set_ylim([0, 1.05])
         l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles Total', color='orange')
-        l5 = ax2.plot(data['threshold'], fnot_norm, label='Number of FNOTs', color='purple')
-        l6 = ax2.plot(data['threshold'], fpot_norm, label='Number of FPOTs', color='lime')
-
-        l7 = ax2.axvline(x=intersection_threshold, color='black', linestyle='--', label='FPOT-FNOT Intersection')
-        l8 = ax2.axvline(x=data['threshold'][data['fmeasure'].idxmax()], color='black', linestyle='-', label='Peak f-measure')
+        # l5 = ax2.plot(data['threshold'], fnot_norm, label='Number of FNOTs', color='purple')
+        # l6 = ax2.plot(data['threshold'], fpot_norm, label='Number of FPOTs', color='lime')
+        #
+        # l7 = ax2.axvline(x=intersection_threshold, color='black', linestyle='--', label='FPOT-FNOT Intersection')
+        # l8 = ax2.axvline(x=data['threshold'][data['fmeasure'].idxmax()], color='black', linestyle='-', label='Peak f-measure')
 
         if len(all_handles) == 3:
             handles, labels = ax2.get_legend_handles_labels()
             all_handles.extend(handles)
             all_labels.extend(labels)
 
-        ax1.set_title(f'Threshold Analysis {FILE} {N} Fields')
+        ax1.set_title(f'({chr(ascii_char)}) Threshold Analysis {FILE} {N} Fields')
         ax1.grid(True)
+        ascii_char += 1
 
         print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
         print(f"Optimal threshold estimate {N}: {intersection_threshold}")
