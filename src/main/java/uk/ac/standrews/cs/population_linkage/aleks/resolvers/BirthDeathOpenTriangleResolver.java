@@ -84,6 +84,8 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         IBucket births = record_repository.getBucket("birth_records");
         IBucket deaths = record_repository.getBucket("death_records");
         BirthDeathSiblingLinkageRecipe recipe = new BirthDeathSiblingLinkageRecipe(sourceRepo, numberOfRecords, BirthDeathSiblingBundleBuilder.class.getName(), null);
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
@@ -96,36 +98,33 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
-        int availableProcessors = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
-
         for (OpenTriangleClusterBD cluster : triangles) {
             executorService.submit(() ->
-                    {
-                        try {
-                            resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 4);
-                        } catch (BucketException e) {
-                            throw new RuntimeException(e);
-                        }
+                {
+                    try {
+                        resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 4);
+                    } catch (BucketException e) {
+                        throw new RuntimeException(e);
                     }
+                }
             );
         }
 
         System.out.println("Resolving triangles with predicates...");
         for (OpenTriangleCluster cluster : triangles) {
             executorService.submit(() ->
-                    {
-                        try {
-                            resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
-                        } catch (BucketException e) {
-                            throw new RuntimeException(e);
-                        }
+                {
+                    try {
+                        resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
+                    } catch (BucketException e) {
+                        throw new RuntimeException(e);
                     }
+                }
             );
         }
 
         executorService.shutdown();
-        executorService.awaitTermination(48, TimeUnit.HOURS);
+        executorService.awaitTermination(1, TimeUnit.HOURS);
 
         System.out.println("After");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
@@ -139,6 +138,14 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         new BirthBirthSiblingAccuracy(bridge);
     }
 
+    /**
+     * Method to resolve open triangles using logical predicates
+     *
+     * @param cluster cluster of open triangles to resolve
+     * @param births births bucket
+     * @param composite_measure_date composite measure for date
+     * @throws BucketException
+     */
     private void resolveTrianglesPredicates(OpenTriangleCluster cluster, IBucket births, IBucket deaths, LXPMeasure composite_measure_date) throws BucketException {
         for (List<Long> chain : cluster.getTriangleChain()){
             LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
@@ -167,6 +174,12 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
     }
 
+    /**
+     * Method to locate all open triangles in the database
+     *
+     * @param bridge Neo4j Bridge
+     * @return List of open triangle clusters
+     */
     private List<OpenTriangleClusterBD> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge, String recordRepo) {
         final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Birth)\n"+
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
@@ -210,26 +223,44 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return clusters;
     }
 
+    /**
+     * Predicate to resolve triangles based on the maximum age range two siblings can have
+     * If a record's birthday is more than MAX_AGE_DIFFERENCE away from its link or the median of the cluster
+     * then it is deleted
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
     public boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
+        //Check if record x is outside of range
         if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
+
+        //Check if record z is outside of range
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
+
+        //Check if record y is outside of range compared to x
         } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)) {
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
+
+        //Check if record y is outside of range compared to z
         } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
@@ -240,7 +271,19 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return hasChanged;
     }
 
-    //https://stackoverflow.com/a/67767630
+    /**
+     * Predicate to resolve triangles based on a minimum birth interval between two records
+     * Either the interval between two connected records needs to be above BIRTH_INTERVAL
+     * Or the interval between two closest siblings based on the birthday inside the cluster needs to be above BIRTH_INTERVAL
+     *
+     * Code for finding closest date has been amended from https://stackoverflow.com/a/67767630
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
     public boolean minBirthIntervalPredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
@@ -248,8 +291,8 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
         for (int i = 0; i < tempKids.length; i+=2) {
             try{
-                LocalDate childDate = getBirthdayAsDate(tempKids[i], false);
-                LocalDate dateY = getBirthdayAsDate(tempKids[1], true);
+                LocalDate childDate = getBirthdayAsDate(tempKids[i], false); //get birth date of node being analysed
+                LocalDate dateY = getBirthdayAsDate(tempKids[1], true); //get birth date of middle node
                 if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) > 2){
                     if(i == 0){
                         deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
@@ -266,12 +309,24 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return hasChanged;
     }
 
+
+    /**
+     * Predicate to resolve triangles based on most common birthplace. If neighbouring node and birthplace mode of cluster don't match
+     * record, then delete link
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
     public boolean mostCommonBirthPlacePredicate(OpenTriangleCluster cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
         int MIN_FAMILY_SIZE = 3;
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
+        //check on x
         if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") &&
                 ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < cluster.getAgeRange() / 2) ||
                 (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
@@ -280,6 +335,8 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
+
+        //check on z
         } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < cluster.getAgeRange() / 2) ||
                 (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                         Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < cluster.getAgeRange() / 2)) &&
@@ -292,140 +349,42 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return hasChanged;
     }
 
+    /**
+     * Method to resolve open triangles using MSED
+     *
+     * @param triangleChain chain of open triangles
+     * @param x x node in the cluster
+     * @param recipe recipe for particular linkage
+     * @param dPred predicate number to delete
+     * @throws BucketException
+     */
     public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int dPred) throws BucketException {
         double THRESHOLD = 0.03;
         double TUPLE_THRESHOLD = 0.01;
 
         List<Set<LXP>> familySets = new ArrayList<>();
         List<List<LXP>> toDelete = new ArrayList<>();
-        int[] fieldsB = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
-        int[] fieldsD = {Death.FATHER_FORENAME, Death.MOTHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_MAIDEN_SURNAME};
 
         for (List<Long> chain : triangleChain){
             List<Long> listWithX = new ArrayList<>(Arrays.asList(x));
             listWithX.addAll(chain);
             List<LXP> bs = getRecords(listWithX, record_repository);
 
-            for (int i = 0; i < bs.size(); i++) {
-                //1. DOTTER/SON
-                String dotterRegex = "D[.:ORT](?!.*D[.:RT])";
-                Pattern pattern = Pattern.compile(dotterRegex);
-                Matcher matcher = pattern.matcher(bs.get(i).getString(Birth.MOTHER_MAIDEN_SURNAME));
-                if (matcher.find()) {
-                    String newString = bs.get(i).getString(Birth.MOTHER_MAIDEN_SURNAME).substring(0, matcher.start()) + "DOTTER";
-                    bs.get(i).put(Birth.MOTHER_MAIDEN_SURNAME, newString);
-                }
+            cleanStrings(bs);
 
-                String sonRegex = "S[.]";
-                pattern = Pattern.compile(sonRegex);
-                matcher = pattern.matcher(bs.get(i).getString(Birth.FATHER_SURNAME));
-                if (matcher.find()) {
-                    String newString = bs.get(i).getString(Birth.FATHER_SURNAME).substring(0, matcher.start()) + "SON";
-                    bs.get(i).put(Birth.FATHER_SURNAME, newString);
-                }
-
-                //2. Initials or incomplete names
-                String initialRegex = "^[A-Z]*\\.$";
-                pattern = Pattern.compile(initialRegex);
-                for (int j = 0; j < fieldsB.length - 3; j++) {
-                    if(i == 1){
-                        matcher = pattern.matcher(bs.get(i).getString(fieldsD[j]));
-                    }else{
-                        matcher = pattern.matcher(bs.get(i).getString(fieldsB[j]));
-                    }
-
-                    if(matcher.find()){
-                        String substringX = bs.get(0).getString(fieldsB[j]).length() >= matcher.end() - 1 ? bs.get(0).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1) : bs.get(0).getString(j);
-                        String substringY = bs.get(1).getString(fieldsD[j]).length() >= matcher.end() - 1 ? bs.get(1).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1) : bs.get(1).getString(j);
-                        String substringZ = bs.get(2).getString(fieldsB[j]).length() >= matcher.end() - 1 ? bs.get(2).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1) : bs.get(2).getString(j);
-
-                        if (i == 0 && substringX.equals(substringY) && substringX.equals(substringZ)) {
-                            bs.get(0).put(fieldsB[j], bs.get(0).getString(fieldsB[j]).replace(".", ""));
-                            bs.get(1).put(fieldsD[j], bs.get(0).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
-                            bs.get(2).put(fieldsB[j], bs.get(0).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
-                        } else if (i == 1 && substringY.equals(substringX) && substringY.equals(substringZ)) {
-                            bs.get(1).put(fieldsB[j], bs.get(1).getString(fieldsB[j]).replace(".", ""));
-                            bs.get(0).put(fieldsD[j], bs.get(1).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
-                            bs.get(2).put(fieldsB[j], bs.get(1).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
-                        } else if (i == 2 && substringZ.equals(substringX) && substringZ.equals(substringY)) {
-                            bs.get(2).put(fieldsB[j], bs.get(2).getString(fieldsB[j]).replace(".", ""));
-                            bs.get(0).put(fieldsD[j], bs.get(2).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
-                            bs.get(1).put(fieldsB[j], bs.get(2).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
-                        }
-                    }
-                }
-
-                //3. Middle names and double barrel surnames
-                for (int j = 0; j < fieldsB.length - 1; j++) {
-                    if (bs.get(i).getString(fieldsB[j]).contains(" ") || bs.get(i).getString(fieldsD[j]).contains(" ")) {
-                        if (i == 0 && !bs.get(2).getString(fieldsB[j]).contains(" ")) {
-                            String[] names = bs.get(0).getString(fieldsB[j]).split("\\s+");
-                            for (String name : names) {
-                                if (name.equals(bs.get(2).getString(fieldsB[j]))) {
-                                    bs.get(0).put(fieldsB[j], name);
-                                    break;
-                                }
-                            }
-                        } else if(i == 1 && (!bs.get(0).getString(fieldsB[j]).contains(" ") || !bs.get(2).getString(fieldsB[j]).contains(" "))) {
-                            String[] names = bs.get(1).getString(fieldsD[j]).split("\\s+");
-                            for (String name : names) {
-                                if (name.equals(bs.get(0).getString(fieldsB[j]))) {
-                                    bs.get(1).put(fieldsD[j], name);
-                                    break;
-                                }
-                            }
-                            for (String name : names) {
-                                if (name.equals(bs.get(2).getString(fieldsB[j]))) {
-                                    bs.get(1).put(fieldsD[j], name);
-                                    break;
-                                }
-                            }
-                        } else if(i == 2 && !bs.get(0).getString(fieldsB[j]).contains(" ")) {
-                            String[] names = bs.get(2).getString(fieldsB[j]).split("\\s+");
-                            for (String name : names) {
-                                if (name.equals(bs.get(0).getString(fieldsB[j]))) {
-                                    bs.get(2).put(fieldsB[j], name);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //4. Parentheses
-                for (int j = 0; j < fieldsB.length - 1; j++) {
-                    String parenthesesRegex = "\\(([^)]+)\\)";
-                    pattern = Pattern.compile(parenthesesRegex);
-                    if(i == 1){
-                        matcher = pattern.matcher(bs.get(i).getString(fieldsD[j]));
-
-                        if (matcher.find() && matcher.start() > 0) {
-                            String newString = bs.get(i).getString(fieldsD[j]).substring(0, matcher.start()).strip();
-                            bs.get(i).put(fieldsD[j], newString);
-                        }
-                    }else{
-                        matcher = pattern.matcher(bs.get(i).getString(fieldsB[j]));
-
-                        if (matcher.find() && matcher.start() > 0) {
-                            String newString = bs.get(i).getString(fieldsB[j]).substring(0, matcher.start()).strip();
-                            bs.get(i).put(fieldsB[j], newString);
-                        }
-                    }
-                }
-            }
-
+            //If below threshold, add all children to family
             double distance = getMSEDForCluster(bs, recipe);
             double distanceXY = getMSEDForCluster(bs.subList(0, 2), recipe);
             double distanceZY = getMSEDForCluster(bs.subList(1, 3), recipe);
 
-            if(distance < THRESHOLD) {
+            if(distance < THRESHOLD) { //if above threshold, delete triangle links
                 addFamilyMSED(familySets, bs);
             }else if(distance > THRESHOLD){
                 toDelete.add(bs);
-                if(distanceXY < TUPLE_THRESHOLD){
+                if(distanceXY < TUPLE_THRESHOLD){ //check if xy are potential siblings
                     addFamilyMSED(familySets, bs.subList(0, 2));
                 }
-                if (distanceZY < TUPLE_THRESHOLD){
+                if (distanceZY < TUPLE_THRESHOLD){ //check if zy are potential siblings
                     addFamilyMSED(familySets, bs.subList(1, 3));
                 }
             }
@@ -434,18 +393,20 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         List<Set<LXP>> setsToRemove = new ArrayList<>();
         List<Set<LXP>> setsToAdd = new ArrayList<>();
 
-//        long startTime = System.nanoTime();
+        //filter families further
         for (Set<LXP> fSet : familySets) {
             int k = 3;
-            if (fSet.size() >= k) {
-                OrderedList<List<LXP>,Double> familySetMSED = getMSEDForK(fSet, k, recipe);
+            if (fSet.size() >= k) { //filter only if family set is bigger than 3 siblings
+                OrderedList<List<LXP>,Double> familySetMSED = getMSEDForK(fSet, k, recipe); //get distances for all possible combinations of families
                 List<Double> distances = familySetMSED.getComparators();
                 List<List<LXP>> records = familySetMSED.getList();
                 List<Set<LXP>> newSets = new ArrayList<>();
 
                 newSets.add(new HashSet<>(records.get(0)));
 
+                //loop through each distance
                 for (int i = 1; i < distances.size(); i++) {
+                    //if distance increases dramatically or exceeds 0.01, assume one child is odd one out and dont add to family set
                     if ((distances.get(i) - distances.get(i - 1)) / distances.get(i - 1) > 0.5 || distances.get(i) > 0.01) {
                         break;
                     } else {
@@ -456,14 +417,6 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
                                 familyFound = true;
                                 break;
                             }
-
-//                            for (int j = 0; j < records.get(i).size(); j++) {
-//                                if (nSet.contains(records.get(i).get(j))) {
-//                                    nSet.addAll(records.get(i));
-//                                    familyFound = true;
-//                                    break;
-//                                }
-//                            }
                         }
 
                         if (!familyFound) {
@@ -472,39 +425,30 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
                     }
                 }
 
+                //add new sets
                 setsToRemove.add(fSet);
                 setsToAdd.addAll(newSets);
             }
         }
 
-//        long endTime = System.nanoTime();
-//        long elapsedTimeMs = (endTime - startTime) / 1_000_000;
-//        System.out.println("Execution time: " + elapsedTimeMs + " ms\n" +
-//                "Starting size: " + familySets.get(0).size() + "\n" +
-//                "End size: " + setsToAdd.get(0).size());
-
+        //reset current family sets
         familySets.removeAll(setsToRemove);
         familySets.addAll(setsToAdd);
 
+        //loop through all triangles to delete
         for (List<LXP> triangleToDelete : toDelete) {
-//            String toFind = "244425";
-//            String toFind2 = "235074";
-//            if((Objects.equals(triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), toFind) || Objects.equals(triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), toFind)) && familySets.size() > 0 &&
-//                    (Objects.equals(triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), toFind2) || Objects.equals(triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), toFind2))) {
-//                System.out.println("fsd");
-//            }
-
             for(Set<LXP> fSet : familySets) {
                 if(fSet.size() > 1){
                     int kidsFound = 0;
                     List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
-                    for (int i = 0; i < triangleToDelete.size(); i++) {
+                    for (int i = 0; i < triangleToDelete.size(); i++) { //identify if any of the family sets contain at least 2 children from triangle to delete
                         if(fSet.contains(triangleToDelete.get(i))) {
                             kidsIndex.remove((Integer.valueOf(i)));
                             kidsFound++;
                         }
                     }
 
+                    //if the children were located, delete the odd one out
                     if(kidsFound == 2 && kidsIndex.size() == 1) {
                         if(kidsIndex.get(0) == 0){
                             deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
@@ -513,6 +457,124 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
                             deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BD_SIBLING_QUERY_DEL_PROV);
                             break;
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Method to clean and standardise strings
+     *
+     * @param triangle triangle to clean
+     */
+    private static void cleanStrings(List<LXP> triangle) {
+        int[] fieldsB = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
+        int[] fieldsD = {Death.FATHER_FORENAME, Death.MOTHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_MAIDEN_SURNAME};
+
+        for (int i = 0; i < triangle.size(); i++) {
+            //1. DOTTER/SON
+            String dotterRegex = "D[.:ORT](?!.*D[.:RT])";
+            Pattern pattern = Pattern.compile(dotterRegex);
+            Matcher matcher = pattern.matcher(triangle.get(i).getString(Birth.MOTHER_MAIDEN_SURNAME));
+            if (matcher.find()) {
+                String newString = triangle.get(i).getString(Birth.MOTHER_MAIDEN_SURNAME).substring(0, matcher.start()) + "DOTTER";
+                triangle.get(i).put(Birth.MOTHER_MAIDEN_SURNAME, newString);
+            }
+
+            String sonRegex = "S[.]";
+            pattern = Pattern.compile(sonRegex);
+            matcher = pattern.matcher(triangle.get(i).getString(Birth.FATHER_SURNAME));
+            if (matcher.find()) {
+                String newString = triangle.get(i).getString(Birth.FATHER_SURNAME).substring(0, matcher.start()) + "SON";
+                triangle.get(i).put(Birth.FATHER_SURNAME, newString);
+            }
+
+            //2. Initials or incomplete names
+            String initialRegex = "^[A-Z]*\\.$";
+            pattern = Pattern.compile(initialRegex);
+            for (int j = 0; j < fieldsB.length - 3; j++) {
+                if(i == 1){
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsD[j]));
+                }else{
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsB[j]));
+                }
+
+                if(matcher.find()){
+                    String substringX = triangle.get(0).getString(fieldsB[j]).length() >= matcher.end() - 1 ? triangle.get(0).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(0).getString(j);
+                    String substringY = triangle.get(1).getString(fieldsD[j]).length() >= matcher.end() - 1 ? triangle.get(1).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(1).getString(j);
+                    String substringZ = triangle.get(2).getString(fieldsB[j]).length() >= matcher.end() - 1 ? triangle.get(2).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(2).getString(j);
+
+                    if (i == 0 && substringX.equals(substringY) && substringX.equals(substringZ)) {
+                        triangle.get(0).put(fieldsB[j], triangle.get(0).getString(fieldsB[j]).replace(".", ""));
+                        triangle.get(1).put(fieldsD[j], triangle.get(0).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(2).put(fieldsB[j], triangle.get(0).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
+                    } else if (i == 1 && substringY.equals(substringX) && substringY.equals(substringZ)) {
+                        triangle.get(1).put(fieldsB[j], triangle.get(1).getString(fieldsB[j]).replace(".", ""));
+                        triangle.get(0).put(fieldsD[j], triangle.get(1).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(2).put(fieldsB[j], triangle.get(1).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
+                    } else if (i == 2 && substringZ.equals(substringX) && substringZ.equals(substringY)) {
+                        triangle.get(2).put(fieldsB[j], triangle.get(2).getString(fieldsB[j]).replace(".", ""));
+                        triangle.get(0).put(fieldsD[j], triangle.get(2).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(1).put(fieldsB[j], triangle.get(2).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
+                    }
+                }
+            }
+
+            //3. Middle names and double barrel surnames
+            for (int j = 0; j < fieldsB.length - 1; j++) {
+                if (triangle.get(i).getString(fieldsB[j]).contains(" ") || triangle.get(i).getString(fieldsD[j]).contains(" ")) {
+                    if (i == 0 && !triangle.get(2).getString(fieldsB[j]).contains(" ")) {
+                        String[] names = triangle.get(0).getString(fieldsB[j]).split("\\s+");
+                        for (String name : names) {
+                            if (name.equals(triangle.get(2).getString(fieldsB[j]))) {
+                                triangle.get(0).put(fieldsB[j], name);
+                                break;
+                            }
+                        }
+                    } else if(i == 1 && (!triangle.get(0).getString(fieldsB[j]).contains(" ") || !triangle.get(2).getString(fieldsB[j]).contains(" "))) {
+                        String[] names = triangle.get(1).getString(fieldsD[j]).split("\\s+");
+                        for (String name : names) {
+                            if (name.equals(triangle.get(0).getString(fieldsB[j]))) {
+                                triangle.get(1).put(fieldsD[j], name);
+                                break;
+                            }
+                        }
+                        for (String name : names) {
+                            if (name.equals(triangle.get(2).getString(fieldsB[j]))) {
+                                triangle.get(1).put(fieldsD[j], name);
+                                break;
+                            }
+                        }
+                    } else if(i == 2 && !triangle.get(0).getString(fieldsB[j]).contains(" ")) {
+                        String[] names = triangle.get(2).getString(fieldsB[j]).split("\\s+");
+                        for (String name : names) {
+                            if (name.equals(triangle.get(0).getString(fieldsB[j]))) {
+                                triangle.get(2).put(fieldsB[j], name);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //4. Parentheses
+            for (int j = 0; j < fieldsB.length - 1; j++) {
+                String parenthesesRegex = "\\(([^)]+)\\)";
+                pattern = Pattern.compile(parenthesesRegex);
+                if(i == 1){
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsD[j]));
+
+                    if (matcher.find() && matcher.start() > 0) {
+                        String newString = triangle.get(i).getString(fieldsD[j]).substring(0, matcher.start()).strip();
+                        triangle.get(i).put(fieldsD[j], newString);
+                    }
+                }else{
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsB[j]));
+
+                    if (matcher.find() && matcher.start() > 0) {
+                        String newString = triangle.get(i).getString(fieldsB[j]).substring(0, matcher.start()).strip();
+                        triangle.get(i).put(fieldsB[j], newString);
                     }
                 }
             }
