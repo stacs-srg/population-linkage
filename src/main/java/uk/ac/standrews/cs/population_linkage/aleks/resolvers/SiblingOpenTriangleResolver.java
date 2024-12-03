@@ -175,7 +175,7 @@ public abstract class SiblingOpenTriangleResolver {
         return births;
     }
 
-    protected abstract void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int cPred, int dPred) throws BucketException;
+    protected abstract void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int dPred) throws BucketException;
 
     protected abstract boolean mostCommonBirthPlacePredicate(OpenTriangleCluster cluster, boolean hasChanged, LXP[] tempKids, int predNumber);
 

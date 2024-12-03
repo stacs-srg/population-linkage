@@ -79,7 +79,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
     public BirthDeathOpenTriangleResolver(String sourceRepo, String numberOfRecords) throws BucketException, InterruptedException {
         super(sourceRepo);
-        final StringMeasure base_measure = Constants.LEVENSHTEIN;;
+        final StringMeasure base_measure = Constants.LEVENSHTEIN;
         final LXPMeasure composite_measure_date = getCompositeMeasureDate(base_measure);
         IBucket births = record_repository.getBucket("birth_records");
         IBucket deaths = record_repository.getBucket("death_records");
@@ -103,7 +103,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
             executorService.submit(() ->
                     {
                         try {
-                            resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 2, 4);
+                            resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, 4);
                         } catch (BucketException e) {
                             throw new RuntimeException(e);
                         }
@@ -148,11 +148,6 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
             cluster.getYearStatistics();
             boolean hasChanged = false;
-
-            String toFind = "7106096";
-//                    if(Objects.equals(std_id_z, toFind) || Objects.equals(std_id_y, toFind) || Objects.equals(std_id_x, toFind)){
-//                        System.out.println("fsd");
-//                    }
 
             //1. Check age of child not outside of max difference
             hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
@@ -297,7 +292,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return hasChanged;
     }
 
-    public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int cPred, int dPred) throws BucketException {
+    public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int dPred) throws BucketException {
         double THRESHOLD = 0.03;
         double TUPLE_THRESHOLD = 0.01;
 
