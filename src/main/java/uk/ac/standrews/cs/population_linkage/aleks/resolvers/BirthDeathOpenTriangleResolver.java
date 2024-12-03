@@ -519,21 +519,6 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
     }
 
-    private LXPMeasure getCompositeMeasureDate(StringMeasure base_measure) {
-        final List<Integer> LINKAGE_FIELDS = list(
-                Birth.PARENTS_DAY_OF_MARRIAGE,
-                Birth.PARENTS_MONTH_OF_MARRIAGE,
-                Birth.PARENTS_YEAR_OF_MARRIAGE
-        );
-
-        return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS);
-    }
-
-    private double getDistance(long id1, long id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
-        LXP b1 = (LXP) births.getObjectById(id1);
-        LXP b2 = (LXP) births.getObjectById(id2);
-        return composite_measure.distance(b1, b2);
-    }
 
     /**
      * Method to get birth/death objects based on storr IDs

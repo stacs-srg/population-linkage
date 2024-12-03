@@ -21,7 +21,10 @@ import org.neo4j.driver.Transaction;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
+import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
+import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.Binomials;
@@ -30,9 +33,12 @@ import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
+import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.time.LocalDate;
 import java.util.*;
+
+import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
 public abstract class SiblingOpenTriangleResolver {
     protected static NeoDbCypherBridge bridge;
@@ -49,26 +55,41 @@ public abstract class SiblingOpenTriangleResolver {
         record_repository= new RecordRepository(sourceRepo);
     }
 
+    /**
+     * Method of adding children to family sets
+     *
+     * @param familySets family sets to add to
+     * @param bs combination of children
+     */
     protected void addFamilyMSED(List<Set<LXP>> familySets, List<LXP> bs) {
-        if(familySets.isEmpty()) {
+        if(familySets.isEmpty()) { //if set is empty, add children automatically
             familySets.add(new HashSet<>(bs));
         }else{
             boolean familyFound = false;
-            for(Set<LXP> fSet : familySets) {
+            for(Set<LXP> fSet : familySets) { //if not, loop through sets
                 for (int i = 0; i < bs.size(); i++) {
-                    if (!Collections.disjoint(fSet, bs) && fSet.size() < 24) {
+                    if (!Collections.disjoint(fSet, bs) && fSet.size() < 24) { //if a child is present in a set, add the rest as well
                         fSet.addAll(bs);
                         familyFound = true;
                         break;
                     }
                 }
             }
-            if(!familyFound) {
+            if(!familyFound) { //if not child is found, create a new set
                 familySets.add(new HashSet<>(bs));
             }
         }
     }
 
+    /**
+     * Method to get MSED distance for a combination of nodes
+     *
+     * @param family a set of records in a family
+     * @param k number of records in a combination
+     * @param recipe recipe to get linkage fields to get distance
+     * @return a list of combinations and their distances in order of distance
+     * @throws BucketException
+     */
     protected OrderedList<List<LXP>,Double> getMSEDForK(Set<LXP> family, int k, LinkageRecipe recipe) throws BucketException {
         OrderedList<List<LXP>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
         List<LXP> bs = new ArrayList<>(family);
@@ -82,8 +103,14 @@ public abstract class SiblingOpenTriangleResolver {
         return all_mseds;
     }
 
+    /**
+     * Method to calculate the MESD for the cluster represented by the indices choices into bs
+     *
+     * @param choices records to get distance
+     * @param recipe recipe to get linkage fields to get distance
+     * @return MSED distance for cluster
+     */
     protected double getMSEDForCluster(List<LXP> choices, LinkageRecipe recipe) {
-        /* Calculate the MESD for the cluster represented by the indices choices into bs */
         List<String> fields_from_choices = new ArrayList<>(); // a list of the concatenated linkage fields from the selected choices.
         List<Integer> linkage_fields = recipe.getLinkageFields(); // the linkage field indexes to be used
         for (LXP a_birth : choices) {
@@ -96,6 +123,13 @@ public abstract class SiblingOpenTriangleResolver {
         return MSED.distance(fields_from_choices);
     }
 
+    /**
+     * Method to convert string representation of birthdays into LocalDate
+     *
+     * @param child child node
+     * @param isDead check if it is a death certificate
+     * @return birthday as LocalDate
+     */
     protected LocalDate getBirthdayAsDate(LXP child, boolean isDead){
         int day = 1;
 
@@ -167,12 +201,51 @@ public abstract class SiblingOpenTriangleResolver {
     }
 
 
+    /**
+     * Get list of records from an array of choices. Used to generated binomial combinations
+     *
+     * @param bs list of records
+     * @param choices list of choices as index
+     * @return combinations of records
+     */
     protected List<LXP> getRecordsFromChoices(List<LXP> bs, List<Integer> choices) {
-        List<LXP> births = new ArrayList<>();
+        List<LXP> records = new ArrayList<>();
         for (int index : choices) {
-            births.add( bs.get(index) );
+            records.add( bs.get(index) );
         }
-        return births;
+        return records;
+    }
+
+    /**
+     * Method to get composite measure for dates to calculate distance
+     *
+     * @param base_measure base measure to be used
+     * @return composite measure
+     */
+    protected LXPMeasure getCompositeMeasureDate(StringMeasure base_measure) {
+        final List<Integer> LINKAGE_FIELDS = list(
+                Birth.PARENTS_DAY_OF_MARRIAGE,
+                Birth.PARENTS_MONTH_OF_MARRIAGE,
+                Birth.PARENTS_YEAR_OF_MARRIAGE
+        );
+
+        return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS);
+    }
+
+    /**
+     * Method to get distance between two nodes based on their storr ID
+     *
+     * @param id1 ID of record 1
+     * @param id2 ID of record 2
+     * @param composite_measure measure to be used
+     * @param births births bucket
+     * @return distance between two records
+     * @throws BucketException
+     */
+    protected double getDistance(long id1, long id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
+        LXP b1 = (LXP) births.getObjectById(id1);
+        LXP b2 = (LXP) births.getObjectById(id2);
+        return composite_measure.distance(b1, b2);
     }
 
     protected abstract void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int dPred) throws BucketException;

@@ -316,8 +316,8 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
         for (int i = 0; i < tempKids.length; i+=2) {
             try{
-                LocalDate childDate = getBirthdayAsDate(tempKids[i]); //get birth date of node being analysed
-                LocalDate dateY = getBirthdayAsDate(tempKids[1]); //get birth date of middle node
+                LocalDate childDate = getBirthdayAsDate(tempKids[i], false); //get birth date of node being analysed
+                LocalDate dateY = getBirthdayAsDate(tempKids[1], false); //get birth date of middle node
                 if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) > 2){
                     if(i == 0){
                         deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
@@ -332,24 +332,6 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
 
         return hasChanged;
-    }
-
-    /**
-     * Method to convert string representation of date to LocalDate
-     *
-     * @param child
-     * @return
-     */
-    private LocalDate getBirthdayAsDate(LXP child){
-        int day = 1;
-
-        //if missing day, set to first of month
-        if(!Objects.equals(child.getString(Birth.BIRTH_DAY), "--")){
-            day = Integer.parseInt(child.getString(Birth.BIRTH_DAY));
-        }
-
-        //get date
-        return LocalDate.of(Integer.parseInt(child.getString(Birth.BIRTH_YEAR)), Integer.parseInt(child.getString(Birth.BIRTH_MONTH)), day);
     }
 
     /**
@@ -599,38 +581,6 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
                 }
             }
         }
-    }
-
-    /**
-     * Method to get composite measure for dates to calculate distance
-     *
-     * @param base_measure base measure to be used
-     * @return composite measure
-     */
-    protected LXPMeasure getCompositeMeasureDate(StringMeasure base_measure) {
-        final List<Integer> LINKAGE_FIELDS = list(
-                Birth.PARENTS_DAY_OF_MARRIAGE,
-                Birth.PARENTS_MONTH_OF_MARRIAGE,
-                Birth.PARENTS_YEAR_OF_MARRIAGE
-        );
-
-        return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS);
-    }
-
-    /**
-     * Method to get distance between two nodes based on their storr ID
-     *
-     * @param id1 ID of record 1
-     * @param id2 ID of record 2
-     * @param composite_measure measure to be used
-     * @param births births bucket
-     * @return distance between two records
-     * @throws BucketException
-     */
-    private double getDistance(long id1, long id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
-        LXP b1 = (LXP) births.getObjectById(id1);
-        LXP b2 = (LXP) births.getObjectById(id2);
-        return composite_measure.distance(b1, b2);
     }
 
     /**
