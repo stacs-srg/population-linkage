@@ -27,6 +27,7 @@ false_sibling = df[df['has_GT_SIBLING'] == False]['distance_diff']
 
 plt.figure(figsize=(8, 4))
 
+# Histogram for max - average distances in cluster
 plt.hist(false_sibling, bins=20, alpha=0.5, label='False Positives', color='orange')
 plt.hist(true_sibling, bins=20, alpha=0.5, label='False Negatives', color='blue')
 
@@ -38,6 +39,7 @@ plt.legend(loc='upper right')
 plt.tight_layout()
 plt.show()
 
+# Histogram for number of nodes in a cluster
 plt.figure(figsize=(8, 4))
 plt.hist(df['link_num'], bins=100, alpha=0.7, edgecolor='black', color='blue')
 

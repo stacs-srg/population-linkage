@@ -28,6 +28,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
     threshold_total = 0
     fmeasure_total = 0
 
+    # Create correct grid layout based on number of fields
     if MAX_FIELD - MIN_FIELD == 5:
         axes = [plt.subplot2grid((3, 2), (0, 0)), plt.subplot2grid((3, 2), (0, 1)),
                 plt.subplot2grid((3, 2), (1, 0)), plt.subplot2grid((3, 2), (1, 1)),
@@ -42,10 +43,11 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
     all_handles = []
     all_labels = []
 
-    ascii_char = 97
+    ascii_char = 97 # starting character 'a' for sub figures
     for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
         data = pd.read_csv(f'../../../../../../../../../../{FILE}{N}.csv')
 
+        # Plot basic quality measures
         ax1 = axes[i]
         l1 = ax1.plot(data['threshold'], data['recall'], label='Recall', color='b')
         l2 = ax1.plot(data['threshold'], data['precision'], label='Precision', color='g')
@@ -54,34 +56,37 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
         ax1.set_ylabel('Quality Metrics\n& Open Patterns (Normalised)')
         ax1.set_xlabel('Threshold')
 
+        # Add all lines to legend
         if len(all_handles) == 0:
             handles, labels = ax1.get_legend_handles_labels()
             all_handles.extend(handles)
             all_labels.extend(labels)
 
-        open_triangles_normalized = (data['total'] - data['total'].min()) / (data['total'].max() - data['total'].min())
+        # Normalise total number of triangles and FNOTs
+        total_norm = (data['total'] - data['total'].min()) / (data['total'].max() - data['total'].min())
         fnot_norm = (data['fnots'] - data['fnots'].min()) / (data['fnots'].max() - data['fnots'].min())
-        fpots = data['total'] - data['fnots']
+        fpots = data['total'] - data['fnots'] # get number of FPOTs
         fpot_norm = (fpots - fpots.min()) / (fpots.max() - fpots.min())
 
+        # Get intersection of FPOTs and FNOTs
         not_zero = ((fnot_norm > 0.05) & (fnot_norm != 1)) | ((fpot_norm > 0.05) & (fpot_norm != 1))
         valid_indices = np.where(not_zero)[0]
         positive_indices = valid_indices[fnot_norm[valid_indices] - fpot_norm[valid_indices] > -0.001]
         intersection_index = positive_indices[np.argmin(fnot_norm[positive_indices] - fpot_norm[positive_indices])]
-        # intersection_index = valid_indices[np.argmin(fnot_norm[valid_indices] - fpot_norm[valid_indices])]
-        test = fnot_norm[positive_indices] - fpot_norm[positive_indices]
         intersection_threshold = data['threshold'].iloc[intersection_index]
 
+        # Plot number of
         ax2 = ax1.twinx()
         ax2.yaxis.set_visible(False)
         ax2.set_ylim([0, 1.05])
-        l4 = ax2.plot(data['threshold'], open_triangles_normalized, label='Open Triangles Total', color='orange')
-        # l5 = ax2.plot(data['threshold'], fnot_norm, label='Number of FNOTs', color='purple')
-        # l6 = ax2.plot(data['threshold'], fpot_norm, label='Number of FPOTs', color='lime')
-        #
-        # l7 = ax2.axvline(x=intersection_threshold, color='black', linestyle='--', label='FPOT-FNOT Intersection')
-        # l8 = ax2.axvline(x=data['threshold'][data['fmeasure'].idxmax()], color='black', linestyle='-', label='Peak f-measure')
+        l4 = ax2.plot(data['threshold'], total_norm, label='Open Triangles Total', color='orange')
+        l5 = ax2.plot(data['threshold'], fnot_norm, label='Number of FNOTs', color='purple')
+        l6 = ax2.plot(data['threshold'], fpot_norm, label='Number of FPOTs', color='lime')
 
+        l7 = ax2.axvline(x=intersection_threshold, color='black', linestyle='--', label='FPOT-FNOT Intersection')
+        l8 = ax2.axvline(x=data['threshold'][data['fmeasure'].idxmax()], color='black', linestyle='-', label='Peak f-measure')
+
+        # Add all lines to legend
         if len(all_handles) == 3:
             handles, labels = ax2.get_legend_handles_labels()
             all_handles.extend(handles)
@@ -89,7 +94,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
 
         ax1.set_title(f'({chr(ascii_char)}) Threshold Analysis {FILE} {N} Fields')
         ax1.grid(True)
-        ascii_char += 1
+        ascii_char += 1 # increment sub figure
 
         print(f"Peak fmeasure threshold {N}: {data['threshold'][data['fmeasure'].idxmax()]}")
         print(f"Optimal threshold estimate {N}: {intersection_threshold}")

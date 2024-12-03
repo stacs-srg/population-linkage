@@ -38,17 +38,16 @@ public class DistanceDistributionAnalysis {
 
     public static void main(String[] args) {
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
+        getSumFreq(bridge);
+        getMaxAndAvgFreq(bridge);
+    }
 
-        try (FileWriter fileWriter = new FileWriter("birthbirthtri.csv");
-             PrintWriter printWriter = new PrintWriter(fileWriter)) {
-            printWriter.println("distance_sum,is_sibling");
-
-            Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
-            result.list(r -> printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    /**
+     * Method to get average and max distances for a cluster
+     *
+     * @param bridge
+     */
+    private static void getMaxAndAvgFreq(NeoDbCypherBridge bridge) {
         try (FileWriter fileWriter = new FileWriter("birthbirthtri2.csv");
              PrintWriter printWriter = new PrintWriter(fileWriter)) {
             printWriter.println("average_distance,max_distance,has_GT_SIBLING,link_num");
@@ -61,17 +60,19 @@ public class DistanceDistributionAnalysis {
                 double avgDistance = 0;
                 int triCount = 0;
 
+                //loop through each cluster
                 for (List<Object> record : collection) {
                     double sumDistances = 0;
                     try{
                         double rDistance = (double) record.get(0);
                         double sDistance = (double) record.get(1);
-                        boolean hasLink = (boolean) record.get(2);
+                        boolean hasLink = (boolean) record.get(2); //check if FPOT or FNOT
 
                         sumDistances = rDistance + sDistance;
                         avgDistance += sumDistances;
                         triCount++;
 
+                        //update max if sum above current number
                         if(sumDistances > maxDis) {
                             maxDis = sumDistances;
                             maxLink = hasLink;
@@ -89,10 +90,34 @@ public class DistanceDistributionAnalysis {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        System.out.println("Done!");
     }
 
+    /**
+     * Method to get the sum of distances for each cluster
+     *
+     * @param bridge Neo4j bridge
+     */
+    private static void getSumFreq(NeoDbCypherBridge bridge) {
+        try (FileWriter fileWriter = new FileWriter("birthbirthtri.csv");
+             PrintWriter printWriter = new PrintWriter(fileWriter)) {
+            printWriter.println("distance_sum,is_sibling");
+
+            Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
+            result.list(r -> printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method to query the database for quality measurements
+     *
+     * @param query_string Cypher query
+     * @param threshold current threshold being analysed
+     * @param fields current field being analysed
+     * @param bridge Neo4j bridge
+     * @return results of query
+     */
     protected static long doQuery(String query_string, double threshold, int fields, NeoDbCypherBridge bridge) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("threshold", threshold);
