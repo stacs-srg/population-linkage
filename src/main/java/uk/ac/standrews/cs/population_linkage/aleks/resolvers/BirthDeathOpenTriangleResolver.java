@@ -17,23 +17,17 @@
 package uk.ac.standrews.cs.population_linkage.aleks.resolvers;
 
 import org.neo4j.driver.Result;
-import org.neo4j.driver.Session;
-import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Node;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
-import uk.ac.standrews.cs.neoStorr.impl.Store;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthDeathSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthDeathSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.resolver.msed.Binomials;
-import uk.ac.standrews.cs.population_linkage.resolver.msed.MSED;
 import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.RecordRepository;
@@ -50,8 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
 
 public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver {
     //Cypher queries used in predicates

@@ -84,11 +84,14 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         super(sourceRepo);
         IBucket deaths = record_repository.getBucket("death_records");
         DeathSiblingLinkageRecipe recipe = new DeathSiblingLinkageRecipe(sourceRepo, numberOfRecords, DeathSiblingBundleBuilder.class.getName());
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
         System.out.println("Before");
         PatternsCounter.countOpenTrianglesToString(bridge, "Death", "Death");
         new DeathDeathSiblingAccuracy(bridge);
 
+        //Run all graph predicates
         System.out.println("Running graph predicates...");
         String[] graphPredicates = {DD_ISO, DD_SIB_ISO};
         for (int i = 0; i < graphPredicates.length; i++) {
@@ -105,9 +108,6 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
-        int availableProcessors = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
-
         for (OpenTriangleClusterDD cluster : triangles) {
             executorService.submit(() ->
                 {
@@ -144,12 +144,16 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         new DeathDeathSiblingAccuracy(bridge);
     }
 
+    /**
+     * Method to resolve open triangles using logical predicates
+     *
+     * @param cluster cluster of open triangles to resolve
+     * @param deaths deaths bucket
+     * @throws BucketException
+     */
     private void resolveTrianglesPredicates(OpenTriangleCluster cluster, IBucket deaths) throws BucketException {
-        for (List<Long> chain : cluster.getTriangleChain()){
+        for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
             LXP[] tempKids = {(LXP) deaths.getObjectById(cluster.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) deaths.getObjectById(chain.get(1))};
-            String std_id_x = tempKids[0].getString(Death.STANDARDISED_ID);
-            String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
-            String std_id_z = tempKids[2].getString(Death.STANDARDISED_ID);
 
             cluster.getYearStatistics();
             boolean hasChanged = false;
@@ -165,6 +169,12 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
     }
 
+    /**
+     * Method to locate all open triangles in the database
+     *
+     * @param bridge Neo4j Bridge
+     * @return List of open triangle clusters
+     */
     private List<OpenTriangleClusterDD> findIllegalDeathDeathSiblingTriangles(NeoDbCypherBridge bridge, String recordRepo) {
         final String DEATH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Death)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Death)\n"+
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
@@ -208,26 +218,44 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return clusters;
     }
 
+    /**
+     * Predicate to resolve triangles based on the maximum age range two siblings can have
+     * If a record's birthday is more than MAX_AGE_DIFFERENCE away from its link or the median of the cluster
+     * then it is deleted
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
     public boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Death.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Death.STANDARDISED_ID);
 
+        //Check if record x is outside of range
         if(!Objects.equals(tempKids[0].getString(Death.DATE_OF_BIRTH), "--/--/----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Death.DATE_OF_BIRTH).substring(6))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Death.DATE_OF_BIRTH).substring(6))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
+
+        //Check if record z is outside of range
         } else if (!Objects.equals(tempKids[2].getString(Death.DATE_OF_BIRTH), "--/--/----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Death.DATE_OF_BIRTH).substring(6))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Death.DATE_OF_BIRTH).substring(6))) > MAX_AGE_DIFFERENCE)){
             deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
+
+        //Check if record y is outside of range compared to x
         } else if (!Objects.equals(tempKids[0].getString(Death.DATE_OF_BIRTH), "--/--/----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Death.DATE_OF_BIRTH).substring(6))) > MAX_AGE_DIFFERENCE)) {
             deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
+
+        //Check if record y is outside of range compared to z
         } else if (!Objects.equals(tempKids[2].getString(Death.DATE_OF_BIRTH), "--/--/----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
                 Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Death.DATE_OF_BIRTH).substring(6))) > MAX_AGE_DIFFERENCE)){
@@ -238,7 +266,19 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return hasChanged;
     }
 
-    //https://stackoverflow.com/a/67767630
+    /**
+     * Predicate to resolve triangles based on a minimum birth interval between two records
+     * Either the interval between two connected records needs to be above BIRTH_INTERVAL
+     * Or the interval between two closest siblings based on the birthday inside the cluster needs to be above BIRTH_INTERVAL
+     *
+     * Code for finding closest date has been amended from https://stackoverflow.com/a/67767630
+     *
+     * @param cluster cluster of open triangles
+     * @param tempKids three children in the open triangle
+     * @param hasChanged check if triangle already resolved
+     * @param predNumber index of predicate name
+     * @return if triangle has been resolved
+     */
     public boolean minBirthIntervalPredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Death.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
@@ -246,8 +286,8 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
         for (int i = 0; i < tempKids.length; i+=2) {
             try{
-                LocalDate childDate = getBirthdayAsDate(tempKids[i], true);
-                LocalDate dateY = getBirthdayAsDate(tempKids[1], true);
+                LocalDate childDate = getBirthdayAsDate(tempKids[i], true); //get birth date of node being analysed
+                LocalDate dateY = getBirthdayAsDate(tempKids[1], true); //get birth date of middle node
                 if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) > 2){
                     if(i == 0){
                         deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
