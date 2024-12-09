@@ -42,18 +42,22 @@ public class BirthOwnDeathBuilder implements MakePersistent {
         try (
              BirthDeathIdentityLinkageRecipe linkageRecipe = new BirthDeathIdentityLinkageRecipe(sourceRepo, number_of_records, BirthOwnDeathBuilder.class.getName() ) ) {
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            runBuilder(linkageRecipe);
+        }
+    }
 
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 );
+    public static void runBuilder(BirthDeathIdentityLinkageRecipe linkageRecipe) throws Exception {
+        BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
-            while( linkage_fields >= half_fields ) {
-                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new BirthOwnDeathBuilder(), false, true);
-                LinkageQuality quality = lr.getLinkageQuality();
-                quality.print(System.out);
-                linkage_fields--;
-            }
+        int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+        int half_fields = linkage_fields - (linkage_fields / 2 );
+
+        while( linkage_fields >= half_fields ) {
+            linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+            LinkageResult lr = runner.run(linkageRecipe, new BirthOwnDeathBuilder(), false, true);
+            LinkageQuality quality = lr.getLinkageQuality();
+            quality.print(System.out);
+            linkage_fields--;
         }
     }
 

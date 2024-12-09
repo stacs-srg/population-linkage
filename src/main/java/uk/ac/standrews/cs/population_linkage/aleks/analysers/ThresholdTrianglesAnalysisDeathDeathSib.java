@@ -16,16 +16,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 
-import org.neo4j.driver.Result;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.aleks.resolvers.PatternsCounter;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.DeathSiblingBundleBuilder;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.DeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -36,12 +35,16 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
     private static final String DEATH_DEATH_SIBLING_FNC = "MATCH (d1:Death)-[r:GT_SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death) WHERE NOT (d1)-[:SIBLING {actors: \"Deceased-Deceased\"}]-(d2) return count(r)";
     private static final String DEATH_DEATH_SIBLING_FNC_T = "MATCH (d1:Death)-[r:GT_SIBLING {actors: \"Deceased-Deceased\"}]->(d2:Death), (d1)-[s:SIBLING]-(d2) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
+        DeathSiblingLinkageRecipe linkageRecipe = new DeathSiblingLinkageRecipe("umea", "EVERYTHING", DeathSiblingBundleBuilder.class.getName());
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 4;
         final int MIN_FIELD = 2; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.0;
+
+        linkageRecipe.setMaxThreshold(1);
+        DeathSiblingBundleBuilder.runBuilder(linkageRecipe);
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
@@ -86,6 +89,26 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
 
         executorService.shutdown();
         executorService.awaitTermination(12, TimeUnit.HOURS);
+
+        resetThreshold(bridge, linkageRecipe);
     }
 
+    /**
+     * Method to reset thresholds after maximising them for analysis
+     *
+     * @param bridge Neo4j bridge
+     * @param recipe linkage recipe used
+     */
+    private static void resetThreshold(NeoDbCypherBridge bridge, DeathSiblingLinkageRecipe recipe) {
+        String resetString = "MATCH (d1:Death)-[r:SIBLING {actors: \"Deceased-Deceased\"}]-(d2:Death) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
+
+        int linkage_fields = recipe.ALL_LINKAGE_FIELDS;
+        int half_fields = linkage_fields - (linkage_fields / 2 );
+
+        while (linkage_fields >= half_fields) {
+            recipe.setNumberLinkageFieldsRequired(linkage_fields);
+            doQuery(resetString, recipe.getThreshold(), linkage_fields, bridge);
+            linkage_fields--;
+        }
+    }
 }

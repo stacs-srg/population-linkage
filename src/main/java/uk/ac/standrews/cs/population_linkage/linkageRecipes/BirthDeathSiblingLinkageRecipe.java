@@ -46,6 +46,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
 public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
     private static final double DISTANCE_THRESHOLD = 0.36;
+    private static double MAX_THRESHOLD = 0;
 
     public static final String LINKAGE_TYPE = "birth-death-sibling";
 
@@ -202,6 +203,10 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
         Result result = bridge.getNewSession().run(BIRTH_DEATH_GT_SIBLING_LINKS_QUERY, parameters);
         List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
         return relationships.size();
+    }
+
+    public static void setMaxThreshold(double maxThreshold) {
+        MAX_THRESHOLD = maxThreshold;
     }
 
     @Override

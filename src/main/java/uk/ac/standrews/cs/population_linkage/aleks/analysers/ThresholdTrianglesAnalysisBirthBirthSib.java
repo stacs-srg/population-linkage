@@ -16,21 +16,15 @@
  */
 package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 
-import org.neo4j.driver.Result;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.aleks.resolvers.PatternsCounter;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
-import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;

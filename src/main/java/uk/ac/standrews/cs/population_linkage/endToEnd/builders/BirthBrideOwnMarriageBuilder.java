@@ -42,21 +42,25 @@ public class BirthBrideOwnMarriageBuilder implements MakePersistent {
         String number_of_records = args[1]; // e.g. EVERYTHING or 10000 etc.
 
         try(
-            BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideSiblingBundleBuilder.class.getName(), null) ) {
+            BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe(sourceRepo, number_of_records, BirthBrideOwnMarriageBuilder.class.getName(), null) ) {
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+            runBuilder(linkageRecipe);
+        }
+    }
 
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2);
+    public static void runBuilder(BirthBrideIdentityLinkageRecipe linkageRecipe) throws Exception {
+        BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
-            while (linkage_fields >= half_fields) {
-                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new BirthBrideOwnMarriageBuilder(), false, true);
-                LinkageQuality quality = lr.getLinkageQuality();
-                quality.print(System.out);
+        int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+        int half_fields = linkage_fields - (linkage_fields / 2);
 
-                linkage_fields--;
-            }
+        while (linkage_fields >= half_fields) {
+            linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+            LinkageResult lr = runner.run(linkageRecipe, new BirthBrideOwnMarriageBuilder(), false, true);
+            LinkageQuality quality = lr.getLinkageQuality();
+            quality.print(System.out);
+
+            linkage_fields--;
         }
     }
 

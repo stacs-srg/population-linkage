@@ -18,6 +18,10 @@ package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.aleks.resolvers.PatternsCounter;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BrideMarriageParentsMarriageBuilder;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.GroomMarriageParentsMarriageBuilder;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BrideMarriageParentsMarriageIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.GroomMarriageParentsMarriageIdentityLinkageRecipe;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.io.FileWriter;
@@ -33,12 +37,16 @@ public class ThresholdTrianglesAnalysisGroomMarriageParentsMarriage extends Thre
     private static final String GROOM_PARENTS_MARRIAGE_FNC = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Groom-Couple\"}]->(m2:Marriage) WHERE NOT (m1)-[:ID {actors: \"Groom-Couple\"}]-(m2) return count(r)";
     private static final String GROOM_PARENTS_MARRIAGE_FNC_T = "MATCH (m1:Marriage)-[r:GT_ID {actors: \"Groom-Couple\"}]->(m2:Marriage), (m1)-[s:ID {actors: \"Groom-Couple\"}]-(m2) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
+        GroomMarriageParentsMarriageIdentityLinkageRecipe linkageRecipe = new GroomMarriageParentsMarriageIdentityLinkageRecipe("umea", "EVERYTHING", GroomMarriageParentsMarriageBuilder.class.getName());
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
         final int MAX_FIELD = 4;
         final int MIN_FIELD = 1; //1 below target
         final double MAX_THRESHOLD = 1.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
+
+        linkageRecipe.setMaxThreshold(1);
+        GroomMarriageParentsMarriageBuilder.runBuilder(linkageRecipe);
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
@@ -84,6 +92,26 @@ public class ThresholdTrianglesAnalysisGroomMarriageParentsMarriage extends Thre
 
         executorService.shutdown();
         executorService.awaitTermination(12, TimeUnit.HOURS);
+
+        resetThreshold(bridge, linkageRecipe);
     }
 
+    /**
+     * Method to reset thresholds after maximising them for analysis
+     *
+     * @param bridge Neo4j bridge
+     * @param recipe linkage recipe used
+     */
+    private static void resetThreshold(NeoDbCypherBridge bridge, GroomMarriageParentsMarriageIdentityLinkageRecipe recipe) {
+        String resetString = "MATCH (m1:Marriage)-[r:ID {actors: \"Groom-Couple\"}]->(m2:Marriage) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
+
+        int linkage_fields = recipe.ALL_LINKAGE_FIELDS;
+        int half_fields = linkage_fields - (linkage_fields / 2 );
+
+        while (linkage_fields >= half_fields) {
+            recipe.setNumberLinkageFieldsRequired(linkage_fields);
+            doQuery(resetString, recipe.getThreshold(), linkage_fields, bridge);
+            linkage_fields--;
+        }
+    }
 }
