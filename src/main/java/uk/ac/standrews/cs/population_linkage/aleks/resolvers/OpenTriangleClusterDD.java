@@ -34,12 +34,16 @@ public class OpenTriangleClusterDD extends OpenTriangleCluster {
         deaths = record_repository.getBucket("death_records");
     }
 
+    /**
+     * Method to get birth year statistics for cluster
+     */
     @Override
     public void getYearStatistics() throws BucketException {
-        for (List<Long> chain : triangleChain){
+        for (List<Long> chain : triangleChain){ //loop through each open triangle
             LXP[] tempKids = {(LXP) deaths.getObjectById(x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) deaths.getObjectById(chain.get(1))};
-            for (int i = 0; i < tempKids.length; i++) {
-                if (!children.contains(tempKids[i])) {
+            for (int i = 0; i < tempKids.length; i++) { //loop through children in triangle
+                if (!children.contains(tempKids[i])) { //if not in children set
+                    //set default date if child has missing DOB details
                     int year = 1850;
                     int month = 1;
                     int day = 1;
@@ -50,6 +54,10 @@ public class OpenTriangleClusterDD extends OpenTriangleCluster {
                         day = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(0, 2));
 
                         birthDays.put(tempKids[i].getString(Death.STANDARDISED_ID), LocalDate.of(year, month, day));
+
+                        if(Integer.parseInt((tempKids[i].getString(Death.DEATH_YEAR))) - year < 12 && !Objects.equals(tempKids[i].getString(Death.PLACE_OF_DEATH), "----")){
+                            birthplaceMap.merge(tempKids[i].getString(Death.PLACE_OF_DEATH), 1, Integer::sum);
+                        }
                     }catch(Exception e){
                         if(!children.isEmpty()){
                             year = (int) Math.round(yearTotal/children.size());

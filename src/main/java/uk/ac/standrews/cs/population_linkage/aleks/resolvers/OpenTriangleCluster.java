@@ -72,8 +72,4 @@ public abstract class OpenTriangleCluster {
     public String getMostCommonBirthplace() {
         return mostCommonBirthplace;
     }
-
-    public void removeBirthday(LocalDate date) {
-        birthDays.remove(date);
-    }
 }

@@ -37,16 +37,23 @@ public class OpenTriangleClusterBD extends OpenTriangleCluster {
         deaths = record_repository.getBucket("death_records");
     }
 
+    /**
+     * Method to get birth year statistics for cluster
+     */
     @Override
     public void getYearStatistics() throws BucketException {
-        for (List<Long> chain : triangleChain){
+        for (List<Long> chain : triangleChain){ //loop through each open triangle
             LXP[] tempKids = {(LXP) births.getObjectById(x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
-            for (int i = 0; i < tempKids.length; i++) {
-                if (!children.contains(tempKids[i])) {
+            for (int i = 0; i < tempKids.length; i++) { //loop through children in triangle
+                if (!children.contains(tempKids[i])) { //if not in children set
+                    //set default date if child has missing DOB details
                     int year = 1850;
                     int month = 1;
                     int day = 1;
+
+                    //if not death record
                     if(i != 1){
+                        //get year if available
                         try{
                             year = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_YEAR)));
                         }catch(Exception e){
@@ -55,33 +62,40 @@ public class OpenTriangleClusterBD extends OpenTriangleCluster {
                             }
                         }
 
+                        //get month if available
                         try{
                             month = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_MONTH)));
                         }catch(Exception e){
-                            month = -1;
+                            month = -1; //if not available, set to -1 as month is too specific
                         }
 
+                        //get day if available
                         try{
                             day = Integer.parseInt((tempKids[i].getString(Birth.BIRTH_DAY)));
                         } catch (Exception e) {
 
                         }
 
+                        //if month is available, add to birthdays set
                         if(month != -1){
                             birthDays.put(tempKids[i].getString(Birth.STANDARDISED_ID), LocalDate.of(year, month, day));
                         }
                         yearTotal += year;
 
+                        //add birth address to map for mode calculation
                         if(!Objects.equals(tempKids[i].getString(Birth.BIRTH_ADDRESS), "----")){
                             birthplaceMap.merge(tempKids[i].getString(Birth.BIRTH_ADDRESS), 1, Integer::sum);
                         }
-                    }else{
+                    }else{ //if death record
                         try{
                             year = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(6));
                             month = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(3, 5));
                             day = Integer.parseInt((tempKids[i].getString(Death.DATE_OF_BIRTH)).substring(0, 2));
 
                             birthDays.put(tempKids[i].getString(Death.STANDARDISED_ID), LocalDate.of(year, month, day));
+                            if(Integer.parseInt((tempKids[i].getString(Death.DEATH_YEAR))) - year < 12 && !Objects.equals(tempKids[i].getString(Death.PLACE_OF_DEATH), "----")){
+                                birthplaceMap.merge(tempKids[i].getString(Death.PLACE_OF_DEATH), 1, Integer::sum);
+                            }
                         }catch(Exception e){
                             if(!children.isEmpty()){
                                 year = (int) Math.round(yearTotal/children.size());
@@ -96,7 +110,7 @@ public class OpenTriangleClusterBD extends OpenTriangleCluster {
             }
         }
 
-        //https://deveshsharmablogs.wordpress.com/2013/07/16/find-most-common-element-in-a-list-in-java/
+        //code inspired by https://deveshsharmablogs.wordpress.com/2013/07/16/find-most-common-element-in-a-list-in-java/
         int maxValue = -1;
         for(Map.Entry<String, Integer> entry: birthplaceMap.entrySet()) {
             if(entry.getValue() > maxValue) {
@@ -107,9 +121,9 @@ public class OpenTriangleClusterBD extends OpenTriangleCluster {
 
         yearAvg = yearTotal / children.size();
 
+        //get age range and median by sorting dates
         List<LocalDate> sortedBirthDays = new ArrayList<>(birthDays.values());
         Collections.sort(sortedBirthDays);
-
         if(!sortedBirthDays.isEmpty()){
             ageRange = sortedBirthDays.get(sortedBirthDays.size() - 1).getYear() - sortedBirthDays.get(0).getYear();
 
