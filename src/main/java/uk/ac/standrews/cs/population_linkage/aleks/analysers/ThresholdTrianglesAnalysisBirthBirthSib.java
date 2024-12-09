@@ -19,6 +19,11 @@ package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 import org.neo4j.driver.Result;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.aleks.resolvers.PatternsCounter;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageQuality;
+import uk.ac.standrews.cs.population_linkage.supportClasses.LinkageResult;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.io.FileWriter;
@@ -36,12 +41,16 @@ public class ThresholdTrianglesAnalysisBirthBirthSib extends ThresholdTrianglesA
     private static final String BIRTH_BIRTH_SIBLING_FNC = "MATCH (b1:Birth)-[r:GT_SIBLING { actors: \"Child-Child\"}]->(b2:Birth) WHERE NOT (b1)-[:SIBLING {actors: \"Child-Child\"}]-(b2) return count(r)";
     private static final String BIRTH_BIRTH_SIBLING_FNC_T = "MATCH (b1:Birth)-[r:GT_SIBLING { actors: \"Child-Child\"}]->(b2:Birth), (b1)-[s:SIBLING]-(b2) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
+        BirthSiblingLinkageRecipe recipe = new BirthSiblingLinkageRecipe("umea", "EVERYTHING", BirthSiblingBundleBuilder.class.getName()) ;
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
+        final int MAX_FIELD = 8;
+        final int MIN_FIELD = 3; //1 below target
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
+
+        recipe.setMaxThreshold(2);
+        BirthSiblingBundleBuilder.runBuilder(recipe, 0);
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
@@ -86,7 +95,27 @@ public class ThresholdTrianglesAnalysisBirthBirthSib extends ThresholdTrianglesA
         }
 
         executorService.shutdown();
-        executorService.awaitTermination(12, TimeUnit.HOURS);
+        executorService.awaitTermination(24, TimeUnit.HOURS);
+
+        resetThreshold(bridge, recipe);
     }
 
+    /**
+     * Method to reset thresholds after maximising them for analysis
+     *
+     * @param bridge Neo4j bridge
+     * @param recipe linkage recipe used
+     */
+    private static void resetThreshold(NeoDbCypherBridge bridge, BirthSiblingLinkageRecipe recipe) {
+        String resetString = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
+
+        int linkage_fields = recipe.ALL_LINKAGE_FIELDS;
+        int half_fields = linkage_fields - (linkage_fields / 2 );
+
+        while (linkage_fields >= half_fields) {
+            recipe.setNumberLinkageFieldsRequired(linkage_fields);
+            doQuery(resetString, recipe.getThreshold(), linkage_fields, bridge);
+            linkage_fields--;
+        }
+    }
 }

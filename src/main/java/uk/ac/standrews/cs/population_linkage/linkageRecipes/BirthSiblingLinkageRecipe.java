@@ -40,6 +40,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
 public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
     private static final double THRESHOLD = 1;
+    private static double MAX_THRESHOLD = 0;
 
     public static final String LINKAGE_TYPE = "birth-birth-sibling";
 
@@ -185,8 +186,19 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
+    public static void setMaxThreshold(double maxThreshold) {
+        MAX_THRESHOLD = maxThreshold;
+    }
+
     @Override
     public double getThreshold() {
+        if(MAX_THRESHOLD != 0) {
+            if(getNumberOfLinkageFieldsRequired() == ALL_LINKAGE_FIELDS / 2) {
+                return MAX_THRESHOLD / 2;
+            }
+            return MAX_THRESHOLD;
+        }
+
         switch (getNumberOfLinkageFieldsRequired()){
             case 8:
                 return 1.81;

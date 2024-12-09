@@ -18,6 +18,7 @@ package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 
 import org.neo4j.driver.Result;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,5 +41,4 @@ public abstract class ThresholdTrianglesAnalysis {
         Result result = bridge.getNewSession().run(query_string, parameters);
         return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
     }
-
 }
