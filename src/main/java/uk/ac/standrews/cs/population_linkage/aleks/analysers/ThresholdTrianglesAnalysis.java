@@ -39,6 +39,10 @@ public abstract class ThresholdTrianglesAnalysis {
         parameters.put("threshold", threshold);
         parameters.put("field", fields);
         Result result = bridge.getNewSession().run(query_string, parameters);
-        return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
+        if(!result.list().isEmpty()){
+            return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
+        }else{
+            return 0;
+        }
     }
 }
