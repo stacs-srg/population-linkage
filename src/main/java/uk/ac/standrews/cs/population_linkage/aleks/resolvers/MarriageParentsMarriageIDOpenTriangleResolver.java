@@ -87,6 +87,7 @@ public class MarriageParentsMarriageIDOpenTriangleResolver extends IdentityOpenT
 
         String[] partners = {"Groom", "Bride"};
 
+        //run through all graph predicates
         System.out.println("Running graph predicates...");
         String[] graphPredicates = {MMP_ISO_G, MMP_ISO_B};
         for (String partner : partners) {

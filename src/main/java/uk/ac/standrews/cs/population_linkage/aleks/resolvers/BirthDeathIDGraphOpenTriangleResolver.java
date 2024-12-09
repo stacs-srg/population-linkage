@@ -25,10 +25,12 @@ import java.util.Map;
 
 
 public class BirthDeathIDGraphOpenTriangleResolver extends IdentityOpenTriangleResolver {
+
+    //cypher queries for all graph predicates
     private final String BD_BAD_DATE = "MATCH (a:Birth)-[r:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
             "WHERE a.BIRTH_YEAR <> right(d.DATE_OF_BIRTH, 4)\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
-    private final String BD_BORN_AFER = "MATCH (a:Birth)-[r:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
+    private final String BD_BORN_AFTER = "MATCH (a:Birth)-[r:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
             "WHERE toInteger(a.BIRTH_YEAR) > toInteger(d.DEATH_YEAR)\n" +
             "MERGE (a)-[:DELETED { provenance: $prov, actors: \"Child-Deceased\" } ]-(d)";
     private final String BD_BORN_BEFORE = "MATCH (a:Birth)-[r:ID]-(d:Death)-[:ID]-(b:Birth) \n" +
@@ -62,8 +64,9 @@ public class BirthDeathIDGraphOpenTriangleResolver extends IdentityOpenTriangleR
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Death"); //get number of triangles before resolution
         new BirthOwnDeathAccuracy(bridge);
 
+        //run through all graph predicates
         System.out.println("Running graph predicates...");
-        String[] graphPredicates = {BD_BAD_DATE, BD_BORN_AFER, BD_BORN_BEFORE, BD_SIBLING};
+        String[] graphPredicates = {BD_BAD_DATE, BD_BORN_AFTER, BD_BORN_BEFORE, BD_SIBLING};
         for (int i = 0; i < graphPredicates.length; i++) {
             try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
                 Map<String, Object> parameters = getCreationParameterMap(null, null, deletionPredicates[i], "Child-Deceased");

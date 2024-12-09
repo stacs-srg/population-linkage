@@ -25,12 +25,9 @@ import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.compositeMeasures.SumOfFieldDistances;
 import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
-import uk.ac.standrews.cs.population_linkage.resolver.msed.OrderedList;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
@@ -119,7 +116,7 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
             executorService.submit(() ->
                 {
                     try {
-                        resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, 4);
+                        resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, deletionPredicates[4], Birth.STANDARDISED_ID, BB_SIBLING_QUERY_DEL_PROV);
                     } catch (BucketException e) {
                         throw new RuntimeException(e);
                     }
@@ -259,7 +256,8 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param predNumber index of predicate name
      * @return if triangle has been resolved
      */
-    public boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    @Override
+    protected boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
@@ -309,7 +307,8 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param predNumber index of predicate name
      * @return if triangle has been resolved
      */
-    public boolean minBirthIntervalPredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
+    @Override
+    protected boolean minBirthIntervalPredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
@@ -344,7 +343,8 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param predNumber index of predicate name
      * @return if triangle has been resolved
      */
-    public boolean mostCommonBirthPlacePredicate(OpenTriangleCluster cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
+    @Override
+    protected boolean mostCommonBirthPlacePredicate(OpenTriangleCluster cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
         int MIN_FAMILY_SIZE = 3; //delete link only if cluster contains more children than threshold
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
         String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
@@ -367,124 +367,12 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
     }
 
     /**
-     * Method to resolve open triangles using MSED
-     *
-     * @param triangleChain chain of open triangles
-     * @param x x node in the cluster
-     * @param recipe recipe for particular linkage
-     * @param dPred predicate number to delete
-     * @throws BucketException
-     */
-    public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, int dPred) throws BucketException {
-        double THRESHOLD = 0.04;
-        double TUPLE_THRESHOLD = 0.02;
-
-        List<Set<LXP>> familySets = new ArrayList<>();
-        List<List<LXP>> toDelete = new ArrayList<>();
-
-        for (List<Long> chain : triangleChain){
-            List<Long> listWithX = new ArrayList<>(Arrays.asList(x));
-            listWithX.addAll(chain);
-            List<LXP> bs = getBirths(listWithX, record_repository);
-
-            cleanStrings(bs);
-
-            //Get MSED distance for triangle and its parts
-            double distance = getMSEDForCluster(bs, recipe);
-            double distanceXY = getMSEDForCluster(bs.subList(0, 2), recipe);
-            double distanceZY = getMSEDForCluster(bs.subList(1, 3), recipe);
-
-            //If below threshold, add all children to family
-            if(distance < THRESHOLD) {
-                addFamilyMSED(familySets, bs);
-            }else if(distance > THRESHOLD){ //if above threshold, delete triangle links
-                toDelete.add(bs);
-                if(distanceXY < TUPLE_THRESHOLD){ //check if xy are potential siblings
-                    addFamilyMSED(familySets, bs.subList(0, 2));
-                }
-                if (distanceZY < TUPLE_THRESHOLD){ //check if zy are potential siblings
-                    addFamilyMSED(familySets, bs.subList(1, 3));
-                }
-            }
-        }
-
-        List<Set<LXP>> setsToRemove = new ArrayList<>();
-        List<Set<LXP>> setsToAdd = new ArrayList<>();
-
-        //filter families further
-        for (Set<LXP> fSet : familySets) {
-            int k = 3;
-            if (fSet.size() >= k) { //filter only if family set is bigger than 3 siblings
-                OrderedList<List<LXP>,Double> familySetMSED = getMSEDForK(fSet, k, recipe); //get distances for all possible combinations of families
-                List<Double> distances = familySetMSED.getComparators();
-                List<List<LXP>> births = familySetMSED.getList();
-                List<Set<LXP>> newSets = new ArrayList<>();
-
-                newSets.add(new HashSet<>(births.get(0)));
-
-                //loop through each distance
-                for (int i = 1; i < distances.size(); i++) {
-                    //if distance increases dramatically or exceeds 0.01, assume one child is odd one out and dont add to family set
-                    if ((distances.get(i) - distances.get(i - 1)) / distances.get(i - 1) > 0.5 || distances.get(i) > 0.01) {
-                        break;
-                    } else {
-                        boolean familyFound = false;
-                        for (Set<LXP> nSet : newSets) {
-                            if (!Collections.disjoint(nSet, births.get(i))) {
-                                nSet.addAll(births.get(i));
-                                familyFound = true;
-                                break;
-                            }
-                        }
-
-                        if (!familyFound) {
-                            newSets.add(new HashSet<>(births.get(i)));
-                        }
-                    }
-                }
-
-                //add new sets
-                setsToRemove.add(fSet);
-                setsToAdd.addAll(newSets);
-            }
-        }
-
-        //reset current family sets
-        familySets.removeAll(setsToRemove);
-        familySets.addAll(setsToAdd);
-
-        //loop through all triangles to delete
-        for (List<LXP> triangleToDelete : toDelete) {
-            for(Set<LXP> fSet : familySets) {
-                int kidsFound = 0;
-                List<Integer> kidsIndex = new ArrayList<>(Arrays.asList(0, 1, 2));
-                for (int i = 0; i < triangleToDelete.size(); i++) { //identify if any of the family sets contain at least 2 children from triangle to delete
-                    if(fSet.contains(triangleToDelete.get(i))) {
-                        kidsIndex.remove((Integer.valueOf(i)));
-                        kidsFound++;
-                    }
-                }
-
-                //if the children were located, delete the odd one out
-                if(kidsFound == 2 && kidsIndex.size() == 1) {
-                    if(kidsIndex.get(0) == 0){
-                        deleteLink(bridge, triangleToDelete.get(0).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BB_SIBLING_QUERY_DEL_PROV);
-                        break;
-                    } else if (kidsIndex.get(0) == 2) {
-                        deleteLink(bridge, triangleToDelete.get(2).getString(Birth.STANDARDISED_ID), triangleToDelete.get(1).getString(Birth.STANDARDISED_ID), deletionPredicates[dPred], BB_SIBLING_QUERY_DEL_PROV);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Method to clean and standardise strings
      *
      * @param triangle triangle to clean
      */
-    private void cleanStrings(List<LXP> triangle) {
+    @Override
+    protected void cleanStrings(List<LXP> triangle) {
         int[] fields = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
 
         for (int i = 0; i < triangle.size(); i++) {
@@ -591,7 +479,8 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @return list of birth objects
      * @throws BucketException
      */
-    private List<LXP> getBirths(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException {
+    @Override
+    protected List<LXP> getRecords(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException {
         IBucket<LXP> births = record_repository.getBucket("birth_records");
         ArrayList<LXP> bs = new ArrayList();
         for( long id : sibling_ids) {

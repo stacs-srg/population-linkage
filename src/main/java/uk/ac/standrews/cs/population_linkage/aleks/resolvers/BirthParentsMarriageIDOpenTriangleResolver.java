@@ -33,7 +33,6 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
             "MERGE (b)-[:DELETED { provenance: $prov, actors: $actor } ]-(m2)";
 
     //Names of predicates to be used as prov
-    private static final String[] creationPredicates = {"match_m_date"};
     private static final String[] deletionPredicates = {"supported_triangle", "double_record"};
 
     public static void main(String[] args) throws BucketException {
@@ -60,6 +59,7 @@ public class BirthParentsMarriageIDOpenTriangleResolver extends IdentityOpenTria
         PatternsCounter.countOpenTrianglesToStringID(bridge, "Birth", "Marriage"); //get number of triangles before resolution
         new BirthParentsMarriageAccuracy(bridge);
 
+        //run through all graph predicates
         System.out.println("Running graph predicates...");
         String[] graphPredicates = {BMP_SUPPORTED_TRIANGLE, BMP_DOUBLE_RECORD};
         for (String partner : partners) {

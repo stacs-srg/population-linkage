@@ -61,7 +61,6 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
             "MERGE (a)-[:DELETED { provenance: $prov, actors: $actor } ]-(d)";
 
     //Names of predicates to be used as prov
-    private static final String[] creationPredicates = {};
     private static final String[] deletionPredicates = {"diff_birth", "born_after", "too_young", "too_old", "siblings", "bad_name"};
 
     public static void main(String[] args) throws BucketException {
@@ -92,6 +91,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
         new BirthGroomOwnMarriageBundleAccuracy(bridge);
         new BirthBrideOwnMarriageAccuracy(bridge);
 
+        //loop through each partner
         for (String partner : partners) {
             composite_measure = getCompositeMeasureBirthMarriage(base_measure, partner);
             System.out.println("Resolving " + partner);
@@ -99,6 +99,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
             List<Long[]> triangles = findIllegalBirthMarriageTriangles(bridge, partner); //get all open triangles in their clusters
             System.out.println("Triangles found: " + triangles.size());
 
+            //run through all graph predicates
             System.out.println("Running graph predicates...");
             String[] graphPredicates = {BM_BAD_DATE, BM_BORN_AFER, BM_BORN_BEFORE, BM_BORN_OLD, BM_SIBLING};
             for (int i = 0; i < graphPredicates.length; i++) {
@@ -115,6 +116,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
                 }
             }
 
+            //run through all logical predicates
             System.out.println("Resolving triangles with predicates...");
             for (Long[] triangle : triangles) {
                 resolveTriangle(partner, triangle, births, marriages, composite_measure);
@@ -133,6 +135,16 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
         new BirthBrideOwnMarriageAccuracy(bridge);
     }
 
+    /**
+     * Method to resolve triangle
+     *
+     * @param partner which partner is being resolved
+     * @param triangle the triangle in resolution
+     * @param births births bucket
+     * @param marriages marriages bucket
+     * @param composite_measure composite measure
+     * @throws BucketException
+     */
     private void resolveTriangle(String partner, Long[] triangle, IBucket births, IBucket marriages, LXPMeasure composite_measure) throws BucketException {
         boolean isDeleted = false;
         LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) marriages.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
@@ -150,6 +162,7 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
      * Method to locate all open triangles in the database
      *
      * @param bridge Neo4j Bridge
+     * @param partner which partner in marriage to get
      * @return List of open triangle clusters
      */
     private List<Long[]> findIllegalBirthMarriageTriangles(NeoDbCypherBridge bridge, String partner) {
@@ -172,6 +185,13 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
         return triangles;
     }
 
+    /**
+     * Method to get distance between names of groom/bride
+     *
+     * @param base_measure base measure
+     * @param partner which partner to measure distance
+     * @return distance between birth and marriage
+     */
     protected LXPMeasure getCompositeMeasureBirthMarriage(StringMeasure base_measure, String partner) {
         final List<Integer> LINKAGE_FIELDS_BIRTH = list(
                 Birth.FORENAME,
@@ -191,7 +211,6 @@ public class BirthMarriageIDOpenTriangleResolver extends IdentityOpenTriangleRes
                     Marriage.BRIDE_SURNAME
             );
         }
-
 
         return new SumOfFieldDistances(base_measure, LINKAGE_FIELDS_BIRTH, LINKAGE_FIELDS_MARRIAGE);
     }
