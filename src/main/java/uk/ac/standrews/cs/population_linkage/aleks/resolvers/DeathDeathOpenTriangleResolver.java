@@ -353,6 +353,11 @@ public class DeathDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         return hasChanged;
     }
 
+    /**
+     * Method to clean and standardise strings
+     *
+     * @param bs triangle to clean
+     */
     @Override
     protected void cleanStrings(List<LXP> bs) {
         int[] fields = {Death.FATHER_FORENAME, Death.MOTHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_MAIDEN_SURNAME};
