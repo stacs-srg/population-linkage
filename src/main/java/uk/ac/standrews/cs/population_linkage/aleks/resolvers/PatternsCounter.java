@@ -37,16 +37,37 @@ public class PatternsCounter {
         }
     }
 
+    /**
+     * Method to count all sibling triangles and print
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 records x,z
+     * @param type2 record y
+     */
     public static void countOpenTrianglesToString(NeoDbCypherBridge bridge, String type1, String type2) {
         int count = countOpenTriangles(bridge, type1, type2);
         System.out.println(type1 + "-" + type2 + "-" + type1 + " triangle: " + count);
     }
 
+    /**
+     * Method to count all ID triangles and print
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 records x,z
+     * @param type2 record y
+     */
     public static void countOpenTrianglesToStringID(NeoDbCypherBridge bridge, String type1, String type2) {
         int count = countOpenTrianglesID(bridge, type1, type2);
         System.out.println(type1 + "-" + type2 + "-" + type1 + " triangle: " + count);
     }
 
+    /**
+     * Method to count all sibling triangles
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 records x,z
+     * @param type2 record y
+     */
     public static int countOpenTriangles(NeoDbCypherBridge bridge, String type1, String type2) {
         String openTriangleQuery = String.format(
                 "MATCH (x:%s)-[:SIBLING]-(y:%s)-[:SIBLING]-(z:%s) " +
@@ -66,6 +87,13 @@ public class PatternsCounter {
         return (int) count;
     }
 
+    /**
+     * Method to count all ID triangles and print
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 records x,z
+     * @param type2 record y
+     */
     public static int countOpenTrianglesID(NeoDbCypherBridge bridge, String type1, String type2) {
         String openTriangleQuery = String.format(
                 "MATCH (x:%s)-[:SIBLING]-(y:%s)-[:ID]-(z:%s) " +
@@ -85,9 +113,19 @@ public class PatternsCounter {
         return (int) count;
     }
 
-    //Won't work for resolver as no deleted check
+    /**
+     * Method to count all sibling triangles for particular field and threshold
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 x,z records
+     * @param type2 y record
+     * @param threshold threshold to count at
+     * @param fields number of fields to count at
+     * @return total number of open triangles
+     */
     public static int countOpenTrianglesCumulative(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
         long count = 0;
+        //query to count all open triangles at the threshold and filed number
         String openTriangleQuery = String.format(
                 "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s) " +
                         "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s " +
@@ -102,6 +140,7 @@ public class PatternsCounter {
             count = clusters.get(0);
         }
 
+        //query to count all open triangles that would be there if the threshold was not maximised
         String openTriangleQuery2 = String.format(
                 "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
                         "WHERE id(x) < id(z) AND r.distance <= %3$s AND s.distance <= %3$s AND r.fields_populated >= %4$s AND s.fields_populated >= %4$s " +
@@ -121,12 +160,24 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
+    /**
+     * Method to count FNOTs for sibling open triangles
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 records x,z
+     * @param type2 record y
+     * @param threshold threshold to count at
+     * @param fields number of fields to count at
+     * @return total number of open triangles
+     */
     public static int countOpenTrianglesSibFNOT(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
         long count = 0;
         String openTriangleQuery = "";
         String openTriangleQuery2 = "";
 
+        //if Birth-Birth-Birth open triangle
         if(Objects.equals(type1, "Birth") && Objects.equals(type2, "Birth")){
+            //count number of FNOTs
             openTriangleQuery = String.format(
                     "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s) " +
                             "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND x.PARENTS_DAY_OF_MARRIAGE = z.PARENTS_DAY_OF_MARRIAGE AND x.PARENTS_MONTH_OF_MARRIAGE = z.PARENTS_MONTH_OF_MARRIAGE AND x.PARENTS_YEAR_OF_MARRIAGE = z.PARENTS_YEAR_OF_MARRIAGE and x.PARENTS_YEAR_OF_MARRIAGE <> \"----\" AND z.PARENTS_YEAR_OF_MARRIAGE <> \"----\"\n" +
@@ -135,6 +186,7 @@ public class PatternsCounter {
                     type1, type2, threshold, fields
             );
 
+            //count number of FNOTs that would be there if the threshold was not maximised
             openTriangleQuery2 = String.format(
                     "MATCH (x:%1$s)-[s:SIBLING]-(y:%2$s)-[r:SIBLING]-(z:%1$s), (x)-[t:SIBLING]-(z)  " +
                             "WHERE id(x) < id(z) AND x.PARENTS_DAY_OF_MARRIAGE = z.PARENTS_DAY_OF_MARRIAGE AND x.PARENTS_MONTH_OF_MARRIAGE = z.PARENTS_MONTH_OF_MARRIAGE AND x.PARENTS_YEAR_OF_MARRIAGE = z.PARENTS_YEAR_OF_MARRIAGE and x.PARENTS_YEAR_OF_MARRIAGE <> \"----\" AND z.PARENTS_YEAR_OF_MARRIAGE <> \"----\"\n" +
@@ -163,6 +215,15 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
+    /**
+     * Method to count number of open triangles for Birth-Marriage Parents ID
+     *
+     * @param bridge Neo4j bridge
+     * @param threshold threshold to count at
+     * @param fields number of fields to count at
+     * @param isTotal check if total number of triangles or FNOTs is required
+     * @return number of open triangles
+     */
     public static int countOpenTrianglesParentsMarriage(NeoDbCypherBridge bridge, double threshold, int fields, boolean isTotal){
         long count = 0;
         String openSquaresQuery = "";
@@ -226,77 +287,18 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
-    public static int countOpenTrianglesCumulativeDouble(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
-        long count = 0;
-        String openTriangleQuery = String.format(
-                "MATCH (x:%1$s)-[s:SIBLING]-(y:%1$s)-[r:SIBLING]-(z:%2$s) " +
-                        "WHERE NOT (x)-[:SIBLING]-(z) AND id(x) < id(z) AND x.FORENAME <> z.FORENAME AND x.BIRTH_YEAR <> right(z.DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                        "RETURN count(DISTINCT [x, z]) as cluster_count",
-                type1, type2, threshold, fields
-        );
-
-        Result result = bridge.getNewSession().run(openTriangleQuery);
-        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
-
-        if (!clusters.isEmpty()) {
-            count = clusters.get(0);
-        }
-
-        String openTriangleQuery2 = String.format(
-                "MATCH (x:%1$s)-[s:SIBLING]-(y:%1$s)-[r:SIBLING]-(z:%2$s), (x)-[t:SIBLING]-(z) " +
-                        "WHERE id(x) < id(z) AND x.FORENAME <> z.FORENAME AND x.BIRTH_YEAR <> right(z.DATE_OF_BIRTH, 4) AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                        "AND (t.fields_populated < %4$s OR t.distance > %3$s ) " +
-                        "RETURN count(DISTINCT [x, z]) as cluster_count",
-                type1, type2, threshold, fields
-        );
-
-        result = bridge.getNewSession().run(openTriangleQuery2);
-        clusters = result.list(r -> r.get("cluster_count").asLong());
-
-        long tCount = 0;
-        if (!clusters.isEmpty()) {
-            tCount = clusters.get(0);
-        }
-
-        return (int) count + (int) tCount;
-    }
-
-    public static int countOpenTrianglesCumulativeMarriage(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
-        long count = 0;
-        String openTriangleQuery = String.format(
-                "MATCH (x:%1$s)-[s:SIBLING {actors: \"Groom-Groom\"}]-(y:%1$s)-[r:ID]-(z:%2$s) " +
-                        "WHERE NOT (x)-[:ID]-(z) AND id(x) < id(z) AND r.actors = \"Groom-Couple\"AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                        "RETURN count(DISTINCT [x, z]) as cluster_count",
-                type1, type2, threshold, fields
-        );
-
-        Result result = bridge.getNewSession().run(openTriangleQuery);
-        List<Long> clusters = result.list(r -> r.get("cluster_count").asLong());
-
-        if (!clusters.isEmpty()) {
-            count = clusters.get(0);
-        }
-
-        String openTriangleQuery2 = String.format(
-                "MATCH (x:%1$s)-[s:SIBLING {actors: \"Groom-Groom\"}]-(y:%1$s)-[r:ID]-(z:%2$s), (x)-[t:ID]-(z) " +
-                        "WHERE id(x) < id(z) AND r.actors = \"Groom-Couple\" AND r.distance <= %3$s AND r.fields_populated >= %4$s\n" +
-                        "AND (t.fields_populated < %4$s OR t.distance > %3$s ) AND t.actors = \"Groom-Couple\" " +
-                        "RETURN count(DISTINCT [x, z]) as cluster_count",
-                type1, type2, threshold, fields
-        );
-
-        result = bridge.getNewSession().run(openTriangleQuery2);
-        clusters = result.list(r -> r.get("cluster_count").asLong());
-
-        long tCount = 0;
-        if (!clusters.isEmpty()) {
-            tCount = clusters.get(0);
-        }
-
-        return (int) count + (int) tCount;
-    }
-
-    public static int countOpenTrianglesCumulativeAdditionalLinkage(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields, boolean isTotal) {
+    /**
+     * Method to count number of open triangles for Birth-Death-Birth Siblings
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 records x,z
+     * @param type2 record y
+     * @param threshold threshold to count at
+     * @param fields number of fields to count at
+     * @param isTotal boolean to check if return total or FNOTs
+     * @return total number of open triangles
+     */
+    public static int countOpenTrianglesBirthDeathSib(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields, boolean isTotal) {
         long count = 0;
         String openSquaresQuery = "";
         String openSquaresQuery2 = "";
@@ -347,6 +349,16 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
+    /**
+     * Method to count number of open triangles using an isomorphic pattern
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 x,z records
+     * @param type2 y record
+     * @param threshold threshold to count at
+     * @param fields number of fields to count at
+     * @return total number of open triangles
+     */
     public static int countOpenTrianglesIsomorphicSiblings(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields) {
         long count = 0;
         String openTriangleQuery = String.format(
@@ -397,6 +409,18 @@ public class PatternsCounter {
         return (int) count + (int) tCount;
     }
 
+    /**
+     * Method to count number of open triangles for ID linkage.
+     *
+     * @param bridge Neo4j bridge
+     * @param type1 x,z records
+     * @param type2 y record
+     * @param threshold threshold to count at
+     * @param fields number of fields to count at
+     * @param isTotal boolean check if need to return total or FNOTs
+     * @param partner check for marriage linkage what partner needs analysing, null if none
+     * @return total number of open triangles
+     */
     public static int countOpenSquaresCumulativeID(NeoDbCypherBridge bridge, String type1, String type2, double threshold, int fields, boolean isTotal, String partner) {
         long count = 0;
         String openSquaresQuery = "";

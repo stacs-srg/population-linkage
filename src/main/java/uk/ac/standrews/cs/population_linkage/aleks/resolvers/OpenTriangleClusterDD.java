@@ -55,6 +55,7 @@ public class OpenTriangleClusterDD extends OpenTriangleCluster {
 
                         birthDays.put(tempKids[i].getString(Death.STANDARDISED_ID), LocalDate.of(year, month, day));
 
+                        //if died as child, set assume birthplace from death place
                         if(Integer.parseInt((tempKids[i].getString(Death.DEATH_YEAR))) - year < 12 && !Objects.equals(tempKids[i].getString(Death.PLACE_OF_DEATH), "----")){
                             birthplaceMap.merge(tempKids[i].getString(Death.PLACE_OF_DEATH), 1, Integer::sum);
                         }
@@ -71,7 +72,7 @@ public class OpenTriangleClusterDD extends OpenTriangleCluster {
             }
         }
 
-        //https://deveshsharmablogs.wordpress.com/2013/07/16/find-most-common-element-in-a-list-in-java/
+        //code inspired by https://deveshsharmablogs.wordpress.com/2013/07/16/find-most-common-element-in-a-list-in-java/
         int maxValue = -1;
         for(Map.Entry<String, Integer> entry: birthplaceMap.entrySet()) {
             if(entry.getValue() > maxValue) {
@@ -82,9 +83,9 @@ public class OpenTriangleClusterDD extends OpenTriangleCluster {
 
         yearAvg = yearTotal / children.size();
 
+        //get age range and median by sorting dates
         List<LocalDate> sortedBirthDays = new ArrayList<>(birthDays.values());
         Collections.sort(sortedBirthDays);
-
         if(!sortedBirthDays.isEmpty()){
             ageRange = sortedBirthDays.get(sortedBirthDays.size() - 1).getYear() - sortedBirthDays.get(0).getYear();
 

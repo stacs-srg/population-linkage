@@ -16,7 +16,6 @@
  */
 package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 
-import org.neo4j.driver.Result;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.aleks.resolvers.PatternsCounter;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
@@ -24,8 +23,6 @@ import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -73,8 +70,8 @@ public class ThresholdTrianglesAnalysisBirthDeathSib extends ThresholdTrianglesA
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenTrianglesCumulativeAdditionalLinkage(bridge, "Birth", "Death", i, currentField, true),
-                                    PatternsCounter.countOpenTrianglesCumulativeAdditionalLinkage(bridge, "Birth", "Birth", i, currentField, false));
+                                    PatternsCounter.countOpenTrianglesBirthDeathSib(bridge, "Birth", "Death", i, currentField, true),
+                                    PatternsCounter.countOpenTrianglesBirthDeathSib(bridge, "Birth", "Death", i, currentField, false));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
