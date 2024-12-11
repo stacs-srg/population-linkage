@@ -103,7 +103,12 @@ public class DistanceDistributionAnalysis {
             printWriter.println("distance_sum,is_sibling");
 
             Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE);
-            result.list(r -> printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean()));
+            result.list(r -> {
+                if (!r.get("cluster_sum").isNull()) {
+                    printWriter.printf("%.2f,%b%n", r.get("cluster_sum").asDouble(), r.get("has_GT_SIBLING").asBoolean());
+                }
+                return null;
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }

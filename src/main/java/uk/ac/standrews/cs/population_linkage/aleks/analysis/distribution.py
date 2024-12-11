@@ -36,22 +36,26 @@ ax[0, 0].hist(sibling_data, bins=30, color='blue', edgecolor='black', alpha=0.7)
 ax[0, 0].set_title('Histogram of Sum of Distances (False Negatives)')
 ax[0, 0].set_xlabel('Sum of Distances')
 ax[0, 0].set_ylabel('Frequency')
+ax[0, 0].set_xlim([0, 1.35])
 
 # Histogram for non-siblings
 ax[0, 1].hist(non_sibling_data, bins=30, color='orange', edgecolor='black', alpha=0.7)
 ax[0, 1].set_title('Histogram of Sum of Distances (False Positives)')
 ax[0, 1].set_xlabel('Sum of Distances')
 ax[0, 1].set_ylabel('Frequency')
+ax[0, 1].set_xlim([0, 1.35])
 
 # Box plot for siblings
 ax[1, 0].boxplot(sibling_data, vert=False, patch_artist=True, boxprops=dict(facecolor='blue', color='black'))
 ax[1, 0].set_title('Box Plot of Sum of Distances (False Negatives)')
 ax[1, 0].set_xlabel('Sum of Distances')
+ax[1, 0].set_xlim([0, 1.35])
 
 # Box plot for non-siblings
 ax[1, 1].boxplot(non_sibling_data, vert=False, patch_artist=True, boxprops=dict(facecolor='orange', color='black'))
 ax[1, 1].set_title('Box Plot of Sum of Distances (False Positives)')
 ax[1, 1].set_xlabel('Sum of Distances')
+ax[1, 1].set_xlim([0, 1.35])
 
 plt.tight_layout()
 plt.show()
