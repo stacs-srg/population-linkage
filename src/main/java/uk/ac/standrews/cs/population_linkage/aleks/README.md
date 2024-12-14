@@ -1,9 +1,10 @@
 ## CS5199 Project Documentation
 
 ### How to run threshold analysis
-1. Run run_threshold_analysis.sh (May take hours as the threshold will be automatically maximised)
-2. Multiple CSV files will be created which should contain all the quality and open triangle measuements
-3. optimal_threshold.py can then be used to generate the graphs and threshold estimates for the desired algorithm. The script requires the following arguments
+1. Prior to starting the analysis, run all of the builders as some analysers depend on other linkages to count FNOTs
+2. Run run_threshold_analysis.sh (May take hours as the threshold will be automatically maximised)
+3. Multiple CSV files will be created which should contain all the quality and open triangle measuements
+4. optimal_threshold.py can then be used to generate the graphs and threshold estimates for the desired algorithm. The script requires the following arguments
 - --max: maximum number of fields for a linkage
 - --min: minimum number of fields for a linkage
 - --file: generic file name of all csv files
