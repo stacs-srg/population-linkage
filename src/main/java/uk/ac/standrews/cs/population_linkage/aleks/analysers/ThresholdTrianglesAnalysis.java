@@ -17,6 +17,8 @@
 package uk.ac.standrews.cs.population_linkage.aleks.analysers;
 
 import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Transaction;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe;
 
@@ -39,10 +41,25 @@ public abstract class ThresholdTrianglesAnalysis {
         parameters.put("threshold", threshold);
         parameters.put("field", fields);
         Result result = bridge.getNewSession().run(query_string, parameters);
-        if(!result.list().isEmpty()){
-            return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
-        }else{
-            return 0;
-        }
+        return (long) result.list(r -> r.get("count(r)").asInt()).get(0);
+    }
+
+    /**
+     * Method to delete links created when maximising threshold
+     *
+     * @param query_string Cypher query
+     * @param threshold current threshold being analysed
+     * @param fields current field being analysed
+     * @param bridge Neo4j bridge
+     */
+    protected static void doQueryDel(String query_string, double threshold, int fields, NeoDbCypherBridge bridge) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("threshold", threshold);
+        parameters.put("field", fields);
+
+        Session session = bridge.getNewSession();
+        Transaction tx = session.beginTransaction();
+        tx.run(query_string, parameters);
+        tx.commit();
     }
 }

@@ -108,7 +108,7 @@ public class ThresholdTrianglesAnalysisBirthDeathSib extends ThresholdTrianglesA
 
         while (linkage_fields >= half_fields) {
             recipe.setNumberLinkageFieldsRequired(linkage_fields);
-            doQuery(resetString, recipe.getThreshold(), linkage_fields, bridge);
+            doQueryDel(resetString, recipe.getThreshold(), linkage_fields, bridge);
             linkage_fields--;
         }
     }
