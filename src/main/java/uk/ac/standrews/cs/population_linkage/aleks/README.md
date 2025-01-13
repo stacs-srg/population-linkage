@@ -13,3 +13,6 @@
 
 ### How to run resolvers
 1. Run run_resolvers.sh (preferably on a machine with large amount of memory and cores)
+
+### How to run end-to-end
+1. Run  . src/main/scripts/endtoend/runall.sh
