@@ -212,12 +212,9 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
     @Override
     public double getThreshold() {
         if(MAX_THRESHOLD > 0){
-            if(getNumberOfLinkageFieldsRequired() == ALL_LINKAGE_FIELDS / 2) {
-                return MAX_THRESHOLD / 2;
-            }
             return MAX_THRESHOLD;
         }
-        
+
         switch (getNumberOfLinkageFieldsRequired()){
             case 4:
             case 3:
