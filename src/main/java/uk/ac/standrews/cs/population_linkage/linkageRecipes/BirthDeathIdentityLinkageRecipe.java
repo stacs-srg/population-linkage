@@ -41,7 +41,7 @@ import static uk.ac.standrews.cs.population_linkage.helpers.RecordFiltering.filt
  */
 public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
 
-    protected static double THRESHOLD = 0.89;
+    protected static double THRESHOLD = 0.88;
     private static double MAX_THRESHOLD = 0;
 
     public static final String LINKAGE_TYPE = "birth-death-identity";
@@ -220,16 +220,7 @@ public class BirthDeathIdentityLinkageRecipe extends LinkageRecipe {
             return MAX_THRESHOLD;
         }
 
-        switch (getNumberOfLinkageFieldsRequired()){
-            case 6:
-            case 5:
-                return 0.69;
-            case 4:
-            case 3:
-                return 0.6;
-            default:
-                return THRESHOLD;
-        }
+        return THRESHOLD;
     }
 
     @Override
