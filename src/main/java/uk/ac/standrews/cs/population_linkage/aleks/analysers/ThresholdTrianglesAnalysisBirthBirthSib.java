@@ -101,6 +101,7 @@ public class ThresholdTrianglesAnalysisBirthBirthSib extends ThresholdTrianglesA
      * @param recipe linkage recipe used
      */
     private static void resetThreshold(NeoDbCypherBridge bridge, BirthSiblingLinkageRecipe recipe) {
+        recipe.setMaxThreshold(0);
         String resetString = "MATCH (b1:Birth)-[r:SIBLING {actors: \"Child-Child\"}]->(b2:Birth) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
 
         int linkage_fields = recipe.ALL_LINKAGE_FIELDS;

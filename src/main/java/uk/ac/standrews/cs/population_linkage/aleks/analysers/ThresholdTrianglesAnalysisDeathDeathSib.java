@@ -100,6 +100,7 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
      * @param recipe linkage recipe used
      */
     private static void resetThreshold(NeoDbCypherBridge bridge, DeathSiblingLinkageRecipe recipe) {
+        recipe.setMaxThreshold(0);
         String resetString = "MATCH (d1:Death)-[r:SIBLING {actors: \"Deceased-Deceased\"}]-(d2:Death) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
 
         int linkage_fields = recipe.ALL_LINKAGE_FIELDS;

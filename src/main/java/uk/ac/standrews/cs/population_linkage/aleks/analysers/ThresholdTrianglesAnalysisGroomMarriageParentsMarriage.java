@@ -103,6 +103,7 @@ public class ThresholdTrianglesAnalysisGroomMarriageParentsMarriage extends Thre
      * @param recipe linkage recipe used
      */
     private static void resetThreshold(NeoDbCypherBridge bridge, GroomMarriageParentsMarriageIdentityLinkageRecipe recipe) {
+        recipe.setMaxThreshold(0);
         String resetString = "MATCH (m1:Marriage)-[r:ID {actors: \"Groom-Couple\"}]->(m2:Marriage) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
 
         int linkage_fields = recipe.ALL_LINKAGE_FIELDS;
