@@ -43,53 +43,53 @@ public class ThresholdTrianglesAnalysisBirthGroomID extends ThresholdTrianglesAn
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
-        linkageRecipe.setMaxThreshold(2);
-        BirthGroomOwnMarriageBuilder.runBuilder(linkageRecipe);
-
-        ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
-
-        System.out.println("Analysing thresholds...");
-        //loop through each linkage field options
-        for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
-            final int currentField = fields;
-
-            executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthgroomID" + currentField + ".csv");
-                     PrintWriter printWriter = new PrintWriter(fileWriter)) {
-
-                    //write headers
-                    printWriter.println("threshold,precision,recall,fmeasure,total,fnots");
-
-                    try (NeoDbCypherBridge localBridge = new NeoDbCypherBridge()) {
-                        for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
-                            double threshold = Math.round(i * 100.0) / 100.0;
-
-                            //get quality measurements
-                            long fpc = doQuery(BIRTH_GROOM_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_GROOM_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_GROOM_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_GROOM_ID_FNC_T, i, currentField, localBridge);
-
-                            //print to csv
-                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
-                                    threshold,
-                                    ClassificationMetrics.precision(tpc, fpc),
-                                    ClassificationMetrics.recall(tpc, fnc),
-                                    ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, true, "Groom"),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, false, "Groom"));
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-
-        executorService.shutdown();
-        executorService.awaitTermination(12, TimeUnit.HOURS);
+//        linkageRecipe.setMaxThreshold(2);
+//        BirthGroomOwnMarriageBuilder.runBuilder(linkageRecipe);
+//
+//        ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
+//
+//        System.out.println("Analysing thresholds...");
+//        //loop through each linkage field options
+//        for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
+//            final int currentField = fields;
+//
+//            executorService.submit(() -> {
+//                try (FileWriter fileWriter = new FileWriter("birthgroomID" + currentField + ".csv");
+//                     PrintWriter printWriter = new PrintWriter(fileWriter)) {
+//
+//                    //write headers
+//                    printWriter.println("threshold,precision,recall,fmeasure,total,fnots");
+//
+//                    try (NeoDbCypherBridge localBridge = new NeoDbCypherBridge()) {
+//                        for (double i = MIN_THRESHOLD; i < MAX_THRESHOLD; i += 0.01) {
+//                            double threshold = Math.round(i * 100.0) / 100.0;
+//
+//                            //get quality measurements
+//                            long fpc = doQuery(BIRTH_GROOM_ID_FPC, threshold, currentField, localBridge);
+//                            long tpc = doQuery(BIRTH_GROOM_ID_TPC, threshold, currentField, localBridge);
+//                            long fnc = doQuery(BIRTH_GROOM_ID_FNC, threshold, currentField, localBridge)
+//                                    + doQuery(BIRTH_GROOM_ID_FNC_T, i, currentField, localBridge);
+//
+//                            //print to csv
+//                            printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
+//                                    threshold,
+//                                    ClassificationMetrics.precision(tpc, fpc),
+//                                    ClassificationMetrics.recall(tpc, fnc),
+//                                    ClassificationMetrics.F1(tpc, fpc, fnc),
+//                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, true, "Groom"),
+//                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, false, "Groom"));
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//        }
+//
+//        executorService.shutdown();
+//        executorService.awaitTermination(12, TimeUnit.HOURS);
 
         resetThreshold(bridge, linkageRecipe);
     }
