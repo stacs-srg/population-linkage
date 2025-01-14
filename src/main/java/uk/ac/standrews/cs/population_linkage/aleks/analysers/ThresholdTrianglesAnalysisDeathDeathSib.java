@@ -88,7 +88,7 @@ public class ThresholdTrianglesAnalysisDeathDeathSib extends ThresholdTrianglesA
         }
 
         executorService.shutdown();
-        executorService.awaitTermination(12, TimeUnit.HOURS);
+        executorService.awaitTermination(24, TimeUnit.HOURS);
 
         resetThreshold(bridge, linkageRecipe);
     }
