@@ -91,7 +91,7 @@ public class ThresholdTrianglesAnalysisBirthDeathID extends ThresholdTrianglesAn
 //        executorService.shutdown();
 //        executorService.awaitTermination(12, TimeUnit.HOURS);
 //
-//        resetThreshold(bridge, linkageRecipe);
+        resetThreshold(bridge, linkageRecipe);
     }
 
     /**
