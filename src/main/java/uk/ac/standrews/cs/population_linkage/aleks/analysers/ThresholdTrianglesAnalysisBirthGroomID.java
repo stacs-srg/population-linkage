@@ -43,11 +43,11 @@ public class ThresholdTrianglesAnalysisBirthGroomID extends ThresholdTrianglesAn
         final double MAX_THRESHOLD = 2.01; //0.01 above target
         final double MIN_THRESHOLD = 0.00;
 
-//        linkageRecipe.setMaxThreshold(2);
-//        BirthGroomOwnMarriageBuilder.runBuilder(linkageRecipe);
-//
-//        ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
-//
+        linkageRecipe.setMaxThreshold(1.5);
+        BirthGroomOwnMarriageBuilder.runBuilder(linkageRecipe);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
+
 //        System.out.println("Analysing thresholds...");
 //        //loop through each linkage field options
 //        for (int fields = MAX_FIELD; fields > MIN_FIELD; fields--) {
