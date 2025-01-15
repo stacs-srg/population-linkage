@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data = pd.read_csv("../../../../../../../../../../birthbirthtri.csv")
+data = pd.read_csv("../../../../../../../../../birthbirthtri.csv")
 
 sibling_data = data[data['is_sibling'] == True]['distance_sum']
 non_sibling_data = data[data['is_sibling'] == False]['distance_sum']

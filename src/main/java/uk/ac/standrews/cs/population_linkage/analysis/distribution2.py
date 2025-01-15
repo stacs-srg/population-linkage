@@ -18,7 +18,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('../../../../../../../../../../birthbirthtri2.csv')
+df = pd.read_csv('../../../../../../../../../birthbirthtri2.csv')
 
 df['distance_diff'] = df['max_distance'] - df['average_distance']
 
