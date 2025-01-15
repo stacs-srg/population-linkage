@@ -157,14 +157,14 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
                 }
             }
 
-            if (!isDeleted && date != null && dateD != null) { //2. If born after marriage
+            if (!isDeleted && date != null && dateD != null) { //2. If born after death
                 if (date.isAfter(dateD)) {
                     deleteLink(bridge, stds[i], stds[1], "Child-Deceased", deletionPredicates[1], BM_ID_QUERY_DEL_PROV);
                     isDeleted = true;
                 }
             }
 
-//        } else if (ChronoUnit.YEARS.between(date, dateD) >= 0 && //4. If born way before marriage
+//        } else if (ChronoUnit.YEARS.between(date, dateD) >= 0 && //4. If born way before death
 //                ChronoUnit.YEARS.between(date, dateD)> MAX_MARRIAGE_AGE) {
 //            deleteLink(bridge, stds[i], stds[1], "Child-Deceased", deletionPredicates[3], BM_ID_QUERY_DEL_PROV);
 //            isDeleted = true;
