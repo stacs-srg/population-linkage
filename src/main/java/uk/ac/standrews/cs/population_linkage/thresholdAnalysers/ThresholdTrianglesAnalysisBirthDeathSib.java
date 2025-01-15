@@ -14,12 +14,12 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.aleks.analysers;
+package uk.ac.standrews.cs.population_linkage.thresholdAnalysers;
 
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
-import uk.ac.standrews.cs.population_linkage.aleks.resolvers.PatternsCounter;
-import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthBrideOwnMarriageBuilder;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthBrideIdentityLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.resolvers.PatternsCounter;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthDeathSiblingBundleBuilder;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.utilities.ClassificationMetrics;
 
 import java.io.FileWriter;
@@ -29,22 +29,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ThresholdTrianglesAnalysisBirthBrideID extends ThresholdTrianglesAnalysis {
-    private static final String BIRTH_BRIDE_ID_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
-    private static final String BIRTH_BRIDE_ID_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Bride\"}]-(m) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
-    private static final String BIRTH_BRIDE_ID_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Bride\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Bride\"}]-(m) return count(r)";
-    private static final String BIRTH_BRIDE_ID_FNC_T = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Bride\"}]->(m:Marriage), (b)-[s:ID {actors: \"Child-Bride\"}]-(m) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
+public class ThresholdTrianglesAnalysisBirthDeathSib extends ThresholdTrianglesAnalysis {
+    private static final String BIRTH_DEATH_SIBLING_TPC = "MATCH (b:Birth)-[r:SIBLING {actors: \"Deceased-Child\"}]-(d:Death) WHERE (b)-[:GT_SIBLING {actors: \"Child-Deceased\"}]-(d) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BIRTH_DEATH_SIBLING_FPC = "MATCH (b:Birth)-[r:SIBLING {actors: \"Deceased-Child\"}]-(d:Death) WHERE NOT (b)-[:GT_SIBLING {actors: \"Child-Deceased\"}]-(d) AND r.distance <= $threshold AND r.fields_populated >= $field return count(r)";
+    private static final String BIRTH_DEATH_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_SIBLING {actors: \"Child-Deceased\"}]-(d:Death) WHERE NOT (b)-[:SIBLING {actors: \"Deceased-Child\"}]-(d) return count(r)";
+    private static final String BIRTH_DEATH_SIBLING_FNC_T = "MATCH (b:Birth)-[r:GT_SIBLING {actors: \"Child-Deceased\"}]-(d:Death), (b)-[s:SIBLING]-(d) WHERE s.distance > $threshold OR s.fields_populated < $field return count(r)";
 
     public static void main(String[] args) throws Exception {
-        BirthBrideIdentityLinkageRecipe linkageRecipe = new BirthBrideIdentityLinkageRecipe("umea", "EVERYTHING", BirthBrideOwnMarriageBuilder.class.getName(), null);
+        BirthDeathSiblingLinkageRecipe linkageRecipe = new BirthDeathSiblingLinkageRecipe("umea", "EVERYTHING", BirthDeathSiblingBundleBuilder.class.getName(), null);
         NeoDbCypherBridge bridge = new NeoDbCypherBridge();
-        final int MAX_FIELD = 6;
-        final int MIN_FIELD = 2; //1 below target
-        final double MAX_THRESHOLD = 2.01; //0.01 above target
-        final double MIN_THRESHOLD = 0.00;
+        final int MAX_FIELD = 4;
+        final int MIN_FIELD = 1; //1 below target
+        final double MAX_THRESHOLD = 1.01; //0.01 above target
+        final double MIN_THRESHOLD = 0.0;
 
-        linkageRecipe.setMaxThreshold(2);
-        BirthBrideOwnMarriageBuilder.runBuilder(linkageRecipe);
+        linkageRecipe.setMaxThreshold(1);
+        BirthDeathSiblingBundleBuilder.runBuilder(linkageRecipe);
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_FIELD - MIN_FIELD);
 
@@ -54,7 +54,7 @@ public class ThresholdTrianglesAnalysisBirthBrideID extends ThresholdTrianglesAn
             final int currentField = fields;
 
             executorService.submit(() -> {
-                try (FileWriter fileWriter = new FileWriter("birthbrideID" + currentField + ".csv");
+                try (FileWriter fileWriter = new FileWriter("birthdeathsib" + currentField + ".csv");
                      PrintWriter printWriter = new PrintWriter(fileWriter)) {
 
                     //write headers
@@ -65,10 +65,10 @@ public class ThresholdTrianglesAnalysisBirthBrideID extends ThresholdTrianglesAn
                             double threshold = Math.round(i * 100.0) / 100.0;
 
                             //get quality measurements
-                            long fpc = doQuery(BIRTH_BRIDE_ID_FPC, threshold, currentField, localBridge);
-                            long tpc = doQuery(BIRTH_BRIDE_ID_TPC, threshold, currentField, localBridge);
-                            long fnc = doQuery(BIRTH_BRIDE_ID_FNC, threshold, currentField, localBridge)
-                                    + doQuery(BIRTH_BRIDE_ID_FNC_T, i, currentField, localBridge);
+                            long fpc = doQuery(BIRTH_DEATH_SIBLING_FPC, threshold, currentField, localBridge);
+                            long tpc = doQuery(BIRTH_DEATH_SIBLING_TPC, threshold, currentField, localBridge);
+                            long fnc = doQuery(BIRTH_DEATH_SIBLING_FNC, threshold, currentField, localBridge)
+                                    + doQuery(BIRTH_DEATH_SIBLING_FNC_T, i, currentField, localBridge);
 
                             //print to csv
                             printWriter.printf("%.2f,%.5f,%.5f,%.5f,%d,%d%n",
@@ -76,8 +76,8 @@ public class ThresholdTrianglesAnalysisBirthBrideID extends ThresholdTrianglesAn
                                     ClassificationMetrics.precision(tpc, fpc),
                                     ClassificationMetrics.recall(tpc, fnc),
                                     ClassificationMetrics.F1(tpc, fpc, fnc),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, true, "Bride"),
-                                    PatternsCounter.countOpenSquaresCumulativeID(bridge, "Birth", "Marriage", i, currentField, false, "Bride"));
+                                    PatternsCounter.countOpenTrianglesBirthDeathSib(bridge, "Birth", "Death", i, currentField, true),
+                                    PatternsCounter.countOpenTrianglesBirthDeathSib(bridge, "Birth", "Death", i, currentField, false));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -100,9 +100,9 @@ public class ThresholdTrianglesAnalysisBirthBrideID extends ThresholdTrianglesAn
      * @param bridge Neo4j bridge
      * @param recipe linkage recipe used
      */
-    private static void resetThreshold(NeoDbCypherBridge bridge, BirthBrideIdentityLinkageRecipe recipe) {
+    private static void resetThreshold(NeoDbCypherBridge bridge, BirthDeathSiblingLinkageRecipe recipe) {
         recipe.setMaxThreshold(0);
-        String resetString = "MATCH (b:Birth)-[r:ID {actors: \"Child-Bride\"}]-(m:Marriage) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
+        String resetString = "MATCH (b:Birth)-[r:SIBLING {actors: \"Deceased-Child\"}]-(d:Death) WHERE r.distance > $threshold AND r.fields_populated = $field DELETE r";
 
         int linkage_fields = recipe.ALL_LINKAGE_FIELDS;
         int half_fields = linkage_fields - (linkage_fields / 2 );

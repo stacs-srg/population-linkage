@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.aleks.resolvers;
+package uk.ac.standrews.cs.population_linkage.resolvers;
 
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;

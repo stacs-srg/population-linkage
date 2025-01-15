@@ -14,23 +14,23 @@
  * You should have received a copy of the GNU General Public License along with population-linkage. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package uk.ac.standrews.cs.population_linkage.aleks.resolvers;
+package uk.ac.standrews.cs.population_linkage.resolvers;
 
 import org.neo4j.driver.Result;
-import org.neo4j.driver.Session;
-import org.neo4j.driver.Transaction;
 import org.neo4j.driver.types.Node;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.exceptions.BucketException;
 import uk.ac.standrews.cs.neoStorr.interfaces.IBucket;
 import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 import uk.ac.standrews.cs.population_linkage.compositeMeasures.LXPMeasure;
-import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthSiblingBundleBuilder;
+import uk.ac.standrews.cs.population_linkage.endToEnd.builders.BirthDeathSiblingBundleBuilder;
 import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthBirthSiblingAccuracy;
-import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthSiblingLinkageRecipe;
+import uk.ac.standrews.cs.population_linkage.linkageAccuracy.BirthDeathSiblingAccuracy;
+import uk.ac.standrews.cs.population_linkage.linkageRecipes.BirthDeathSiblingLinkageRecipe;
 import uk.ac.standrews.cs.population_linkage.supportClasses.Constants;
 import uk.ac.standrews.cs.population_records.RecordRepository;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
+import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.StringMeasure;
 
 import java.time.LocalDate;
@@ -43,30 +43,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static uk.ac.standrews.cs.population_linkage.linkageRecipes.LinkageRecipe.list;
-
-public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver {
+public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver {
     //Cypher queries used in predicates
     private final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:SIBLING { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
-    private final String BB_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov, actors: \"Child-Child\" } ]-(b)";
-    private final String BB_SIBLING_WITH_PARENTS = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth),\n" +
-            "(x)-[s:ID]-(m:Marriage),\n" +
-            "(y)-[t:ID]-(m)\n" +
-            "WHERE (s.actors = \"Child-Father\" or s.actors = \"Child-Mother\") and (t.actors = \"Child-Father\" or t.actors = \"Child-Mother\") and NOT (x)-[:SIBLING]-(z) and NOT (z)-[:ID]-(m) and z.PARENTS_YEAR_OF_MARRIAGE <> m.MARRIAGE_YEAR and x.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR and y.PARENTS_YEAR_OF_MARRIAGE = m.MARRIAGE_YEAR MERGE (y)-[r:DELETED { provenance: \"m_pred\",actors: \"Child-Child\" } ]-(z)";
-    private final String BB_ISO = "MATCH (b1:Birth)-[:SIBLING]-(b2:Birth)-[:SIBLING]-(b3:Birth),\n" +
-            "(d1:Death)-[:SIBLING]-(d2:Death)-[:SIBLING]-(d3:Death),\n" +
-            "(d1)-[:SIBLING]-(d3),\n" +
-            "(b1)-[:ID]-(d1),\n" +
-            "(b2)-[:ID]-(d2),\n" +
-            "(b3)-[:ID]-(d3)\n" +
-            "WHERE NOT (b1)-[:SIBLING]-(b3)\n" +
-            "MERGE (b1)-[r:SIBLING { provenance: \"bb_iso\",actors: \"Child-Child\" } ]-(b3)";
+    private final String BD_SIBLING_QUERY_DEL_PROV = "MATCH (a:Birth), (b:Death) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to MERGE (a)-[r:DELETED { provenance: $prov } ]-(b)";
 
     //Names of predicates to be used as prov
-    private final String[] creationPredicates = {"match_m_date", "bb_iso"};
-    private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed" , "m_pred"};
+    private final String[] creationPredicates = {"match_m_date_bd"};
+    private final String[] deletionPredicates = {"max_age_range", "min_b_interval", "birthplace_mode", "bad_m_date", "msed"};
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws BucketException {
         String sourceRepo = args[0]; // e.g. umea
         String numberOfRecords = args[1]; // e.g. EVERYTHING or 10000 etc.
 
@@ -75,48 +61,39 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
 
         try {
-            new BirthBirthOpenTriangleResolver(sourceRepo, numberOfRecords);
+            new BirthDeathOpenTriangleResolver(sourceRepo, numberOfRecords);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
-    public BirthBirthOpenTriangleResolver(String sourceRepo, String numberOfRecords) throws InterruptedException  {
+    public BirthDeathOpenTriangleResolver(String sourceRepo, String numberOfRecords) throws BucketException, InterruptedException {
         super(sourceRepo);
-
         final StringMeasure base_measure = Constants.LEVENSHTEIN;
         final LXPMeasure composite_measure_date = getCompositeMeasureDate(base_measure);
         IBucket births = record_repository.getBucket("birth_records");
-        BirthSiblingLinkageRecipe recipe = new BirthSiblingLinkageRecipe(sourceRepo, numberOfRecords, BirthSiblingBundleBuilder.class.getName());
+        IBucket deaths = record_repository.getBucket("death_records");
+        BirthDeathSiblingLinkageRecipe recipe = new BirthDeathSiblingLinkageRecipe(sourceRepo, numberOfRecords, BirthDeathSiblingBundleBuilder.class.getName(), null);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
         System.out.println("Before");
-        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth"); //get number of triangles before resolution
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
+        new BirthDeathSiblingAccuracy(bridge);
         new BirthBirthSiblingAccuracy(bridge);
 
-        //Run all graph predicates
-        System.out.println("Running graph predicates...");
-        String[] graphPredicates = {BB_SIBLING_WITH_PARENTS, BB_ISO};
-        for (String graphPredicate : graphPredicates) {
-            try (Session session = bridge.getNewSession(); Transaction tx = session.beginTransaction()) {
-                tx.run(graphPredicate);
-                tx.commit();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         System.out.println("Locating triangles...");
-        List<OpenTriangleClusterBB> triangles = findIllegalBirthBirthSiblingTriangles(bridge, sourceRepo); //get all open triangles in their clusters
+        List<OpenTriangleClusterBD> triangles = findIllegalBirthDeathSiblingTriangles(bridge, sourceRepo);
         System.out.println("Triangle clusters found: " + triangles.size());
 
         System.out.println("Resolving triangles with MSED...");
-        for (OpenTriangleClusterBB triangle : triangles) {
+        for (OpenTriangleClusterBD cluster : triangles) {
             executorService.submit(() ->
                 {
                     try {
-                        resolveTrianglesMSED(triangle.getTriangleChain(), triangle.x, recipe, deletionPredicates[4], Birth.STANDARDISED_ID, BB_SIBLING_QUERY_DEL_PROV);
+                        resolveTrianglesMSED(cluster.getTriangleChain(), cluster.x, recipe, deletionPredicates[4], Birth.STANDARDISED_ID, BD_SIBLING_QUERY_DEL_PROV);
                     } catch (BucketException e) {
                         throw new RuntimeException(e);
                     }
@@ -125,11 +102,11 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         }
 
         System.out.println("Resolving triangles with predicates...");
-        for (OpenTriangleClusterBB cluster : triangles) { //loop through each triangle cluster
+        for (OpenTriangleCluster cluster : triangles) {
             executorService.submit(() ->
                 {
                     try {
-                        resolveTrianglesPredicates(cluster, births, composite_measure_date);
+                        resolveTrianglesPredicates(cluster, births, deaths, composite_measure_date);
                     } catch (BucketException e) {
                         throw new RuntimeException(e);
                     }
@@ -141,10 +118,14 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
         executorService.awaitTermination(1, TimeUnit.HOURS);
 
         System.out.println("After");
-        System.out.println("\n");
         PredicateEfficacy pef = new PredicateEfficacy(); //get efficacy of each predicate
-        pef.countSiblingEfficacy(creationPredicates, deletionPredicates, "Birth", "Birth");
-        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth"); //count number of open triangles after resolution
+        System.out.println("Birth-Death");
+        pef.countSiblingEfficacy(new String[0], deletionPredicates, "Birth", "Death");
+        System.out.println("Birth-Birth");
+        pef.countSiblingEfficacy(creationPredicates, new String[0], "Birth", "Birth");
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Death");
+        PatternsCounter.countOpenTrianglesToString(bridge, "Birth", "Birth");
+        new BirthDeathSiblingAccuracy(bridge);
         new BirthBirthSiblingAccuracy(bridge);
     }
 
@@ -156,15 +137,15 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param composite_measure_date composite measure for date
      * @throws BucketException
      */
-    private void resolveTrianglesPredicates(OpenTriangleClusterBB cluster, IBucket births, LXPMeasure composite_measure_date) throws BucketException {
-        for (List<Long> chain : cluster.getTriangleChain()){ //loop through each chain of open triangles in cluster
-            LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) births.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))}; //get node objects
+    private void resolveTrianglesPredicates(OpenTriangleCluster cluster, IBucket births, IBucket deaths, LXPMeasure composite_measure_date) throws BucketException {
+        for (List<Long> chain : cluster.getTriangleChain()){
+            LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
             String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-            String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
+            String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
             String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
-            cluster.getYearStatistics(); //get statistics for brith years
-            boolean hasChanged = false; //prevent resolution if chain has already been resolved
+            cluster.getYearStatistics();
+            boolean hasChanged = false;
 
             //1. Check age of child not outside of max difference
             hasChanged = maxRangePredicate(cluster, tempKids, hasChanged, 0);
@@ -175,23 +156,11 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
             //3. Get mode of birthplace
             hasChanged = mostCommonBirthPlacePredicate(cluster, hasChanged, tempKids, 2);
 
-            //4. If same marriage date and pass other checks, create link
+            //4. If same marriage date and pass other checks, create link. Match for same birthplace as well?
             if(!hasChanged && getDistance(cluster.x, chain.get(1), composite_measure_date, births) < DATE_THRESHOLD &&
                     !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
                     !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
                 createLink(bridge, std_id_x, std_id_z, creationPredicates[0], BB_SIBLING_QUERY);
-            }else{
-                if(!hasChanged && getDistance(cluster.x, chain.get(0), composite_measure_date, births) > DATE_THRESHOLD &&
-                        !Objects.equals(tempKids[0].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-                        !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                    deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[3], BB_SIBLING_QUERY_DEL_PROV);
-                }
-
-                if (!hasChanged && getDistance(chain.get(0), chain.get(1), composite_measure_date, births) > DATE_THRESHOLD &&
-                        !Objects.equals(tempKids[1].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----") &&
-                        !Objects.equals(tempKids[2].getString(Birth.PARENTS_YEAR_OF_MARRIAGE), "----")){
-                    deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[3], BB_SIBLING_QUERY_DEL_PROV);
-                }
             }
         }
     }
@@ -202,14 +171,14 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @param bridge Neo4j Bridge
      * @return List of open triangle clusters
      */
-    private List<OpenTriangleClusterBB> findIllegalBirthBirthSiblingTriangles(NeoDbCypherBridge bridge, String recordRepo) {
-        final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Birth)-[:SIBLING]-(z:Birth)\n" +
+    private List<OpenTriangleClusterBD> findIllegalBirthDeathSiblingTriangles(NeoDbCypherBridge bridge, String recordRepo) {
+        final String BIRTH_SIBLING_TRIANGLE_QUERY = "MATCH (x:Birth)-[:SIBLING]-(y:Death)-[:SIBLING]-(z:Birth)\n"+
                 "WHERE NOT (x)-[:SIBLING]-(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, collect([y, z]) AS openTriangles";
 
         //run query to get all open triangles
         Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE_QUERY);
-        List<OpenTriangleClusterBB> clusters = new ArrayList<>();
+        List<OpenTriangleClusterBD> clusters = new ArrayList<>();
         List<List<Long>> temp = new ArrayList<>();
 
         //loop through each cluster
@@ -231,13 +200,13 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
                 temp.add(openTriangleList); //add triangles to a temporary list
 
                 if (temp.size() == 360) { //limit number of triangles in cluster
-                    clusters.add(new OpenTriangleClusterBB(x, new ArrayList<>(temp), recordRepo));
+                    clusters.add(new OpenTriangleClusterBD(x, new ArrayList<>(temp), recordRepo));
                     temp.clear();
                 }
             }
 
             if (!temp.isEmpty()) { //if not reached limit, create a cluster object with whatever is left
-                clusters.add(new OpenTriangleClusterBB(x, new ArrayList<>(temp), recordRepo));
+                clusters.add(new OpenTriangleClusterBD(x, new ArrayList<>(temp), recordRepo));
                 temp.clear();
             }
         });
@@ -259,35 +228,35 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
     @Override
     protected boolean maxRangePredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-        String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
+        String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
         //Check if record x is outside of range
-        if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
+        if(!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
-            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
 
         //Check if record z is outside of range
-        } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
+        } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
                 (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
-            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))- Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
 
         //Check if record y is outside of range compared to x
-        } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)) {
-            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+        } else if (!Objects.equals(tempKids[0].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[0].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)) {
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
 
         //Check if record y is outside of range compared to z
-        } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Birth.BIRTH_YEAR), "----") &&
-                (Math.abs(cluster.getYearMedian() - Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE ||
-                Math.abs(Integer.parseInt(tempKids[1].getString(Birth.BIRTH_YEAR)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
-            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+        } else if (!Objects.equals(tempKids[2].getString(Birth.BIRTH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----")  &&
+                (Math.abs(cluster.getYearMedian() - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6))) > MAX_AGE_DIFFERENCE ||
+                Math.abs(Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) - Integer.parseInt(tempKids[2].getString(Birth.BIRTH_YEAR))) > MAX_AGE_DIFFERENCE)){
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         }
 
@@ -310,18 +279,18 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
     @Override
     protected boolean minBirthIntervalPredicate(OpenTriangleCluster cluster, LXP[] tempKids, boolean hasChanged, int predNumber) {
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-        String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
+        String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
         for (int i = 0; i < tempKids.length; i+=2) {
             try{
                 LocalDate childDate = getBirthdayAsDate(tempKids[i], false); //get birth date of node being analysed
-                LocalDate dateY = getBirthdayAsDate(tempKids[1], false); //get birth date of middle node
+                LocalDate dateY = getBirthdayAsDate(tempKids[1], true); //get birth date of middle node
                 if(!hasChanged && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) < BIRTH_INTERVAL && Math.abs(ChronoUnit.DAYS.between(dateY, childDate)) > 2){
                     if(i == 0){
-                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+                        deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
                     }else{
-                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+                        deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
                     }
                     hasChanged = true;
                 }
@@ -332,6 +301,7 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
 
         return hasChanged;
     }
+
 
     /**
      * Predicate to resolve triangles based on most common birthplace. If neighbouring node and birthplace mode of cluster don't match
@@ -345,21 +315,28 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      */
     @Override
     protected boolean mostCommonBirthPlacePredicate(OpenTriangleCluster cluster, boolean hasChanged, LXP[] tempKids, int predNumber) {
-        int MIN_FAMILY_SIZE = 3; //delete link only if cluster contains more children than threshold
+        int MIN_FAMILY_SIZE = 3;
         String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
-        String std_id_y = tempKids[1].getString(Birth.STANDARDISED_ID);
+        String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
         String std_id_z = tempKids[2].getString(Birth.STANDARDISED_ID);
 
         //check on x
-        if(!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") &&
-                !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE ){
-            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+        if(!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") &&
+                ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < cluster.getAgeRange() / 2) ||
+                (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < cluster.getAgeRange() / 2)) &&
+                !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[0].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE){
+
+            deleteLink(bridge, std_id_x, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
 
         //check on z
-        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Birth.BIRTH_ADDRESS), "----") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") &&
-                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Birth.BIRTH_ADDRESS)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE) {
-            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BB_SIBLING_QUERY_DEL_PROV);
+        } else if (!hasChanged && !Objects.equals(tempKids[1].getString(Death.PLACE_OF_DEATH), "----") && ((!Objects.equals(tempKids[1].getString(Death.AGE_AT_DEATH), "") && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), "----") && Integer.parseInt(tempKids[1].getString(Death.AGE_AT_DEATH)) < cluster.getAgeRange() / 2) ||
+                (!Objects.equals(tempKids[1].getString(Death.DEATH_YEAR), "----") && !Objects.equals(tempKids[1].getString(Death.DATE_OF_BIRTH), "--/--/----") &&
+                        Integer.parseInt(tempKids[1].getString(Death.DEATH_YEAR)) - Integer.parseInt((tempKids[1].getString(Death.DATE_OF_BIRTH)).substring(6)) < cluster.getAgeRange() / 2)) &&
+                !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), tempKids[1].getString(Death.PLACE_OF_DEATH)) && !Objects.equals(tempKids[2].getString(Birth.BIRTH_ADDRESS), cluster.getMostCommonBirthplace()) && cluster.getNumOfChildren() > MIN_FAMILY_SIZE) {
+
+            deleteLink(bridge, std_id_z, std_id_y, deletionPredicates[predNumber], BD_SIBLING_QUERY_DEL_PROV);
             hasChanged = true;
         }
 
@@ -373,7 +350,8 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      */
     @Override
     protected void cleanStrings(List<LXP> triangle) {
-        int[] fields = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
+        int[] fieldsB = {Birth.FATHER_FORENAME, Birth.MOTHER_FORENAME, Birth.FATHER_SURNAME, Birth.MOTHER_MAIDEN_SURNAME};
+        int[] fieldsD = {Death.FATHER_FORENAME, Death.MOTHER_FORENAME, Death.FATHER_SURNAME, Death.MOTHER_MAIDEN_SURNAME};
 
         for (int i = 0; i < triangle.size(); i++) {
             //1. DOTTER/SON
@@ -396,60 +374,64 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
             //2. Initials or incomplete names
             String initialRegex = "^[A-Z]*\\.$";
             pattern = Pattern.compile(initialRegex);
-            for (int j = 0; j < fields.length - 3; j++) {
-                matcher = pattern.matcher(triangle.get(i).getString(fields[j]));
+            for (int j = 0; j < fieldsB.length - 3; j++) {
+                if(i == 1){
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsD[j]));
+                }else{
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsB[j]));
+                }
 
-                if(matcher.find()) {
-                    String substringX = triangle.get(0).getString(fields[j]).length() >= matcher.end() - 1 ? triangle.get(0).getString(fields[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(0).getString(j);
-                    String substringY = triangle.get(1).getString(fields[j]).length() >= matcher.end() - 1 ? triangle.get(1).getString(fields[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(1).getString(j);
-                    String substringZ = triangle.get(2).getString(fields[j]).length() >= matcher.end() - 1 ? triangle.get(2).getString(fields[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(2).getString(j);
+                if(matcher.find()){
+                    String substringX = triangle.get(0).getString(fieldsB[j]).length() >= matcher.end() - 1 ? triangle.get(0).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(0).getString(j);
+                    String substringY = triangle.get(1).getString(fieldsD[j]).length() >= matcher.end() - 1 ? triangle.get(1).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(1).getString(j);
+                    String substringZ = triangle.get(2).getString(fieldsB[j]).length() >= matcher.end() - 1 ? triangle.get(2).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1) : triangle.get(2).getString(j);
 
                     if (i == 0 && substringX.equals(substringY) && substringX.equals(substringZ)) {
-                        triangle.get(0).put(fields[j], triangle.get(0).getString(fields[j]).replace(".", ""));
-                        triangle.get(1).put(fields[j], triangle.get(0).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
-                        triangle.get(2).put(fields[j], triangle.get(0).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(0).put(fieldsB[j], triangle.get(0).getString(fieldsB[j]).replace(".", ""));
+                        triangle.get(1).put(fieldsD[j], triangle.get(0).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(2).put(fieldsB[j], triangle.get(0).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
                     } else if (i == 1 && substringY.equals(substringX) && substringY.equals(substringZ)) {
-                        triangle.get(1).put(fields[j], triangle.get(1).getString(fields[j]).replace(".", ""));
-                        triangle.get(0).put(fields[j], triangle.get(1).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
-                        triangle.get(2).put(fields[j], triangle.get(1).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(1).put(fieldsB[j], triangle.get(1).getString(fieldsB[j]).replace(".", ""));
+                        triangle.get(0).put(fieldsD[j], triangle.get(1).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(2).put(fieldsB[j], triangle.get(1).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
                     } else if (i == 2 && substringZ.equals(substringX) && substringZ.equals(substringY)) {
-                        triangle.get(2).put(fields[j], triangle.get(2).getString(fields[j]).replace(".", ""));
-                        triangle.get(0).put(fields[j], triangle.get(2).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
-                        triangle.get(1).put(fields[j], triangle.get(2).getString(fields[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(2).put(fieldsB[j], triangle.get(2).getString(fieldsB[j]).replace(".", ""));
+                        triangle.get(0).put(fieldsD[j], triangle.get(2).getString(fieldsD[j]).substring(matcher.start(), matcher.end() - 1));
+                        triangle.get(1).put(fieldsB[j], triangle.get(2).getString(fieldsB[j]).substring(matcher.start(), matcher.end() - 1));
                     }
                 }
             }
 
             //3. Middle names and double barrel surnames
-            for (int field : fields) {
-                if (triangle.get(i).getString(field).contains(" ")) {
-                    if (i == 0 && !triangle.get(2).getString(field).contains(" ")) {
-                        String[] names = triangle.get(0).getString(field).split("\\s+");
+            for (int j = 0; j < fieldsB.length - 1; j++) {
+                if (triangle.get(i).getString(fieldsB[j]).contains(" ") || triangle.get(i).getString(fieldsD[j]).contains(" ")) {
+                    if (i == 0 && !triangle.get(2).getString(fieldsB[j]).contains(" ")) {
+                        String[] names = triangle.get(0).getString(fieldsB[j]).split("\\s+");
                         for (String name : names) {
-                            if (name.equals(triangle.get(2).getString(field))) {
-                                triangle.get(0).put(field, name);
+                            if (name.equals(triangle.get(2).getString(fieldsB[j]))) {
+                                triangle.get(0).put(fieldsB[j], name);
                                 break;
                             }
                         }
-                    } else if(i == 1 && (!triangle.get(0).getString(field).contains(" ") || !triangle.get(2).getString(field).contains(" "))) {
-                        String[] names = triangle.get(1).getString(field).split("\\s+");
+                    } else if(i == 1 && (!triangle.get(0).getString(fieldsB[j]).contains(" ") || !triangle.get(2).getString(fieldsB[j]).contains(" "))) {
+                        String[] names = triangle.get(1).getString(fieldsD[j]).split("\\s+");
                         for (String name : names) {
-                            if (name.equals(triangle.get(0).getString(field))) {
-                                triangle.get(1).put(field, name);
+                            if (name.equals(triangle.get(0).getString(fieldsB[j]))) {
+                                triangle.get(1).put(fieldsD[j], name);
                                 break;
                             }
                         }
                         for (String name : names) {
-                            if (name.equals(triangle.get(2).getString(field))) {
-                                triangle.get(1).put(field, name);
+                            if (name.equals(triangle.get(2).getString(fieldsB[j]))) {
+                                triangle.get(1).put(fieldsD[j], name);
                                 break;
                             }
                         }
-                    } else if(i == 2 && !triangle.get(0).getString(field).contains(" ")) {
-                        String[] names = triangle.get(2).getString(field).split("\\s+");
+                    } else if(i == 2 && !triangle.get(0).getString(fieldsB[j]).contains(" ")) {
+                        String[] names = triangle.get(2).getString(fieldsB[j]).split("\\s+");
                         for (String name : names) {
-                            if (name.equals(triangle.get(0).getString(field))) {
-                                triangle.get(2).put(field, name);
+                            if (name.equals(triangle.get(0).getString(fieldsB[j]))) {
+                                triangle.get(2).put(fieldsB[j], name);
                                 break;
                             }
                         }
@@ -458,34 +440,50 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
             }
 
             //4. Parentheses
-            for (int field : fields) {
+            for (int j = 0; j < fieldsB.length - 1; j++) {
                 String parenthesesRegex = "\\(([^)]+)\\)";
                 pattern = Pattern.compile(parenthesesRegex);
-                matcher = pattern.matcher(triangle.get(i).getString(field));
+                if(i == 1){
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsD[j]));
 
-                if (matcher.find() && matcher.start() > 0) {
-                    String newString = triangle.get(i).getString(field).substring(0, matcher.start()).strip();
-                    triangle.get(i).put(field, newString);
+                    if (matcher.find() && matcher.start() > 0) {
+                        String newString = triangle.get(i).getString(fieldsD[j]).substring(0, matcher.start()).strip();
+                        triangle.get(i).put(fieldsD[j], newString);
+                    }
+                }else{
+                    matcher = pattern.matcher(triangle.get(i).getString(fieldsB[j]));
+
+                    if (matcher.find() && matcher.start() > 0) {
+                        String newString = triangle.get(i).getString(fieldsB[j]).substring(0, matcher.start()).strip();
+                        triangle.get(i).put(fieldsB[j], newString);
+                    }
                 }
             }
         }
     }
 
     /**
-     * Method to get birth objects based on storr IDs
+     * Method to get birth/death objects based on storr IDs
      *
      * @param sibling_ids ids of records to find
      * @param record_repository repository of where records stored
-     * @return list of birth objects
+     * @return list of birth/death objects
      * @throws BucketException
      */
     @Override
     protected List<LXP> getRecords(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException {
-        IBucket<LXP> births = record_repository.getBucket("birth_records");
+        IBucket<Birth> births = record_repository.getBucket("birth_records");
+        IBucket<Death> deaths = record_repository.getBucket("death_records");
         ArrayList<LXP> bs = new ArrayList();
-        for( long id : sibling_ids) {
-            bs.add(births.getObjectById(id));
+
+        for (int i = 0; i < sibling_ids.size(); i++) {
+            if(i == 1){
+                bs.add(deaths.getObjectById(sibling_ids.get(i)));
+            }else{
+                bs.add(births.getObjectById(sibling_ids.get(i)));
+            }
         }
+
         return bs;
     }
 }
