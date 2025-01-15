@@ -19,22 +19,22 @@
 echo "in dir $PWD"
 
 echo "1. Running Birth-Birth Sibling Open Triangle Resolver"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.resolvers.BirthBirthOpenTriangleResolver" -Dexec.args="umea EVERYTHING"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.resolvers.BirthBirthOpenTriangleResolver" -Dexec.args="umea EVERYTHING"
 
 echo "2. Running Birth-Death Sibling Open Triangle Resolver"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.resolvers.BirthDeathOpenTriangleResolver" -Dexec.args="umea EVERYTHING"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.resolvers.BirthDeathOpenTriangleResolver" -Dexec.args="umea EVERYTHING"
 
 echo "3. Running Death-Death Sibling Open Triangle Resolver"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.resolvers.DeathDeathOpenTriangleResolver" -Dexec.args="umea EVERYTHING"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.resolvers.DeathDeathOpenTriangleResolver" -Dexec.args="umea EVERYTHING"
 
 echo "4. Running Birth-Death ID Open Triangle Resolver"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.resolvers.BirthDeathIDGraphOpenTriangleResolver" -Dexec.args="umea"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.resolvers.BirthDeathIDGraphOpenTriangleResolver" -Dexec.args="umea"
 
 echo "5. Running Birth-Marriage ID Open Triangle Resolver"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.resolvers.BirthMarriageIDOpenTriangleResolver" -Dexec.args="umea"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.resolvers.BirthMarriageIDOpenTriangleResolver" -Dexec.args="umea"
 
 echo "6. Running Birth-Marriage Parents ID Open Triangle Resolver"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.resolvers.BirthParentsMarriageIDOpenTriangleResolver" -Dexec.args="umea"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.resolvers.BirthParentsMarriageIDOpenTriangleResolver" -Dexec.args="umea"
 
 echo "7. Running Marriage-Marriage Parents ID Open Triangle Resolver"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.resolvers.MarriageParentsMarriageIDOpenTriangleResolver" -Dexec.args="umea"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.resolvers.MarriageParentsMarriageIDOpenTriangleResolver" -Dexec.args="umea"

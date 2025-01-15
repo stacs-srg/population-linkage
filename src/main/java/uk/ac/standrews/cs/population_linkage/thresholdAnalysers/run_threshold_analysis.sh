@@ -19,28 +19,28 @@
 echo "in dir $PWD"
 
 echo "1. Running Birth-Birth Sibling Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisBirthBirthSib"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisBirthBirthSib"
 
 echo "2. Running Birth-Death ID Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisBirthDeathID"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisBirthDeathID"
 
 echo "3. Running Death-Death Sibling Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisDeathDeathSib"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisDeathDeathSib"
 
 echo "4. Running Birth-Marriage Groom ID Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisBirthGroomID"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisBirthGroomID"
 
 echo "5. Running Birth-Marriage Bride ID Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisBirthBrideID"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisBirthBrideID"
 
 echo "6. Running Marriage-Marriage Groom Parents ID Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisGroomMarriageParentsMarriage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisGroomMarriageParentsMarriage"
 
 echo "7. Running Marriage-Marriage Bride Parents ID Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisBrideMarriageParentsMarriage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisBrideMarriageParentsMarriage"
 
 echo "8. Running Birth-Marriage Parents ID Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisBirthParentsMarriage"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisBirthParentsMarriage"
 
 echo "9. Running Birth-Death Sibling Threshold Analysis"
-mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.aleks.analysers.ThresholdTrianglesAnalysisBirthDeathSib"
+mvn exec:java -q -Dexec.cleanupDaemonThreads=false -Dexec.mainClass="uk.ac.standrews.cs.population_linkage.thresholdAnalysers.ThresholdTrianglesAnalysisBirthDeathSib"
