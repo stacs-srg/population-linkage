@@ -45,7 +45,7 @@ def main(MAX_FIELD, MIN_FIELD, FILE, save):
 
     ascii_char = 97 # starting character 'a' for sub figures
     for i, N in enumerate(range(MAX_FIELD, MIN_FIELD, -1)):
-        data = pd.read_csv(f'../../../../../../../../../../{FILE}{N}.csv')
+        data = pd.read_csv(f'../../../../../../../../../{FILE}{N}.csv')
 
         # Plot basic quality measures
         ax1 = axes[i]

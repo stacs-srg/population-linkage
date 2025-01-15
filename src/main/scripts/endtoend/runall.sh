@@ -15,6 +15,6 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-. "$(dirname $0)"/../../java/uk/ac/standrews/cs/population_linkage/resolvers/run_resolvers.sh
-. "$(dirname $0)"/dolinkage_template.sh EVERYTHING
 . "$(dirname $0)"/../../java/uk/ac/standrews/cs/population_linkage/thresholdAnalysers/run_threshold_analysis.sh
+. "$(dirname $0)"/dolinkage_template.sh EVERYTHING
+. "$(dirname $0)"/../../java/uk/ac/standrews/cs/population_linkage/resolvers/run_resolvers.sh
