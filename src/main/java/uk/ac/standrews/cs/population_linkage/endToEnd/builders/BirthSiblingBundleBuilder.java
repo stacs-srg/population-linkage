@@ -41,21 +41,24 @@ public class BirthSiblingBundleBuilder implements MakePersistent {
         int count = 1;
 
         try(BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, number_of_records, BirthSiblingBundleBuilder.class.getName() ) ) {
+            runBuilder(linkageRecipe, count);
+        }
+    }
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+    public static void runBuilder(BirthSiblingLinkageRecipe linkageRecipe, int count) throws Exception {
+        BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
 
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2);
+        int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+        int half_fields = linkage_fields - (linkage_fields / 2 );
 
-            while (linkage_fields >= half_fields + 1) {
+        while (linkage_fields >= half_fields) {
 
-                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, true); // TODO Cypher errors if evaluateQuality is tru
-                LinkageQuality quality = lr.getLinkageQuality();
-                quality.print(System.out);
-                linkage_fields--;
-                count++;
-            }
+            linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+            LinkageResult lr = runner.run(linkageRecipe, new BirthSiblingBundleBuilder(), false, true); // TODO Cypher errors if evaluateQuality is tru
+            LinkageQuality quality = lr.getLinkageQuality();
+            quality.print(System.out);
+            linkage_fields--;
+            count++;
         }
     }
 

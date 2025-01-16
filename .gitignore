@@ -12,3 +12,4 @@ src/main/scripts/R/.Rhistory
 !/src/main/scripts/R/.RData
 .run
 venv
+*.png

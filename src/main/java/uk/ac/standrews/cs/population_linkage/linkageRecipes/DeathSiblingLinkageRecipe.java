@@ -41,6 +41,7 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
 public class DeathSiblingLinkageRecipe extends LinkageRecipe {
 
     protected static final double DISTANCE_THRESHOLD = 0.53;
+    private static double MAX_THRESHOLD = 0;
 
     public static final String LINKAGE_TYPE = "death-death-sibling";
 
@@ -177,9 +178,28 @@ public class DeathSiblingLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
+    public static void setMaxThreshold(double maxThreshold) {
+        MAX_THRESHOLD = maxThreshold;
+    }
+
     @Override
     public double getThreshold() {
-        return DISTANCE_THRESHOLD;
+        if(MAX_THRESHOLD > 0){
+            if(getNumberOfLinkageFieldsRequired() == ALL_LINKAGE_FIELDS / 2) {
+                return MAX_THRESHOLD / 2;
+            }
+            return MAX_THRESHOLD;
+        }
+        switch (getNumberOfLinkageFieldsRequired()){
+            case 4:
+                return 0.85;
+            case 3:
+                return 0.86;
+            case 2:
+                return 0.28;
+            default:
+                return DISTANCE_THRESHOLD;
+        }
     }
 
     @Override

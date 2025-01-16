@@ -20,15 +20,16 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthGroomOwnMarriageBundleAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_GROOM_SIBLING_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) return count(r)";
-    private static final String BIRTH_GROOM_SIBLING_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) return count(r)";
-    private static final String BIRTH_GROOM_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Groom\"}]-(m) return count(r)";
+    private static final String BIRTH_GROOM_SIBLING_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_GROOM_SIBLING_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:GT_ID {actors: \"Child-Groom\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_GROOM_SIBLING_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Groom\"}]->(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Groom\"}]-(m) OR (b)-[:DELETED]-(m) return count(r)";
 
     public BirthGroomOwnMarriageBundleAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);
+        doqueries();
     }
 
-    private void doqueries() {
+    public void doqueries() {
         long tpc = doQuery(BIRTH_GROOM_SIBLING_TPC);
         long fpc = doQuery(BIRTH_GROOM_SIBLING_FPC);
         long fnc = doQuery(BIRTH_GROOM_SIBLING_FNC);
@@ -43,7 +44,6 @@ public class BirthGroomOwnMarriageBundleAccuracy extends AbstractAccuracy {
     public static void main(String[] args) {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             BirthGroomOwnMarriageBundleAccuracy acc = new BirthGroomOwnMarriageBundleAccuracy(bridge);
-            acc.doqueries();
         }
     }
 }

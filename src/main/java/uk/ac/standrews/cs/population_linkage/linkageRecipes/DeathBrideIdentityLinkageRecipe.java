@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class DeathBrideIdentityLinkageRecipe extends LinkageRecipe {
 
-    public static final double DISTANCE_THRESHOLD = 0.49;
+    public static final double DISTANCE_THRESHOLD = 1;
 
     public static final String LINKAGE_TYPE = "death-bride-identity";
 

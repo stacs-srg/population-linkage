@@ -22,7 +22,7 @@ public class DeathGroomOwnMarriageAccuracy extends AbstractAccuracy {
 
     private static final String DEATH_GROOM_ID_TPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE (d)-[:GT_ID {actors: \"Deceased-Groom\"}]-(m) return count(r)";
     private static final String DEATH_GROOM_ID_FPC = "MATCH (d:Death)-[r:ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:GT_ID {actors: \"Deceased-Groom\"}]-(m) return count(r)";
-    private static final String DEATH_GROOM_ID_FNC = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:GROOM {actors: \"Deceased-Groom\"}]-(m) return count(r)";
+    private static final String DEATH_GROOM_ID_FNC = "MATCH (d:Death)-[r:GT_ID {actors: \"Deceased-Groom\"}]->(m:Marriage) WHERE NOT (d)-[:ID {actors: \"Deceased-Groom\"}]-(m) return count(r)";
 
     public DeathGroomOwnMarriageAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);

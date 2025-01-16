@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="SiblingBirthOpenTriangleResolver" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.resolver.triangles.SiblingBirthOpenTriangleResolver" />
+    <option name="MAIN_CLASS_NAME" value="uk.ac.standrews.cs.population_linkage.resolverExperiments.triangles.SiblingBirthOpenTriangleResolver" />
     <module name="population-linkage" />
     <option name="PROGRAM_PARAMETERS" value="umea EVERYTHING" />
     <method v="2">

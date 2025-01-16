@@ -37,7 +37,8 @@ import java.util.Map;
  */
 public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
 
-    private static final double DISTANCE_THRESHOLD = 0.49;
+    private static final double DISTANCE_THRESHOLD = 1.37;
+    private static double MAX_THRESHOLD = 0;
 
     public static final String LINKAGE_TYPE = "birth-groom-identity";
 
@@ -172,6 +173,10 @@ public class BirthGroomIdentityLinkageRecipe extends LinkageRecipe {
         Result result = bridge.getNewSession().run(BIRTH_GROOM_GT_IDENTITY_LINKS_QUERY, parameters);
         List<Relationship> relationships = result.list(r -> r.get("r").asRelationship());
         return relationships.size();
+    }
+
+    public static void setMaxThreshold(double maxThreshold) {
+        MAX_THRESHOLD = maxThreshold;
     }
 
     @Override

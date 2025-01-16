@@ -43,19 +43,23 @@ public class BirthParentsMarriageBuilder implements MakePersistent {
         try (
              BirthParentsMarriageIdentityLinkageRecipe linkageRecipe = new BirthParentsMarriageIdentityLinkageRecipe(sourceRepo, number_of_records, BirthParentsMarriageBuilder.class.getName() ) ) {
 
-            BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
-
-            int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
-            int half_fields = linkage_fields - (linkage_fields / 2 );
-
-            while( linkage_fields >= half_fields ) {
-                linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
-                LinkageResult lr = runner.run(linkageRecipe, new BirthParentsMarriageBuilder(), false, true);
-                LinkageQuality quality = lr.getLinkageQuality();
-                quality.print(System.out);
-                linkage_fields--;
-            }
+            runBuilder(linkageRecipe);
             System.out.println("Run finished");
+        }
+    }
+
+    public static void runBuilder(BirthParentsMarriageIdentityLinkageRecipe linkageRecipe) throws Exception {
+        BitBlasterLinkageRunner runner = new BitBlasterLinkageRunner();
+
+        int linkage_fields = linkageRecipe.ALL_LINKAGE_FIELDS;
+        int half_fields = linkage_fields - (linkage_fields / 2 );
+
+        while( linkage_fields >= half_fields ) {
+            linkageRecipe.setNumberLinkageFieldsRequired(linkage_fields);
+            LinkageResult lr = runner.run(linkageRecipe, new BirthParentsMarriageBuilder(), false, true);
+            LinkageQuality quality = lr.getLinkageQuality();
+            quality.print(System.out);
+            linkage_fields--;
         }
     }
 

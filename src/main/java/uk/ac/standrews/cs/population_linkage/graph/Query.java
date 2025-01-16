@@ -50,6 +50,8 @@ public class Query {
     private static final String BB_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Child\" } ]->(b)";
     private static final String BB_SIBLING_LINKNUM_QUERY = "MATCH (a:Birth)-[r:SIBLING]->(b:Birth) WHERE r.actors = \"Child-Child\" RETURN COUNT(r) AS link_count";
 
+    private static final String BB_HALF_SIBLING_QUERY = "MATCH (a:Birth), (b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:HALF_SIBLING { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Child\" } ]->(b)";
+
     private static final String BM_FATHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Father\" } ]->(b)";
     private static final String BM_MOTHER_QUERY = "MATCH (a:Birth), (b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to CREATE (a)-[r:ID { provenance: $prov, fields_populated: $fields, distance: $distance, actors: \"Child-Mother\" } ]->(b)";
     private static final String BM_FATHER_LINKNUM_QUERY = "MATCH (a:Birth)-[r:ID]->(b:Marriage) WHERE r.actors = \"Child-Father\" RETURN COUNT(r) AS link_count";
@@ -106,6 +108,7 @@ public class Query {
     // queries for use in predicates - return a relationship if it exists
 
     private static final String BB_SIBLING_EXISTS_QUERY = "MATCH (a:Birth)-[r:SIBLING { actors: \"Child-Child\" }]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
+    private static final String BB_HALF_SIBLING_EXISTS_QUERY = "MATCH (a:Birth)-[r:HALF_SIBLING { actors: \"Child-Child\" }]-(b:Birth) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
 
     private static final String BM_FATHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:ID { actors: \"Child-Father\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
     private static final String BM_MOTHER_EXISTS_QUERY = "MATCH (a:Birth)-[r:ID { actors: \"Child-Mother\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to AND r.provenance = $prov  RETURN r";
@@ -184,6 +187,15 @@ public class Query {
      */
     public static void createBBSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
         createReference(bridge, BB_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
+    }
+
+    /**
+     * Creates a half sibling reference between node with standard_id_from and standard_id_to and returns the number of relationships created
+     * The first and second parameters should be the id of a Births - it will not work if this is not the case!
+     * See createReference for param details
+     */
+    public static void createBBHalfSiblingReference(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance, int fields_populated, double distance) {
+        createReference(bridge, BB_HALF_SIBLING_QUERY, standard_id_from, standard_id_to, provenance, fields_populated, distance);
     }
 
     /**
@@ -318,6 +330,10 @@ public class Query {
 
     public static boolean BBBirthSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
         return linkExists( bridge, BB_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
+    }
+
+    public static boolean BBBirthHalfSiblingReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {
+        return linkExists( bridge, BB_HALF_SIBLING_EXISTS_QUERY, standard_id_from, standard_id_to, provenance );
     }
 
     public static boolean BMBirthFatherReferenceExists(NeoDbCypherBridge bridge, String standard_id_from, String standard_id_to, String provenance) {

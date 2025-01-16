@@ -39,7 +39,8 @@ import static uk.ac.standrews.cs.population_linkage.linkageRecipes.CommonLinkVia
  */
 public class BirthSiblingLinkageRecipe extends LinkageRecipe {
 
-    private static final double THRESHOLD = 1.0;
+    private static final double THRESHOLD = 1;
+    private static double MAX_THRESHOLD = 0;
 
     public static final String LINKAGE_TYPE = "birth-birth-sibling";
 
@@ -127,6 +128,15 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return LINKAGE_FIELDS;
     }
 
+    public List<Integer> getLinkageFieldsMSED() {
+        return list(
+                Birth.MOTHER_FORENAME,
+                Birth.MOTHER_MAIDEN_SURNAME,
+                Birth.FATHER_FORENAME,
+                Birth.FATHER_SURNAME
+        );
+    }
+
     public static boolean isViable(final LXP birth_record1, final LXP birth_record2) {
 
         try {
@@ -176,9 +186,31 @@ public class BirthSiblingLinkageRecipe extends LinkageRecipe {
         return relationships.size();
     }
 
+    public static void setMaxThreshold(double maxThreshold) {
+        MAX_THRESHOLD = maxThreshold;
+    }
+
     @Override
     public double getThreshold() {
-        return THRESHOLD;
+        if(MAX_THRESHOLD != 0) {
+            if(getNumberOfLinkageFieldsRequired() == ALL_LINKAGE_FIELDS / 2) {
+                return MAX_THRESHOLD / 2;
+            }
+            return MAX_THRESHOLD;
+        }
+
+        switch (getNumberOfLinkageFieldsRequired()){
+            case 8:
+                return 1.81;
+            case 7:
+            case 6:
+            case 5:
+                return 1.78;
+            case 4:
+                return 0.98;
+            default:
+                return THRESHOLD;
+        }
     }
 
     @Override

@@ -20,9 +20,9 @@ import uk.ac.standrews.cs.neoStorr.util.NeoDbCypherBridge;
 
 public class BirthParentsMarriageAccuracy extends AbstractAccuracy {
 
-    private static final String BIRTH_PARENTS_MARRIAGE_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Mother\"}]-(m:Marriage), (b)-[:ID {actors: \"Child-Father\"}]-(m) WHERE (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) return count(r)";
-    private static final String BIRTH_PARENTS_MARRIAGE_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Mother\"}]-(m:Marriage), (b)-[:ID {actors: \"Child-Father\"}]-(m) WHERE NOT (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) return count(r)";
-    private static final String BIRTH_PARENTS_MARRIAGE_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Couple\"}]-(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Mother\"}]-(m) and NOT (b)-[:ID {actors: \"Child-Father\"}]-(m) return count(r)";
+    private static final String BIRTH_PARENTS_MARRIAGE_TPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Mother\"}]-(m:Marriage), (b)-[:ID {actors: \"Child-Father\"}]-(m) WHERE (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_PARENTS_MARRIAGE_FPC = "MATCH (b:Birth)-[r:ID {actors: \"Child-Mother\"}]-(m:Marriage), (b)-[:ID {actors: \"Child-Father\"}]-(m) WHERE NOT (b)-[:GT_ID {actors: \"Child-Couple\"}]-(m) AND NOT (b)-[:DELETED]-(m) return count(r)";
+    private static final String BIRTH_PARENTS_MARRIAGE_FNC = "MATCH (b:Birth)-[r:GT_ID {actors: \"Child-Couple\"}]-(m:Marriage) WHERE NOT (b)-[:ID {actors: \"Child-Mother\"}]-(m) and NOT (b)-[:ID {actors: \"Child-Father\"}]-(m) OR (b)-[:DELETED]-(m)  return count(r)";
 
     // FATHER
     // MOTHER
@@ -30,6 +30,7 @@ public class BirthParentsMarriageAccuracy extends AbstractAccuracy {
 
     public BirthParentsMarriageAccuracy(NeoDbCypherBridge bridge) {
         super(bridge);
+        doqueries();
     }
 
     private void doqueries() {
@@ -47,7 +48,6 @@ public class BirthParentsMarriageAccuracy extends AbstractAccuracy {
     public static void main(String[] args) {
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge()) {
             BirthParentsMarriageAccuracy acc = new BirthParentsMarriageAccuracy(bridge);
-            acc.doqueries();
         }
     }
 }
