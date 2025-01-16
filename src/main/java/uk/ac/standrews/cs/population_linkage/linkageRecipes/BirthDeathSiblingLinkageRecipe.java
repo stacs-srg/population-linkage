@@ -149,19 +149,10 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
      * @return true if the link is viable
      */
     public static boolean isViable(final LXP birth_record, final LXP death_record) {
-        final StringMeasure base_measure = Constants.LEVENSHTEIN;;
-        final LXPMeasure composite_measure_bd = getCompositeMeasureBirthDeath(base_measure);
-        RecordRepository record_repository = new RecordRepository("umea");
-
         try {
             String birth_name = CommonLinkViabilityLogic.getPrimaryNameFromBirthRecord(birth_record);
             String death_name = CommonLinkViabilityLogic.getPrimaryNameFromDeathRecord(death_record);
-//            if( birth_name.equals(death_name)) {
-//                return false; // they are the same person and therefore not siblings
-//            }
-
-            //TODO make this a distance comparison
-            if( getDistance(birth_record, death_record, composite_measure_bd) < 5) {
+            if( birth_name.equals(death_name)) {
                 return false; // they are the same person and therefore not siblings
             }
 
@@ -172,8 +163,6 @@ public class BirthDeathSiblingLinkageRecipe extends LinkageRecipe {
 
         } catch (NumberFormatException e) { // Invalid year.
             return true;
-        } catch (BucketException e) {
-            throw new RuntimeException(e);
         }
     }
 
