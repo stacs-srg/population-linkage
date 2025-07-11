@@ -16,7 +16,6 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-cd /Users/al/repos/github/population-linkage
 echo "in dir $PWD"
 
 if [ "$#" -eq  "0" ]
@@ -26,10 +25,6 @@ then
 fi
 
 EXEC_ARGS="umea ${1}"
-
-COPY=/Users/al/repos/github/population-linkage/src/main/scripts/neo4j/COPY_DB.sh
-
-COPYDIR=/Users/al/Desktop/NEOCOPY/
 
 export MAVEN_OPTS="-Xmx16G"
 
