@@ -25,7 +25,7 @@ jobs:
         run: mvn --batch-mode --update-snapshots verify
 
   docker-build:
-    needs: build
+    needs: maven-build
     runs-on: ubuntu-latest
 
     steps:
