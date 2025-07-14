@@ -58,10 +58,13 @@ To run the image created above, use the following command:
 
 ```sh
 # In a terminal (Windows/macOS/Linux)
-docker run --network umea-neo4j-net population-linkage-runall:latest
+docker run --network umea-neo4j-net -v ./results:/app/results population-linkage-runall:latest
 ```
 
-Note: By default the container attempts to connect with a Neo4J database hosted by a container named `umea-neo4j`. If this is not the case, [see 3.3](#33-setting-hostname) for details on overriding this. 
+Note:
+- By default the container attempts to connect with a Neo4J database hosted by a container named `umea-neo4j`. If this is not the case, [see 3.3](#33-setting-hostname) for details on overriding this. 
+- `results/` directory must be created before running this command.
+- Not all containers will output results to `results/` directory.
 
 ### 3.3. Setting hostname
 The hostname of the Neo4J database container can be configured at runtime by using environment variables. To do this simply add the following flag to the run command (replacing `<HOSTNAME>` with the name of your container).
@@ -70,3 +73,8 @@ The hostname of the Neo4J database container can be configured at runtime by usi
 # In a terminal (Windows/macOS/Linux)
 --e NEO4J_HOST=<HOSTNAME>
 ```
+
+## 4. Supported setups/entrypoints
+The above guide builds and runs the `runall` image but this is not the only available Docker setup/entrypoint:
+- **`runall`** - runs threshold analysers, linkage scripts, and then resolvers.
+- **`ijdps`** - runs threshold experiments for IJDPS paper.
