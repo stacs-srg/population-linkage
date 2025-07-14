@@ -83,64 +83,46 @@
             <groupId>org.jcuda</groupId>
             <artifactId>jcuda</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcuda-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jcublas</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcublas-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jcufft</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcufft-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jcuda-natives</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcuda-natives-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jcusparse</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcusparse-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jcusolver</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcusolver-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jcurand</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcurand-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jnvgraph</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jnvgraph-0.8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jcuda</groupId>
             <artifactId>jcudnn</artifactId>
             <version>0.8.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jcudnn-0.8.0.jar</systemPath>
         </dependency>
 
     </dependencies>
