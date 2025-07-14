@@ -1,23 +1,23 @@
-====
-    Copyright 2022 Systems Research Group, University of St Andrews:
-    <https://github.com/stacs-srg>
+Copyright 2022 Systems Research Group, University of St Andrews:
+<https://github.com/stacs-srg>
 
-    This file is part of the module population-linkage.
+This file is part of the module population-linkage.
 
-    population-linkage is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-    License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
-    version.
+population-linkage is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
 
-    population-linkage is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+population-linkage is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License along with population-linkage. If not, see
-    <http://www.gnu.org/licenses/>.
-====
+You should have received a copy of the GNU General Public License along with population-linkage. If not, see
+<http://www.gnu.org/licenses/>.
+
+---
 
 This msed thing seems to work pretty well.
 for things that not linked but should be:
-
+```txt
 ****************** Related ******************
 Choosing 3 from a group of size 5
 1.1102230246251565E-16:SIMON PETRUS, SIMON PETRUS, SIMON PETRUS,
@@ -30,9 +30,10 @@ Choosing 3 from a group of size 5
 0.027153466236926382:SIMON PETRUS, JOHANNA ELISABET, JOHAN LEONARD,
 0.027153466236926382:JOHANNA ELISABET, JOHAN LEONARD, SIMON PETRUS,
 0.027153466236926382:SIMON PETRUS, JOHANNA ELISABET, JOHAN LEONARD,
-
+```
 For a group of related people plus one ringer we get:
 
+```txt
 ****************** Unrelated ******************
 Choosing 3 from a group of size 6
 1.1102230246251565E-16:SIMON PETRUS, SIMON PETRUS, SIMON PETRUS,
@@ -55,6 +56,7 @@ Choosing 3 from a group of size 6
 0.3131585211170037:JOHAN LEONARD, SIMON PETRUS, KARL ANSHELM,
 0.3131585211170037:SIMON PETRUS, JOHAN LEONARD, KARL ANSHELM,
 0.3131585211170037:SIMON PETRUS, JOHAN LEONARD, KARL ANSHELM,
+```
 
 So it looks like having a low threshold for repair might work  0.03 or something.
 
