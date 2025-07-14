@@ -13,3 +13,4 @@ src/main/scripts/R/.Rhistory
 .run
 venv
 *.png
+results

@@ -19,7 +19,11 @@
 MAX_HEAP_GB="100"
 RECORDS_TO_BE_CHECKED="25000"
 NUMBER_OF_RUNS="1"
-OUTPUT_DIR="full-experiment"      # Blank for project root directory.
+# Sets results directory to be unique
+OUTPUT_DIR="results/IJDPS_paper/$(date '+%Y%m%d_%H%M%S')"
+
+# Create results directory if it doesn't already exist
+mkdir -p $OUTPUT_DIR
 
 "$(dirname $0)"/umea_birth_father_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
 "$(dirname $0)"/umea_birth_mother_identity.sh ${MAX_HEAP_GB} ${RECORDS_TO_BE_CHECKED} ${NUMBER_OF_RUNS} ${OUTPUT_DIR}
