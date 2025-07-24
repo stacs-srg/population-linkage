@@ -16,8 +16,8 @@
  */
 package uk.ac.standrews.cs.population_linkage;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.ac.standrews.cs.population_linkage.searchStructures.SearchStructure;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.DataDistance;
 import uk.ac.standrews.cs.utilities.measures.coreConcepts.Measure;
@@ -34,7 +34,7 @@ public abstract class SimilaritySearchTest {
 
     private Measure<Point> measure;
 
-    @Before
+    @BeforeEach
     public void setup() {
 
         measure = new Measure<>() {

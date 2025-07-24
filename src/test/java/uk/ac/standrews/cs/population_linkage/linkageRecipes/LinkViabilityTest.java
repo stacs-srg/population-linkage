@@ -16,17 +16,18 @@
  */
 package uk.ac.standrews.cs.population_linkage.linkageRecipes;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.population_records.Normalisation;
 import uk.ac.standrews.cs.population_records.record_types.Birth;
 import uk.ac.standrews.cs.population_records.record_types.Death;
 import uk.ac.standrews.cs.population_records.record_types.Marriage;
 
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LinkViabilityTest {
 
@@ -738,20 +739,24 @@ public class LinkViabilityTest {
         assertEquals(LocalDate.of(1955, 7, 1), CommonLinkViabilityLogic.getDeathDateFromDeathRecord(record4));
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void extractBirthYearFromMarriageRecordWithInvalidDate() {
 
-        final LXP record = makeMarriage(1, 1, 1904, "05/10/----", false, "1");
+        assertThrows(NumberFormatException.class, () -> {
 
-        CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record, false);
+            final LXP record = makeMarriage(1, 1, 1904, "05/10/----", false, "1");
+            CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record, false);
+        });
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void extractBirthYearFromMarriageRecordWithInvalidDate2() {
 
-        final LXP record = makeInvalidMarriage("1");
+        assertThrows(NumberFormatException.class, () -> {
 
-        CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record, true);
+            final LXP record = makeInvalidMarriage("1");
+            CommonLinkViabilityLogic.getBirthDateFromMarriageRecord(record, true);
+        });
     }
 
     private boolean birthSiblingLinkViable(final int birth_year1, final int birth_year2) {

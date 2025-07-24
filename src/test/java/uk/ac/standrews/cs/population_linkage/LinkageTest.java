@@ -16,8 +16,8 @@
  */
 package uk.ac.standrews.cs.population_linkage;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXPMetaData;
 import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
@@ -68,7 +68,7 @@ public abstract class LinkageTest {
 
     protected abstract boolean equal(final Link link, final IStoreReference<LXP> id1, final IStoreReference<LXP> id2);
 
-    @Before
+    @BeforeEach
     public void init() {
 
         linker = getLinker();
