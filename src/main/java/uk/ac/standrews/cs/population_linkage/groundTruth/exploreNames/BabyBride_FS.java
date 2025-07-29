@@ -161,8 +161,8 @@ public class BabyBride_FS {
     private void analyseUnMatched(long num_pairs_to_consider) {
 
         // All the ids of birth records
-        Long[] all_birth_ids = births.getObjectIds().toArray(new Long[0]);
-        Long[] all_marriage_ids = marriages.getObjectIds().toArray(new Long[0]);
+        String[] all_birth_ids = births.getObjectIds().toArray(new String[0]);
+        String[] all_marriage_ids = marriages.getObjectIds().toArray(new String[0]);
 
         // The array indices that we have chosen already to be in the unmatched list
         TreeSet<Integer> picked_birth_ids = new TreeSet<>();

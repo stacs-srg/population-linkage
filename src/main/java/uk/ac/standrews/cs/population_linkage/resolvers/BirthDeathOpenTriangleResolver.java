@@ -138,7 +138,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @throws BucketException
      */
     private void resolveTrianglesPredicates(OpenTriangleCluster cluster, IBucket births, IBucket deaths, LXPMeasure composite_measure_date) throws BucketException {
-        for (List<Long> chain : cluster.getTriangleChain()){
+        for (List<String> chain : cluster.getTriangleChain()){
             LXP[] tempKids = {(LXP) births.getObjectById(cluster.x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) births.getObjectById(chain.get(1))};
             String std_id_x = tempKids[0].getString(Birth.STANDARDISED_ID);
             String std_id_y = tempKids[1].getString(Death.STANDARDISED_ID);
@@ -179,18 +179,18 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
         //run query to get all open triangles
         Result result = bridge.getNewSession().run(BIRTH_SIBLING_TRIANGLE_QUERY);
         List<OpenTriangleClusterBD> clusters = new ArrayList<>();
-        List<List<Long>> temp = new ArrayList<>();
+        List<List<String>> temp = new ArrayList<>();
 
         //loop through each cluster
         result.stream().forEach(r -> {
-            long x = ((Node) r.asMap().get("x")).get("STORR_ID").asLong();
+            String x = ((Node) r.asMap().get("x")).get("STORR_ID").asString();
             List<List<Node>> openTrianglesNodes = (List<List<Node>>) r.asMap().get("openTriangles");
 
             for (List<Node> innerList : openTrianglesNodes) {
-                List<Long> openTriangleList = innerList.stream()
+                List<String> openTriangleList = innerList.stream()
                         .map(obj -> {
                             if (obj instanceof Node) {
-                                return ((Node) obj).get("STORR_ID").asLong();
+                                return ((Node) obj).get("STORR_ID").asString();
                             } else {
                                 throw new IllegalArgumentException("Expected a Node but got: " + obj.getClass());
                             }
@@ -471,7 +471,7 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @throws BucketException
      */
     @Override
-    protected List<LXP> getRecords(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException {
+    protected List<LXP> getRecords(List<String> sibling_ids, RecordRepository record_repository) throws BucketException {
         IBucket<Birth> births = record_repository.getBucket("birth_records");
         IBucket<Death> deaths = record_repository.getBucket("death_records");
         ArrayList<LXP> bs = new ArrayList();

@@ -28,7 +28,7 @@ import java.util.*;
 public class OpenTriangleClusterDD extends OpenTriangleCluster {
     private IBucket deaths;
 
-    public OpenTriangleClusterDD(long x, List<List<Long>> triangleChain, String recordRepo) {
+    public OpenTriangleClusterDD(String x, List<List<String>> triangleChain, String recordRepo) {
         super(x, triangleChain);
         RecordRepository record_repository = new RecordRepository(recordRepo);
         deaths = record_repository.getBucket("death_records");
@@ -39,7 +39,7 @@ public class OpenTriangleClusterDD extends OpenTriangleCluster {
      */
     @Override
     public void getYearStatistics() throws BucketException {
-        for (List<Long> chain : triangleChain){ //loop through each open triangle
+        for (List<String> chain : triangleChain){ //loop through each open triangle
             LXP[] tempKids = {(LXP) deaths.getObjectById(x), (LXP) deaths.getObjectById(chain.get(0)), (LXP) deaths.getObjectById(chain.get(1))};
             for (int i = 0; i < tempKids.length; i++) { //loop through children in triangle
                 if (!children.contains(tempKids[i])) { //if not in children set

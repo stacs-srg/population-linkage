@@ -27,15 +27,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.StreamSupport;
 
 public class Utilities {
 
     private static final long SEED = 34553543456223L;
 
     public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
+        //TODO: REMOVE THIS
+        if (StreamSupport.stream(record_repository.getBirths().spliterator(), false).count() == 0) {
+                throw new ArithmeticException("FUCK");
+        }
 
         return () -> new Iterator<>() {
-
+            
             Iterator<Birth> birth_records = record_repository.getBirths().iterator();
 
             @Override

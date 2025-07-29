@@ -132,25 +132,25 @@ public class SiblingBrideClusterOpenTriangleResolver {
             }
 
             Set<Distance> all_pairs_between = getTransitiveSiblingPaths(std_id_x, std_id_z);
-            Set<Long> all_node_ids = getIds(all_pairs_between);
+            Set<String> all_node_ids = getIds(all_pairs_between);
 
             // All Clusters are referenced using Neo4J Id space.
 
             // Average linkage minimizes the average of the distances between all observations of pairs of clusters.
             // Single linkage minimizes the distance between the closest observations of pairs of clusters.
             // Use average.
-            AverageLinkage<Long> linkage = new AverageLinkage<>(this::getDistanceByNeoId);
+            AverageLinkage<String> linkage = new AverageLinkage<>(this::getDistanceByNeoId);
 
-            ClusterAlgorithm<Long> ca = new ClusterAlgorithm<>(all_node_ids, linkage, 9);
+            ClusterAlgorithm<String> ca = new ClusterAlgorithm<>(all_node_ids, linkage, 9);
             ca.cluster();
-            Cluster<Long> top_cluster = ca.getFirstCluster();
+            Cluster<String> top_cluster = ca.getFirstCluster();
             analyseClusters(top_cluster, all_pairs_between);
         } catch (BucketException e) {
             e.printStackTrace();
         }
     }
 
-    private void analyseClusters(Cluster<Long> cluster, Set<Distance> all_pairs_between) throws BucketException {
+    private void analyseClusters(Cluster<String> cluster, Set<Distance> all_pairs_between) throws BucketException {
         if (cluster.size > cluster_eligible_for_split_size) {
             if (cluster.distance > high_distance_reject_threshold && oneSubClustersIsTight(cluster)) {
                 splitCluster(cluster, all_pairs_between);
@@ -165,13 +165,13 @@ public class SiblingBrideClusterOpenTriangleResolver {
     /**
      * Do not split cluster analyse to see if any links are not appropriate.
      */
-    private void DoNotsplitCluster(Cluster<Long> cluster, Set<Distance> all_pairs_between) throws BucketException {
-        Collection<Long> left_elements = cluster.left_child.getClusterElements();
-        Collection<Long> right_elements = cluster.right_child.getClusterElements();
-        for (long neo_id_left : left_elements) {
-            for (long neo_id_right : right_elements) {
+    private void DoNotsplitCluster(Cluster<String> cluster, Set<Distance> all_pairs_between) throws BucketException {
+        Collection<String> left_elements = cluster.left_child.getClusterElements();
+        Collection<String> right_elements = cluster.right_child.getClusterElements();
+        for (String neo_id_left : left_elements) {
+            for (String neo_id_right : right_elements) {
                 for (Distance d : all_pairs_between) {
-                    if ((d.startNodeId == neo_id_left || d.startNodeId == neo_id_right) && (d.endNodeId == neo_id_left || d.endNodeId == neo_id_right)) {
+                    if ((d.startNodeId.equals(neo_id_left) || d.startNodeId.equals(neo_id_right)) && (d.endNodeId.equals(neo_id_left) || d.endNodeId.equals(neo_id_right))) {
                         LXP x = (LXP) marriages.getObjectById(getStorrId(neo_id_left));
                         LXP y = (LXP) marriages.getObjectById(getStorrId(neo_id_right));
                         if (!x.getString(Marriage.BRIDE_FATHER_IDENTITY).equals(y.getString(Marriage.BRIDE_FATHER_IDENTITY))) {
@@ -187,19 +187,19 @@ public class SiblingBrideClusterOpenTriangleResolver {
     /**
      * Splits the cluster supplied as a parameter into two by cutting links.
      */
-    private void splitCluster(Cluster<Long> cluster, Set<Distance> all_pairs_between) throws BucketException {
-        Collection<Long> left_elements = cluster.left_child.getClusterElements();
-        Collection<Long> right_elements = cluster.right_child.getClusterElements();
-        for (long neo_id_left : left_elements) {
-            for (long neo_id_right : right_elements) {
+    private void splitCluster(Cluster<String> cluster, Set<Distance> all_pairs_between) throws BucketException {
+        Collection<String> left_elements = cluster.left_child.getClusterElements();
+        Collection<String> right_elements = cluster.right_child.getClusterElements();
+        for (String neo_id_left : left_elements) {
+            for (String neo_id_right : right_elements) {
                 cutClusterLinksFromAllPairs(all_pairs_between, neo_id_left, neo_id_right);
             }
         }
     }
 
-    private void cutClusterLinksFromAllPairs(Set<Distance> all_pairs_between, Long neo_id_left, Long neo_id_right) throws BucketException {
+    private void cutClusterLinksFromAllPairs(Set<Distance> all_pairs_between, String neo_id_left, String neo_id_right) throws BucketException {
         for (Distance d : all_pairs_between) {
-            if ((d.startNodeId == neo_id_left || d.startNodeId == neo_id_right) && (d.endNodeId == neo_id_left || d.endNodeId == neo_id_right)) {
+            if ((d.startNodeId.equals(neo_id_left) || d.startNodeId.equals(neo_id_right)) && (d.endNodeId.equals(neo_id_left) || d.endNodeId.equals(neo_id_right))) {
                 cutLink(neo_id_left, neo_id_right, "Cut cluster");
             }
         }
@@ -209,28 +209,28 @@ public class SiblingBrideClusterOpenTriangleResolver {
      * @param cluster
      * @return true if either or both of the sub clusters internal distance < LOW_DISTANCE_MATCH_THRESHOLD
      */
-    private boolean oneSubClustersIsTight(Cluster<Long> cluster) {
-        Cluster<Long> left_cluster = cluster.left_child;
-        Cluster<Long> right_cluster = cluster.right_child;
+    private boolean oneSubClustersIsTight(Cluster<String> cluster) {
+        Cluster<String> left_cluster = cluster.left_child;
+        Cluster<String> right_cluster = cluster.right_child;
         return left_cluster != null && left_cluster.size >= 2 && left_cluster.distance < low_distance_match_threshold ||
                 right_cluster != null && right_cluster.size >= 2 && right_cluster.distance < low_distance_match_threshold;
     }
 
-    private void showDistances(Cluster<Long> top_cluster, String symbol) {
+    private void showDistances(Cluster<String> top_cluster, String symbol) {
         if (top_cluster.size > 1) {
             double distance = top_cluster.distance;
             System.out.println(symbol + " Cluster distance: " + distance);
             System.out.println(symbol + " Cluster Size:     " + top_cluster.getClusterElements().size());
             System.out.println(symbol + " Cluster elements: " + top_cluster.getClusterElements());
-            Cluster<Long> left_cluster = top_cluster.left_child;
-            Cluster<Long> right_cluster = top_cluster.right_child;
+            Cluster<String> left_cluster = top_cluster.left_child;
+            Cluster<String> right_cluster = top_cluster.right_child;
             showDistances(left_cluster, symbol + "\tL");
             showDistances(right_cluster, symbol + "\tR");
         }
     }
 
-    private Set<Long> getIds(Set<Distance> all_pairs_between) {
-        Set<Long> all_ids = new TreeSet<>();
+    private Set<String> getIds(Set<Distance> all_pairs_between) {
+        Set<String> all_ids = new TreeSet<>();
         for (Distance d : all_pairs_between) {
             all_ids.add(d.startNodeId);
             all_ids.add(d.endNodeId);
@@ -267,7 +267,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
 
     private int counter = 0; // debug tracer - triggers printout of query.
 
-    private void cutLink(LXP x, LXP y, long nid_x, long nid_y, String message) {
+    private void cutLink(LXP x, LXP y, String nid_x, String nid_y, String message) {
         if (!x.getString(Marriage.BRIDE_FATHER_IDENTITY).equals(y.getString(Marriage.BRIDE_FATHER_IDENTITY))) {   // Cut links should have different fathers!
             TP++;
         } else {
@@ -285,7 +285,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
      * @param nid_x   - the neo4J id of an object
 
      */
-    private void cutLink(long nid_x, long nid_y, String message) throws BucketException {
+    private void cutLink(String nid_x, String nid_y, String message) throws BucketException {
         LXP x = (LXP) marriages.getObjectById(getStorrId(nid_x));
         LXP y = (LXP) marriages.getObjectById(getStorrId(nid_y));
         cutLink(x, y, message);
@@ -295,8 +295,8 @@ public class SiblingBrideClusterOpenTriangleResolver {
         return d1 + d2 < low_distance_match_threshold;  // count be determined properly by a human (or AI) inspecting these.
     }
 
-    private Set<Long> getSiblingIds(String std_id) throws BucketException {
-        Set<Long> result = new HashSet<>();
+    private Set<String> getSiblingIds(String std_id) throws BucketException {
+        Set<String> result = new HashSet<>();
         result.addAll(getSiblings(bridge, MM_GET_SIBLINGS, std_id));
         return result;
     }
@@ -305,7 +305,7 @@ public class SiblingBrideClusterOpenTriangleResolver {
         return getDistanceByNeoId(open_triangle.x, open_triangle.z);
     }
 
-    private double getDistanceByNeoId(long id1, long id2) {
+    private double getDistanceByNeoId(String id1, String id2) {
         try {
             LXP b1 = (LXP) marriages.getObjectById(getStorrId(id1));
             LXP b2 = (LXP) marriages.getObjectById(getStorrId(id2));
@@ -317,12 +317,12 @@ public class SiblingBrideClusterOpenTriangleResolver {
 
     private static final String NODE_BY_NEO_ID = "MATCH (a:Marriage) WHERE Id( a ) = $node_id RETURN a";
 
-    private long getStorrId(long id) {
+    private String getStorrId(String id) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("node_id", id);
         Result result = bridge.getNewSession().run(NODE_BY_NEO_ID, parameters);
         List<Node> nodes = result.list(r -> r.get("a").asNode());
-        return nodes.get(0).get("STORR_ID").asLong();
+        return nodes.get(0).get("STORR_ID").asString();
     }
 
     // Queries
@@ -334,9 +334,9 @@ public class SiblingBrideClusterOpenTriangleResolver {
         Result result = bridge.getNewSession().run(BRIDE_SIBLING_TRIANGLE_QUERY); // returns x,y,z where x and y and z are connected and zx is not.
         return result.stream().map(r -> {
                     return new OpenTriangle(
-                            ((Node) r.asMap().get("x")).get("STORR_ID").asLong(),
-                            ((Node) r.asMap().get("y")).get("STORR_ID").asLong(),
-                            ((Node) r.asMap().get("z")).get("STORR_ID").asLong(),
+                            ((Node) r.asMap().get("x")).get("STORR_ID").asString(),
+                            ((Node) r.asMap().get("y")).get("STORR_ID").asString(),
+                            ((Node) r.asMap().get("z")).get("STORR_ID").asString(),
                             ((Relationship) r.asMap().get("xy")).get("distance").asDouble(),
                             ((Relationship) r.asMap().get("yz")).get("distance").asDouble()
                     );
@@ -356,17 +356,17 @@ public class SiblingBrideClusterOpenTriangleResolver {
             List<Object> rels = record.get("r").asList();
             for (Object o : rels) {
                 Relationship r = (Relationship) o;
-                set.add(new Distance(r.startNodeId(), r.endNodeId(), (Double) r.asMap().get("distance")));
+                set.add(new Distance(r.startNodeElementId(), r.endNodeElementId(), (Double) r.asMap().get("distance")));
             }
         }
         return set;
     }
 
-    private static List<Long> getSiblings(NeoDbCypherBridge bridge, String query_string, String standard_id_from) {
+    private static List<String> getSiblings(NeoDbCypherBridge bridge, String query_string, String standard_id_from) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         Result result = bridge.getNewSession().run(query_string, parameters);
-        return result.list(r -> r.get("b").get("STORR_ID").asLong());
+        return result.list(r -> r.get("b").get("STORR_ID").asString());
     }
 
     public static void main(String[] args) {

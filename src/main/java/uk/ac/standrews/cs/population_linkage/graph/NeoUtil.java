@@ -31,13 +31,13 @@ public class NeoUtil {
 
     private static final String FIND_BY_NEO_ID = "MATCH (a) WHERE Id( a ) = $node_id RETURN a";
 
-    public static <T extends PersistentObject> T getByNeoId(Long neo_id, IBucket<T> bucket,NeoDbCypherBridge bridge) throws BucketException {
+    public static <T extends PersistentObject> T getByNeoId(String neo_id, IBucket<T> bucket,NeoDbCypherBridge bridge) throws BucketException {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("node_id", neo_id);
         Result result = bridge.getNewSession().run(FIND_BY_NEO_ID,parameters);
         List<Node> nodes = result.list(r -> r.get("a").asNode());
         if( nodes.size() == 1 ) {
-            long storr_id = nodes.get(0).get("STORR_ID").asLong();
+            String storr_id = nodes.get(0).get("STORR_ID").asString();
             return bucket.getObjectById(storr_id);
         } else {
             System.out.println( "Error finding entry with neo_id " + neo_id + " found " + nodes.size() + " nodes" );

@@ -40,8 +40,8 @@ public class LinkPair {
         return r.get("distance").asDouble();
     }
 
-    public static long getStorrId( Node n ) {
-        return n.get("STORR_ID").asLong();
+    public static String getStorrId( Node n ) {
+        return n.get("STORR_ID").asString();
     }
 
     public String toString() {

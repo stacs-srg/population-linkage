@@ -23,8 +23,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 public abstract class OpenTriangleCluster {
-    public final long x;
-    public List<List<Long>> triangleChain = new ArrayList<>();
+    public final String x;
+    public List<List<String>> triangleChain = new ArrayList<>();
     protected Set<LXP> children = new HashSet<LXP>();
     protected Map<String, LocalDate> birthDays = new HashMap<String, LocalDate>();
     protected Map<String, Integer> birthplaceMap = new HashMap<String, Integer>();
@@ -34,7 +34,7 @@ public abstract class OpenTriangleCluster {
     protected int yearMedian;
     protected String mostCommonBirthplace = null;
 
-    public OpenTriangleCluster(long x, List<List<Long>>  triangleChain) {
+    public OpenTriangleCluster(String x, List<List<String>>  triangleChain) {
         this.x = x;
         this.triangleChain = triangleChain;
     }
@@ -43,7 +43,7 @@ public abstract class OpenTriangleCluster {
         return "X = " + x;
     }
 
-    public List<List<Long>> getTriangleChain() {
+    public List<List<String>> getTriangleChain() {
         return triangleChain;
     }
 

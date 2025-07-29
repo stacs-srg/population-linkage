@@ -44,12 +44,12 @@ public class OpenTriangle2 {
         return r.get("distance").asDouble();
     }
 
-    public static long getStorrId( Node n ) {
-        return n.get("STORR_ID").asLong();
+    public static String getStorrId( Node n ) {
+        return n.get("STORR_ID").asString();
     }
 
-    public static long getNeoId(Node n ) {
-        return n.id();
+    public static String getNeoId(Node n ) {
+        return n.elementId();
     }
 
     public String toString() {

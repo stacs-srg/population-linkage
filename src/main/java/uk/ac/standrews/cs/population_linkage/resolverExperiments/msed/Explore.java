@@ -71,14 +71,14 @@ public class Explore {
      * @param stor_id_from
      * @return a list of STORR ids
      */
-    private static List<Long> getSiblings(NeoDbCypherBridge bridge, String query_string, long stor_id_from) {
+    private static List<String> getSiblings(NeoDbCypherBridge bridge, String query_string, String stor_id_from) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("stor_id_from", stor_id_from);
         Result result = bridge.getNewSession().run(query_string, parameters);
-        return result.list(r -> r.get("b").get("STORR_ID").asLong());
+        return result.list(r -> r.get("b").get("STORR_ID").asString());
     }
 
-    public Stream<LinkPair> getSiblingRelationships(NeoDbCypherBridge bridge, long stor_id_from) {
+    public Stream<LinkPair> getSiblingRelationships(NeoDbCypherBridge bridge, String stor_id_from) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("stor_id_from", stor_id_from);
         Result result = bridge.getNewSession().run(SIBLING_QUERY, parameters);
@@ -91,28 +91,28 @@ public class Explore {
         );
     }
 
-    public List<Long> getSiblingStorIds(long lxp1_storr_id ) throws BucketException {
-        List<Long> sibs = getSiblings(bridge, GET_BIRTH_SIBLINGS, lxp1_storr_id);
-        List<Long> siblings= sibs.stream().distinct().collect(Collectors.toList()); // get rid of duplicates
-        for( long l : siblings ) { showRecord(l); }
+    public List<String> getSiblingStorIds(String lxp1_storr_id ) throws BucketException {
+        List<String> sibs = getSiblings(bridge, GET_BIRTH_SIBLINGS, lxp1_storr_id);
+        List<String> siblings= sibs.stream().distinct().collect(Collectors.toList()); // get rid of duplicates
+        for( String l : siblings ) { showRecord(l); }
         return siblings;
     }
 
-    private void showRecord(long stor_id) throws BucketException {
+    private void showRecord(String stor_id) throws BucketException {
         Birth b = births.getObjectById(stor_id);
         System.out.println( stor_id + ":" + b.getString(Birth.FORENAME) + " " + b.getString(Birth.SURNAME) );
     }
 
     private void showUnlinked() throws BucketException {
 
-        Birth b1 = births.getObjectById(3158851268898028935l);
-        Birth b2 = births.getObjectById( 6580773452447460714l );
+        Birth b1 = births.getObjectById("3158851268898028935l");
+        Birth b2 = births.getObjectById("6580773452447460714l");
 
         System.out.println( "Distance between unlinked: " + getCompositeMeasure().distance( b1,b2 ));
         System.out.println();
     }
 
-    private OrderedList<List<Birth>,Double> examineDivergences(List<Long> sibling_ids) throws BucketException {
+    private OrderedList<List<Birth>,Double> examineDivergences(List<String> sibling_ids) throws BucketException {
         // TreeMap<List<Birth>,Double> all_mseds = new TreeMap<>();
         OrderedList<List<Birth>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
         List<Birth> bs = getBirths(sibling_ids);
@@ -127,7 +127,7 @@ public class Explore {
         return all_mseds;
     }
 
-    private OrderedList<List<Birth>,Double> getDivergenceForK(List<Long> sibling_ids, int k) throws BucketException {
+    private OrderedList<List<Birth>,Double> getDivergenceForK(List<String> sibling_ids, int k) throws BucketException {
         OrderedList<List<Birth>,Double> all_mseds = new OrderedList<>(Integer.MAX_VALUE); // don't want a limit!
         List<Birth> bs  = getBirths(sibling_ids);
 
@@ -163,9 +163,9 @@ public class Explore {
         return MSED.distance(fields_from_choices);
     }
 
-    private List<Birth> getBirths(List<Long> sibling_ids) throws BucketException {
+    private List<Birth> getBirths(List<String> sibling_ids) throws BucketException {
         ArrayList<Birth> bs = new ArrayList();
-        for( long id : sibling_ids) {
+        for( String id : sibling_ids) {
             bs.add(births.getObjectById(id));
         }
         return bs;
@@ -190,8 +190,8 @@ public class Explore {
         }
     }
 
-    private void showBirthRecords(List<Long> sibling_ids) throws BucketException {
-        for( long stor_id : sibling_ids) {
+    private void showBirthRecords(List<String> sibling_ids) throws BucketException {
+        for( String stor_id : sibling_ids) {
             showRecord(stor_id);
             Stream<LinkPair> xx = getSiblingRelationships(bridge, stor_id);
             xx.forEach(linkPair -> System.out.println("distance: " + LinkPair.getDistance(linkPair.xy) + linkPair.y.get("FORENAME")));   // note y is a node
@@ -199,40 +199,40 @@ public class Explore {
         }
     }
 
-    private void examineAll(List<Long> sibling_ids) throws BucketException {
+    private void examineAll(List<String> sibling_ids) throws BucketException {
         // showBirthRecords(sibling_ids);
         OrderedList<List<Birth>, Double> all_msed_dists = examineDivergences(sibling_ids);
         showMsedDists(all_msed_dists, sibling_ids.size(), -1);
     }
 
-    private void examineAll(long query_from_bundle_stor_ids, long extra_stor_id) throws BucketException {
-        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids);
+    private void examineAll(String query_from_bundle_stor_ids, String extra_stor_id) throws BucketException {
+        List<String> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids);
         all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
         all_stor_ids.add(extra_stor_id);                // add the extra member
         examineAll( all_stor_ids );                     // now examine the whole lot.
     }
 
-    private void examineAll(long query_from_bundle_stor_ids) throws BucketException {
-        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids);
+    private void examineAll(String query_from_bundle_stor_ids) throws BucketException {
+        List<String> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids);
         all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
         examineAll( all_stor_ids );                     // now examine the whole lot.
     }
 
-    private void examineGroupsOfSizeK(List<Long> sibling_ids, int k) throws BucketException {
+    private void examineGroupsOfSizeK(List<String> sibling_ids, int k) throws BucketException {
         // showBirthRecords(sibling_ids);
         OrderedList<List<Birth>, Double> all_msed_dists = getDivergenceForK(sibling_ids,k);
         showMsedDists(all_msed_dists, sibling_ids.size(), k);
     }
 
-    private void examineGroupsOfSizeK(long query_from_bundle_stor_ids, long extra_stor_id, int k) throws BucketException {
-        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
+    private void examineGroupsOfSizeK(String query_from_bundle_stor_ids, String extra_stor_id, int k) throws BucketException {
+        List<String> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
         all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
         all_stor_ids.add(extra_stor_id);                // add the extra member
         examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ), k); // now examine the whole lot.
     }
 
-    private void examineGroupsOfSizeK(long query_from_bundle_stor_ids, int k) throws BucketException {
-        List<Long> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
+    private void examineGroupsOfSizeK(String query_from_bundle_stor_ids, int k) throws BucketException {
+        List<String> all_stor_ids = getSiblingStorIds(query_from_bundle_stor_ids); // A set of partially interconnected siblings
         all_stor_ids.add(query_from_bundle_stor_ids); // add the query too
         examineGroupsOfSizeK( new ArrayList<>( all_stor_ids ),k ); // now examine the whole lot.
     }
@@ -242,12 +242,12 @@ public class Explore {
 
         String sourceRepo = "umea";
 
-        long example_query_stor_id1 = 4377094037612468415l; // this is one of a group 4 true siblings with one link missing.
-        long example_query_stor_id2 = 1869999260706456703l; // this one is totally unrelated to the above.
-        long example_query_stor_id3 = 4377094037612468415l; // part of another grroup of 4 with a missing link
-        long example_query_stor_id5 = 8472462191637179711l; // part of a network with possibly extra links.
-        long example_query_stor_id6 = 8951651435219393113l; // this only has two links but should be part of a complex of 10 siblings
-        long test = 3693888651293933206l; //example of when breaks (STDID - 705146)
+        String example_query_stor_id1 = "4377094037612468415l"; // this is one of a group 4 true siblings with one link missing.
+        String example_query_stor_id2 = "1869999260706456703l"; // this one is totally unrelated to the above.
+        String example_query_stor_id3 = "4377094037612468415l"; // part of another grroup of 4 with a missing link
+        String example_query_stor_id5 = "8472462191637179711l"; // part of a network with possibly extra links.
+        String example_query_stor_id6 = "8951651435219393113l"; // this only has two links but should be part of a complex of 10 siblings
+        String test = "3693888651293933206l"; //example of when breaks (STDID - 705146)
 
         try (NeoDbCypherBridge bridge = new NeoDbCypherBridge();
              BirthSiblingLinkageRecipe linkageRecipe = new BirthSiblingLinkageRecipe(sourceRepo, "EVERYTHING", BirthSiblingBundleBuilder.class.getName())) {

@@ -104,8 +104,8 @@ public class DistanceDistributionsBirthGroomOwnMarriage extends ProcessNodes {
             Node birth_node = pair.X();
             Node marriage_node = pair.Y();
 
-            long birth_id = birth_node.get("STORR_ID").asLong();
-            long marriage_id = marriage_node.get("STORR_ID").asLong();
+            String birth_id = birth_node.get("STORR_ID").asString();
+            String marriage_id = marriage_node.get("STORR_ID").asString();
 
             try {
                 Birth birth = birth_records.getObjectById(birth_id);

@@ -23,15 +23,15 @@ package uk.ac.standrews.cs.population_linkage.resolverExperiments.util;
  * All the ids are storr ids of Nodes.
  */
 public class TwoTriangles {
-    public final long t1;
-    public final long t2;
-    public final long t3;
-    public final long s1;
-    public final long s2;
-    public final long s3;
+    public final String t1;
+    public final String t2;
+    public final String t3;
+    public final String s1;
+    public final String s2;
+    public final String s3;
 
 
-    public TwoTriangles(long t1, long t2, long t3, long s1, long s2, long s3 ) {
+    public TwoTriangles(String t1, String t2, String t3, String s1, String s2, String s3 ) {
         this.t1 = t1;
         this.t2 = t2;
         this.t3 = t3;

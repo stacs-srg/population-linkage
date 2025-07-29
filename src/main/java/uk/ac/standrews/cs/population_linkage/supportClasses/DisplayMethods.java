@@ -69,7 +69,7 @@ public class DisplayMethods {
         String mother_id = birth.getString(Birth.MOTHER_IDENTITY);
 
         String parental_match = "  " + (father_matches ? "YES" : "NO") + "/" + (mother_matches ? "YES" : "NO");
-        long oid = birth.getId();
+        String oid = birth.getId();
         String std_id = birth.getString(Birth.STANDARDISED_ID);
         System.out.println(oid + "/" + std_id + ": " + firstname + "," + surname + " F: " + father_id + " M: " + mother_id + "\t" + parental_match);
     }
@@ -81,7 +81,7 @@ public class DisplayMethods {
         String mother_id = birth.getString(Birth.MOTHER_IDENTITY);
 
         String groom_match = "  " + (groom_matches_birth ? "YES" : "NO");
-        long oid = birth.getId();
+        String oid = birth.getId();
         String std_id = birth.getString(Birth.STANDARDISED_ID);
         System.out.println(oid + "/" + std_id + ": " + firstname + "," + surname + " F: " + father_id + " M: " + mother_id + "\t" + " groom_match: " + groom_match);
     }

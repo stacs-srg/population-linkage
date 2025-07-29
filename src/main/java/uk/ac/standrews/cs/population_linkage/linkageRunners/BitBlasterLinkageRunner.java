@@ -153,8 +153,8 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
     // Print links and distances
     private void printLinks(Iterable<Link> links) throws RepositoryException {
         for (Link link : links) {
-            long birth_storr_id = link.getRecord1().getObjectId();
-            long death_storr_id = link.getRecord2().getObjectId();
+            String birth_storr_id = link.getRecord1().getObjectId();
+            String death_storr_id = link.getRecord2().getObjectId();
             double distance = link.getDistance();
             if (doesGTSayIsTrue(link)) {
                 System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tTP");
@@ -173,16 +173,16 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
 
         for (Relationship gt_link : gt_links) {
-            long birth_neo_id = gt_link.startNodeId();
-            long death_neo_id = gt_link.endNodeId();
+            String birth_neo_id = gt_link.startNodeElementId();
+            String death_neo_id = gt_link.endNodeElementId();
 
             if (notFound(links, birth_neo_id, death_neo_id)) {
 
                 Birth b = getByNeoId(birth_neo_id, births, bridge);
                 Death d = getByNeoId(death_neo_id, deaths, bridge);
 
-                long birth_storr_id = b.getId();
-                long death_storr_id = d.getId();
+                String birth_storr_id = b.getId();
+                String death_storr_id = d.getId();
 
                 double distance = linkage_recipe.getCompositeMeasure().distance(b, d);
                 System.out.println(birth_storr_id + "\t" + death_storr_id + "\t" + distance + "\tFN");
@@ -199,8 +199,8 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         IBucket<Death> deaths = umea_repo.getBucket("death_records", Death.class);
 
         for (Relationship gt_link : gt_links) {
-            long birth_neo_id = gt_link.startNodeId();
-            long death_neo_id = gt_link.endNodeId();
+            String birth_neo_id = gt_link.startNodeElementId();
+            String death_neo_id = gt_link.endNodeElementId();
 
             System.out.println("Links not found by linker:");
             if (notFound(links, birth_neo_id, death_neo_id)) {
@@ -208,8 +208,8 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
                 Birth b = getByNeoId(birth_neo_id, births, bridge);
                 Death d = getByNeoId(death_neo_id, deaths, bridge);
 
-                long birth_storr_id = b.getId();
-                long death_storr_id = d.getId();
+                String birth_storr_id = b.getId();
+                String death_storr_id = d.getId();
 
                 double distance = linkage_recipe.getCompositeMeasure().distance(b, d);
                 System.out.println("No match for pair: " + birth_storr_id + " " + death_storr_id + " distance =" + distance);
@@ -224,9 +224,9 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         }
     }
 
-    private boolean notFound(Iterable<Link> links, long birth_neo_id, long death_neo_id) {
+    private boolean notFound(Iterable<Link> links, String birth_neo_id, String death_neo_id) {
         for (Link link : links) {
-            if (link.getRecord1().getObjectId() == birth_neo_id && link.getRecord2().getObjectId() == death_neo_id) {
+            if (link.getRecord1().getObjectId().equals(birth_neo_id) && link.getRecord2().getObjectId().equals(death_neo_id)) {
                 return false;
             }
         }
@@ -259,7 +259,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         // Link.getRecord1 is the stored record - Birth in test case - BirthBrideIdentity
         // Link.getRecord2 is the query record - Marriage in test
 
-        Map<Long, List<Link>> map_of_links = linksListToMap(lists_of_list_of_links);
+        Map<String, List<Link>> map_of_links = linksListToMap(lists_of_list_of_links);
 
 //        showMap( map_of_links );
 
@@ -272,7 +272,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
             for (double threshold = 0.0; threshold <= max_t; threshold += (max_t / 10)) {
                 List<LXP> matched_this_round = new ArrayList<>();
                 System.out.println("Thresh = " + threshold);
-                for (Long key : map_of_links.keySet()) {
+                for (String key : map_of_links.keySet()) {
                     List<Link> list_of_links = map_of_links.get(key);
                     System.out.println("Find closest in list of size " + list_of_links.size());
                     int index = getClosestAcceptable(list_of_links, threshold, required_fields, previously_matched);
@@ -294,13 +294,13 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
      * @throws RepositoryException
      * @throws BucketException
      */
-    private Map<Long, List<Link>> linksListToMap(Iterable<List<Link>> lists_of_list_of_links) throws RepositoryException, BucketException {
+    private Map<String, List<Link>> linksListToMap(Iterable<List<Link>> lists_of_list_of_links) throws RepositoryException, BucketException {
 
         try {
-            Map<Long, List<Link>> map_of_links = new HashMap<>();
+            Map<String, List<Link>> map_of_links = new HashMap<>();
             for (List<Link> list_of_links : lists_of_list_of_links) {
                 if (list_of_links.size() != 0) {
-                    long query_id = list_of_links.get(0).getRecord2().getReferend().getId();
+                    String query_id = list_of_links.get(0).getRecord2().getReferend().getId();
                     map_of_links.put(query_id, list_of_links);
                 }
             }
@@ -313,9 +313,9 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         return null;
     }
 
-    private void showMap(Map<Long, List<Link>> map) {
+    private void showMap(Map<String, List<Link>> map) {
         System.out.println("Map size = " + map.keySet().size());
-        for (Long key : map.keySet()) {
+        for (String key : map.keySet()) {
             List<Link> list = map.get(key);
             System.out.println(key + " size=" + list.size() + " entries: ");
             for (Link link : list) {
@@ -404,7 +404,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
         return same_populated;
     }
 
-    private void addResult(Link match, List<Link> linked_pairs, Map<Long, List<Link>> map, List<LXP> matched_this_round) throws BucketException, RepositoryException {
+    private void addResult(Link match, List<Link> linked_pairs, Map<String, List<Link>> map, List<LXP> matched_this_round) throws BucketException, RepositoryException {
         linked_pairs.add(match);
         matched_this_round.add(match.getRecord1().getReferend());
         map.remove(match.getRecord1().getReferend().getId());
@@ -418,7 +418,7 @@ public class BitBlasterLinkageRunner extends LinkageRunner {
      * @param previously_matched
      * @param matched_this_round
      */
-    private void addAllEqualToClosest(List<Link> list_of_links, int index, List<Link> results, double threshold, int required_fields, Map<Long, List<Link>> map, List<LXP> previously_matched, List<LXP> matched_this_round) throws BucketException, RepositoryException {
+    private void addAllEqualToClosest(List<Link> list_of_links, int index, List<Link> results, double threshold, int required_fields, Map<String, List<Link>> map, List<LXP> previously_matched, List<LXP> matched_this_round) throws BucketException, RepositoryException {
         double closest_dist = list_of_links.get(index).getDistance();
         System.out.print("** " + list_of_links.size() + " ** ");
         for (Link link : list_of_links.subList(index, list_of_links.size())) {

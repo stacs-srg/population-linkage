@@ -189,20 +189,20 @@ public class SiblingDeathOpenChainResolver {
      * @throws BucketException
      */
     private int countIntersectionDirectSiblingsBetween(String std_id_x, String std_id_z) throws BucketException {
-        Set<Long> siblings_of_x = getSiblingIds( std_id_x );
-        Set<Long> siblings_of_z = getSiblingIds( std_id_z );
-        Set<Long> intersection = intersectionOf( siblings_of_x,siblings_of_z );
+        Set<String> siblings_of_x = getSiblingIds( std_id_x );
+        Set<String> siblings_of_z = getSiblingIds( std_id_z );
+        Set<String> intersection = intersectionOf( siblings_of_x,siblings_of_z );
         return intersection.size(); // we know it is at least one because x,y,z are connected.
     }
 
-    private Set<Long> intersectionOf(Set<Long> X, Set<Long> Y) {
-        Set<Long> result = new HashSet(X);
+    private Set<String> intersectionOf(Set<String> X, Set<String> Y) {
+        Set<String> result = new HashSet(X);
         result.retainAll(Y);
         return result;
     }
 
-    private Set<Long> getSiblingIds(String std_id) throws BucketException {
-        Set<Long> result = new HashSet<>();
+    private Set<String> getSiblingIds(String std_id) throws BucketException {
+        Set<String> result = new HashSet<>();
         result.addAll( getSiblings(bridge, DD_GET_LONG_CHAIN_SIBLING_LINKS,std_id) );            //<<<<<<<<<<<<<<<<<< WRONG AL IS HERE
         return result;
     }
@@ -211,7 +211,7 @@ public class SiblingDeathOpenChainResolver {
         return get_distance( open_triangle.x, open_triangle.z );
     }
 
-    private double get_distance(long id1, long id2) throws BucketException {
+    private double get_distance(String id1, String id2) throws BucketException {
         LXP b1 = (LXP) deaths.getObjectById(id1);
         LXP b2 = (LXP) deaths.getObjectById(id2);
         return lxpMeasure.distance( b1, b2 );
@@ -226,9 +226,9 @@ public class SiblingDeathOpenChainResolver {
         Result result = bridge.getNewSession().run(DD_GET_LONG_CHAIN_SIBLING_LINKS); // returns x,y,z where x and y and z are connected and zx is not.
         return result.stream().map( r -> {
                     return new OpenTriangle(
-                            ( (Node) r.asMap().get("x")).get( "STORR_ID" ).asLong(),
-                            ( (Node) r.asMap().get("y")).get( "STORR_ID" ).asLong(),
-                            ( (Node) r.asMap().get("z")).get( "STORR_ID" ).asLong(),
+                            ( (Node) r.asMap().get("x")).get( "STORR_ID" ).asString(),
+                            ( (Node) r.asMap().get("y")).get( "STORR_ID" ).asString(),
+                            ( (Node) r.asMap().get("z")).get( "STORR_ID" ).asString(),
                             ( (Relationship) r.asMap().get("xy")).get( "distance" ).asDouble(),
                             ( (Relationship) r.asMap().get("yz")).get( "distance" ).asDouble()
                     );
@@ -245,11 +245,11 @@ public class SiblingDeathOpenChainResolver {
         return result.stream().count();
     }
 
-    private static List<Long> getSiblings(NeoDbCypherBridge bridge, String query_string, String standard_id_from) {
+    private static List<String> getSiblings(NeoDbCypherBridge bridge, String query_string, String standard_id_from) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         Result result = bridge.getNewSession().run(query_string,parameters);
-        return result.list(r -> r.get("b").get( "STORR_ID" ).asLong());
+        return result.list(r -> r.get("b").get( "STORR_ID" ).asString());
     }
 
     public static void main(String[] args) {

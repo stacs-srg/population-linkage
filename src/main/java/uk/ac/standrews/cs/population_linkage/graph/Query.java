@@ -472,7 +472,7 @@ public class Query {
         );
     }
 
-    private static String getRefutedAlreadyQuery(NeoDbCypherBridge bridge, long id) {
+    private static String getRefutedAlreadyQuery(NeoDbCypherBridge bridge, String id) {
         String query_string = "MATCH (a)-[r:SIBLING]-(b) WHERE id(r) = $id return r.link_refuted_by";
 
         Map<String, Object> parameters = new HashMap<>();
@@ -488,7 +488,7 @@ public class Query {
 
     public static void updateReference(NeoDbCypherBridge bridge, Relationship r, String query, String new_provenance) {
 
-        long id = r.id();
+        String id = r.elementId();
         String refuted_previously = getRefutedAlreadyQuery(bridge,id);
         String provenance = refuted_previously == null ? new_provenance : refuted_previously + "/" + new_provenance;
 

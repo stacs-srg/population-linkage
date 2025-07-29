@@ -52,7 +52,7 @@ public class Link extends JPO {
 
     public Link() {}
 
-    public Link(long id, Map map, IBucket bucket ) throws PersistentObjectException {
+    public Link(String id, Map map, IBucket bucket ) throws PersistentObjectException {
         super( id, map, bucket );
     }
 

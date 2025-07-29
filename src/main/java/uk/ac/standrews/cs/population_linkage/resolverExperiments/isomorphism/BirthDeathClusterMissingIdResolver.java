@@ -87,12 +87,12 @@ public class BirthDeathClusterMissingIdResolver {
         return result.stream().map(r -> {
                     return new TwoTriangles(
                             // RETURN d1,d2,d3,b1,b2,b3
-                            ((Node) r.asMap().get("d1")).get("STORR_ID").asLong(),
-                            ((Node) r.asMap().get("d2")).get("STORR_ID").asLong(),
-                            ((Node) r.asMap().get("d3")).get("STORR_ID").asLong(),
-                            ((Node) r.asMap().get("b1")).get("STORR_ID").asLong(),
-                            ((Node) r.asMap().get("b2")).get("STORR_ID").asLong(),
-                            ((Node) r.asMap().get("b3")).get("STORR_ID").asLong()
+                            ((Node) r.asMap().get("d1")).get("STORR_ID").asString(),
+                            ((Node) r.asMap().get("d2")).get("STORR_ID").asString(),
+                            ((Node) r.asMap().get("d3")).get("STORR_ID").asString(),
+                            ((Node) r.asMap().get("b1")).get("STORR_ID").asString(),
+                            ((Node) r.asMap().get("b2")).get("STORR_ID").asString(),
+                            ((Node) r.asMap().get("b3")).get("STORR_ID").asString()
                     );
                 }
         );

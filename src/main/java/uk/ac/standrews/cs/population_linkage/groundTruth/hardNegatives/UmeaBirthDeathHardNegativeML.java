@@ -93,8 +93,8 @@ public class UmeaBirthDeathHardNegativeML {
         writeHeadersAndMetaData();
 
         for (Relationship r : getGTLinks(BIRTH_DEATH_IDENTITY_QUERY)) {
-            Birth b = getByNeoId(r.startNodeId(), births, bridge);
-            Death d = getByNeoId(r.endNodeId(), deaths, bridge);
+            Birth b = getByNeoId(r.startNodeElementId(), births, bridge);
+            Death d = getByNeoId(r.endNodeElementId(), deaths, bridge);
 
             // Output the distances of b,d as true positive.
             // Now search for each of the NN identity links for b and d to get hard negatives
@@ -183,7 +183,7 @@ public class UmeaBirthDeathHardNegativeML {
         List<Node> nodes = query_res.list(r -> r.get("x").asNode());
         List<Death> result = new ArrayList<>();
         for (Node node : nodes) {
-            long storr_id = node.get("STORR_ID").asLong();
+            String storr_id = node.get("STORR_ID").asString();
             result.add(deaths.getObjectById(storr_id));
         }
         return result;
@@ -201,7 +201,7 @@ public class UmeaBirthDeathHardNegativeML {
         List<Node> nodes = query_res.list(r -> r.get("x").asNode());
         List<Birth> result = new ArrayList<>();
         for (Node node : nodes) {
-            long storr_id = node.get("STORR_ID").asLong();
+            String storr_id = node.get("STORR_ID").asString();
             result.add(births.getObjectById(storr_id));
         }
         return result;
