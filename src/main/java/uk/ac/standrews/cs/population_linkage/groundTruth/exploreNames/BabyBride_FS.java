@@ -74,11 +74,12 @@ public class BabyBride_FS {
 //    private static final String FIRST_NAMES_SAME_ID_DIFFERENT_COUNT = "MATCH (b:Birth), (m:Marriage) WHERE b.FORENAME = m.BRIDE_FORENAME                                 AND b.CHILD_IDENTITY <> \"\" AND m.BRIDE_IDENTITY <> \"\" AND b.CHILD_IDENTITY <> m.BRIDE_IDENTITY return count(b)";
 //    private static final String SURNAMES_SAME_ID_DIFFERENT_COUNT = "MATCH (b:Birth), (m:Marriage)    WHERE b.SURNAME  = m.BRIDE_SURNAME                                  AND b.CHILD_IDENTITY <> \"\" AND m.BRIDE_IDENTITY <> \"\" AND b.CHILD_IDENTITY <> m.BRIDE_IDENTITY return count(b)";
 
+    @SuppressWarnings("unchecked")
     public BabyBride_FS() throws BucketException {
         bridge = new NeoDbCypherBridge();
         record_repository = new RecordRepository("umea");
-        births = record_repository.getBucket("birth_records");
-        marriages = record_repository.getBucket("marriage_records");
+        births = (IBucket<Birth>) record_repository.getBucket("birth_records");
+        marriages = (IBucket<Marriage>) record_repository.getBucket("marriage_records");
         num_births = births.size();
         num_marriages = marriages.size();
     }

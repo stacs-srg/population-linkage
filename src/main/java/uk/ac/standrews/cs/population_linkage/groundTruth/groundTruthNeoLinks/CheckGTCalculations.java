@@ -36,11 +36,12 @@ public class CheckGTCalculations {
     Iterator<Death> deaths;
     Iterator<Marriage> marriages;
 
+    @SuppressWarnings("unchecked")
     public CheckGTCalculations() throws Exception {
 
         RecordRepository record_repository = new RecordRepository("umea");
-        deaths = record_repository.getBucket("death_records").getInputStream().iterator();
-        marriages = record_repository.getBucket("marriage_records").getInputStream().iterator();
+        deaths = (Iterator<Death>) record_repository.getBucket("death_records").getInputStream().iterator();
+        marriages = (Iterator<Marriage>) record_repository.getBucket("marriage_records").getInputStream().iterator();
 
         TreeSet<Integer> d_ids = new TreeSet<>();
 

@@ -472,8 +472,8 @@ public class BirthDeathOpenTriangleResolver extends SiblingOpenTriangleResolver 
      */
     @Override
     protected List<LXP> getRecords(List<String> sibling_ids, RecordRepository record_repository) throws BucketException {
-        IBucket<Birth> births = record_repository.getBucket("birth_records");
-        IBucket<Death> deaths = record_repository.getBucket("death_records");
+        IBucket<Birth> births = (IBucket<Birth>) record_repository.getBucket("birth_records");
+        IBucket<Death> deaths = (IBucket<Death>) record_repository.getBucket("death_records");
         ArrayList<LXP> bs = new ArrayList();
 
         for (int i = 0; i < sibling_ids.size(); i++) {

@@ -77,8 +77,8 @@ public class BabyBride2_FS {
     public BabyBride2_FS() throws BucketException {
         bridge = new NeoDbCypherBridge();
         record_repository = new RecordRepository("umea");
-        births = record_repository.getBucket("birth_records");
-        marriages = record_repository.getBucket("marriage_records");
+        births = (IBucket<Birth>) record_repository.getBucket("birth_records");
+        marriages = (IBucket<Marriage>) record_repository.getBucket("marriage_records");
         num_births = births.size();
         num_marriages = marriages.size();
     }

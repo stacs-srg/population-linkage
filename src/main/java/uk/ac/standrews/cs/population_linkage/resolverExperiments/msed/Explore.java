@@ -52,12 +52,14 @@ public class Explore {
     protected static final String SIBLING_QUERY = "MATCH (x:Birth)-[xy:SIBLING]-(y:Birth) WHERE x.STORR_ID = $stor_id_from and NOT (x)-[:DELETED-(y) return x,xy,y";
     private final BirthSiblingLinkageRecipe recipe;
 
+    @SuppressWarnings("unchecked")
     public Explore(NeoDbCypherBridge bridge, String source_repo_name, BirthSiblingLinkageRecipe recipe) {
         this.bridge = bridge;
-        RecordRepository record_repository = new RecordRepository(source_repo_name);
-        this.births = record_repository.getBucket("birth_records");
-        this.recipe = recipe;
-        this.baseMeasure = Constants.JENSEN_SHANNON;
+        try (RecordRepository record_repository = new RecordRepository(source_repo_name)) {
+            this.births = (IBucket<Birth>) record_repository.getBucket("birth_records");
+            this.recipe = recipe;
+            this.baseMeasure = Constants.JENSEN_SHANNON;
+        }
     }
 
     protected LXPMeasure getCompositeMeasure() {

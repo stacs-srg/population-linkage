@@ -477,10 +477,11 @@ public class BirthBirthOpenTriangleResolver extends SiblingOpenTriangleResolver 
      * @return list of birth objects
      * @throws BucketException
      */
+    @SuppressWarnings("unchecked")
     @Override
     protected List<LXP> getRecords(List<String> sibling_ids, RecordRepository record_repository) throws BucketException {
-        IBucket<LXP> births = record_repository.getBucket("birth_records");
-        ArrayList<LXP> bs = new ArrayList();
+        IBucket<LXP> births = (IBucket<LXP>) record_repository.getBucket("birth_records");
+        ArrayList<LXP> bs = new ArrayList<>();
         for( String id : sibling_ids) {
             bs.add(births.getObjectById(id));
         }
