@@ -241,7 +241,7 @@ public abstract class SiblingOpenTriangleResolver {
      * @return distance between two records
      * @throws BucketException
      */
-    protected double getDistance(long id1, long id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
+    protected double getDistance(String id1, String id2, LXPMeasure composite_measure, IBucket births) throws BucketException {
         LXP b1 = (LXP) births.getObjectById(id1);
         LXP b2 = (LXP) births.getObjectById(id2);
         return composite_measure.distance(b1, b2);
@@ -256,15 +256,15 @@ public abstract class SiblingOpenTriangleResolver {
      * @param dPred predicate number to delete
      * @throws BucketException
      */
-    public void resolveTrianglesMSED(List<List<Long>> triangleChain, Long x, LinkageRecipe recipe, String dPred, int standID, String query) throws BucketException {
+    public void resolveTrianglesMSED(List<List<String>> triangleChain, String x, LinkageRecipe recipe, String dPred, int standID, String query) throws BucketException {
         double THRESHOLD = 0.03;
         double TUPLE_THRESHOLD = 0.01;
 
         List<Set<LXP>> familySets = new ArrayList<>();
         List<List<LXP>> toDelete = new ArrayList<>();
 
-        for (List<Long> chain : triangleChain){
-            List<Long> listWithX = new ArrayList<>(Arrays.asList(x));
+        for (List<String> chain : triangleChain){
+            List<String> listWithX = new ArrayList<>(Arrays.asList(x));
             listWithX.addAll(chain);
             List<LXP> bs = getRecords(listWithX, record_repository);
 
@@ -368,5 +368,5 @@ public abstract class SiblingOpenTriangleResolver {
 
     protected abstract void cleanStrings(List<LXP> bs);
 
-    protected abstract List<LXP> getRecords(List<Long> sibling_ids, RecordRepository record_repository) throws BucketException;
+    protected abstract List<LXP> getRecords(List<String> sibling_ids, RecordRepository record_repository) throws BucketException;
 }

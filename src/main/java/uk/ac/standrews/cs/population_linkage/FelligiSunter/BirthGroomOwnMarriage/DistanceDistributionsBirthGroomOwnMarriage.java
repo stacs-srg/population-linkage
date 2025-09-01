@@ -55,20 +55,22 @@ public class DistanceDistributionsBirthGroomOwnMarriage extends ProcessNodes {
 
     private static List<StringMeasure> measures = List.of( COSINE, JACCARD, JENSEN_SHANNON, SED); // true metrics returning between - and 1.
 
+    @SuppressWarnings("unchecked")
     public void run() {
 
-        final RecordRepository record_repository = new RecordRepository(repo_name);
+        try (RecordRepository record_repository = new RecordRepository(repo_name)) {
 
-        int number_of_records_to_be_checked = 25000; // 25000;
+            int number_of_records_to_be_checked = 25000; // 25000;
 
-        final IBucket<Birth> birth_records = record_repository.getBucket("birth_records" );
-        final IBucket<Marriage> marriage_records = record_repository.getBucket("marriage_records" );
+            final IBucket<Birth> birth_records = (IBucket<Birth>) record_repository.getBucket("birth_records" );
+            final IBucket<Marriage> marriage_records = (IBucket<Marriage>) record_repository.getBucket("marriage_records" );
 
 
-        //for (StringMeasure measure : Constants.BASE_MEASURES) {
-        StringMeasure base_measure = JACCARD;
-        calculateDistances(birth_records, marriage_records, BirthGroomOwnMarriageBuilder.getRecipe(repo_name, String.valueOf(number_of_records_to_be_checked)).getCompositeMeasure(base_measure));
-        //}
+            //for (StringMeasure measure : Constants.BASE_MEASURES) {
+            StringMeasure base_measure = JACCARD;
+            calculateDistances(birth_records, marriage_records, BirthGroomOwnMarriageBuilder.getRecipe(repo_name, String.valueOf(number_of_records_to_be_checked)).getCompositeMeasure(base_measure));
+            //}
+        }
     }
 
     private static final String BM_BIRTH_GROOM_GTEXISTS_QUERY = "MATCH (a:Birth)-[r:GTID { actors: \"Child-Groom\" }]-(b:Marriage) WHERE a.STANDARDISED_ID = $standard_id_from AND b.STANDARDISED_ID = $standard_id_to RETURN r";
@@ -104,8 +106,8 @@ public class DistanceDistributionsBirthGroomOwnMarriage extends ProcessNodes {
             Node birth_node = pair.X();
             Node marriage_node = pair.Y();
 
-            long birth_id = birth_node.get("STORR_ID").asLong();
-            long marriage_id = marriage_node.get("STORR_ID").asLong();
+            String birth_id = birth_node.get("STORR_ID").asString();
+            String marriage_id = marriage_node.get("STORR_ID").asString();
 
             try {
                 Birth birth = birth_records.getObjectById(birth_id);

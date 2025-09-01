@@ -79,7 +79,7 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
         new BirthOwnDeathAccuracy(bridge);
 
         System.out.println("Locating triangles...");
-        List<Long[]> triangles = findIllegalBirthDeathTriangles(bridge); //get all open triangles in their clusters
+        List<String[]> triangles = findIllegalBirthDeathTriangles(bridge); //get all open triangles in their clusters
         System.out.println("Triangles found: " + triangles.size());
 
         System.out.println("Running graph predicates...");
@@ -92,7 +92,7 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
         ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
 
         System.out.println("Resolving triangles with predicates...");
-        for (Long[] triangle : triangles) {
+        for (String[] triangle : triangles) {
             executorService.submit(() ->
                     {
                         try {
@@ -115,7 +115,7 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
         new BirthOwnDeathAccuracy(bridge);
     }
 
-    private void resolveTriangle(Long[] triangle, IBucket births, IBucket deaths) throws BucketException {
+    private void resolveTriangle(String[] triangle, IBucket births, IBucket deaths) throws BucketException {
         boolean isDeleted = false;
         LXP[] tempKids = {(LXP) births.getObjectById(triangle[0]), (LXP) deaths.getObjectById(triangle[1]), (LXP) births.getObjectById(triangle[2])};
         String[] stds = {tempKids[0].getString(Birth.STANDARDISED_ID), tempKids[1].getString(Death.STANDARDISED_ID), tempKids[2].getString(Birth.STANDARDISED_ID)};
@@ -172,20 +172,20 @@ public class BirthDeathIDPredicateOpenTriangleResolver extends IdentityOpenTrian
         }
     }
 
-    private List<Long[]> findIllegalBirthDeathTriangles(NeoDbCypherBridge bridge) {
+    private List<String[]> findIllegalBirthDeathTriangles(NeoDbCypherBridge bridge) {
         final String BIRTH_DEATH_TRIANGLE_QUERY = "MATCH (x:Birth)-[:ID]-(y:Death)-[:ID]-(z:Birth)\n" +
                 "WHERE id(x) < id(z) AND NOT (x)-[:DELETED]-(y) AND NOT (z)-[:DELETED]-(y)\n" +
                 "RETURN x, y, z";
 
         //run query to get all open triangles
         Result result = bridge.getNewSession().run(BIRTH_DEATH_TRIANGLE_QUERY);
-        List<Long[]> triangles = new ArrayList<>();
+        List<String[]> triangles = new ArrayList<>();
         result.stream().forEach(r -> {
-            long x = ((Node) r.asMap().get("x")).get("STORR_ID").asLong();
-            long y = ((Node) r.asMap().get("y")).get("STORR_ID").asLong();
-            long z = ((Node) r.asMap().get("z")).get("STORR_ID").asLong();
+            String x = ((Node) r.asMap().get("x")).get("STORR_ID").asString();
+            String y = ((Node) r.asMap().get("y")).get("STORR_ID").asString();
+            String z = ((Node) r.asMap().get("z")).get("STORR_ID").asString();
 
-            Long[] tempList = {x, y, z};
+            String[] tempList = {x, y, z};
             triangles.add(tempList);
         });
 

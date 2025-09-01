@@ -23,14 +23,14 @@ package uk.ac.standrews.cs.population_linkage.resolverExperiments.util;
  * All the ids are storr ids of Nodes.
  */
 public class OpenTriangle {
-    public final long x;
-    public final long y;
-    public final long z;
+    public final String x;
+    public final String y;
+    public final String z;
     public final double xy_distance;
     public final double yz_distance;
 
 
-    public OpenTriangle(long x, long y, long z, double xy_distance, double yz_distance ) {
+    public OpenTriangle(String x, String y, String z, double xy_distance, double yz_distance ) {
         this.x = x;
         this.y = y;
         this.z = z;

@@ -17,11 +17,11 @@
 package uk.ac.standrews.cs.population_linkage.resolverExperiments.util;
 
 public class Distance {
-    public final long startNodeId;
-    public final long endNodeId;
+    public final String startNodeId;
+    public final String endNodeId;
     public final double distance;
 
-    public Distance(long startNodeId, long endNodeId, double distance) {
+    public Distance(String startNodeId, String endNodeId, double distance) {
         this.startNodeId = startNodeId;
         this.endNodeId = endNodeId;
         this.distance = distance;
@@ -41,11 +41,9 @@ public class Distance {
 
     @Override
     public int hashCode() {
-        int result;
-        long temp;
-        result = (int) (startNodeId ^ (startNodeId >>> 32));
-        result = 31 * result + (int) (endNodeId ^ (endNodeId >>> 32));
-        temp = Double.doubleToLongBits(distance);
+        int result = startNodeId != null ? startNodeId.hashCode() : 0;
+        result = 31 * result + (endNodeId != null ? endNodeId.hashCode() : 0);
+        long temp = Double.doubleToLongBits(distance);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }

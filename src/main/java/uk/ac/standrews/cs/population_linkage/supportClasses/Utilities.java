@@ -33,9 +33,8 @@ public class Utilities {
     private static final long SEED = 34553543456223L;
 
     public static Iterable<LXP> getBirthRecords(RecordRepository record_repository) {
-
         return () -> new Iterator<>() {
-
+            
             Iterator<Birth> birth_records = record_repository.getBirths().iterator();
 
             @Override

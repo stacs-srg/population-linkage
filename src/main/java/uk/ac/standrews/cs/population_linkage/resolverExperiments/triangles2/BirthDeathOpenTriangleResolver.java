@@ -152,7 +152,7 @@ public class BirthDeathOpenTriangleResolver {
             final LXP lxp_y = (LXP) deaths.getObjectById(getStorrId(y));
             final LXP lxp_z = (LXP) deaths.getObjectById(getStorrId(z));
 
-            final long x_id = getNeoId(open_triangle.x);
+            final String x_id = getNeoId(open_triangle.x);
 
             final String std_id_x = lxp_x.getString(Birth.STANDARDISED_ID);
             final String std_id_y = lxp_y.getString(Death.STANDARDISED_ID);
@@ -336,16 +336,16 @@ public class BirthDeathOpenTriangleResolver {
         return count;
     }
 
-    private void getDeathNames(List<Long> storr_sibling_ids, Set<String> sibling_names) throws BucketException {
-        for( long storr_id : storr_sibling_ids ) {
+    private void getDeathNames(List<String> storr_sibling_ids, Set<String> sibling_names) throws BucketException {
+        for( String storr_id : storr_sibling_ids ) {
             LXP record = (LXP) deaths.getObjectById(storr_id);
             String name = record.getString( Death.FORENAME ) + " " + record.getString( Death.SURNAME );
             if( ! name.equals("") ) { sibling_names.add( name ); }
         }
     }
 
-    private void getBirthNames(List<Long> storr_sibling_ids, Set<String> sibling_names) throws BucketException {
-        for( long storr_id : storr_sibling_ids ) {
+    private void getBirthNames(List<String> storr_sibling_ids, Set<String> sibling_names) throws BucketException {
+        for( String storr_id : storr_sibling_ids ) {
             LXP record = (LXP) births.getObjectById(storr_id);
             String name = record.getString( Birth.FORENAME ) + " " + record.getString( Birth.SURNAME );
             if( ! name.equals("") ) { sibling_names.add( name ); }
@@ -359,11 +359,11 @@ public class BirthDeathOpenTriangleResolver {
      * @param standard_id_from
      * @return a list of STORR ids
      */
-    private static List<Long> getSiblings(NeoDbCypherBridge bridge, String query_string, String standard_id_from) {
+    private static List<String> getSiblings(NeoDbCypherBridge bridge, String query_string, String standard_id_from) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("standard_id_from", standard_id_from);
         Result result = bridge.getNewSession().run(query_string, parameters);
-        return result.list(r -> r.get("b").get("STORR_ID").asLong());
+        return result.list(r -> r.get("b").get("STORR_ID").asString());
     }
 
     /**

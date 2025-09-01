@@ -16,8 +16,8 @@
  */
 package uk.ac.standrews.cs.population_linkage;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.ac.standrews.cs.neoStorr.impl.LXP;
 import uk.ac.standrews.cs.neoStorr.impl.LXPMetaData;
 import uk.ac.standrews.cs.neoStorr.impl.LXPReference;
@@ -68,7 +68,7 @@ public abstract class LinkageTest {
 
     protected abstract boolean equal(final Link link, final IStoreReference<LXP> id1, final IStoreReference<LXP> id2);
 
-    @Before
+    @BeforeEach
     public void init() {
 
         linker = getLinker();
@@ -280,7 +280,6 @@ public abstract class LinkageTest {
         IStoreReference store_reference = null;
 
         DummyLXP(String... values) {
-
             number_of_fields = values.length;
 
             int i = 0;
@@ -297,15 +296,16 @@ public abstract class LinkageTest {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof DummyLXP && ((DummyLXP) o).getId() == getId();
+            return o instanceof DummyLXP && ((DummyLXP) o).getId().equals(this.getId());
         }
 
         @Override
-        public IStoreReference getThisRef() {
+        public IStoreReference<?> getThisRef() {
 
             if (store_reference == null) {
                 final LXP this_lxp = this;
-                store_reference = new LXPReference("dummy-repo", "dummy-bucket", lxp_id++) {
+                store_reference = new LXPReference<>("dummy-repo", "dummy-bucket", String.valueOf(lxp_id++)) {
+                    @Override
                     public LXP getReferend() {
                         return this_lxp;
                     }
