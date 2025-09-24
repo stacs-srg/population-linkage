@@ -296,7 +296,7 @@ public abstract class LinkageTest {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof DummyLXP && ((DummyLXP) o).getId().equals(this.getId());
+            return o instanceof DummyLXP && ((DummyLXP) o).getId() == this.getId();
         }
 
         @Override
@@ -304,7 +304,7 @@ public abstract class LinkageTest {
 
             if (store_reference == null) {
                 final LXP this_lxp = this;
-                store_reference = new LXPReference<>("dummy-repo", "dummy-bucket", String.valueOf(lxp_id++)) {
+                store_reference = new LXPReference<>("dummy-repo", "dummy-bucket", lxp_id++) {
                     @Override
                     public LXP getReferend() {
                         return this_lxp;
